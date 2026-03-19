@@ -19,6 +19,7 @@ import { CmsModule } from './modules/cms/cms.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { AiServiceModule } from './modules/ai-service/ai-service.module';
+import { PartnerModule } from './modules/partner/partner.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -57,6 +58,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     ChatbotModule,
     NotificationModule,
     AiServiceModule,
+    PartnerModule,
   ],
   controllers: [AppController],
   providers: [

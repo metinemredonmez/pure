@@ -73,6 +73,7 @@ model User {
   subscriptions Subscription[]
   auditLogs     AuditLog[]
   partnerSales  PartnerSale[] @relation("PartnerSales")
+  notifications InAppNotification[]
 
   @@map("users")
 }
@@ -726,6 +727,23 @@ model SupportTicket {
 // ============================================
 // NOTIFICATION MODULE
 // ============================================
+
+model InAppNotification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("info") // info, success, warning, error, order, payment, subscription
+  link      String?  // Tıklandığında gidilecek sayfa
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  metadata  Json?    // Ek veriler (orderId, amount vs.)
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@map("in_app_notifications")
+}
 
 model NotificationTemplate {
   id        String   @id @default(cuid())

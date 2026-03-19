@@ -142,4 +142,150 @@ export class NotificationService {
       take: limit,
     });
   }
+
+  // ============================================
+  // IN-APP NOTIFICATIONS (Anlık iç bildirimler)
+  // ============================================
+
+  /**
+   * Anlık bildirim gönder (panel içi)
+   */
+  async sendInApp(
+    userId: string,
+    title: string,
+    message: string,
+    type: string = 'info',
+    link?: string,
+    metadata?: any,
+  ) {
+    const notification = await this.prisma.inAppNotification.create({
+      data: { userId, title, message, type, link, metadata },
+    });
+
+    this.logger.log(`In-app notification sent to ${userId}: ${title}`);
+    // TODO: Phase 2 — WebSocket ile anlık push (Socket.IO)
+    return notification;
+  }
+
+  /**
+   * Kullanıcının bildirimlerini getir
+   */
+  async getUserNotifications(userId: string, page = 1, limit = 20, unreadOnly = false) {
+    const where: any = { userId };
+    if (unreadOnly) where.isRead = false;
+
+    const [notifications, total, unreadCount] = await Promise.all([
+      this.prisma.inAppNotification.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.inAppNotification.count({ where }),
+      this.prisma.inAppNotification.count({
+        where: { userId, isRead: false },
+      }),
+    ]);
+
+    return {
+      data: notifications,
+      unreadCount,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  /**
+   * Bildirimi okundu olarak işaretle
+   */
+  async markAsRead(userId: string, notificationId: string) {
+    return this.prisma.inAppNotification.updateMany({
+      where: { id: notificationId, userId },
+      data: { isRead: true, readAt: new Date() },
+    });
+  }
+
+  /**
+   * Tüm bildirimleri okundu yap
+   */
+  async markAllAsRead(userId: string) {
+    return this.prisma.inAppNotification.updateMany({
+      where: { userId, isRead: false },
+      data: { isRead: true, readAt: new Date() },
+    });
+  }
+
+  // ── Event-based notification helpers ──
+
+  async notifyOrderCreated(userId: string, orderNumber: string, total: string) {
+    return this.sendInApp(
+      userId,
+      'Sipariş Oluşturuldu',
+      `${orderNumber} numaralı siparişiniz alındı. Toplam: ₺${total}`,
+      'order',
+      `/orders/${orderNumber}`,
+      { orderNumber, total },
+    );
+  }
+
+  async notifyOrderShipped(userId: string, orderNumber: string, trackingUrl?: string) {
+    return this.sendInApp(
+      userId,
+      'Sipariş Kargoda',
+      `${orderNumber} numaralı siparişiniz kargoya verildi.`,
+      'order',
+      trackingUrl || `/orders/${orderNumber}`,
+      { orderNumber },
+    );
+  }
+
+  async notifyPaymentCompleted(userId: string, amount: string) {
+    return this.sendInApp(
+      userId,
+      'Ödeme Başarılı',
+      `₺${amount} tutarında ödemeniz başarıyla alındı.`,
+      'payment',
+    );
+  }
+
+  async notifyPaymentFailed(userId: string, reason?: string) {
+    return this.sendInApp(
+      userId,
+      'Ödeme Başarısız',
+      `Ödemeniz gerçekleştirilemedi.${reason ? ' Sebep: ' + reason : ''}`,
+      'error',
+      '/payment',
+    );
+  }
+
+  async notifySubscriptionRenewed(userId: string, planName: string) {
+    return this.sendInApp(
+      userId,
+      'Abonelik Yenilendi',
+      `${planName} aboneliğiniz başarıyla yenilendi.`,
+      'subscription',
+      '/subscriptions',
+    );
+  }
+
+  async notifyLowStock(adminId: string, productName: string, stock: number) {
+    return this.sendInApp(
+      adminId,
+      'Stok Uyarısı',
+      `${productName} stoku kritik seviyede: ${stock} adet kaldı.`,
+      'warning',
+      '/admin/products',
+      { productName, stock },
+    );
+  }
+
+  async notifyNewB2bLead(adminId: string, companyName: string) {
+    return this.sendInApp(
+      adminId,
+      'Yeni B2B Lead',
+      `${companyName} firmasından yeni kurumsal talep geldi.`,
+      'info',
+      '/admin/b2b/leads',
+      { companyName },
+    );
+  }
 }
