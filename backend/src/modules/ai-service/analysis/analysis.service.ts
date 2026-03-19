@@ -51,7 +51,7 @@ export class AnalysisService {
     });
 
     const totalRevenue = orders.reduce(
-      (sum, o) => sum + Number(o.totalAmount),
+      (sum, o) => sum + Number(o.total),
       0,
     );
 
@@ -135,7 +135,7 @@ export class AnalysisService {
     const calendarEvents: { time: string; event: string }[] = [];
 
     const pendingShipments = await this.prisma.order.count({
-      where: { status: 'PROCESSING' },
+      where: { status: 'PREPARING' },
     });
 
     if (pendingShipments > 0) {
@@ -147,9 +147,8 @@ export class AnalysisService {
 
     const subscriptionRenewals = await this.prisma.subscriptionCycle.count({
       where: {
-        startDate: { lte: endOfDay },
-        endDate: { gte: startOfDay },
-        status: 'PENDING',
+        billingDate: { gte: startOfDay, lte: endOfDay },
+        status: 'pending',
       },
     });
 

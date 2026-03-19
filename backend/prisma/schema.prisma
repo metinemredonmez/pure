@@ -51,6 +51,12 @@ model User {
   isPartner     Boolean      @default(false)
   companyName   String?
   taxNumber     String?
+  partnerRegion String?      // Partner bölgesi
+
+  // Konum (Google Maps)
+  latitude      Float?
+  longitude     Float?
+  locationLabel String?      // "Kadıköy Mağaza" gibi
 
   // KVKK/GDPR
   privacyAccepted   Boolean  @default(false)
@@ -66,6 +72,7 @@ model User {
   orders        Order[]
   subscriptions Subscription[]
   auditLogs     AuditLog[]
+  partnerSales  PartnerSale[] @relation("PartnerSales")
 
   @@map("users")
 }
@@ -771,4 +778,84 @@ model SystemSetting {
   updatedAt DateTime @updatedAt
 
   @@map("system_settings")
+}
+
+// ============================================
+// DAILY REPORT MODULE
+// ============================================
+
+model DailyReport {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  totalOrders    Int      @default(0)
+  totalRevenue   Decimal  @db.Decimal(12, 2) @default(0)
+  newCustomers   Int      @default(0)
+  activeSubscriptions Int @default(0)
+  b2bLeads       Int      @default(0)
+  conversionRate Float    @default(0)
+  topProducts    Json?    // [{name, quantity}]
+  insights       Json?    // ["insight1", "insight2"]
+  alerts         Json?    // ["alert1", "alert2"]
+  calendarEvents Json?    // [{time, event}]
+  voiceText      String?  // TTS sesli rapor metni
+  generatedAt    DateTime @default(now())
+
+  @@map("daily_reports")
+}
+
+// ============================================
+// WEBHOOK MODULE
+// ============================================
+
+model Webhook {
+  id          String   @id @default(cuid())
+  name        String
+  url         String
+  secret      String?  // HMAC imza için
+  events      String[] // ["order.created", "payment.completed", "subscription.renewed"]
+  isActive    Boolean  @default(true)
+  headers     Json?    // Ek HTTP headerlar
+  retryCount  Int      @default(3)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs        WebhookLog[]
+
+  @@map("webhooks")
+}
+
+model WebhookLog {
+  id          String   @id @default(cuid())
+  webhookId   String
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  event       String   // "order.created"
+  payload     Json
+  statusCode  Int?
+  response    String?
+  success     Boolean  @default(false)
+  attempt     Int      @default(1)
+  sentAt      DateTime @default(now())
+
+  @@map("webhook_logs")
+}
+
+// ============================================
+// PARTNER SALES TRACKING (Google Maps)
+// ============================================
+
+model PartnerSale {
+  id         String   @id @default(cuid())
+  partnerId  String
+  partner    User     @relation("PartnerSales", fields: [partnerId], references: [id])
+  orderId    String?
+  amount     Decimal  @db.Decimal(10, 2)
+  commission Decimal  @db.Decimal(10, 2) @default(0)
+  latitude   Float?
+  longitude  Float?
+  region     String?
+  note       String?
+  saleDate   DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@map("partner_sales")
 }

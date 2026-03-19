@@ -70,4 +70,14 @@ export default () => ({
     appId: process.env.ONESIGNAL_APP_ID,
     apiKey: process.env.ONESIGNAL_API_KEY,
   },
+  googleMaps: {
+    apiKey: process.env.GOOGLE_MAPS_API_KEY,
+    geocodingEnabled: process.env.GOOGLE_MAPS_GEOCODING === 'true',
+  },
+  openai: {
+    apiKey: process.env.OPENAI_API_KEY,
+    model: process.env.OPENAI_MODEL || 'gpt-4',
+    ttsModel: process.env.OPENAI_TTS_MODEL || 'tts-1',
+    whisperModel: process.env.OPENAI_WHISPER_MODEL || 'whisper-1',
+  },
 });

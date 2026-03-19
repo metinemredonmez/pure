@@ -79,8 +79,8 @@ Kurallar:
    */
   async getSessionHistory(sessionId: string): Promise<ChatMessage[]> {
     try {
-      const session = await this.prisma.chatbotSession.findFirst({
-        where: { id: sessionId },
+      const session = await this.prisma.chatbotSession.findUnique({
+        where: { sessionId },
         include: {
           messages: {
             orderBy: { createdAt: 'asc' },
@@ -111,17 +111,15 @@ Kurallar:
   ): Promise<void> {
     try {
       // Session yoksa oluştur
-      let session = await this.prisma.chatbotSession.findFirst({
-        where: { id: sessionId },
+      let session = await this.prisma.chatbotSession.findUnique({
+        where: { sessionId },
       });
 
       if (!session) {
         session = await this.prisma.chatbotSession.create({
           data: {
-            id: sessionId,
+            sessionId,
             userId: userId || null,
-            channel: 'web',
-            status: 'ACTIVE',
           },
         });
       }
