@@ -18,6 +18,7 @@ import { B2bModule } from './modules/b2b/b2b.module';
 import { CmsModule } from './modules/cms/cms.module';
 import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { NotificationModule } from './modules/notification/notification.module';
+import { AiServiceModule } from './modules/ai-service/ai-service.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -55,6 +56,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     CmsModule,
     ChatbotModule,
     NotificationModule,
+    AiServiceModule,
   ],
   controllers: [AppController],
   providers: [
