@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "coming-soon",
+      "runtimeExecutable": "/usr/local/bin/npx",
+      "runtimeArgs": ["serve", "coming-soon", "-l", "3333"],
+      "port": 3333
+    }
+  ]
+}

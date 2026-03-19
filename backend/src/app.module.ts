@@ -1,0 +1,73 @@
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+
+import configuration from './config/configuration';
+import { PrismaModule } from './prisma/prisma.module';
+import { AppController } from './app.controller';
+
+// Domain modules
+import { IdentityModule } from './modules/identity/identity.module';
+import { CatalogModule } from './modules/catalog/catalog.module';
+import { CartModule } from './modules/cart/cart.module';
+import { OrderModule } from './modules/order/order.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { SubscriptionModule } from './modules/subscription/subscription.module';
+import { B2bModule } from './modules/b2b/b2b.module';
+import { CmsModule } from './modules/cms/cms.module';
+import { ChatbotModule } from './modules/chatbot/chatbot.module';
+import { NotificationModule } from './modules/notification/notification.module';
+
+// Guards, filters, interceptors
+import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
+import { RolesGuard } from './modules/identity/guards/roles.guard';
+import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
+import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+
+@Module({
+  imports: [
+    // Config
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
+    }),
+
+    // Rate limiting
+    ThrottlerModule.forRoot([
+      {
+        ttl: parseInt(process.env.THROTTLE_TTL || '60') * 1000,
+        limit: parseInt(process.env.THROTTLE_LIMIT || '100'),
+      },
+    ]),
+
+    // Database
+    PrismaModule,
+
+    // Domain modules
+    IdentityModule,
+    CatalogModule,
+    CartModule,
+    OrderModule,
+    PaymentModule,
+    SubscriptionModule,
+    B2bModule,
+    CmsModule,
+    ChatbotModule,
+    NotificationModule,
+  ],
+  controllers: [AppController],
+  providers: [
+    // Global JWT auth guard (all routes protected by default)
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Global roles guard
+    { provide: APP_GUARD, useClass: RolesGuard },
+    // Global rate limiting
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    // Global exception filter
+    { provide: APP_FILTER, useClass: GlobalExceptionFilter },
+    // Global response transform
+    { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
+  ],
+})
+export class AppModule {}
