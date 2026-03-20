@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RedisService } from '../../common/services/redis.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 // Cache group definitions with prefixes
 export const CACHE_GROUPS = {
@@ -70,7 +71,10 @@ export interface CacheStats {
 export class CacheManagementService {
   private readonly logger = new Logger(CacheManagementService.name);
 
-  constructor(private readonly redis: RedisService) {}
+  constructor(
+    private readonly redis: RedisService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   /**
    * Get cache statistics
@@ -268,22 +272,88 @@ export class CacheManagementService {
   /**
    * Warm up cache with frequently accessed data
    */
-  async warmUp(): Promise<{ warmedGroups: string[] }> {
-    // This would be implemented based on actual data loading logic
-    // For now, it's a placeholder
+  async warmUp(): Promise<{ warmedGroups: string[]; itemsCached: number }> {
     const warmedGroups: string[] = [];
+    let itemsCached = 0;
 
     this.logger.log('Cache warm-up started');
 
-    // TODO: Implement actual cache warming logic
-    // - Load popular products
-    // - Load category tree
-    // - Load shipping zones
-    // - Load loyalty config
+    try {
+      // 1. Cache popular/featured products
+      const featuredProducts = await this.prisma.product.findMany({
+        where: { isActive: true, isFeatured: true, status: 'ACTIVE' },
+        include: { category: true, images: true, variants: true },
+        take: 20,
+      });
+      for (const product of featuredProducts) {
+        await this.redis.set(`cache:products:detail:${product.id}`, product, 3600);
+        itemsCached++;
+      }
+      if (featuredProducts.length > 0) warmedGroups.push('products');
 
-    this.logger.log('Cache warm-up completed');
+      // 2. Cache category tree
+      const categories = await this.prisma.category.findMany({
+        where: { isActive: true },
+        include: { children: { where: { isActive: true } } },
+        orderBy: { sortOrder: 'asc' },
+      });
+      await this.redis.set('cache:categories:tree', categories, 3600);
+      itemsCached += categories.length;
+      if (categories.length > 0) warmedGroups.push('categories');
 
-    return { warmedGroups };
+      // 3. Cache shipping zones
+      const shippingZones = await this.prisma.shippingZone.findMany({
+        where: { isActive: true },
+      });
+      await this.redis.set('cache:shipping:zones', shippingZones, 3600);
+      itemsCached += shippingZones.length;
+      if (shippingZones.length > 0) warmedGroups.push('shipping');
+
+      // 4. Cache shipping settings
+      const shippingSettings = await this.prisma.shippingSettings.findFirst();
+      if (shippingSettings) {
+        await this.redis.set('cache:shipping:settings', shippingSettings, 3600);
+        itemsCached++;
+      }
+
+      // 5. Cache loyalty config
+      const loyaltyConfig = await this.prisma.loyaltyConfig.findMany();
+      const configMap: Record<string, string> = {};
+      for (const config of loyaltyConfig) {
+        configMap[config.key] = config.value;
+      }
+      await this.redis.set('cache:loyalty:config', configMap, 3600);
+      itemsCached += loyaltyConfig.length;
+      if (loyaltyConfig.length > 0) warmedGroups.push('loyalty');
+
+      // 6. Cache FAQ items
+      const faqItems = await this.prisma.faqItem.findMany({
+        where: { isActive: true },
+        orderBy: { sortOrder: 'asc' },
+      });
+      await this.redis.set('cache:cms:faq:all', faqItems, 3600);
+      itemsCached += faqItems.length;
+      if (faqItems.length > 0) warmedGroups.push('cms');
+
+      // 7. Cache integration settings (non-encrypted only)
+      const integrationSettings = await this.prisma.integrationSetting.findMany({
+        where: { isEncrypted: false },
+        select: { key: true, plainValue: true, group: true },
+      });
+      for (const setting of integrationSettings) {
+        if (setting.plainValue) {
+          await this.redis.set(`cache:settings:${setting.key}`, setting.plainValue, 3600);
+          itemsCached++;
+        }
+      }
+      if (integrationSettings.length > 0) warmedGroups.push('settings');
+
+      this.logger.log(`Cache warm-up completed: ${itemsCached} items cached in ${warmedGroups.length} groups`);
+    } catch (error) {
+      this.logger.error('Cache warm-up failed', error);
+    }
+
+    return { warmedGroups, itemsCached };
   }
 
   private formatUptime(seconds: number): string {
