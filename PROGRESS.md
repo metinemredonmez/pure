@@ -12,13 +12,14 @@
 
 | Metrik | Değer |
 |--------|-------|
-| Toplam Modül | **19** |
-| Prisma Model | **60+** |
-| API Endpoint | **120+** |
-| Enum | **18+** |
+| Toplam Modül | **21** |
+| Prisma Model | **65+** |
+| API Endpoint | **140+** |
+| Enum | **22+** |
 | Sprint 0 | ✅ Tamamlandı |
 | Sprint 0.5 | ✅ Tamamlandı |
 | Sprint 1 | ✅ Tamamlandı |
+| Sprint 1.5 (Ek) | ✅ Tamamlandı |
 
 ---
 
@@ -198,6 +199,80 @@
 
 ---
 
+## ✅ Sprint 1.5 (Ek): Entegrasyonlar & Kargo — TAMAMLANDI
+**Tarih:** 2026-03-20
+
+### 3rd Party Entegrasyon Ayarları Sistemi
+39 ayar, 9 grup, 18 şifreli alan — Admin panelden yönetilecek, DB'de tutulacak, AES-256 encrypted.
+
+| Grup | Ayar Sayısı | Şifreli |
+|------|-------------|---------|
+| PAYMENT | 12 | 5 |
+| MAP | 1 | 1 |
+| EMAIL | 5 | 1 |
+| NOTIFICATION | 4 | 2 |
+| AI | 2 | 1 |
+| AUTH | 7 | 3 |
+| SHIPPING | 4 | 4 |
+| ANALYTICS | 3 | 0 |
+| WEBHOOK | 1 | 1 |
+| **TOPLAM** | **39** | **18** |
+
+- [x] `IntegrationSetting` Prisma modeli + enum
+- [x] `IntegrationSettingsService` — CRUD, şifreleme, önbellekleme
+- [x] Admin API (`/admin/settings/integrations`) — 8 endpoint
+- [x] Seed defaults (39 ayar tanımı)
+- [x] Test connection (email, payment)
+
+### Kargo Modülü — 13 Endpoint
+
+**Admin:**
+- [x] `POST /admin/shipping/create` — Sipariş için kargo kaydı oluştur
+- [x] `GET /admin/shipping/orders` — Kargoya verilecek siparişler
+- [x] `PUT /admin/shipping/:orderId/ship` — Siparişi kargoya ver
+- [x] `GET /admin/shipping/:orderId/label` — Kargo etiketi PDF
+- [x] `POST /admin/shipping/:orderId/return` — İade kargo kaydı
+- [x] `GET /admin/shipping/dashboard` — Kargo özet
+- [x] `PUT /admin/shipping/settings` — Varsayılan ayarlar
+
+**Kullanıcı:**
+- [x] `GET /orders/:orderId/tracking` — Kargo takip
+- [x] `GET /orders/:orderId/tracking/live` — Anlık durum (API'den)
+
+**Webhook:**
+- [x] `POST /webhooks/shipping/yurtici` — Yurtiçi webhook
+- [x] `POST /webhooks/shipping/aras` — Aras webhook
+- [x] `POST /webhooks/shipping/mng` — MNG webhook
+
+**Public:**
+- [x] `POST /shipping/calculate` — Dinamik kargo ücreti hesapla
+
+### Prisma Modelleri (Kargo)
+- [x] `ShipmentRecord` — Kargo kaydı (carrier, tracking, status, label)
+- [x] `ShipmentStatusHistory` — Durum geçmişi
+- [x] `ShippingZone` — Bölge/ücret tanımı
+- [x] `ShippingSettings` — Varsayılan ayarlar
+
+### Kargo Firması Entegrasyonları
+- [x] **Yurtiçi Kargo** — `YurticiCarrier` (SOAP/REST)
+- [x] **Aras Kargo** — `ArasCarrier` (REST)
+- [x] **MNG Kargo** — `MngCarrier` (REST)
+
+Her firma için: `createShipment`, `getStatus`, `getLabel`, `cancelShipment`, `createReturn`
+
+### Güvenlik (Ek)
+- [x] Apple OAuth strategy (`passport-apple`)
+- [x] Brute-force guard (`LoginThrottleGuard`) — 5 başarısız = 30 dk kilitleme
+- [x] JWT blacklist guard (Redis tabanlı)
+- [x] API key guard (`@RequireApiKey()` decorator)
+- [x] Webhook HMAC guard
+- [x] Strong password validator (`@IsStrongPassword()`)
+- [x] PayTR HMAC token generation (tam implementasyon)
+- [x] iyzico checkout form (authorization header)
+- [x] Refund API (PayTR iade endpoint)
+
+---
+
 ## 🔜 Sprint 2: Content & Communication — PLANLI
 **Hedef:** İçerik yönetimi ve müşteri iletişimi
 
@@ -207,7 +282,7 @@
 - [ ] Firebase push notification entegrasyonu
 - [ ] OneSignal web push entegrasyonu
 - [ ] WebSocket (Socket.IO) — anlık in-app bildirimler
-- [ ] Kargo takip entegrasyonu (Yurtiçi/Aras/MNG API)
+- [x] Kargo takip entegrasyonu (Yurtiçi/Aras/MNG API) ✅ Tamamlandı
 
 ---
 

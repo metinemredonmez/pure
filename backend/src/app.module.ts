@@ -31,6 +31,8 @@ import { ReviewModule } from './modules/review/review.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { GdprModule } from './modules/gdpr/gdpr.module';
 import { PricingModule } from './modules/pricing/pricing.module';
+import { OpsModule } from './modules/ops/ops.module';
+import { ShippingModule } from './modules/shipping/shipping.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -81,6 +83,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     AdminModule,
     GdprModule,
     PricingModule,
+    OpsModule,
+    ShippingModule,
   ],
   controllers: [AppController],
   providers: [

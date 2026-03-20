@@ -39,7 +39,8 @@ model User {
   avatar        String?
   role          UserRole     @default(CUSTOMER)
   provider      AuthProvider @default(LOCAL)
-  providerId    String?      // Google/Apple user ID
+  providerId    String?      // Google user ID
+  appleId       String?      @unique // Apple user ID
   emailVerified Boolean      @default(false)
   isActive      Boolean      @default(true)
 
@@ -119,12 +120,14 @@ model EmailVerificationToken {
 
 // Login Attempts (Brute-force protection)
 model LoginAttempt {
-  id        String   @id @default(cuid())
-  email     String
-  ipAddress String
-  success   Boolean
-  userAgent String?
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  email      String
+  ipAddress  String
+  success    Boolean
+  userAgent  String?
+  userId     String?  // İlişkili kullanıcı (varsa)
+  failReason String?  // Başarısızlık nedeni
+  createdAt  DateTime @default(now())
 
   @@index([email, createdAt])
   @@index([ipAddress, createdAt])
@@ -133,12 +136,15 @@ model LoginAttempt {
 
 // Account Lockout
 model AccountLockout {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  lockedUntil DateTime
-  attempts    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String   @id @default(cuid())
+  email          String   @unique
+  lockedUntil    DateTime
+  attempts       Int      @default(0)
+  lockCount      Int      @default(0)  // Toplam kilit sayısı
+  lastLockReason String?               // Son kilitleme nedeni
+  lastLockIp     String?               // Son kilitleyen IP
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("account_lockouts")
 }
@@ -433,6 +439,7 @@ enum OrderStatus {
   CANCELLED
   RETURNED
   REFUNDED
+  PAYMENT_FAILED
 }
 
 model Order {
@@ -454,12 +461,14 @@ model Order {
   trackingNumber  String?
   trackingUrl     String?
   invoiceUrl      String?
+  paidAt          DateTime?   // Ödeme tarihi
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   payment         Payment?
+  shipments       ShipmentRecord[]
 
   @@map("orders")
 }
@@ -556,14 +565,15 @@ model Payment {
 }
 
 model Refund {
-  id                String   @id @default(cuid())
+  id                String    @id @default(cuid())
   paymentId         String
-  payment           Payment  @relation(fields: [paymentId], references: [id])
-  amount            Decimal  @db.Decimal(10, 2)
+  payment           Payment   @relation(fields: [paymentId], references: [id])
+  amount            Decimal   @db.Decimal(10, 2)
   reason            String?
   providerRefundId  String?
-  status            String   @default("pending")
-  createdAt         DateTime @default(now())
+  status            String    @default("pending")
+  processedAt       DateTime? // İade işlem tarihi
+  createdAt         DateTime  @default(now())
 
   @@map("refunds")
 }
@@ -913,6 +923,42 @@ model SystemSetting {
 }
 
 // ============================================
+// 3RD PARTY INTEGRATION SETTINGS
+// ============================================
+
+enum IntegrationGroup {
+  PAYMENT       // PayTR, iyzico, Google Pay, Apple Pay
+  MAP           // Google Maps
+  EMAIL         // SMTP
+  NOTIFICATION  // Firebase, OneSignal
+  AI            // OpenAI
+  AUTH          // Google OAuth, Apple OAuth
+  SHIPPING      // Yurtiçi, Aras, MNG
+  ANALYTICS     // Google Analytics, Facebook Pixel, Hotjar
+  WEBHOOK       // Webhook signing
+}
+
+model IntegrationSetting {
+  id            String           @id @default(cuid())
+  key           String           @unique // e.g., "paytr_merchant_key"
+  group         IntegrationGroup
+  label         String           // Human readable label
+  description   String?          // Açıklama
+  valueType     String           @default("string") // string, boolean, number, text, enum
+  enumOptions   String[]         // Enum için seçenekler
+  isEncrypted   Boolean          @default(false) // 🔐 şifreli mi?
+  encryptedValue String?         // AES-256 encrypted (sadece isEncrypted=true ise)
+  plainValue    String?          // Düz değer (isEncrypted=false ise)
+  isRequired    Boolean          @default(false)
+  sortOrder     Int              @default(0)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([group])
+  @@map("integration_settings")
+}
+
+// ============================================
 // DAILY REPORT MODULE
 // ============================================
 
@@ -1248,5 +1294,93 @@ model PriceHistory {
 
   @@index([productId, createdAt])
   @@map("price_history")
+}
+
+// ============================================
+// SHIPPING MODULE
+// ============================================
+
+enum ShippingCarrier {
+  YURTICI
+  ARAS
+  MNG
+}
+
+enum ShipmentStatus {
+  PREPARING        // Hazırlanıyor
+  SHIPPED          // Kargoya verildi
+  IN_TRANSIT       // Yolda
+  OUT_FOR_DELIVERY // Dağıtımda
+  DELIVERED        // Teslim edildi
+  RETURNED         // İade edildi
+  CANCELLED        // İptal edildi
+}
+
+model ShipmentRecord {
+  id                String         @id @default(cuid())
+  orderId           String
+  order             Order          @relation(fields: [orderId], references: [id])
+  carrier           ShippingCarrier
+  trackingNumber    String?        @unique
+  status            ShipmentStatus @default(PREPARING)
+  labelUrl          String?        // Kargo etiketi PDF URL
+  weight            Decimal?       @db.Decimal(10, 2) // kg
+  desi              Decimal?       @db.Decimal(10, 2) // desi
+  shippedAt         DateTime?
+  estimatedDelivery DateTime?
+  deliveredAt       DateTime?
+  returnedAt        DateTime?
+  carrierData       Json?          // Kargo firmasından gelen ek veriler
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  statusHistory     ShipmentStatusHistory[]
+
+  @@index([orderId])
+  @@index([trackingNumber])
+  @@map("shipment_records")
+}
+
+model ShipmentStatusHistory {
+  id          String         @id @default(cuid())
+  shipmentId  String
+  shipment    ShipmentRecord @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status      ShipmentStatus
+  location    String?        // Şehir/Şube
+  description String?        // Durum açıklaması
+  timestamp   DateTime       // Kargo firmasından gelen zaman
+  rawData     Json?          // Kargo firmasından gelen ham veri
+  createdAt   DateTime       @default(now())
+
+  @@index([shipmentId, timestamp])
+  @@map("shipment_status_history")
+}
+
+model ShippingZone {
+  id                    String   @id @default(cuid())
+  name                  String   // "Marmara", "İç Anadolu" vb.
+  cities                String[] // İl listesi
+  baseCost              Decimal  @db.Decimal(10, 2) // Temel kargo ücreti
+  extraKgCost           Decimal  @db.Decimal(10, 2) // Her ek kg başı maliyet
+  estimatedDays         Int      // Tahmini teslimat süresi (gün)
+  freeShippingThreshold Decimal? @db.Decimal(10, 2) // Ücretsiz kargo limiti
+  isActive              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("shipping_zones")
+}
+
+model ShippingSettings {
+  id                    String          @id @default(cuid())
+  defaultCarrier        ShippingCarrier @default(YURTICI)
+  freeShippingEnabled   Boolean         @default(true)
+  freeShippingThreshold Decimal         @db.Decimal(10, 2) @default(500)
+  expressDeliveryFee    Decimal         @db.Decimal(10, 2) @default(25)
+  maxWeight             Decimal         @db.Decimal(10, 2) @default(30) // kg
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+
+  @@map("shipping_settings")
 }
 

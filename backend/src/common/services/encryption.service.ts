@@ -99,4 +99,20 @@ export class EncryptionService {
       Buffer.from(expectedSignature),
     );
   }
+
+  /**
+   * Hash API key (alias for hash method)
+   */
+  hashApiKey(apiKey: string): string {
+    return this.hash(apiKey);
+  }
+
+  /**
+   * Verify HMAC (alias for verifyHmacSignature)
+   */
+  verifyHmac(payload: string, signature: string, secret: string): boolean {
+    // Handle different signature formats (sha256=xxx, xxx)
+    const cleanSignature = signature.replace(/^sha256=/, '');
+    return this.verifyHmacSignature(payload, cleanSignature, secret);
+  }
 }

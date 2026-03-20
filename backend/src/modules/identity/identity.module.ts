@@ -6,9 +6,14 @@ import { IdentityController } from './identity.controller';
 import { IdentityService } from './identity.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { AppleStrategy } from './strategies/apple.strategy';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
+import { LoginThrottleGuard } from './guards/throttle.guard';
+import { JwtBlacklistGuard } from './guards/jwt-blacklist.guard';
+import { ApiKeyGuard, WebhookHmacGuard } from './guards/api-key.guard';
 import { NotificationModule } from '../notification/notification.module';
+import { CommonModule } from '../../common/common.module';
 
 @Module({
   imports: [
@@ -22,15 +27,29 @@ import { NotificationModule } from '../notification/notification.module';
       }),
     }),
     forwardRef(() => NotificationModule),
+    CommonModule,
   ],
   controllers: [IdentityController],
   providers: [
     IdentityService,
     JwtStrategy,
     GoogleStrategy,
+    AppleStrategy,
     JwtAuthGuard,
     RolesGuard,
+    LoginThrottleGuard,
+    JwtBlacklistGuard,
+    ApiKeyGuard,
+    WebhookHmacGuard,
   ],
-  exports: [IdentityService, JwtAuthGuard, RolesGuard],
+  exports: [
+    IdentityService,
+    JwtAuthGuard,
+    RolesGuard,
+    LoginThrottleGuard,
+    JwtBlacklistGuard,
+    ApiKeyGuard,
+    WebhookHmacGuard,
+  ],
 })
 export class IdentityModule {}

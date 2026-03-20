@@ -100,4 +100,41 @@ export class RedisService implements OnModuleDestroy {
   async deleteSession(sessionId: string): Promise<void> {
     await this.del(`session:${sessionId}`);
   }
+
+  // ═══════════════════════════════════════
+  // RAW REDIS OPERATIONS
+  // ═══════════════════════════════════════
+
+  /**
+   * Increment a key
+   */
+  async incr(key: string): Promise<number> {
+    return this.client.incr(key);
+  }
+
+  /**
+   * Set expiration on a key
+   */
+  async expire(key: string, seconds: number): Promise<boolean> {
+    const result = await this.client.expire(key, seconds);
+    return result === 1;
+  }
+
+  /**
+   * Get raw string value (no JSON parsing)
+   */
+  async getRaw(key: string): Promise<string | null> {
+    return this.client.get(key);
+  }
+
+  /**
+   * Set raw string value
+   */
+  async setRaw(key: string, value: string, ttlSeconds?: number): Promise<void> {
+    if (ttlSeconds) {
+      await this.client.setex(key, ttlSeconds, value);
+    } else {
+      await this.client.set(key, value);
+    }
+  }
 }
