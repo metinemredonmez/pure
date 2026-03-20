@@ -4,8 +4,15 @@ import { PaymentService } from './payment.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { UserRole, PaymentMethod } from '@prisma/client';
-import { PayTRWebhookDto, IyzicoWebhookDto } from './dto/payment.dto';
+import { UserRole } from '@prisma/client';
+import {
+  PayTRWebhookDto,
+  IyzicoWebhookDto,
+  InitPaymentDto,
+  InitApplePayDto,
+  InitGooglePayDto,
+  RefundPaymentDto,
+} from './dto/payment.dto';
 
 @ApiTags('Payments')
 @Controller()
@@ -17,11 +24,11 @@ export class PaymentController {
   @ApiOperation({ summary: 'Create checkout/payment session' })
   createSession(
     @CurrentUser('id') userId: string,
-    @Body() body: { orderId: string; method: PaymentMethod },
+    @Body() dto: InitPaymentDto,
   ) {
     return this.paymentService.createCheckoutSessionSecure(
-      body.orderId,
-      body.method,
+      dto.orderId,
+      dto.method,
       userId,
     );
   }
@@ -29,21 +36,15 @@ export class PaymentController {
   @ApiBearerAuth('access-token')
   @Post('checkout/google-pay')
   @ApiOperation({ summary: 'Get Google Pay config for order' })
-  googlePay(
-    @CurrentUser('id') userId: string,
-    @Body() body: { orderId: string },
-  ) {
-    return this.paymentService.initGooglePaySecure(body.orderId, userId);
+  googlePay(@CurrentUser('id') userId: string, @Body() dto: InitGooglePayDto) {
+    return this.paymentService.initGooglePaySecure(dto.orderId, userId);
   }
 
   @ApiBearerAuth('access-token')
   @Post('checkout/apple-pay')
   @ApiOperation({ summary: 'Get Apple Pay config for order' })
-  applePay(
-    @CurrentUser('id') userId: string,
-    @Body() body: { orderId: string },
-  ) {
-    return this.paymentService.initApplePaySecure(body.orderId, userId);
+  applePay(@CurrentUser('id') userId: string, @Body() dto: InitApplePayDto) {
+    return this.paymentService.initApplePaySecure(dto.orderId, userId);
   }
 
   // ── Webhooks (public — called by payment providers) ──
@@ -68,10 +69,7 @@ export class PaymentController {
   @Roles(UserRole.ADMIN)
   @Post('admin/payments/:id/refund')
   @ApiOperation({ summary: 'Refund payment (admin)' })
-  refund(
-    @Param('id') id: string,
-    @Body() body: { amount: number; reason?: string },
-  ) {
-    return this.paymentService.refund(id, body.amount, body.reason);
+  refund(@Param('id') id: string, @Body() dto: RefundPaymentDto) {
+    return this.paymentService.refund(id, dto.amount, dto.reason);
   }
 }

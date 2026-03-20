@@ -1,5 +1,44 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber, IsEnum, Min } from 'class-validator';
+import { PaymentMethod } from '@prisma/client';
+
+// ══════════════════════════════════════════════
+// PAYMENT INIT DTOs
+// ══════════════════════════════════════════════
+
+export class InitPaymentDto {
+  @ApiProperty({ example: 'order-uuid-123' })
+  @IsString()
+  orderId: string;
+
+  @ApiProperty({ enum: PaymentMethod, example: 'CREDIT_CARD' })
+  @IsEnum(PaymentMethod)
+  method: PaymentMethod;
+}
+
+export class InitApplePayDto {
+  @ApiProperty({ example: 'order-uuid-123' })
+  @IsString()
+  orderId: string;
+}
+
+export class InitGooglePayDto {
+  @ApiProperty({ example: 'order-uuid-123' })
+  @IsString()
+  orderId: string;
+}
+
+export class RefundPaymentDto {
+  @ApiProperty({ example: 100.5, description: 'Refund amount' })
+  @IsNumber()
+  @Min(0)
+  amount: number;
+
+  @ApiPropertyOptional({ example: 'Customer requested refund' })
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
 
 // ══════════════════════════════════════════════
 // PAYTR WEBHOOK DTO

@@ -77,14 +77,26 @@ export class IdentityController {
   @ApiOperation({ summary: 'Google OAuth callback' })
   async googleCallback(@Req() req, @Res() res) {
     const result = await this.identityService.oauthLogin(req.user);
-    // Redirect to frontend with tokens
-    const params = new URLSearchParams({
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
+    const frontendUrl =
+      process.env.CORS_ORIGINS?.split(',')[0] || 'http://localhost:3000';
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Set tokens as httpOnly cookies instead of URL params (security)
+    res.cookie('jwt', result.accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
-    res.redirect(
-      `${process.env.CORS_ORIGINS?.split(',')[0] || 'http://localhost:3000'}/auth/callback?${params}`,
-    );
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.redirect(`${frontendUrl}/auth/callback?success=true`);
   }
 
   // ── Apple OAuth ──
@@ -100,13 +112,26 @@ export class IdentityController {
   @ApiOperation({ summary: 'Apple OAuth callback' })
   async appleCallback(@Req() req, @Res() res) {
     const result = await this.identityService.oauthLogin(req.user);
-    const params = new URLSearchParams({
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
+    const frontendUrl =
+      process.env.CORS_ORIGINS?.split(',')[0] || 'http://localhost:3000';
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Set tokens as httpOnly cookies instead of URL params (security)
+    res.cookie('jwt', result.accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000, // 15 minutes
     });
-    res.redirect(
-      `${process.env.CORS_ORIGINS?.split(',')[0] || 'http://localhost:3000'}/auth/callback?${params}`,
-    );
+
+    res.cookie('refresh_token', result.refreshToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.redirect(`${frontendUrl}/auth/callback?success=true`);
   }
 
   // ── MFA ──

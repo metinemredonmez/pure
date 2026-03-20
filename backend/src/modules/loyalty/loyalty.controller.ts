@@ -13,6 +13,12 @@ import { LoyaltyService } from './loyalty.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
+import {
+  ActivateLoyaltyDto,
+  RedeemPointsDto,
+  AdminAdjustPointsDto,
+  UpdateLoyaltyConfigDto,
+} from './dto/loyalty.dto';
 
 // ============================================
 // KULLANICI LOYALTY ENDPOINTLERİ
@@ -38,11 +44,8 @@ export class LoyaltyController {
     summary: 'Loyalty programına katıl',
     description: 'Referral kodu varsa 50 bonus puan kazanır',
   })
-  activateAccount(
-    @CurrentUser() user: any,
-    @Body() body: { referralCode?: string },
-  ) {
-    return this.loyaltyService.createAccount(user.id, body.referralCode);
+  activateAccount(@CurrentUser() user: any, @Body() dto: ActivateLoyaltyDto) {
+    return this.loyaltyService.createAccount(user.id, dto.referralCode);
   }
 
   @Get('history')
@@ -66,8 +69,8 @@ export class LoyaltyController {
     summary: 'Puan ile indirim kuponu oluştur',
     description: 'Min 100 puan. 10 puan = 1 TL',
   })
-  redeemDiscount(@CurrentUser() user: any, @Body() body: { points: number }) {
-    return this.loyaltyService.redeemForDiscount(user.id, body.points);
+  redeemDiscount(@CurrentUser() user: any, @Body() dto: RedeemPointsDto) {
+    return this.loyaltyService.redeemForDiscount(user.id, dto.points);
   }
 
   @Post('rewards/:id/claim')
@@ -117,13 +120,11 @@ export class AdminLoyaltyController {
   @Roles(UserRole.ADMIN)
   @Post('adjust')
   @ApiOperation({ summary: 'Kullanıcıya manuel puan ekle/çıkar' })
-  adjustPoints(
-    @Body() body: { userId: string; points: number; reason: string },
-  ) {
+  adjustPoints(@Body() dto: AdminAdjustPointsDto) {
     return this.loyaltyService.adminAdjustPoints(
-      body.userId,
-      body.points,
-      body.reason,
+      dto.userId,
+      dto.points,
+      dto.reason,
     );
   }
 
@@ -137,13 +138,11 @@ export class AdminLoyaltyController {
   @Roles(UserRole.ADMIN)
   @Post('config')
   @ApiOperation({ summary: 'Loyalty konfigürasyonu güncelle' })
-  updateConfig(
-    @Body() body: { key: string; value: string; description?: string },
-  ) {
+  updateConfig(@Body() dto: UpdateLoyaltyConfigDto) {
     return this.loyaltyService.updateConfig(
-      body.key,
-      body.value,
-      body.description,
+      dto.key,
+      dto.value,
+      dto.description,
     );
   }
 

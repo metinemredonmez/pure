@@ -15,6 +15,7 @@ import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import { SendMessageDto } from './dto/chatbot.dto';
 
 @ApiTags('Chatbot')
 @Controller()
@@ -27,12 +28,12 @@ export class ChatbotController {
   sendMessage(
     @Headers('x-session-id') sessionId: string,
     @CurrentUser('id') userId: string,
-    @Body() body: { message: string },
+    @Body() dto: SendMessageDto,
   ) {
     return this.chatbotService.sendMessage(
       sessionId,
       userId || null,
-      body.message,
+      dto.message,
     );
   }
 
