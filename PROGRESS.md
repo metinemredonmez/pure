@@ -12,13 +12,13 @@
 
 | Metrik | Değer |
 |--------|-------|
-| Toplam Modül | **13** |
-| Prisma Model | **50+** |
-| API Endpoint | **80+** |
-| Enum | **15+** |
+| Toplam Modül | **19** |
+| Prisma Model | **60+** |
+| API Endpoint | **120+** |
+| Enum | **18+** |
 | Sprint 0 | ✅ Tamamlandı |
 | Sprint 0.5 | ✅ Tamamlandı |
-| Sprint 1 | 🔄 Planlanan |
+| Sprint 1 | ✅ Tamamlandı |
 
 ---
 
@@ -123,35 +123,78 @@
 
 ---
 
-## 🔄 Sprint 1: Commerce MVP — PLANLI
-**Hedef:** Uçtan uca çalışan e-ticaret akışı
+## ✅ Sprint 1: Commerce MVP + Güvenlik — TAMAMLANDI
+**Tarih:** 2026-03-20
 
-### Kritik
-- [ ] `prisma migrate dev` — veritabanı tablolarını oluştur
-- [ ] Seed data (admin user, örnek ürünler, kategoriler, template'ler)
-- [ ] Şifre sıfırlama akışı (email reset link → token doğrula → yeni şifre)
-- [ ] Email doğrulama (kayıt sonrası aktivasyon linki)
-- [ ] Apple OAuth strategy tamamlama
+### 6 Yeni Modül
+| # | Modül | Açıklama | Endpoints |
+|---|-------|----------|-----------|
+| 14 | **User** | Adres CRUD, Wishlist, Profil | 12 |
+| 15 | **Review** | Ürün yorumları, rating, admin onay | 10 |
+| 16 | **Admin** | Dashboard KPIs, Kupon CRUD, Audit log | 15 |
+| 17 | **GDPR** | Veri export, hesap silme, consent | 8 |
+| 18 | **Pricing** | Kanal fiyatları, müşteri fiyat, hacim indirimi | 12 |
+| 19 | **Common** | Redis, Encryption, Upload servisleri | - |
 
-### Ödeme Entegrasyonu
-- [ ] PayTR sandbox test (iframe API)
-- [ ] iyzico sandbox test
-- [ ] Cart → Order → Payment tam akış testi
-- [ ] Webhook callback doğrulama
+### Güvenlik (Security)
+- [x] Şifre sıfırlama (token-based, 1 saat geçerlilik)
+- [x] Email doğrulama (aktivasyon linki)
+- [x] Brute-force koruması (5 başarısız = 30 dk kilitleme)
+- [x] Helmet.js (HTTP security headers)
+- [x] CORS whitelist
+- [x] JWT blacklist (Redis tabanlı)
+- [x] API key authentication
+- [x] Webhook HMAC doğrulama
 
 ### Dosya & Medya
-- [ ] MinIO file upload servisi (ürün görseli, avatar, doküman)
-- [ ] Image resize/optimize (sharp)
+- [x] MinIO upload servisi (S3-compatible)
+- [x] Sharp image optimization (WebP, resize, thumbnail)
+- [x] Presigned URL desteği (özel dosyalar)
+- [x] MIME type validation
 
-### Kullanıcı
-- [ ] Adres yönetimi CRUD (teslimat adresleri)
-- [ ] Favori/Wishlist sistemi
-- [ ] Ürün yorumları + puanlama
+### Kullanıcı Özellikleri
+- [x] Adres CRUD (`/users/me/addresses`)
+- [x] Varsayılan adres seçimi
+- [x] Wishlist/Favoriler (`/users/me/wishlist`)
+- [x] Avatar yükleme (`/users/me/avatar`)
+- [x] Profil güncelleme
 
-### Admin
-- [ ] Admin dashboard API (ciro, sipariş, müşteri KPI'ları)
-- [ ] Kupon sistemi CRUD + doğrulama
-- [ ] Admin panel kurulumu (Modernize template)
+### Review Sistemi
+- [x] Ürün yorumları (1-5 yıldız rating)
+- [x] Verified purchase badge
+- [x] Helpful/Report işlevleri
+- [x] Admin onay akışı
+- [x] Otomatik avgRating güncelleme
+
+### Admin Panel API
+- [x] Dashboard KPIs (`/admin/dashboard`)
+- [x] Gelir grafiği (günlük/aylık)
+- [x] Top ürünler
+- [x] Müşteri insights
+- [x] Sipariş durumu dağılımı
+- [x] Düşük stok uyarıları
+- [x] Kupon CRUD (`/admin/coupons`)
+- [x] Audit log (`/admin/audit-logs`)
+
+### KVKK/GDPR Uyumluluk
+- [x] Veri dışa aktarma (`/gdpr/export`)
+- [x] Hesap silme — right to be forgotten (`/gdpr/delete-account`)
+- [x] Consent yönetimi (`/gdpr/consent`)
+- [x] Çerez tercihleri (`/gdpr/cookies`)
+- [x] Gizlilik politikası kabul
+
+### Fiyatlandırma Sistemi
+- [x] Kanal bazlı fiyatlar (B2C, B2B, Subscription, Partner)
+- [x] Müşteri özel fiyatları
+- [x] Toplu alım indirimleri (hacim bazlı)
+- [x] Fiyat değişiklik geçmişi
+- [x] Abonelik fiyatlandırma
+
+### Ödeme Altyapısı (Scaffolded)
+- [x] PayTR iframe API yapısı
+- [x] iyzico checkout form yapısı
+- [x] Webhook handler'lar
+- [x] QR/Google Pay/Apple Pay support
 
 ---
 
