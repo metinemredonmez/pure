@@ -275,6 +275,65 @@ Her firma için: `createShipment`, `getStatus`, `getLabel`, `cancelShipment`, `c
 - [x] iyzico checkout form (authorization header)
 - [x] Refund API (PayTR iade endpoint)
 
+### Cache Yönetimi
+Admin panelden cache temizleme ve izleme:
+
+- [x] `GET /admin/cache/stats` — Cache istatistikleri (key sayısı, bellek, uptime)
+- [x] `GET /admin/cache/groups` — Mevcut cache grupları
+- [x] `DELETE /admin/cache/flush-all` — Tüm cache temizle
+- [x] `DELETE /admin/cache/:group` — Grup bazlı temizle
+- [x] `POST /admin/cache/clear-multiple` — Birden fazla grup temizle
+- [x] `POST /admin/cache/warm-up` — Cache ön yükleme
+
+**9 Cache Grubu:**
+| Grup | Prefix | Açıklama |
+|------|--------|----------|
+| products | `cache:products:*` | Ürün listesi, detay, fiyat |
+| categories | `cache:categories:*` | Kategori ağacı |
+| pricing | `cache:pricing:*` | Kanal fiyatları, hacim indirimi |
+| settings | `cache:settings:*` | Integration settings |
+| shipping | `cache:shipping:*` | Kargo bölgeleri, ücret |
+| loyalty | `cache:loyalty:*` | Loyalty config, tier |
+| cms | `cache:cms:*` | Blog, FAQ, SEO |
+| dashboard | `cache:dashboard:*` | Admin dashboard KPI |
+| sessions | `cache:sessions:*` | JWT blacklist, login |
+
+### Cron Job Yönetimi
+15 planlı job, BullMQ ile güvenilir iş işleme:
+
+- [x] `GET /admin/cron/jobs` — Tüm jobları listele
+- [x] `GET /admin/cron/jobs/:name` — Job detayı
+- [x] `POST /admin/cron/jobs/:name/trigger` — Manuel tetikle
+- [x] `PATCH /admin/cron/jobs/:name/toggle` — Aktif/pasif yap
+- [x] `GET /admin/cron/jobs/:name/logs` — Job çalışma logları
+- [x] `GET /admin/cron/logs` — Tüm loglar
+- [x] `GET /admin/cron/definitions` — Job tanımları
+
+**15 Planlı Job:**
+| # | Job | Schedule | Açıklama |
+|---|-----|----------|----------|
+| 1 | cart-cleanup | Her 6 saat | 7 gün eski sepetleri sil |
+| 2 | subscription-renewal | 03:00 | Abonelik yenileme |
+| 3 | subscription-reminder | 09:00 | 3 gün kala hatırlatma |
+| 4 | order-auto-complete | 02:00 | Teslim edilmiş siparişleri tamamla |
+| 5 | loyalty-birthday | 08:00 | Doğum günü bonus puanı |
+| 6 | loyalty-expiry | 01:00 | Süresi dolan puanları expire et |
+| 7 | price-schedule | Her saat | Zamanlı fiyat güncellemeleri |
+| 8 | stock-alert | Her 30 dk | Düşük stok bildirimi |
+| 9 | dashboard-refresh | Her 15 dk | Dashboard KPI cache yenile |
+| 10 | shipment-tracking | Her 2 saat | Kargo durumu güncelle |
+| 11 | email-queue | Her 5 dk | Bekleyen e-postaları gönder |
+| 12 | jwt-cleanup | 04:00 | JWT blacklist temizle |
+| 13 | session-cleanup | 05:00 | Eski oturumları temizle |
+| 14 | analytics-daily | 00:30 | Günlük analiz hesapla |
+| 15 | b2b-lead-followup | 10:00 | B2B lead takip hatırlatması |
+
+**Teknik:**
+- [x] `@nestjs/schedule` — Cron zamanlama
+- [x] `BullMQ` — Güvenilir job işleme (retry, backoff)
+- [x] `CronJob` + `CronJobLog` Prisma modelleri
+- [x] `OpsQueueProcessor` — 15 job processor
+
 ---
 
 ## 🔜 Sprint 2: Content & Communication — PLANLI
