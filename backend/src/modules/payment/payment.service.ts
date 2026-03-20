@@ -111,7 +111,9 @@ export class PaymentService {
 
   // ── Google Pay ──
   async initGooglePay(orderId: string) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new BadRequestException('Order not found');
 
     // Google Pay works client-side, backend just needs to process the token
@@ -127,7 +129,9 @@ export class PaymentService {
 
   // ── Apple Pay ──
   async initApplePay(orderId: string) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new BadRequestException('Order not found');
 
     return {

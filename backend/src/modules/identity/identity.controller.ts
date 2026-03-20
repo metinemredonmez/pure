@@ -6,18 +6,23 @@ import {
   UseGuards,
   Req,
   Res,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiBearerAuth,
   ApiBody,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { IdentityService } from './identity.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { EnableMfaDto } from './dto/mfa.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { VerifyEmailDto, ResendVerificationDto } from './dto/verify-email.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
@@ -36,8 +41,10 @@ export class IdentityController {
   @Public()
   @Post('login')
   @ApiOperation({ summary: 'Login with email + password (+ optional MFA)' })
-  login(@Body() dto: LoginDto) {
-    return this.identityService.login(dto);
+  login(@Body() dto: LoginDto, @Req() req) {
+    const ipAddress = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+    const userAgent = req.headers['user-agent'];
+    return this.identityService.login(dto, ipAddress, userAgent);
   }
 
   @Public()
@@ -128,5 +135,72 @@ export class IdentityController {
   @ApiOperation({ summary: 'Get current user profile' })
   getProfile(@CurrentUser('id') userId: string) {
     return this.identityService.getProfile(userId);
+  }
+
+  // ══════════════════════════════════════════════
+  // PASSWORD RESET (Şifre Sıfırlama)
+  // ══════════════════════════════════════════════
+
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset email' })
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.identityService.forgotPassword(dto.email);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password with token' })
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.identityService.resetPassword(dto.token, dto.newPassword);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Post('change-password')
+  @ApiOperation({ summary: 'Change password (authenticated user)' })
+  @ApiBody({
+    schema: {
+      properties: {
+        currentPassword: { type: 'string' },
+        newPassword: { type: 'string' },
+      },
+    },
+  })
+  changePassword(
+    @CurrentUser('id') userId: string,
+    @Body('currentPassword') currentPassword: string,
+    @Body('newPassword') newPassword: string,
+  ) {
+    return this.identityService.changePassword(
+      userId,
+      currentPassword,
+      newPassword,
+    );
+  }
+
+  // ══════════════════════════════════════════════
+  // EMAIL VERIFICATION (Email Doğrulama)
+  // ══════════════════════════════════════════════
+
+  @Public()
+  @Get('verify-email')
+  @ApiOperation({ summary: 'Verify email with token' })
+  @ApiQuery({ name: 'token', required: true })
+  verifyEmail(@Query('token') token: string) {
+    return this.identityService.verifyEmail(token);
+  }
+
+  @Public()
+  @Post('resend-verification')
+  @ApiOperation({ summary: 'Resend verification email' })
+  resendVerification(@Body() dto: ResendVerificationDto) {
+    return this.identityService.resendVerificationEmail(dto.email);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Post('send-verification')
+  @ApiOperation({ summary: 'Send verification email (authenticated user)' })
+  sendVerification(@CurrentUser('id') userId: string) {
+    return this.identityService.sendVerificationEmail(userId);
   }
 }

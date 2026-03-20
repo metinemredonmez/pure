@@ -75,15 +75,33 @@ export class NotificationController {
   @Roles(UserRole.ADMIN)
   @Post('send-template')
   @ApiOperation({ summary: 'Send templated email (admin)' })
-  sendTemplated(@Body() body: { to: string; template: string; variables: Record<string, string> }) {
-    return this.notificationService.sendTemplatedEmail(body.to, body.template, body.variables);
+  sendTemplated(
+    @Body()
+    body: {
+      to: string;
+      template: string;
+      variables: Record<string, string>;
+    },
+  ) {
+    return this.notificationService.sendTemplatedEmail(
+      body.to,
+      body.template,
+      body.variables,
+    );
   }
 
   @Roles(UserRole.ADMIN)
   @Post('send-inapp')
   @ApiOperation({ summary: 'Kullanıcıya anlık bildirim gönder (admin)' })
   sendInApp(
-    @Body() body: { userId: string; title: string; message: string; type?: string; link?: string },
+    @Body()
+    body: {
+      userId: string;
+      title: string;
+      message: string;
+      type?: string;
+      link?: string;
+    },
   ) {
     return this.notificationService.sendInApp(
       body.userId,
@@ -104,7 +122,15 @@ export class NotificationController {
   @Roles(UserRole.ADMIN)
   @Post('templates')
   @ApiOperation({ summary: 'Create email template (admin)' })
-  createTemplate(@Body() data: { name: string; channel: string; subject?: string; body: string }) {
+  createTemplate(
+    @Body()
+    data: {
+      name: string;
+      channel: string;
+      subject?: string;
+      body: string;
+    },
+  ) {
     return this.notificationService.createTemplate(data);
   }
 

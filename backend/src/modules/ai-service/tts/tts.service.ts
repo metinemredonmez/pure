@@ -16,7 +16,9 @@ export class TtsService {
     voice: string = 'alloy',
     language: string = 'tr',
   ): Promise<{ audioUrl: string; duration: number }> {
-    this.logger.log(`TTS request - text length: ${text.length}, voice: ${voice}, language: ${language}`);
+    this.logger.log(
+      `TTS request - text length: ${text.length}, voice: ${voice}, language: ${language}`,
+    );
 
     // TODO: Phase 2 - OpenAI TTS API entegrasyonu
     // const openai = new OpenAI({ apiKey: this.configService.get('OPENAI_API_KEY') });

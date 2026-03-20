@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoyaltyTier, PointTransactionType } from '@prisma/client';
 import { randomBytes } from 'crypto';
@@ -6,25 +11,25 @@ import { randomBytes } from 'crypto';
 // ── Puan Konfigürasyonu (varsayılan) ──
 const DEFAULT_CONFIG = {
   // Puan kazanım
-  POINTS_PER_TL: 1,                    // Her 1 TL = 1 puan
-  SUBSCRIPTION_BONUS_MULTIPLIER: 1.5,  // Aboneler %50 fazla puan
-  REVIEW_POINTS: 25,                   // Yorum yapma = 25 puan
-  REFERRAL_POINTS: 100,                // Arkadaş davet = 100 puan
-  REFERRAL_FRIEND_POINTS: 50,          // Davet edilen de 50 puan
-  BIRTHDAY_POINTS: 200,               // Doğum günü hediyesi
-  FIRST_ORDER_BONUS: 50,              // İlk sipariş bonusu
-  SIGNUP_BONUS: 25,                   // Kayıt bonusu
+  POINTS_PER_TL: 1, // Her 1 TL = 1 puan
+  SUBSCRIPTION_BONUS_MULTIPLIER: 1.5, // Aboneler %50 fazla puan
+  REVIEW_POINTS: 25, // Yorum yapma = 25 puan
+  REFERRAL_POINTS: 100, // Arkadaş davet = 100 puan
+  REFERRAL_FRIEND_POINTS: 50, // Davet edilen de 50 puan
+  BIRTHDAY_POINTS: 200, // Doğum günü hediyesi
+  FIRST_ORDER_BONUS: 50, // İlk sipariş bonusu
+  SIGNUP_BONUS: 25, // Kayıt bonusu
 
   // Milestone: Her X siparişte ücretsiz kahve
-  MILESTONE_EVERY_N_ORDERS: 10,       // Her 10 siparişte
-  MILESTONE_BONUS_POINTS: 500,        // 500 puan bonus
+  MILESTONE_EVERY_N_ORDERS: 10, // Her 10 siparişte
+  MILESTONE_BONUS_POINTS: 500, // 500 puan bonus
 
   // Harcama
-  POINTS_TO_TL_RATE: 10,             // 10 puan = 1 TL indirim
-  MIN_REDEEM_POINTS: 100,            // Minimum 100 puan kullanım
+  POINTS_TO_TL_RATE: 10, // 10 puan = 1 TL indirim
+  MIN_REDEEM_POINTS: 100, // Minimum 100 puan kullanım
 
   // Puan süresi
-  POINT_EXPIRY_DAYS: 365,            // 1 yıl geçerlilik
+  POINT_EXPIRY_DAYS: 365, // 1 yıl geçerlilik
 
   // Tier eşikleri (toplam kazanılan puana göre)
   TIER_SILVER: 500,
@@ -33,9 +38,9 @@ const DEFAULT_CONFIG = {
 
   // Tier bonus çarpanları
   TIER_BRONZE_MULTIPLIER: 1.0,
-  TIER_SILVER_MULTIPLIER: 1.2,        // Silver %20 fazla puan
-  TIER_GOLD_MULTIPLIER: 1.5,          // Gold %50 fazla puan
-  TIER_PLATINUM_MULTIPLIER: 2.0,      // Platinum 2x puan
+  TIER_SILVER_MULTIPLIER: 1.2, // Silver %20 fazla puan
+  TIER_GOLD_MULTIPLIER: 1.5, // Gold %50 fazla puan
+  TIER_PLATINUM_MULTIPLIER: 2.0, // Platinum 2x puan
 };
 
 @Injectable()
@@ -72,7 +77,7 @@ export class LoyaltyService {
       account.id,
       DEFAULT_CONFIG.SIGNUP_BONUS,
       PointTransactionType.EARN_SIGNUP,
-      'Olentia Pure\'a hoş geldin bonusu',
+      "Olentia Pure'a hoş geldin bonusu",
     );
 
     // Referral puanları
@@ -126,7 +131,8 @@ export class LoyaltyService {
       DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS -
       (account.totalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS);
 
-    const pendingFreeRewards = account.freeRewardsEarned - account.freeRewardsClaimed;
+    const pendingFreeRewards =
+      account.freeRewardsEarned - account.freeRewardsClaimed;
 
     return {
       ...account,
@@ -136,7 +142,9 @@ export class LoyaltyService {
       progressToNextTier,
       ordersToNextFree,
       pendingFreeRewards,
-      pointsValueTL: (account.availablePoints / DEFAULT_CONFIG.POINTS_TO_TL_RATE).toFixed(2),
+      pointsValueTL: (
+        account.availablePoints / DEFAULT_CONFIG.POINTS_TO_TL_RATE
+      ).toFixed(2),
     };
   }
 
@@ -165,7 +173,9 @@ export class LoyaltyService {
 
     // Puan hesapla: TL * puan oranı * tier çarpanı * abonelik çarpanı
     const basePoints = Math.floor(orderTotal * DEFAULT_CONFIG.POINTS_PER_TL);
-    const finalPoints = Math.floor(basePoints * tierMultiplier * subscriptionMultiplier);
+    const finalPoints = Math.floor(
+      basePoints * tierMultiplier * subscriptionMultiplier,
+    );
 
     const description = isSubscription
       ? `Abonelik sipariş puanı (${tierMultiplier}x tier + ${subscriptionMultiplier}x abo bonus)`
@@ -174,7 +184,9 @@ export class LoyaltyService {
     await this.addPoints(
       account.id,
       finalPoints,
-      isSubscription ? PointTransactionType.EARN_SUBSCRIPTION : PointTransactionType.EARN_ORDER,
+      isSubscription
+        ? PointTransactionType.EARN_SUBSCRIPTION
+        : PointTransactionType.EARN_ORDER,
       description,
       orderId,
     );
@@ -224,7 +236,8 @@ export class LoyaltyService {
     return {
       pointsEarned: finalPoints,
       totalOrders: newTotalOrders,
-      isMilestone: newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0,
+      isMilestone:
+        newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0,
       milestoneReward:
         newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0
           ? 'Ücretsiz kahve kazandınız! 🎉'
@@ -413,7 +426,9 @@ export class LoyaltyService {
       where: { userId, status: 'DELIVERED' },
       include: {
         items: {
-          include: { product: { select: { id: true, name: true, slug: true } } },
+          include: {
+            product: { select: { id: true, name: true, slug: true } },
+          },
         },
       },
       orderBy: { createdAt: 'asc' },
@@ -424,7 +439,10 @@ export class LoyaltyService {
     }
 
     // Ürün bazlı tekrar alım
-    const productCounts: Record<string, { name: string; slug: string; count: number; lastOrder: Date }> = {};
+    const productCounts: Record<
+      string,
+      { name: string; slug: string; count: number; lastOrder: Date }
+    > = {};
 
     for (const order of orders) {
       for (const item of order.items) {
@@ -465,15 +483,15 @@ export class LoyaltyService {
     return {
       totalOrders: orders.length,
       repeatProducts,
-      repeatRate: orders.length > 0
-        ? Math.round((repeatProducts.length / Object.keys(productCounts).length) * 100)
-        : 0,
+      repeatRate:
+        orders.length > 0
+          ? Math.round(
+              (repeatProducts.length / Object.keys(productCounts).length) * 100,
+            )
+          : 0,
       avgDaysBetweenOrders: avgDaysBetween,
       customerValue: {
-        lifetimeSpend: orders.reduce(
-          (sum, o) => sum + Number(o.total),
-          0,
-        ),
+        lifetimeSpend: orders.reduce((sum, o) => sum + Number(o.total), 0),
         avgOrderValue: Math.round(
           orders.reduce((sum, o) => sum + Number(o.total), 0) / orders.length,
         ),
@@ -489,22 +507,28 @@ export class LoyaltyService {
    * Loyalty istatistikleri
    */
   async getStats() {
-    const [totalAccounts, tierDistribution, totalPointsIssued, totalPointsSpent] =
-      await Promise.all([
-        this.prisma.loyaltyAccount.count(),
-        this.prisma.loyaltyAccount.groupBy({
-          by: ['tier'],
-          _count: true,
-        }),
-        this.prisma.loyaltyAccount.aggregate({
-          _sum: { totalPoints: true, spentPoints: true, expiredPoints: true },
-        }),
-        this.prisma.loyaltyReward.count({ where: { isUsed: true } }),
-      ]);
+    const [
+      totalAccounts,
+      tierDistribution,
+      totalPointsIssued,
+      totalPointsSpent,
+    ] = await Promise.all([
+      this.prisma.loyaltyAccount.count(),
+      this.prisma.loyaltyAccount.groupBy({
+        by: ['tier'],
+        _count: true,
+      }),
+      this.prisma.loyaltyAccount.aggregate({
+        _sum: { totalPoints: true, spentPoints: true, expiredPoints: true },
+      }),
+      this.prisma.loyaltyReward.count({ where: { isUsed: true } }),
+    ]);
 
     const activeAccounts = await this.prisma.loyaltyAccount.count({
       where: {
-        lastActivityAt: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
+        lastActivityAt: {
+          gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+        },
       },
     });
 
@@ -535,11 +559,7 @@ export class LoyaltyService {
   /**
    * Admin: Kullanıcıya manuel puan ekle/çıkar
    */
-  async adminAdjustPoints(
-    userId: string,
-    points: number,
-    reason: string,
-  ) {
+  async adminAdjustPoints(userId: string, points: number, reason: string) {
     const account = await this.ensureAccount(userId);
 
     if (points > 0) {
@@ -727,28 +747,40 @@ export class LoyaltyService {
 
   private getTierMultiplier(tier: LoyaltyTier): number {
     switch (tier) {
-      case LoyaltyTier.PLATINUM: return DEFAULT_CONFIG.TIER_PLATINUM_MULTIPLIER;
-      case LoyaltyTier.GOLD: return DEFAULT_CONFIG.TIER_GOLD_MULTIPLIER;
-      case LoyaltyTier.SILVER: return DEFAULT_CONFIG.TIER_SILVER_MULTIPLIER;
-      default: return DEFAULT_CONFIG.TIER_BRONZE_MULTIPLIER;
+      case LoyaltyTier.PLATINUM:
+        return DEFAULT_CONFIG.TIER_PLATINUM_MULTIPLIER;
+      case LoyaltyTier.GOLD:
+        return DEFAULT_CONFIG.TIER_GOLD_MULTIPLIER;
+      case LoyaltyTier.SILVER:
+        return DEFAULT_CONFIG.TIER_SILVER_MULTIPLIER;
+      default:
+        return DEFAULT_CONFIG.TIER_BRONZE_MULTIPLIER;
     }
   }
 
   private getNextTier(tier: LoyaltyTier): string | null {
     switch (tier) {
-      case LoyaltyTier.BRONZE: return 'SILVER';
-      case LoyaltyTier.SILVER: return 'GOLD';
-      case LoyaltyTier.GOLD: return 'PLATINUM';
-      default: return null;
+      case LoyaltyTier.BRONZE:
+        return 'SILVER';
+      case LoyaltyTier.SILVER:
+        return 'GOLD';
+      case LoyaltyTier.GOLD:
+        return 'PLATINUM';
+      default:
+        return null;
     }
   }
 
   private getNextTierThreshold(tier: LoyaltyTier): number | null {
     switch (tier) {
-      case LoyaltyTier.BRONZE: return DEFAULT_CONFIG.TIER_SILVER;
-      case LoyaltyTier.SILVER: return DEFAULT_CONFIG.TIER_GOLD;
-      case LoyaltyTier.GOLD: return DEFAULT_CONFIG.TIER_PLATINUM;
-      default: return null;
+      case LoyaltyTier.BRONZE:
+        return DEFAULT_CONFIG.TIER_SILVER;
+      case LoyaltyTier.SILVER:
+        return DEFAULT_CONFIG.TIER_GOLD;
+      case LoyaltyTier.GOLD:
+        return DEFAULT_CONFIG.TIER_PLATINUM;
+      default:
+        return null;
     }
   }
 

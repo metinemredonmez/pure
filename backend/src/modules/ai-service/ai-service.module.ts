@@ -12,7 +12,12 @@ import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
   imports: [ConfigModule, PrismaModule],
-  controllers: [SttController, TtsController, ChatboxController, AnalysisController],
+  controllers: [
+    SttController,
+    TtsController,
+    ChatboxController,
+    AnalysisController,
+  ],
   providers: [SttService, TtsService, ChatboxService, AnalysisService],
   exports: [SttService, TtsService, ChatboxService, AnalysisService],
 })

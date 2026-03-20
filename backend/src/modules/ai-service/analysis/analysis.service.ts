@@ -50,10 +50,7 @@ export class AnalysisService {
       include: { items: { include: { product: true } } },
     });
 
-    const totalRevenue = orders.reduce(
-      (sum, o) => sum + Number(o.total),
-      0,
-    );
+    const totalRevenue = orders.reduce((sum, o) => sum + Number(o.total), 0);
 
     // Yeni müşteriler
     const newCustomers = await this.prisma.user.count({
@@ -197,7 +194,8 @@ export class AnalysisService {
     }
 
     if (report.alerts.length > 0) {
-      voiceText += 'Dikkat edilmesi gerekenler: ' + report.alerts.join('. ') + '. ';
+      voiceText +=
+        'Dikkat edilmesi gerekenler: ' + report.alerts.join('. ') + '. ';
     }
 
     if (report.calendarEvents.length > 0) {
@@ -220,7 +218,9 @@ export class AnalysisService {
    * LangChain ile doğal dil analiz sorgusu
    * Phase 2: "Geçen haftanın en çok satan ürünü ne?" gibi sorulara cevap
    */
-  async queryAnalysis(question: string): Promise<{ answer: string; data?: any }> {
+  async queryAnalysis(
+    question: string,
+  ): Promise<{ answer: string; data?: any }> {
     this.logger.log(`Analysis query: ${question}`);
 
     // TODO: Phase 2 - LangChain + SQL Agent entegrasyonu

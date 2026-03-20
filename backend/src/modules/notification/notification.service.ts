@@ -26,7 +26,12 @@ export class NotificationService {
   }
 
   // ── Send email ──
-  async sendEmail(to: string, subject: string, html: string, templateName?: string) {
+  async sendEmail(
+    to: string,
+    subject: string,
+    html: string,
+    templateName?: string,
+  ) {
     try {
       const info = await this.transporter.sendMail({
         from: `"Olentia Pure" <${this.config.get('smtp.from')}>`,
@@ -68,7 +73,11 @@ export class NotificationService {
   }
 
   // ── Template-based email ──
-  async sendTemplatedEmail(to: string, templateName: string, variables: Record<string, string>) {
+  async sendTemplatedEmail(
+    to: string,
+    templateName: string,
+    variables: Record<string, string>,
+  ) {
     const template = await this.prisma.notificationTemplate.findUnique({
       where: { name: templateName },
     });
@@ -90,7 +99,11 @@ export class NotificationService {
   }
 
   // ── Pre-built emails ──
-  async sendOrderConfirmation(email: string, orderNumber: string, total: string) {
+  async sendOrderConfirmation(
+    email: string,
+    orderNumber: string,
+    total: string,
+  ) {
     return this.sendTemplatedEmail(email, 'order_confirmed', {
       orderNumber,
       total,
@@ -105,7 +118,11 @@ export class NotificationService {
     return this.sendTemplatedEmail(email, 'password_reset', { resetLink });
   }
 
-  async sendSubscriptionRenewed(email: string, planName: string, nextDate: string) {
+  async sendSubscriptionRenewed(
+    email: string,
+    planName: string,
+    nextDate: string,
+  ) {
     return this.sendTemplatedEmail(email, 'subscription_renewed', {
       planName,
       nextDate,
@@ -170,7 +187,12 @@ export class NotificationService {
   /**
    * Kullanıcının bildirimlerini getir
    */
-  async getUserNotifications(userId: string, page = 1, limit = 20, unreadOnly = false) {
+  async getUserNotifications(
+    userId: string,
+    page = 1,
+    limit = 20,
+    unreadOnly = false,
+  ) {
     const where: any = { userId };
     if (unreadOnly) where.isRead = false;
 
@@ -227,7 +249,11 @@ export class NotificationService {
     );
   }
 
-  async notifyOrderShipped(userId: string, orderNumber: string, trackingUrl?: string) {
+  async notifyOrderShipped(
+    userId: string,
+    orderNumber: string,
+    trackingUrl?: string,
+  ) {
     return this.sendInApp(
       userId,
       'Sipariş Kargoda',

@@ -25,7 +25,11 @@ export class SubscriptionController {
     @CurrentUser('id') userId: string,
     @Body() body: { planId: string; grindPreference?: GrindType },
   ) {
-    return this.subscriptionService.subscribe(userId, body.planId, body.grindPreference);
+    return this.subscriptionService.subscribe(
+      userId,
+      body.planId,
+      body.grindPreference,
+    );
   }
 
   @ApiBearerAuth('access-token')

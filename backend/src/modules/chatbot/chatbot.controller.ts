@@ -19,7 +19,11 @@ export class ChatbotController {
     @CurrentUser('id') userId: string,
     @Body() body: { message: string },
   ) {
-    return this.chatbotService.sendMessage(sessionId, userId || null, body.message);
+    return this.chatbotService.sendMessage(
+      sessionId,
+      userId || null,
+      body.message,
+    );
   }
 
   @Public()

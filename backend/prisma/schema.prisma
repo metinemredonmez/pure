@@ -91,6 +91,103 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+// Password Reset Token
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+// Email Verification Token
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@map("email_verification_tokens")
+}
+
+// Login Attempts (Brute-force protection)
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  ipAddress String
+  success   Boolean
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}
+
+// Account Lockout
+model AccountLockout {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  lockedUntil DateTime
+  attempts    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("account_lockouts")
+}
+
+// API Keys (webhook, 3rd party)
+model ApiKey {
+  id          String    @id @default(cuid())
+  name        String
+  keyHash     String    @unique
+  prefix      String    // "olp_" ilk 8 karakter (gösterim için)
+  permissions String[]  // ["webhook", "read:orders", "write:products"]
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  expiresAt   DateTime?
+  createdBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("api_keys")
+}
+
+// JWT Blacklist (logout sonrası token invalidation)
+model JwtBlacklist {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([expiresAt])
+  @@map("jwt_blacklist")
+}
+
+// KVKK/GDPR Consent Log
+model ConsentLog {
+  id            String   @id @default(cuid())
+  userId        String?
+  email         String
+  consentType   String   // "privacy", "marketing", "cookies"
+  accepted      Boolean
+  version       String   // Sözleşme versiyonu
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([email])
+  @@map("consent_logs")
+}
+
 model Address {
   id          String   @id @default(cuid())
   userId      String
@@ -198,22 +295,33 @@ model Product {
   description     String?
   shortDescription String?
   sku             String        @unique
+  barcode         String?
   price           Decimal       @db.Decimal(10, 2)
   compareAtPrice  Decimal?      @db.Decimal(10, 2)
   costPrice       Decimal?      @db.Decimal(10, 2)
+  stock           Int           @default(0)
+  lowStockThreshold Int         @default(10)
   status          ProductStatus @default(DRAFT)
   isFeatured      Boolean       @default(false)
   isBundle        Boolean       @default(false)
 
   // Coffee specific
   origin          String?       // "Ethiopia Yirgacheffe"
+  region          String?       // "Yirgacheffe"
   roastLevel      RoastLevel?
+  grindType       GrindType?
   aromaProfile    String[]      // ["chocolate", "hazelnut", "fruity"]
+  flavorNotes     String?       // Tat notları
   brewGuide       String?       // markdown
   altitude        String?       // "1800-2200m"
   process         String?       // "Washed", "Natural"
 
   weight          Int?          // grams
+  isActive        Boolean       @default(true)
+
+  // Rating
+  avgRating       Float         @default(0)
+  reviewCount     Int           @default(0)
 
   categoryId      String?
   category        Category?     @relation(fields: [categoryId], references: [id])
@@ -226,6 +334,9 @@ model Product {
   collections     ProductCollection[]
   cartItems       CartItem[]
   orderItems      OrderItem[]
+  reviews         Review[]
+  wishlistItems   WishlistItem[]
+  prices          ProductPrice[]
 
   @@map("products")
 }
@@ -247,6 +358,7 @@ model ProductVariant {
   cartItems   CartItem[]
   orderItems  OrderItem[]
 
+  @@unique([productId, name])
   @@map("product_variants")
 }
 
@@ -386,10 +498,11 @@ model Coupon {
   id              String    @id @default(cuid())
   code            String    @unique
   description     String?
-  discountType    String    // "percentage" or "fixed"
-  discountValue   Decimal   @db.Decimal(10, 2)
+  type            String    // "percentage", "fixed", "free_shipping"
+  value           Decimal   @db.Decimal(10, 2)
   minOrderAmount  Decimal?  @db.Decimal(10, 2)
-  maxUsageCount   Int?
+  maxDiscount     Decimal?  @db.Decimal(10, 2) // Max indirim tutarı (yüzde için)
+  maxUses         Int?
   usedCount       Int       @default(0)
   isActive        Boolean   @default(true)
   startsAt        DateTime?
@@ -974,3 +1087,166 @@ model LoyaltyConfig {
 
   @@map("loyalty_config")
 }
+
+// ============================================
+// WISHLIST / FAVORİ SİSTEMİ
+// ============================================
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items     WishlistItem[]
+
+  @@map("wishlists")
+}
+
+model WishlistItem {
+  id         String   @id @default(cuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  addedAt    DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+  @@map("wishlist_items")
+}
+
+// ============================================
+// ÜRÜN YORUMLARI / REVIEWS
+// ============================================
+
+model Review {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId      String
+  orderId     String?  // Hangi siparişten yorum yapıldı
+  rating      Int      // 1-5
+  title       String?
+  comment     String?
+  images      String[] // Yorum görselleri
+  isVerified  Boolean  @default(false) // Satın almış mı?
+  isApproved  Boolean  @default(false) // Admin onayı
+  isPublished Boolean  @default(true)
+  helpfulCount Int     @default(0)
+  reportCount  Int     @default(0)
+  adminNote   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, userId])
+  @@index([productId, isPublished])
+  @@map("reviews")
+}
+
+// ============================================
+// FILE UPLOAD / MEDYA
+// ============================================
+
+model UploadedFile {
+  id          String   @id @default(cuid())
+  filename    String
+  originalName String
+  mimeType    String
+  size        Int      // bytes
+  bucket      String   @default("olentia-media")
+  path        String   // MinIO path
+  url         String?  // Public URL
+  uploadedBy  String?
+  entityType  String?  // "product", "avatar", "review", "document"
+  entityId    String?
+  isPublic    Boolean  @default(true)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("uploaded_files")
+}
+
+// ============================================
+// FİYATLANDIRMA SİSTEMİ (Pricing)
+// ============================================
+
+enum PriceChannel {
+  B2C          // Bireysel müşteri liste fiyatı
+  B2B          // Kurumsal toptan fiyat
+  SUBSCRIPTION // Abonelik fiyatı
+  PARTNER      // Partner alış fiyatı
+}
+
+model ProductPrice {
+  id          String       @id @default(cuid())
+  productId   String
+  product     Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variantId   String?      // Varyant bazlı fiyat (opsiyonel)
+  channel     PriceChannel
+  price       Decimal      @db.Decimal(10, 2)
+  currency    String       @default("TRY")
+  minQuantity Int          @default(1)  // Kademeli indirim için
+  isActive    Boolean      @default(true)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([productId, variantId, channel, minQuantity])
+  @@index([productId, channel])
+  @@map("product_prices")
+}
+
+// B2B Müşteriye/Sözleşmeye Özel Fiyat
+model CustomerPrice {
+  id          String   @id @default(cuid())
+  customerId  String   // userId (B2B müşteri)
+  productId   String
+  variantId   String?
+  contractId  String?  // B2B sözleşme referansı
+  price       Decimal  @db.Decimal(10, 2)
+  discount    Decimal? @db.Decimal(5, 2) // Yüzde indirim
+  minQuantity Int      @default(1)
+  isActive    Boolean  @default(true)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([customerId, productId, variantId, contractId])
+  @@index([customerId])
+  @@map("customer_prices")
+}
+
+// Toplu Alım Kademeli İndirim Kuralları
+model VolumeDiscount {
+  id          String   @id @default(cuid())
+  name        String   // "5kg %10 İndirim"
+  channel     PriceChannel
+  minQuantity Int      // gram cinsinden: 5000
+  maxQuantity Int?     // opsiyonel üst limit
+  discountPercent Decimal @db.Decimal(5, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("volume_discounts")
+}
+
+// Fiyat Değişiklik Geçmişi
+model PriceHistory {
+  id          String       @id @default(cuid())
+  productId   String
+  variantId   String?
+  channel     PriceChannel
+  oldPrice    Decimal      @db.Decimal(10, 2)
+  newPrice    Decimal      @db.Decimal(10, 2)
+  changeReason String?
+  changedBy   String       // userId
+  createdAt   DateTime     @default(now())
+
+  @@index([productId, createdAt])
+  @@map("price_history")
+}
+

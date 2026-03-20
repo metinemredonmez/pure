@@ -1,17 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PaginationDto, PaginatedResult } from '../../common/pipes/pagination.pipe';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/pipes/pagination.pipe';
 import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
   constructor(private prisma: PrismaService) {}
 
-  async create(userId: string, data: {
-    addressId: string;
-    couponCode?: string;
-    note?: string;
-  }) {
+  async create(
+    userId: string,
+    data: {
+      addressId: string;
+      couponCode?: string;
+      note?: string;
+    },
+  ) {
     // Get user cart
     const cart = await this.prisma.cart.findFirst({
       where: { userId },
@@ -52,11 +58,16 @@ export class OrderService {
         where: { code: data.couponCode },
       });
       if (coupon && coupon.isActive) {
-        if (coupon.discountType === 'percentage') {
-          discount = subtotal * (Number(coupon.discountValue) / 100);
-        } else {
-          discount = Number(coupon.discountValue);
+        if (coupon.type === 'percentage') {
+          discount = subtotal * (Number(coupon.value) / 100);
+          // maxDiscount varsa uygula
+          if (coupon.maxDiscount && discount > Number(coupon.maxDiscount)) {
+            discount = Number(coupon.maxDiscount);
+          }
+        } else if (coupon.type === 'fixed') {
+          discount = Number(coupon.value);
         }
+        // free_shipping tipinde discount = 0, kargo ayrıca handle edilecek
         couponId = coupon.id;
         await this.prisma.coupon.update({
           where: { id: coupon.id },
@@ -66,7 +77,7 @@ export class OrderService {
     }
 
     const shippingCost = subtotal >= 500 ? 0 : 39.9; // Free shipping over 500 TL
-    const tax = (subtotal - discount) * 0.20; // %20 KDV
+    const tax = (subtotal - discount) * 0.2; // %20 KDV
     const total = subtotal - discount + shippingCost + tax;
 
     // Generate order number
@@ -99,7 +110,10 @@ export class OrderService {
     return order;
   }
 
-  async findUserOrders(userId: string, query: PaginationDto): Promise<PaginatedResult<any>> {
+  async findUserOrders(
+    userId: string,
+    query: PaginationDto,
+  ): Promise<PaginatedResult<any>> {
     const [data, total] = await Promise.all([
       this.prisma.order.findMany({
         where: { userId },
@@ -113,7 +127,12 @@ export class OrderService {
 
     return {
       data,
-      meta: { total, page: query.page, limit: query.limit, totalPages: Math.ceil(total / query.limit) },
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      },
     };
   }
 
@@ -125,7 +144,9 @@ export class OrderService {
         statusHistory: { orderBy: { createdAt: 'desc' } },
         payment: true,
         address: true,
-        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
       },
     });
     if (!order) throw new NotFoundException('Order not found');
@@ -148,7 +169,9 @@ export class OrderService {
         where,
         include: {
           items: true,
-          user: { select: { id: true, email: true, firstName: true, lastName: true } },
+          user: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
           payment: true,
         },
         skip: query.skip,
@@ -160,11 +183,21 @@ export class OrderService {
 
     return {
       data,
-      meta: { total, page: query.page, limit: query.limit, totalPages: Math.ceil(total / query.limit) },
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      },
     };
   }
 
-  async updateStatus(id: string, status: OrderStatus, changedBy?: string, note?: string) {
+  async updateStatus(
+    id: string,
+    status: OrderStatus,
+    changedBy?: string,
+    note?: string,
+  ) {
     await this.prisma.orderStatusHistory.create({
       data: { orderId: id, status, changedBy, note },
     });
@@ -172,7 +205,10 @@ export class OrderService {
     return this.prisma.order.update({
       where: { id },
       data: { status },
-      include: { items: true, statusHistory: { orderBy: { createdAt: 'desc' } } },
+      include: {
+        items: true,
+        statusHistory: { orderBy: { createdAt: 'desc' } },
+      },
     });
   }
 }

@@ -40,9 +40,7 @@ export class PartnerService {
     );
 
     // Bugünkü satışlar
-    const todaySales = monthlySales.filter(
-      (s) => s.saleDate >= startOfDay,
-    );
+    const todaySales = monthlySales.filter((s) => s.saleDate >= startOfDay);
     const todayRevenue = todaySales.reduce(
       (sum, s) => sum + Number(s.amount),
       0,

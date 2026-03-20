@@ -7,6 +7,9 @@ import configuration from './config/configuration';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 
+// Common module (Redis, Encryption, Upload)
+import { CommonModule } from './common/common.module';
+
 // Domain modules
 import { IdentityModule } from './modules/identity/identity.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
@@ -21,6 +24,13 @@ import { NotificationModule } from './modules/notification/notification.module';
 import { AiServiceModule } from './modules/ai-service/ai-service.module';
 import { PartnerModule } from './modules/partner/partner.module';
 import { LoyaltyModule } from './modules/loyalty/loyalty.module';
+
+// Sprint 1 modules
+import { UserModule } from './modules/user/user.module';
+import { ReviewModule } from './modules/review/review.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { GdprModule } from './modules/gdpr/gdpr.module';
+import { PricingModule } from './modules/pricing/pricing.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -47,6 +57,9 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     // Database
     PrismaModule,
 
+    // Common services (Redis, Encryption, Upload)
+    CommonModule,
+
     // Domain modules
     IdentityModule,
     CatalogModule,
@@ -61,6 +74,13 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     AiServiceModule,
     PartnerModule,
     LoyaltyModule,
+
+    // Sprint 1 modules
+    UserModule,
+    ReviewModule,
+    AdminModule,
+    GdprModule,
+    PricingModule,
   ],
   controllers: [AppController],
   providers: [

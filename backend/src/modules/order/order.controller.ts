@@ -33,7 +33,10 @@ export class OrderController {
 
   @Get('orders')
   @ApiOperation({ summary: 'List my orders' })
-  findMyOrders(@CurrentUser('id') userId: string, @Query() query: PaginationDto) {
+  findMyOrders(
+    @CurrentUser('id') userId: string,
+    @Query() query: PaginationDto,
+  ) {
     return this.orderService.findUserOrders(userId, query);
   }
 

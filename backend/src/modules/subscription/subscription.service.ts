@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SubscriptionStatus, GrindType } from '@prisma/client';
 
@@ -14,13 +18,16 @@ export class SubscriptionService {
   }
 
   async subscribe(userId: string, planId: string, grindPreference?: GrindType) {
-    const plan = await this.prisma.subPlan.findUnique({ where: { id: planId } });
+    const plan = await this.prisma.subPlan.findUnique({
+      where: { id: planId },
+    });
     if (!plan) throw new NotFoundException('Plan not found');
 
     const existing = await this.prisma.subscription.findFirst({
       where: { userId, status: SubscriptionStatus.ACTIVE },
     });
-    if (existing) throw new BadRequestException('Already have an active subscription');
+    if (existing)
+      throw new BadRequestException('Already have an active subscription');
 
     const nextBillingDate = new Date();
     nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
@@ -68,7 +75,10 @@ export class SubscriptionService {
   async getUserSubscriptions(userId: string) {
     return this.prisma.subscription.findMany({
       where: { userId },
-      include: { plan: true, cycles: { orderBy: { cycleNumber: 'desc' }, take: 5 } },
+      include: {
+        plan: true,
+        cycles: { orderBy: { cycleNumber: 'desc' }, take: 5 },
+      },
     });
   }
 
@@ -76,7 +86,9 @@ export class SubscriptionService {
   async findAll() {
     return this.prisma.subscription.findMany({
       include: {
-        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
         plan: true,
       },
       orderBy: { createdAt: 'desc' },

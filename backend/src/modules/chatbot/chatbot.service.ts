@@ -58,47 +58,68 @@ export class ChatbotService {
   }
 
   // Phase 1: Rule-based intent detection
-  private processMessage(content: string): { intent: string; response: string } {
+  private processMessage(content: string): {
+    intent: string;
+    response: string;
+  } {
     const lower = content.toLowerCase();
 
-    if (lower.includes('sipariş') || lower.includes('kargo') || lower.includes('order')) {
+    if (
+      lower.includes('sipariş') ||
+      lower.includes('kargo') ||
+      lower.includes('order')
+    ) {
       return {
         intent: 'order_status',
-        response: 'Sipariş durumunuzu kontrol etmek için hesabınıza giriş yapın ve "Siparişlerim" sayfasını ziyaret edin.',
+        response:
+          'Sipariş durumunuzu kontrol etmek için hesabınıza giriş yapın ve "Siparişlerim" sayfasını ziyaret edin.',
       };
     }
 
     if (lower.includes('abonelik') || lower.includes('subscription')) {
       return {
         intent: 'subscription',
-        response: 'Abonelik planlarımızı /subscription sayfasında görebilirsiniz. Starter (500g), Coffee Lover (1kg) ve Office Mini (3kg) seçeneklerimiz var.',
+        response:
+          'Abonelik planlarımızı /subscription sayfasında görebilirsiniz. Starter (500g), Coffee Lover (1kg) ve Office Mini (3kg) seçeneklerimiz var.',
       };
     }
 
     if (lower.includes('iade') || lower.includes('return')) {
       return {
         intent: 'return',
-        response: 'İade işlemi için sipariş detay sayfasından iade talebi oluşturabilirsiniz. 14 gün içinde iade kabul edilmektedir.',
+        response:
+          'İade işlemi için sipariş detay sayfasından iade talebi oluşturabilirsiniz. 14 gün içinde iade kabul edilmektedir.',
       };
     }
 
-    if (lower.includes('kahve') || lower.includes('öneri') || lower.includes('recommend')) {
+    if (
+      lower.includes('kahve') ||
+      lower.includes('öneri') ||
+      lower.includes('recommend')
+    ) {
       return {
         intent: 'recommend',
-        response: 'Size özel kahve önerisi için "Kahveni Bul" quizimizi deneyin! Damak tadınıza göre en uygun kahveyi bulalım.',
+        response:
+          'Size özel kahve önerisi için "Kahveni Bul" quizimizi deneyin! Damak tadınıza göre en uygun kahveyi bulalım.',
       };
     }
 
-    if (lower.includes('b2b') || lower.includes('kurumsal') || lower.includes('ofis')) {
+    if (
+      lower.includes('b2b') ||
+      lower.includes('kurumsal') ||
+      lower.includes('ofis')
+    ) {
       return {
         intent: 'b2b',
-        response: 'Kurumsal çözümlerimiz için /b2b sayfamızı ziyaret edin veya formu doldurun, ekibimiz sizinle iletişime geçecektir.',
+        response:
+          'Kurumsal çözümlerimiz için /b2b sayfamızı ziyaret edin veya formu doldurun, ekibimiz sizinle iletişime geçecektir.',
       };
     }
 
     return {
       intent: 'general',
-      response: 'Merhaba! Olentia Pure\'a hoş geldiniz. Size nasıl yardımcı olabilirim? Sipariş, abonelik, iade veya kahve önerisi konularında yardımcı olabilirim.',
+      response:
+        "Merhaba! Olentia Pure'a hoş geldiniz. Size nasıl yardımcı olabilirim? Sipariş, abonelik, iade veya kahve önerisi konularında yardımcı olabilirim.",
     };
   }
 }

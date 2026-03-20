@@ -24,7 +24,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = (res as any).message || exception.message;
         errors = (res as any).errors || null;
       } else {
-        message = res as string;
+        message = res;
       }
     }
 

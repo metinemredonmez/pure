@@ -93,7 +93,15 @@ export class CatalogController {
   @Roles(UserRole.ADMIN)
   @Post('admin/categories')
   @ApiOperation({ summary: 'Create category (admin)' })
-  createCategory(@Body() data: { name: string; slug: string; description?: string; parentId?: string }) {
+  createCategory(
+    @Body()
+    data: {
+      name: string;
+      slug: string;
+      description?: string;
+      parentId?: string;
+    },
+  ) {
     return this.catalogService.createCategory(data);
   }
 
@@ -101,7 +109,9 @@ export class CatalogController {
   @Roles(UserRole.ADMIN)
   @Post('admin/collections')
   @ApiOperation({ summary: 'Create collection (admin)' })
-  createCollection(@Body() data: { name: string; slug: string; description?: string }) {
+  createCollection(
+    @Body() data: { name: string; slug: string; description?: string },
+  ) {
     return this.catalogService.createCollection(data);
   }
 }

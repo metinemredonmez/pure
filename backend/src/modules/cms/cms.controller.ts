@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CmsService } from './cms.service';
 import { PaginationDto } from '../../common/pipes/pagination.pipe';
@@ -70,7 +79,9 @@ export class CmsController {
   @Roles(UserRole.ADMIN)
   @Post('admin/faq')
   @ApiOperation({ summary: 'Create FAQ item (admin)' })
-  createFaq(@Body() data: { question: string; answer: string; category: string }) {
+  createFaq(
+    @Body() data: { question: string; answer: string; category: string },
+  ) {
     return this.cmsService.createFaq(data);
   }
 

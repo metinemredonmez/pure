@@ -5,7 +5,10 @@ import {
   UpdateProductDto,
   CreateVariantDto,
 } from './dto/product.dto';
-import { PaginationDto, PaginatedResult } from '../../common/pipes/pagination.pipe';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/pipes/pagination.pipe';
 
 @Injectable()
 export class CatalogService {
@@ -117,7 +120,13 @@ export class CatalogService {
     });
   }
 
-  async createCategory(data: { name: string; slug: string; description?: string; parentId?: string; image?: string }) {
+  async createCategory(data: {
+    name: string;
+    slug: string;
+    description?: string;
+    parentId?: string;
+    image?: string;
+  }) {
     return this.prisma.category.create({ data });
   }
 
@@ -130,7 +139,12 @@ export class CatalogService {
     });
   }
 
-  async createCollection(data: { name: string; slug: string; description?: string; image?: string }) {
+  async createCollection(data: {
+    name: string;
+    slug: string;
+    description?: string;
+    image?: string;
+  }) {
     return this.prisma.collection.create({ data });
   }
 

@@ -49,7 +49,9 @@ Kurallar:
     sessionId: string,
     userId?: string,
   ): Promise<ChatResponse> {
-    this.logger.log(`Chat request - session: ${sessionId}, user: ${userId || 'guest'}`);
+    this.logger.log(
+      `Chat request - session: ${sessionId}, user: ${userId || 'guest'}`,
+    );
 
     // Konuşma geçmişini getir
     const history = await this.getSessionHistory(sessionId);
@@ -143,15 +145,27 @@ Kurallar:
   private generateResponse(message: string, history: ChatMessage[]): string {
     const lower = message.toLowerCase();
 
-    if (lower.includes('merhaba') || lower.includes('selam') || lower.includes('hey')) {
-      return 'Merhaba! Olentia Pure\'a hoş geldiniz. Size nasıl yardımcı olabilirim? ☕';
+    if (
+      lower.includes('merhaba') ||
+      lower.includes('selam') ||
+      lower.includes('hey')
+    ) {
+      return "Merhaba! Olentia Pure'a hoş geldiniz. Size nasıl yardımcı olabilirim? ☕";
     }
 
-    if (lower.includes('kahve') && (lower.includes('öner') || lower.includes('tavsiye'))) {
+    if (
+      lower.includes('kahve') &&
+      (lower.includes('öner') || lower.includes('tavsiye'))
+    ) {
       return 'Size birkaç soru sorarak en uygun kahveyi bulabilirim. Hangi demleme yöntemini kullanıyorsunuz? (Filtre, Espresso, French Press, Türk Kahvesi)';
     }
 
-    if (lower.includes('sipariş') && (lower.includes('durum') || lower.includes('nerede') || lower.includes('takip'))) {
+    if (
+      lower.includes('sipariş') &&
+      (lower.includes('durum') ||
+        lower.includes('nerede') ||
+        lower.includes('takip'))
+    ) {
       return 'Sipariş durumunuzu kontrol edebilmem için sipariş numaranızı paylaşır mısınız? (OLN-2024-XXXXXX formatında)';
     }
 
@@ -159,16 +173,28 @@ Kurallar:
       return 'Abonelik planlarımız:\n• **Starter** — Aylık 500g, ₺299\n• **Coffee Lover** — Aylık 1kg, ₺549\n• **Office Mini** — Aylık 3kg, ₺1.399\n\nDetaylı bilgi için abonelik sayfamızı ziyaret edebilirsiniz.';
     }
 
-    if (lower.includes('b2b') || lower.includes('kurumsal') || lower.includes('ofis')) {
+    if (
+      lower.includes('b2b') ||
+      lower.includes('kurumsal') ||
+      lower.includes('ofis')
+    ) {
       return 'Kurumsal müşterilerimize özel çözümler sunuyoruz. Ofis kahve makinesi kiralama, toptan kahve tedariği ve özel harmanlama hizmetlerimiz bulunmaktadır. Sizi B2B ekibimizle görüştürmemi ister misiniz?';
     }
 
-    if (lower.includes('iade') || lower.includes('değişim') || lower.includes('iptal')) {
+    if (
+      lower.includes('iade') ||
+      lower.includes('değişim') ||
+      lower.includes('iptal')
+    ) {
       return 'İade ve değişim politikamız:\n• Teslimattan itibaren 14 gün içinde iade\n• Açılmamış ürünlerde tam iade\n• Açılmış ürünlerde kalite sorunu varsa değişim\n\nİade başlatmak için sipariş numaranızı paylaşır mısınız?';
     }
 
-    if (lower.includes('fiyat') || lower.includes('ücret') || lower.includes('kaç')) {
-      return 'Ürün fiyatlarımız 250g\'dan başlayarak ₺129 - ₺599 arasında değişmektedir. Hangi ürünle ilgileniyorsunuz?';
+    if (
+      lower.includes('fiyat') ||
+      lower.includes('ücret') ||
+      lower.includes('kaç')
+    ) {
+      return "Ürün fiyatlarımız 250g'dan başlayarak ₺129 - ₺599 arasında değişmektedir. Hangi ürünle ilgileniyorsunuz?";
     }
 
     if (lower.includes('kargo') || lower.includes('teslimat')) {

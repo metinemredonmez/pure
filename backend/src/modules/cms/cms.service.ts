@@ -1,13 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PaginationDto, PaginatedResult } from '../../common/pipes/pagination.pipe';
+import {
+  PaginationDto,
+  PaginatedResult,
+} from '../../common/pipes/pagination.pipe';
 
 @Injectable()
 export class CmsService {
   constructor(private prisma: PrismaService) {}
 
   // ── Blog Posts ──
-  async findAllPosts(query: PaginationDto, publishedOnly = true): Promise<PaginatedResult<any>> {
+  async findAllPosts(
+    query: PaginationDto,
+    publishedOnly = true,
+  ): Promise<PaginatedResult<any>> {
     const where: any = publishedOnly ? { isPublished: true } : {};
     if (query.search) {
       where.OR = [
@@ -29,7 +35,12 @@ export class CmsService {
 
     return {
       data,
-      meta: { total, page: query.page, limit: query.limit, totalPages: Math.ceil(total / query.limit) },
+      meta: {
+        total,
+        page: query.page,
+        limit: query.limit,
+        totalPages: Math.ceil(total / query.limit),
+      },
     };
   }
 
@@ -47,7 +58,11 @@ export class CmsService {
   }
 
   async updatePost(id: string, data: any) {
-    return this.prisma.blogPost.update({ where: { id }, data, include: { category: true } });
+    return this.prisma.blogPost.update({
+      where: { id },
+      data,
+      include: { category: true },
+    });
   }
 
   async deletePost(id: string) {
@@ -58,10 +73,18 @@ export class CmsService {
   // ── FAQ ──
   async findAllFaqs(category?: string) {
     const where = category ? { category, isActive: true } : { isActive: true };
-    return this.prisma.faqItem.findMany({ where, orderBy: { sortOrder: 'asc' } });
+    return this.prisma.faqItem.findMany({
+      where,
+      orderBy: { sortOrder: 'asc' },
+    });
   }
 
-  async createFaq(data: { question: string; answer: string; category: string; sortOrder?: number }) {
+  async createFaq(data: {
+    question: string;
+    answer: string;
+    category: string;
+    sortOrder?: number;
+  }) {
     return this.prisma.faqItem.create({ data });
   }
 
@@ -70,7 +93,15 @@ export class CmsService {
     return this.prisma.seoMetadata.findUnique({ where: { pagePath } });
   }
 
-  async upsertSeo(pagePath: string, data: { title?: string; description?: string; ogImage?: string; keywords?: string[] }) {
+  async upsertSeo(
+    pagePath: string,
+    data: {
+      title?: string;
+      description?: string;
+      ogImage?: string;
+      keywords?: string[];
+    },
+  ) {
     return this.prisma.seoMetadata.upsert({
       where: { pagePath },
       create: { pagePath, ...data },

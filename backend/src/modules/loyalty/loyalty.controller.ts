@@ -58,10 +58,7 @@ export class LoyaltyController {
 
   @Get('rewards')
   @ApiOperation({ summary: 'Ödüllerimi listele' })
-  getRewards(
-    @CurrentUser() user: any,
-    @Query('available') available?: string,
-  ) {
+  getRewards(@CurrentUser() user: any, @Query('available') available?: string) {
     return this.loyaltyService.getRewards(user.sub, available === 'true');
   }
 
@@ -70,19 +67,13 @@ export class LoyaltyController {
     summary: 'Puan ile indirim kuponu oluştur',
     description: 'Min 100 puan. 10 puan = 1 TL',
   })
-  redeemDiscount(
-    @CurrentUser() user: any,
-    @Body() body: { points: number },
-  ) {
+  redeemDiscount(@CurrentUser() user: any, @Body() body: { points: number }) {
     return this.loyaltyService.redeemForDiscount(user.sub, body.points);
   }
 
   @Post('rewards/:id/claim')
   @ApiOperation({ summary: 'Ücretsiz kahve ödülünü kullan' })
-  claimFreeReward(
-    @CurrentUser() user: any,
-    @Param('id') rewardId: string,
-  ) {
+  claimFreeReward(@CurrentUser() user: any, @Param('id') rewardId: string) {
     return this.loyaltyService.claimFreeReward(user.sub, rewardId);
   }
 
@@ -108,7 +99,9 @@ export class AdminLoyaltyController {
 
   @Roles(UserRole.ADMIN)
   @Get('stats')
-  @ApiOperation({ summary: 'Loyalty istatistikleri (tier dağılımı, toplam puan vs.)' })
+  @ApiOperation({
+    summary: 'Loyalty istatistikleri (tier dağılımı, toplam puan vs.)',
+  })
   getStats() {
     return this.loyaltyService.getStats();
   }
@@ -116,7 +109,9 @@ export class AdminLoyaltyController {
   @Roles(UserRole.ADMIN)
   @Get('leaderboard')
   @ApiOperation({ summary: 'En sadık müşteriler sıralaması' })
-  getLeaderboard(@Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number) {
+  getLeaderboard(
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
     return this.loyaltyService.getLeaderboard(limit);
   }
 
@@ -146,7 +141,11 @@ export class AdminLoyaltyController {
   updateConfig(
     @Body() body: { key: string; value: string; description?: string },
   ) {
-    return this.loyaltyService.updateConfig(body.key, body.value, body.description);
+    return this.loyaltyService.updateConfig(
+      body.key,
+      body.value,
+      body.description,
+    );
   }
 
   @Roles(UserRole.ADMIN)

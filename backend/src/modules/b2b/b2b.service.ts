@@ -30,7 +30,12 @@ export class B2bService {
   }
 
   // Admin: update lead status
-  async updateLeadStatus(id: string, status: LeadStatus, assignedTo?: string, notes?: string) {
+  async updateLeadStatus(
+    id: string,
+    status: LeadStatus,
+    assignedTo?: string,
+    notes?: string,
+  ) {
     return this.prisma.b2bLead.update({
       where: { id },
       data: { status, assignedTo, notes },
@@ -38,15 +43,18 @@ export class B2bService {
   }
 
   // Admin: create quote
-  async createQuote(leadId: string, data: {
-    packageName: string;
-    monthlyKg: number;
-    machineCount: number;
-    contractMonths: number;
-    monthlyPrice: number;
-    setupFee?: number;
-    notes?: string;
-  }) {
+  async createQuote(
+    leadId: string,
+    data: {
+      packageName: string;
+      monthlyKg: number;
+      machineCount: number;
+      contractMonths: number;
+      monthlyPrice: number;
+      setupFee?: number;
+      notes?: string;
+    },
+  ) {
     const quote = await this.prisma.b2bQuote.create({
       data: { leadId, ...data },
     });
@@ -61,12 +69,15 @@ export class B2bService {
   }
 
   // Admin: create contract (lead won)
-  async createContract(leadId: string, data: {
-    startDate: Date;
-    endDate: Date;
-    monthlyKg: number;
-    monthlyPrice: number;
-  }) {
+  async createContract(
+    leadId: string,
+    data: {
+      startDate: Date;
+      endDate: Date;
+      monthlyKg: number;
+      monthlyPrice: number;
+    },
+  ) {
     const count = await this.prisma.b2bContract.count();
     const contractNumber = `OLN-B2B-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
 
@@ -83,11 +94,14 @@ export class B2bService {
   }
 
   // Admin: assign machine to contract
-  async assignMachine(contractId: string, data: {
-    machineModel: string;
-    serialNumber?: string;
-    location?: string;
-  }) {
+  async assignMachine(
+    contractId: string,
+    data: {
+      machineModel: string;
+      serialNumber?: string;
+      location?: string;
+    },
+  ) {
     return this.prisma.machineAssignment.create({
       data: { contractId, ...data },
     });
