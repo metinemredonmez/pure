@@ -146,12 +146,16 @@
 - [x] JWT blacklist (Redis tabanlı)
 - [x] API key authentication
 - [x] Webhook HMAC doğrulama
+- [x] **CSRF koruması** (Double Submit Cookie pattern)
+- [x] **XSS sanitization** (SanitizePipe — script, event handler, iframe temizleme)
+- [x] **ClamAV virus scan** (upload öncesi otomatik tarama, graceful degradation)
 
 ### Dosya & Medya
 - [x] MinIO upload servisi (S3-compatible)
 - [x] Sharp image optimization (WebP, resize, thumbnail)
 - [x] Presigned URL desteği (özel dosyalar)
 - [x] MIME type validation
+- [x] **ClamAV entegrasyonu** (virüs tarama, INSTREAM protokolü)
 
 ### Kullanıcı Özellikleri
 - [x] Adres CRUD (`/users/me/addresses`)
