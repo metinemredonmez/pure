@@ -1,97 +1,281 @@
-# Olentia Pure — Sprint Progress
+# Olentia Pure — Sprint Progress & Proje Özeti
 
-## Sprint 0: Foundation ✅ COMPLETED
+> **Son Güncelleme:** 2026-03-20
+> **Repo:** https://github.com/metinemredonmez/pure
+> **API:** http://localhost:4000/api
+> **Swagger:** http://localhost:4000/api/docs
+> **Tech Stack:** NestJS + Prisma 6 + PostgreSQL 16 + Redis + MinIO + RabbitMQ
+
+---
+
+## 📊 Genel Durum
+
+| Metrik | Değer |
+|--------|-------|
+| Toplam Modül | **13** |
+| Prisma Model | **50+** |
+| API Endpoint | **80+** |
+| Enum | **15+** |
+| Sprint 0 | ✅ Tamamlandı |
+| Sprint 0.5 | ✅ Tamamlandı |
+| Sprint 1 | 🔄 Planlanan |
+
+---
+
+## ✅ Sprint 0: Foundation — TAMAMLANDI
 **Tarih:** 2026-03-19
 
+### Altyapı
 - [x] Docker Compose (PostgreSQL 16, Redis 7, MinIO, RabbitMQ, MailHog)
-- [x] NestJS scaffold + TypeScript config
-- [x] Prisma ORM + PostgreSQL schema (40+ tablo, 10 modül)
-- [x] JWT Auth (access 15dk + refresh 7gün + token rotation)
-- [x] Google OAuth + Apple OAuth strategies
-- [x] MFA/TOTP (QR code ile authenticator app)
-- [x] RBAC (ADMIN, CUSTOMER, SALES, SUPPORT, PARTNER)
-- [x] Swagger API docs (`/api/docs`)
-- [x] Global guards (JWT, Roles, Rate Limiting)
-- [x] Global exception filter + response transformer
-- [x] ENV config (PayTR, iyzico, Google Pay, Apple Pay, SMTP, Firebase, OneSignal)
-- [x] Health check endpoint
+- [x] NestJS scaffold + TypeScript strict config
+- [x] Prisma 6 ORM + PostgreSQL schema (50+ tablo, 13 modül)
+- [x] ENV config (tüm servisler, ödeme, push, SMTP)
+- [x] Swagger/OpenAPI dokümantasyon (Olentia branding)
+- [x] Health check endpoint (`/api/health`)
 - [x] Git repo + GitHub push
+- [x] `.gitignore` (hassas dosyalar hariç)
 
-### Modüller oluşturuldu:
-1. **Identity** — Auth, OAuth, JWT, MFA, profile
-2. **Catalog** — Products, variants, categories, collections
-3. **Cart** — Guest + auth cart, merge logic
-4. **Order** — Order creation, status tracking, coupon
-5. **Payment** — PayTR, iyzico, Google Pay, Apple Pay, QR payment, webhooks
-6. **Subscription** — Plans, cycles, pause/resume/cancel
-7. **B2B** — Leads, quotes, contracts, machine assignments, CRM pipeline
-8. **CMS** — Blog, FAQ, SEO metadata
-9. **Chatbot** — Rule-based chatbot, intent detection
-10. **Notification** — SMTP email, templates, logs
+### Auth & Güvenlik
+- [x] JWT Authentication (access 15dk + refresh 7gün + token rotation)
+- [x] Google OAuth 2.0 (Passport.js strategy)
+- [x] Apple OAuth (Passport.js strategy)
+- [x] MFA/TOTP (QR code ile authenticator app — otplib v4)
+- [x] RBAC: ADMIN, CUSTOMER, SALES, SUPPORT, PARTNER
+- [x] Global guards: JWT, Roles, Rate Limiting (Throttler)
+- [x] Global exception filter + response transformer interceptor
+- [x] `@Public()`, `@Roles()`, `@CurrentUser()` decorators
+- [x] HttpOnly cookie tabanlı JWT
 
-### Port Mapping (Docker):
-| Servis | Port |
-|--------|------|
-| PostgreSQL | 5434 |
-| Redis | 6380 |
-| MinIO | 9002/9003 |
-| RabbitMQ | 5673/15673 |
-| MailHog | 1025/8025 |
-| NestJS API | 4000 |
+### 10 Ana Modül
+| # | Modül | Açıklama | Endpoints |
+|---|-------|----------|-----------|
+| 1 | **Identity** | Auth, OAuth, JWT, MFA, profil | 12 |
+| 2 | **Catalog** | Ürünler, varyantlar, kategoriler, koleksiyonlar | 10 |
+| 3 | **Cart** | Guest + auth sepet, merge logic, session ID | 5 |
+| 4 | **Order** | Sipariş, durum takibi, kupon, KDV %20, kargo | 8 |
+| 5 | **Payment** | PayTR, iyzico, Google Pay, Apple Pay, QR ödeme, webhook | 8 |
+| 6 | **Subscription** | Planlar, döngüler, pause/resume/cancel, billing | 7 |
+| 7 | **B2B** | Lead CRM, teklif, sözleşme, makine atama, pipeline | 10 |
+| 8 | **CMS** | Blog CRUD, FAQ, SEO metadata | 8 |
+| 9 | **Chatbot** | Kural tabanlı intent, Türkçe yanıtlar, session | 3 |
+| 10 | **Notification** | SMTP email, template sistemi, loglar | 6 |
 
----
-
-## Sprint 1: Commerce MVP (Planlanan)
-**Hedef:** Çalışan e-ticaret akışı
-
-- [ ] AI servis modülü (STT, TTS, chatbox, LangChain analiz)
-- [ ] Şifre değiştirme / reset akışı
-- [ ] Product CRUD tam test (Swagger üzerinden)
-- [ ] Cart → Order → Payment tam akış
-- [ ] iyzico sandbox entegrasyonu
-- [ ] PayTR sandbox entegrasyonu
-- [ ] MinIO file upload (product images)
-- [ ] Admin dashboard API endpoints (stats, KPI)
-- [ ] Seed data (örnek ürünler, kategoriler)
-- [ ] Admin panel (Modernize template) kurulumu
+### Port Mapping (Docker — çakışma yok):
+| Servis | Port | Not |
+|--------|------|-----|
+| PostgreSQL | 5434 | (VMS: 5432, Backend: 5433) |
+| Redis | 6380 | (VMS: 6379) |
+| MinIO | 9002/9003 | (VMS: 9000/9001) |
+| RabbitMQ | 5673/15673 | |
+| MailHog | 1025/8025 | |
+| NestJS API | 4000 | |
 
 ---
 
-## Sprint 2: Content & Discovery (Planlanan)
+## ✅ Sprint 0.5: Extended Features — TAMAMLANDI
+**Tarih:** 2026-03-20
 
-- [ ] Blog CRUD + SEO
+### 3 Yeni Modül
+| # | Modül | Açıklama | Endpoints |
+|---|-------|----------|-----------|
+| 11 | **AI Service** | STT, TTS, Chatbox, Günlük Rapor, Analiz | Yapı hazır |
+| 12 | **Partner Portal** | Dashboard, satış takip, harita, bölge analiz | 7 |
+| 13 | **Loyalty** | Puan, tier, milestone, ödüller, tekrar alım analizi | 14 |
+
+### AI Service (Modül 11)
+- [x] Klasör yapısı ve README oluşturuldu
+- [x] STT (Speech-to-Text) endpoint yapısı
+- [x] TTS (Text-to-Speech) endpoint yapısı
+- [x] Chatbox — sitenin sağından AI asistan
+- [x] Günlük Rapor — sabah açılış modu (sesli rapor)
+- [x] Google Maps entegrasyon planı
+- [x] Webhook event sistemi planı
+- [ ] OpenAI Whisper entegrasyonu (Phase 2)
+- [ ] LangChain RAG entegrasyonu (Phase 2)
+
+### Partner Portal (Modül 12)
+- [x] Partner dashboard API (günlük/aylık metrikler, komisyon)
+- [x] Partner satış CRUD (koordinat destekli — Google Maps)
+- [x] Partner profil güncelleme (konum, bölge)
+- [x] Admin: Tüm partnerlar listesi
+- [x] Admin: Satış haritası (koordinatlı tüm satışlar)
+- [x] Admin: Bölgesel performans analizi
+
+### In-App Bildirim Sistemi
+- [x] `InAppNotification` modeli (Prisma)
+- [x] `GET /notifications` — kullanıcı bildirimleri (sayfalı)
+- [x] `PATCH /notifications/:id/read` — okundu işaretle
+- [x] `PATCH /notifications/read-all` — tümünü okundu yap
+- [x] `POST /admin/notifications/send-inapp` — admin'den bildirim gönder
+- [x] Event-based helpers: sipariş, ödeme, abonelik, stok uyarısı, B2B lead
+
+### Loyalty / Sadakat Sistemi (Modül 13)
+- [x] **Puan sistemi:** Her 1 TL = 1 puan (tier çarpanlı)
+- [x] **4 Tier:** Bronze → Silver (500p) → Gold (1500p) → Platinum (4000p)
+- [x] **Tier bonus:** Silver %20, Gold %50, Platinum 2x puan
+- [x] **Abonelik bonus:** Abone siparişlerde %50 ekstra puan
+- [x] **Milestone:** Her 10 siparişte ücretsiz kahve + 500 bonus puan
+- [x] **Referral:** Arkadaş davet = 100 puan, davet edilen = 50 puan
+- [x] **Puan harcama:** 10 puan = 1 TL indirim kuponu (min 100 puan)
+- [x] **Ek puanlar:** Kayıt 25p, ilk sipariş 50p, yorum 25p, doğum günü 200p
+- [x] **Tekrar satın alma analizi:** CLV, sipariş sıklığı, favori ürünler
+- [x] **Admin:** İstatistikler, leaderboard, manuel puan, config yönetimi
+
+---
+
+## 🔄 Sprint 1: Commerce MVP — PLANLI
+**Hedef:** Uçtan uca çalışan e-ticaret akışı
+
+### Kritik
+- [ ] `prisma migrate dev` — veritabanı tablolarını oluştur
+- [ ] Seed data (admin user, örnek ürünler, kategoriler, template'ler)
+- [ ] Şifre sıfırlama akışı (email reset link → token doğrula → yeni şifre)
+- [ ] Email doğrulama (kayıt sonrası aktivasyon linki)
+- [ ] Apple OAuth strategy tamamlama
+
+### Ödeme Entegrasyonu
+- [ ] PayTR sandbox test (iframe API)
+- [ ] iyzico sandbox test
+- [ ] Cart → Order → Payment tam akış testi
+- [ ] Webhook callback doğrulama
+
+### Dosya & Medya
+- [ ] MinIO file upload servisi (ürün görseli, avatar, doküman)
+- [ ] Image resize/optimize (sharp)
+
+### Kullanıcı
+- [ ] Adres yönetimi CRUD (teslimat adresleri)
+- [ ] Favori/Wishlist sistemi
+- [ ] Ürün yorumları + puanlama
+
+### Admin
+- [ ] Admin dashboard API (ciro, sipariş, müşteri KPI'ları)
+- [ ] Kupon sistemi CRUD + doğrulama
+- [ ] Admin panel kurulumu (Modernize template)
+
+---
+
+## 🔜 Sprint 2: Content & Communication — PLANLI
+**Hedef:** İçerik yönetimi ve müşteri iletişimi
+
+- [ ] Blog + SEO tam akış
 - [ ] FAQ yönetimi
-- [ ] Chatbot AI entegrasyonu (LangChain/RAG)
-- [ ] STT/TTS entegrasyonu
-- [ ] Email template sistemi
-- [ ] Push notification (Firebase + OneSignal)
+- [ ] Email template editörü (admin panelde)
+- [ ] Firebase push notification entegrasyonu
+- [ ] OneSignal web push entegrasyonu
+- [ ] WebSocket (Socket.IO) — anlık in-app bildirimler
+- [ ] Kargo takip entegrasyonu (Yurtiçi/Aras/MNG API)
 
 ---
 
-## Sprint 3: Subscription & B2B (Planlanan)
+## 🔜 Sprint 3: Subscription & B2B — PLANLI
+**Hedef:** Abonelik otomasyonu ve B2B pipeline
 
-- [ ] Subscription tam akış (ödeme + cycle + retry)
-- [ ] B2B CRM pipeline (kanban)
+- [ ] Subscription tam akış (otomatik ödeme + cycle + retry + iptal)
+- [ ] B2B CRM pipeline kanban görünümü
 - [ ] Quote PDF generation
 - [ ] Contract management
-- [ ] Machine assignment automation
+- [ ] Machine assignment otomasyonu
+- [ ] Fatura kesimi (e-Arşiv/e-Fatura entegrasyonu)
 
 ---
 
-## Sprint 4: AI & Analytics (Planlanan)
+## 🔜 Sprint 4: AI & Analytics — PLANLI
+**Hedef:** Yapay zeka ve analitik
 
-- [ ] AI-powered product recommendations
-- [ ] Customer analytics dashboard
-- [ ] Sales reporting
-- [ ] Inventory alerts
-- [ ] Advanced chatbot (RAG + OpenAI)
+- [ ] OpenAI Whisper STT entegrasyonu
+- [ ] OpenAI TTS ses üretimi
+- [ ] LangChain chatbox (RAG — ürün kataloğundan bilgi çekme)
+- [ ] Doğal dil analiz sorgusu (SQL Agent)
+- [ ] AI ürün önerisi (kişiselleştirilmiş)
+- [ ] Müşteri segmentasyonu
+- [ ] Tahminsel stok yönetimi
+- [ ] Google Maps harita görselleştirme (partner + satış)
+- [ ] Excel/PDF rapor export
 
 ---
 
-## Sprint 5: Mobile & Scale (Planlanan)
+## 🔜 Sprint 5: Mobile & Production — PLANLI
+**Hedef:** Mobil uygulama ve canlıya çıkış
 
-- [ ] React Native mobile app
-- [ ] CDN setup
+- [ ] React Native / Expo mobil uygulama
+- [ ] CDN setup (Cloudflare)
 - [ ] Performance optimization
-- [ ] Load testing
-- [ ] Production deployment (Hetzner)
+- [ ] Load testing (k6/Artillery)
+- [ ] KVKK/GDPR compliance (veri silme, export, onay)
+- [ ] Audit log sistemi
+- [ ] Production deployment (Hetzner — PM2)
+- [ ] SSL + domain yapılandırma
+- [ ] Monitoring (Sentry + Grafana)
+
+---
+
+## 🏗️ Teknik Mimari
+
+```
+pure/
+├── docker-compose.yml          # Lokal altyapı
+├── PROGRESS.md                 # Bu dosya
+├── infra/
+│   └── init.sql                # Schema oluşturma SQL
+└── backend/
+    ├── prisma/
+    │   └── schema.prisma       # 50+ model, 15+ enum
+    ├── src/
+    │   ├── main.ts             # Bootstrap + Swagger
+    │   ├── app.module.ts       # Root module (13 modül)
+    │   ├── app.controller.ts   # Health check
+    │   ├── config/
+    │   │   └── configuration.ts
+    │   ├── prisma/
+    │   │   ├── prisma.module.ts
+    │   │   └── prisma.service.ts
+    │   ├── common/
+    │   │   ├── decorators/      # @Public, @Roles, @CurrentUser
+    │   │   ├── filters/         # GlobalExceptionFilter
+    │   │   ├── interceptors/    # TransformInterceptor
+    │   │   └── pipes/           # PaginationDto
+    │   └── modules/
+    │       ├── identity/        # Auth, OAuth, JWT, MFA
+    │       ├── catalog/         # Products, variants
+    │       ├── cart/            # Sepet
+    │       ├── order/           # Sipariş
+    │       ├── payment/         # Ödeme (5 yöntem)
+    │       ├── subscription/    # Abonelik
+    │       ├── b2b/             # B2B CRM
+    │       ├── cms/             # Blog, FAQ, SEO
+    │       ├── chatbot/         # AI chatbot
+    │       ├── notification/    # Email + in-app
+    │       ├── ai-service/      # STT, TTS, analiz
+    │       ├── partner/         # Partner portal
+    │       └── loyalty/         # Sadakat sistemi
+    └── .env                    # Environment variables
+```
+
+---
+
+## 📦 Ödeme Yöntemleri
+
+| Yöntem | Tip | Durum |
+|--------|-----|-------|
+| PayTR | Kredi kartı (iframe) | ✅ Endpoint hazır |
+| iyzico | Kredi kartı | ✅ Endpoint hazır |
+| Google Pay | Mobil/Web | ✅ Endpoint hazır |
+| Apple Pay | iOS/Safari | ✅ Endpoint hazır |
+| QR Code | QR okutma ile ödeme | ✅ Endpoint hazır |
+
+---
+
+## 🏆 Loyalty Sistemi Özeti
+
+| Özellik | Detay |
+|---------|-------|
+| Her 1 TL | 1 puan (tier çarpanlı) |
+| Bronze | 0+ puan, 1x çarpan |
+| Silver | 500+ puan, 1.2x çarpan |
+| Gold | 1500+ puan, 1.5x çarpan |
+| Platinum | 4000+ puan, 2x çarpan |
+| Her 10 sipariş | Ücretsiz kahve + 500 puan |
+| Abonelik | %50 ekstra puan |
+| Referral | Davet eden 100p + davet edilen 50p |
+| Harcama | 10 puan = 1 TL |
