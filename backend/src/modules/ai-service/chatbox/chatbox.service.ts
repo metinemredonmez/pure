@@ -77,6 +77,24 @@ Kurallar:
   }
 
   /**
+   * Session ownership kontrolü
+   */
+  async verifySessionOwnership(
+    sessionId: string,
+    userId: string,
+  ): Promise<boolean> {
+    const session = await this.prisma.chatbotSession.findUnique({
+      where: { sessionId },
+      select: { userId: true },
+    });
+
+    if (!session) return false;
+
+    // Session user'a ait mi veya guest session mı (userId null)
+    return session.userId === userId || session.userId === null;
+  }
+
+  /**
    * Konuşma geçmişini getir
    */
   async getSessionHistory(sessionId: string): Promise<ChatMessage[]> {

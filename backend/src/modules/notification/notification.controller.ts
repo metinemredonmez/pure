@@ -42,7 +42,7 @@ export class UserNotificationController {
     @Query('unreadOnly') unreadOnly?: string,
   ) {
     return this.notificationService.getUserNotifications(
-      user.sub,
+      user.id,
       page,
       limit,
       unreadOnly === 'true',
@@ -52,13 +52,13 @@ export class UserNotificationController {
   @Patch(':id/read')
   @ApiOperation({ summary: 'Bildirimi okundu olarak işaretle' })
   markAsRead(@CurrentUser() user: any, @Param('id') id: string) {
-    return this.notificationService.markAsRead(user.sub, id);
+    return this.notificationService.markAsRead(user.id, id);
   }
 
   @Patch('read-all')
   @ApiOperation({ summary: 'Tüm bildirimleri okundu yap' })
   markAllAsRead(@CurrentUser() user: any) {
-    return this.notificationService.markAllAsRead(user.sub);
+    return this.notificationService.markAllAsRead(user.id);
   }
 }
 

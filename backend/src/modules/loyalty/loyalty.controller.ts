@@ -30,7 +30,7 @@ export class LoyaltyController {
     description: 'Puan, tier, sonraki ücretsiz kahveye kalan sipariş sayısı',
   })
   getMyAccount(@CurrentUser() user: any) {
-    return this.loyaltyService.getAccount(user.sub);
+    return this.loyaltyService.getAccount(user.id);
   }
 
   @Post('activate')
@@ -42,7 +42,7 @@ export class LoyaltyController {
     @CurrentUser() user: any,
     @Body() body: { referralCode?: string },
   ) {
-    return this.loyaltyService.createAccount(user.sub, body.referralCode);
+    return this.loyaltyService.createAccount(user.id, body.referralCode);
   }
 
   @Get('history')
@@ -52,13 +52,13 @@ export class LoyaltyController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
-    return this.loyaltyService.getTransactionHistory(user.sub, page, limit);
+    return this.loyaltyService.getTransactionHistory(user.id, page, limit);
   }
 
   @Get('rewards')
   @ApiOperation({ summary: 'Ödüllerimi listele' })
   getRewards(@CurrentUser() user: any, @Query('available') available?: string) {
-    return this.loyaltyService.getRewards(user.sub, available === 'true');
+    return this.loyaltyService.getRewards(user.id, available === 'true');
   }
 
   @Post('redeem')
@@ -67,13 +67,13 @@ export class LoyaltyController {
     description: 'Min 100 puan. 10 puan = 1 TL',
   })
   redeemDiscount(@CurrentUser() user: any, @Body() body: { points: number }) {
-    return this.loyaltyService.redeemForDiscount(user.sub, body.points);
+    return this.loyaltyService.redeemForDiscount(user.id, body.points);
   }
 
   @Post('rewards/:id/claim')
   @ApiOperation({ summary: 'Ücretsiz kahve ödülünü kullan' })
   claimFreeReward(@CurrentUser() user: any, @Param('id') rewardId: string) {
-    return this.loyaltyService.claimFreeReward(user.sub, rewardId);
+    return this.loyaltyService.claimFreeReward(user.id, rewardId);
   }
 
   @Get('repurchase')
@@ -82,7 +82,7 @@ export class LoyaltyController {
     description: 'En çok aldığım ürünler, sipariş sıklığı, CLV',
   })
   getRepurchase(@CurrentUser() user: any) {
-    return this.loyaltyService.getRepurchaseAnalysis(user.sub);
+    return this.loyaltyService.getRepurchaseAnalysis(user.id);
   }
 }
 

@@ -29,7 +29,7 @@ export class PartnerController {
   @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Partner dashboard — özet metrikler' })
   async getDashboard(@CurrentUser() user: any) {
-    return this.partnerService.getDashboard(user.sub);
+    return this.partnerService.getDashboard(user.id);
   }
 
   @Get('sales')
@@ -43,7 +43,7 @@ export class PartnerController {
     @Query('endDate') endDate?: string,
   ) {
     return this.partnerService.getSales(
-      user.sub,
+      user.id,
       page,
       limit,
       startDate ? new Date(startDate) : undefined,
@@ -55,7 +55,7 @@ export class PartnerController {
   @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Yeni satış kaydı oluştur' })
   async createSale(@CurrentUser() user: any, @Body() dto: CreateSaleDto) {
-    return this.partnerService.createSale(user.sub, dto);
+    return this.partnerService.createSale(user.id, dto);
   }
 
   @Put('profile')
@@ -65,7 +65,7 @@ export class PartnerController {
     @CurrentUser() user: any,
     @Body() dto: UpdatePartnerProfileDto,
   ) {
-    return this.partnerService.updateProfile(user.sub, dto);
+    return this.partnerService.updateProfile(user.id, dto);
   }
 
   // ============================================

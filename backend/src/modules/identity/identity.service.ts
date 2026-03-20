@@ -134,7 +134,7 @@ export class IdentityService {
       5,
     );
     const LOCKOUT_DURATION_MINUTES = this.configService.get<number>(
-      'identity.lockoutDurationMinutes',
+      'identity.lockoutMinutes',
       30,
     );
 
