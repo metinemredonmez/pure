@@ -1,7 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { SanitizePipe } from './common/pipes/sanitize.pipe';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -59,8 +61,47 @@ async function bootstrap() {
   app.use(require('express').json({ limit: '10mb' }));
   app.use(require('express').urlencoded({ extended: true, limit: '10mb' }));
 
-  // Global validation pipe
+  // Cookie parser (JWT HttpOnly cookies + CSRF)
+  app.use(cookieParser(process.env.COOKIE_SECRET || 'olentia-cookie-secret'));
+
+  // CSRF Protection — Double Submit Cookie Pattern
+  // API JWT Bearer token zaten CSRF'e karşı koruma sağlar (cookie değil header'da)
+  // Ama HttpOnly cookie kullanan endpointler için ek koruma:
+  app.use((req: any, res: any, next: any) => {
+    // Safe methods skip
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+
+    // API key veya Bearer token varsa CSRF gerekmez
+    if (req.headers['authorization'] || req.headers['x-api-key']) return next();
+
+    // Webhook endpoint'leri skip (dış servislerden gelir)
+    if (req.path.startsWith('/api/webhooks/')) return next();
+
+    // Public endpoint'ler skip
+    if (req.path.startsWith('/api/auth/')) return next();
+
+    // Cookie tabanlı isteklerde CSRF token kontrolü
+    if (req.cookies?.['jwt'] || req.cookies?.['refresh_token']) {
+      const csrfHeader = req.headers['x-csrf-token'];
+      const csrfCookie = req.cookies?.['csrf-token'];
+
+      if (!csrfHeader || !csrfCookie || csrfHeader !== csrfCookie) {
+        return res.status(403).json({
+          success: false,
+          message: 'CSRF token geçersiz',
+          error: 'Forbidden',
+        });
+      }
+    }
+
+    next();
+  });
+
+  // Global pipes
   app.useGlobalPipes(
+    // XSS sanitization — tüm string input'lardan tehlikeli tagları temizler
+    new SanitizePipe(),
+    // Validation — whitelist + transform
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

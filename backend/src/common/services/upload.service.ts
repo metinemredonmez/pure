@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as Minio from 'minio';
 import sharp from 'sharp';
 import * as crypto from 'crypto';
+import * as net from 'net';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -95,6 +96,9 @@ export class UploadService {
       throw new BadRequestException('Dosya boyutu maksimum 10MB olmalı');
     }
 
+    // ClamAV virus scan
+    await this.ensureClean(file);
+
     const { maxWidth = 1200, maxHeight = 1200, quality = 80 } = options;
 
     // Process image with sharp
@@ -166,6 +170,9 @@ export class UploadService {
     if (file.size > 50 * 1024 * 1024) {
       throw new BadRequestException('Dosya boyutu maksimum 50MB olmalı');
     }
+
+    // ClamAV virus scan
+    await this.ensureClean(file);
 
     // Generate unique filename
     const hash = crypto.randomBytes(8).toString('hex');
@@ -256,5 +263,89 @@ export class UploadService {
       .resize(width, height, { fit: 'cover' })
       .webp({ quality: 70 })
       .toBuffer();
+  }
+
+  // ============================================
+  // ClamAV VIRUS SCAN
+  // ============================================
+
+  /**
+   * ClamAV ile dosya tarama
+   * ClamAV daemon (clamd) TCP üzerinden bağlanır.
+   * Docker'da: clamav container port 3310
+   *
+   * Kullanım: uploadImage/uploadDocument içinde otomatik çağrılır
+   * ClamAV yoksa/kapalıysa dosya kabul edilir (graceful degradation)
+   */
+  async scanFile(buffer: Buffer): Promise<{ clean: boolean; virus?: string }> {
+    const clamHost = this.config.get('CLAMAV_HOST') || 'localhost';
+    const clamPort = parseInt(this.config.get('CLAMAV_PORT') || '3310');
+    const scanEnabled = this.config.get('CLAMAV_ENABLED') !== 'false';
+
+    if (!scanEnabled) {
+      return { clean: true };
+    }
+
+    return new Promise((resolve) => {
+      const socket = new net.Socket();
+      let response = '';
+
+      // Timeout: ClamAV cevap vermezse dosyayı kabul et
+      socket.setTimeout(10000);
+
+      socket.on('timeout', () => {
+        this.logger.warn('ClamAV timeout — dosya kabul edildi (scan atlandı)');
+        socket.destroy();
+        resolve({ clean: true });
+      });
+
+      socket.on('error', (err) => {
+        this.logger.warn(`ClamAV bağlantı hatası: ${err.message} — dosya kabul edildi`);
+        resolve({ clean: true });
+      });
+
+      socket.on('data', (data) => {
+        response += data.toString();
+      });
+
+      socket.on('end', () => {
+        // ClamAV cevabı: "stream: OK" veya "stream: VirusName FOUND"
+        if (response.includes('FOUND')) {
+          const virusName = response.replace('stream: ', '').replace(' FOUND', '').trim();
+          this.logger.error(`🦠 Virus tespit edildi: ${virusName}`);
+          resolve({ clean: false, virus: virusName });
+        } else {
+          resolve({ clean: true });
+        }
+      });
+
+      socket.connect(clamPort, clamHost, () => {
+        // INSTREAM komutu: boyut + veri gönder
+        socket.write('zINSTREAM\0');
+
+        // Chunk boyutunu 4-byte big-endian olarak gönder
+        const sizeBuffer = Buffer.alloc(4);
+        sizeBuffer.writeUInt32BE(buffer.length, 0);
+        socket.write(sizeBuffer);
+        socket.write(buffer);
+
+        // Son chunk: 0 boyutunda (stream sonu)
+        const endBuffer = Buffer.alloc(4);
+        endBuffer.writeUInt32BE(0, 0);
+        socket.write(endBuffer);
+      });
+    });
+  }
+
+  /**
+   * Upload öncesi virus tarama wrapper
+   */
+  private async ensureClean(file: Express.Multer.File): Promise<void> {
+    const result = await this.scanFile(file.buffer);
+    if (!result.clean) {
+      throw new BadRequestException(
+        `Dosya güvenlik taramasından geçemedi. Tespit edilen tehdit: ${result.virus}`,
+      );
+    }
   }
 }
