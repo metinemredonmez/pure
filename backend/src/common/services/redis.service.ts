@@ -137,4 +137,112 @@ export class RedisService implements OnModuleDestroy {
       await this.client.set(key, value);
     }
   }
+
+  // ═══════════════════════════════════════
+  // CACHE MANAGEMENT
+  // ═══════════════════════════════════════
+
+  /**
+   * Get all keys matching a pattern
+   */
+  async keys(pattern: string): Promise<string[]> {
+    return this.client.keys(pattern);
+  }
+
+  /**
+   * Scan keys matching a pattern (better for large datasets)
+   */
+  async scan(pattern: string, count = 100): Promise<string[]> {
+    const keys: string[] = [];
+    let cursor = '0';
+
+    do {
+      const [nextCursor, matchedKeys] = await this.client.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        count,
+      );
+      cursor = nextCursor;
+      keys.push(...matchedKeys);
+    } while (cursor !== '0');
+
+    return keys;
+  }
+
+  /**
+   * Delete multiple keys by pattern
+   */
+  async deleteByPattern(pattern: string): Promise<number> {
+    const keys = await this.scan(pattern);
+    if (keys.length === 0) return 0;
+
+    const pipeline = this.client.pipeline();
+    keys.forEach((key) => pipeline.del(key));
+    await pipeline.exec();
+
+    return keys.length;
+  }
+
+  /**
+   * Delete multiple specific keys
+   */
+  async deleteMany(keys: string[]): Promise<number> {
+    if (keys.length === 0) return 0;
+    return this.client.del(...keys);
+  }
+
+  /**
+   * Flush entire database (USE WITH CAUTION)
+   */
+  async flushAll(): Promise<void> {
+    await this.client.flushdb();
+  }
+
+  /**
+   * Get Redis server info
+   */
+  async getInfo(): Promise<Record<string, string>> {
+    const info = await this.client.info();
+    const lines = info.split('\r\n');
+    const result: Record<string, string> = {};
+
+    for (const line of lines) {
+      if (line && !line.startsWith('#')) {
+        const [key, value] = line.split(':');
+        if (key && value) {
+          result[key] = value;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Get database size (total key count)
+   */
+  async dbSize(): Promise<number> {
+    return this.client.dbsize();
+  }
+
+  /**
+   * Get memory usage
+   */
+  async getMemoryUsage(): Promise<{ used: string; peak: string }> {
+    const info = await this.getInfo();
+    return {
+      used: info['used_memory_human'] || '0B',
+      peak: info['used_memory_peak_human'] || '0B',
+    };
+  }
+
+  /**
+   * Get uptime in seconds
+   */
+  async getUptime(): Promise<number> {
+    const info = await this.getInfo();
+    return parseInt(info['uptime_in_seconds'] || '0', 10);
+  }
 }

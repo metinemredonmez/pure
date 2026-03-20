@@ -1384,3 +1384,49 @@ model ShippingSettings {
   @@map("shipping_settings")
 }
 
+// ============================================
+// CRON JOB YÖNETİMİ
+// ============================================
+
+enum CronJobStatus {
+  SUCCESS
+  FAILED
+  RUNNING
+  SKIPPED
+}
+
+model CronJob {
+  id          String   @id @default(cuid())
+  name        String   @unique // "expire-points", "daily-report" vb.
+  description String?
+  schedule    String   // "0 0 * * *" cron expression
+  isActive    Boolean  @default(true)
+  lastRunAt   DateTime?
+  nextRunAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs        CronJobLog[]
+
+  @@map("cron_jobs")
+}
+
+model CronJobLog {
+  id         String        @id @default(cuid())
+  jobId      String
+  job        CronJob       @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobName    String        // Denormalize for quick access
+  status     CronJobStatus
+  startedAt  DateTime
+  finishedAt DateTime?
+  duration   Int?          // milisaniye
+  result     Json?         // { processed: 50, errors: 0 }
+  error      String?       // Hata mesajı (varsa)
+  metadata   Json?         // Ek bilgiler
+  createdAt  DateTime      @default(now())
+
+  @@index([jobId, createdAt])
+  @@index([jobName, createdAt])
+  @@map("cron_job_logs")
+}
+
