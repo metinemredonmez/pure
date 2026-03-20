@@ -4,6 +4,7 @@ import { SanitizePipe } from './common/pipes/sanitize.pipe';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import { Request, Response, NextFunction } from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -73,7 +74,7 @@ async function bootstrap() {
   // CSRF Protection — Double Submit Cookie Pattern
   // API JWT Bearer token zaten CSRF'e karşı koruma sağlar (cookie değil header'da)
   // Ama HttpOnly cookie kullanan endpointler için ek koruma:
-  app.use((req: any, res: any, next: any) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     // Safe methods skip
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
 
