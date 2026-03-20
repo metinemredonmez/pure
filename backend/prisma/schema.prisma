@@ -74,6 +74,7 @@ model User {
   auditLogs     AuditLog[]
   partnerSales  PartnerSale[] @relation("PartnerSales")
   notifications InAppNotification[]
+  loyaltyAccount LoyaltyAccount?
 
   @@map("users")
 }
@@ -876,4 +877,100 @@ model PartnerSale {
   createdAt  DateTime @default(now())
 
   @@map("partner_sales")
+}
+
+// ============================================
+// LOYALTY / SADAKAT SİSTEMİ
+// ============================================
+
+enum LoyaltyTier {
+  BRONZE    // 0 - 499 puan
+  SILVER    // 500 - 1499 puan
+  GOLD      // 1500 - 3999 puan
+  PLATINUM  // 4000+ puan
+}
+
+enum PointTransactionType {
+  EARN_ORDER          // Sipariş puan kazanımı
+  EARN_SUBSCRIPTION   // Abonelik bonus puanı
+  EARN_REVIEW         // Yorum yapma puanı
+  EARN_REFERRAL       // Arkadaş davet puanı
+  EARN_BIRTHDAY       // Doğum günü hediye puanı
+  EARN_MILESTONE      // Her 10 sipariş = bonus
+  EARN_FIRST_ORDER    // İlk sipariş bonus
+  EARN_SIGNUP         // Kayıt bonusu
+  SPEND_REWARD        // Ödül harcama
+  SPEND_DISCOUNT      // İndirim olarak kullanma
+  EXPIRE              // Süresi dolan puan
+  ADMIN_ADJUST        // Admin manuel ayarlama
+}
+
+model LoyaltyAccount {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  totalPoints     Int         @default(0)   // Toplam kazanılan puan
+  availablePoints Int         @default(0)   // Kullanılabilir puan
+  spentPoints     Int         @default(0)   // Harcanan puan
+  expiredPoints   Int         @default(0)   // Süresi dolan puan
+  tier            LoyaltyTier @default(BRONZE)
+  totalOrders     Int         @default(0)   // Toplam sipariş sayısı (milestone için)
+  freeRewardsEarned Int       @default(0)   // Kazanılan ücretsiz kahve sayısı
+  freeRewardsClaimed Int      @default(0)   // Kullanılan ücretsiz kahve sayısı
+  referralCode    String      @unique       // Kişiye özel davet kodu
+  referredBy      String?                   // Kim davet etti
+  lastActivityAt  DateTime    @default(now())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  transactions    PointTransaction[]
+  rewards         LoyaltyReward[]
+
+  @@map("loyalty_accounts")
+}
+
+model PointTransaction {
+  id              String               @id @default(cuid())
+  loyaltyAccountId String
+  loyaltyAccount  LoyaltyAccount       @relation(fields: [loyaltyAccountId], references: [id], onDelete: Cascade)
+  type            PointTransactionType
+  points          Int                  // + kazanım, - harcama
+  description     String               // "Sipariş #OLN-2024-000042 puanı"
+  orderId         String?              // İlişkili sipariş
+  expiresAt       DateTime?            // Puanın son kullanma tarihi
+  metadata        Json?                // Ek bilgiler
+  createdAt       DateTime             @default(now())
+
+  @@index([loyaltyAccountId, createdAt])
+  @@map("point_transactions")
+}
+
+model LoyaltyReward {
+  id              String         @id @default(cuid())
+  loyaltyAccountId String
+  loyaltyAccount  LoyaltyAccount @relation(fields: [loyaltyAccountId], references: [id], onDelete: Cascade)
+  name            String         // "Ücretsiz Kahve", "%15 İndirim"
+  type            String         // "free_coffee", "discount_percent", "discount_amount", "free_shipping"
+  value           Decimal        @db.Decimal(10, 2) // İndirim miktarı veya yüzdesi
+  pointsCost      Int            // Kaç puan karşılığı
+  code            String         @unique // Kupon kodu olarak kullanılır
+  isUsed          Boolean        @default(false)
+  usedAt          DateTime?
+  usedOrderId     String?
+  expiresAt       DateTime       // Son kullanma tarihi
+  createdAt       DateTime       @default(now())
+
+  @@index([loyaltyAccountId])
+  @@map("loyalty_rewards")
+}
+
+model LoyaltyConfig {
+  id                  String   @id @default(cuid())
+  key                 String   @unique
+  value               String
+  description         String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("loyalty_config")
 }

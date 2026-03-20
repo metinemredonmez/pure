@@ -20,6 +20,7 @@ import { ChatbotModule } from './modules/chatbot/chatbot.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { AiServiceModule } from './modules/ai-service/ai-service.module';
 import { PartnerModule } from './modules/partner/partner.module';
+import { LoyaltyModule } from './modules/loyalty/loyalty.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -59,6 +60,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     NotificationModule,
     AiServiceModule,
     PartnerModule,
+    LoyaltyModule,
   ],
   controllers: [AppController],
   providers: [
