@@ -72,6 +72,48 @@ export class SubscriptionService {
     });
   }
 
+  /**
+   * Ownership-checked pause
+   */
+  async pauseForUser(id: string, userId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) throw new NotFoundException('Abonelik bulunamadı');
+    if (subscription.userId !== userId) {
+      throw new NotFoundException('Abonelik bulunamadı');
+    }
+    return this.pause(id);
+  }
+
+  /**
+   * Ownership-checked resume
+   */
+  async resumeForUser(id: string, userId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) throw new NotFoundException('Abonelik bulunamadı');
+    if (subscription.userId !== userId) {
+      throw new NotFoundException('Abonelik bulunamadı');
+    }
+    return this.resume(id);
+  }
+
+  /**
+   * Ownership-checked cancel
+   */
+  async cancelForUser(id: string, userId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id },
+    });
+    if (!subscription) throw new NotFoundException('Abonelik bulunamadı');
+    if (subscription.userId !== userId) {
+      throw new NotFoundException('Abonelik bulunamadı');
+    }
+    return this.cancel(id);
+  }
+
   async getUserSubscriptions(userId: string) {
     return this.prisma.subscription.findMany({
       where: { userId },

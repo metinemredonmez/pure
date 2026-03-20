@@ -142,7 +142,7 @@ Kurallar:
    * Phase 1: Kural tabanlı yanıt üretici
    * Phase 2'de LangChain/RAG ile değiştirilecek
    */
-  private generateResponse(message: string, history: ChatMessage[]): string {
+  private generateResponse(message: string, _history: ChatMessage[]): string {
     const lower = message.toLowerCase();
 
     if (

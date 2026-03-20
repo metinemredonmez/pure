@@ -120,7 +120,7 @@ export class AdminCacheController {
       example: {
         success: true,
         deletedCount: 150,
-        message: 'Ürünler cache\'i temizlendi. 150 key silindi.',
+        message: "Ürünler cache'i temizlendi. 150 key silindi.",
       },
     },
   })

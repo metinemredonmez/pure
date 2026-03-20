@@ -61,18 +61,16 @@ export class PaymentService {
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
 
     if (!merchantId || !merchantKey || !merchantSalt) {
-      this.logger.warn('PayTR credentials not configured');
-      return {
-        paymentId: payment.id,
-        provider: 'paytr',
-        error: 'Payment provider not configured',
-        testMode: true,
-      };
+      this.logger.error('PayTR credentials not configured');
+      throw new BadRequestException(
+        'Ödeme servisi yapılandırılmamış. Lütfen yönetici ile iletişime geçin.',
+      );
     }
 
     // Kullanıcı bilgileri
     const userEmail = order.user?.email || 'guest@olentia.com';
-    const userName = `${order.user?.firstName || 'Guest'} ${order.user?.lastName || ''}`.trim();
+    const userName =
+      `${order.user?.firstName || 'Guest'} ${order.user?.lastName || ''}`.trim();
     const userPhone = order.user?.phone || '05000000000';
     const userAddress = 'Türkiye';
 
@@ -118,7 +116,11 @@ export class PaymentService {
       currency +
       testMode;
 
-    const paytrToken = this.generatePayTRToken(hashStr, merchantKey, merchantSalt);
+    const paytrToken = this.generatePayTRToken(
+      hashStr,
+      merchantKey,
+      merchantSalt,
+    );
 
     // PayTR API'ye POST
     const postData = {
@@ -144,16 +146,21 @@ export class PaymentService {
     };
 
     try {
-      const response = await fetch('https://www.paytr.com/odeme/api/get-token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(postData as any).toString(),
-      });
+      const response = await fetch(
+        'https://www.paytr.com/odeme/api/get-token',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams(postData as any).toString(),
+        },
+      );
 
       const result = await response.json();
 
       if (result.status === 'success') {
-        await this.logPayment(payment.id, 'paytr.token.success', { token: result.token });
+        await this.logPayment(payment.id, 'paytr.token.success', {
+          token: result.token,
+        });
         return {
           paymentId: payment.id,
           provider: 'paytr',
@@ -166,19 +173,22 @@ export class PaymentService {
         throw new BadRequestException(`Ödeme başlatılamadı: ${result.reason}`);
       }
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       this.logger.error('PayTR API error:', error);
-      // Fallback for development/test
-      return {
-        paymentId: payment.id,
-        provider: 'paytr',
-        testMode: true,
-        message: 'PayTR test mode - gerçek API çağrısı yapılmadı',
-        amount: Number(payment.amount),
-      };
+      await this.logPayment(payment.id, 'paytr.api.error', {
+        error: String(error),
+      });
+      throw new BadRequestException(
+        'Ödeme servisi şu anda kullanılamıyor. Lütfen tekrar deneyin.',
+      );
     }
   }
 
-  private generatePayTRToken(hashStr: string, merchantKey: string, merchantSalt: string): string {
+  private generatePayTRToken(
+    hashStr: string,
+    merchantKey: string,
+    merchantSalt: string,
+  ): string {
     const hmac = crypto.createHmac('sha256', merchantKey + merchantSalt);
     hmac.update(hashStr);
     return Buffer.from(hmac.digest('hex')).toString('base64');
@@ -192,16 +202,15 @@ export class PaymentService {
   async initIyzico(payment: any, order: any) {
     const apiKey = this.config.get<string>('iyzico.apiKey');
     const secretKey = this.config.get<string>('iyzico.secretKey');
-    const baseUrl = this.config.get<string>('iyzico.baseUrl') || 'https://sandbox-api.iyzipay.com';
+    const baseUrl =
+      this.config.get<string>('iyzico.baseUrl') ||
+      'https://sandbox-api.iyzipay.com';
 
     if (!apiKey || !secretKey) {
-      this.logger.warn('iyzico credentials not configured');
-      return {
-        paymentId: payment.id,
-        provider: 'iyzico',
-        error: 'Payment provider not configured',
-        testMode: true,
-      };
+      this.logger.error('iyzico credentials not configured');
+      throw new BadRequestException(
+        'Ödeme servisi yapılandırılmamış. Lütfen yönetici ile iletişime geçin.',
+      );
     }
 
     // Conversation ID (unique per transaction)
@@ -265,23 +274,33 @@ export class PaymentService {
 
     // Generate authorization header
     const randomString = this.generateRandomString(8);
-    const authString = this.generateIyzicoAuth(apiKey, secretKey, randomString, requestBody);
+    const authString = this.generateIyzicoAuth(
+      apiKey,
+      secretKey,
+      randomString,
+      requestBody,
+    );
 
     try {
-      const response = await fetch(`${baseUrl}/payment/iyzipos/checkoutform/initialize`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authString,
-          'x-iyzi-rnd': randomString,
+      const response = await fetch(
+        `${baseUrl}/payment/iyzipos/checkoutform/initialize`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authString,
+            'x-iyzi-rnd': randomString,
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       const result = await response.json();
 
       if (result.status === 'success') {
-        await this.logPayment(payment.id, 'iyzico.init.success', { token: result.token });
+        await this.logPayment(payment.id, 'iyzico.init.success', {
+          token: result.token,
+        });
         return {
           paymentId: payment.id,
           provider: 'iyzico',
@@ -292,17 +311,19 @@ export class PaymentService {
       } else {
         this.logger.error('iyzico init error:', result.errorMessage);
         await this.logPayment(payment.id, 'iyzico.init.error', result);
-        throw new BadRequestException(`Ödeme başlatılamadı: ${result.errorMessage}`);
+        throw new BadRequestException(
+          `Ödeme başlatılamadı: ${result.errorMessage}`,
+        );
       }
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       this.logger.error('iyzico API error:', error);
-      return {
-        paymentId: payment.id,
-        provider: 'iyzico',
-        testMode: true,
-        message: 'iyzico test mode - gerçek API çağrısı yapılmadı',
-        amount: Number(payment.amount),
-      };
+      await this.logPayment(payment.id, 'iyzico.api.error', {
+        error: String(error),
+      });
+      throw new BadRequestException(
+        'Ödeme servisi şu anda kullanılamıyor. Lütfen tekrar deneyin.',
+      );
     }
   }
 
@@ -354,7 +375,9 @@ export class PaymentService {
   // ══════════════════════════════════════════════
 
   async initGooglePay(orderId: string) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new BadRequestException('Sipariş bulunamadı');
 
     return {
@@ -373,11 +396,14 @@ export class PaymentService {
   // ══════════════════════════════════════════════
 
   async initApplePay(orderId: string) {
-    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
     if (!order) throw new BadRequestException('Sipariş bulunamadı');
 
     return {
-      merchantIdentifier: this.config.get('applePay.merchantId') || 'merchant.com.olentia',
+      merchantIdentifier:
+        this.config.get('applePay.merchantId') || 'merchant.com.olentia',
       merchantName: 'Olentia Pure',
       amount: Number(order.total),
       currency: 'TRY',
@@ -385,6 +411,40 @@ export class PaymentService {
       supportedNetworks: ['visa', 'masterCard', 'amex'],
       merchantCapabilities: ['supports3DS', 'supportsCredit', 'supportsDebit'],
     };
+  }
+
+  // ══════════════════════════════════════════════
+  // SECURE METHODS (with ownership check)
+  // ══════════════════════════════════════════════
+
+  private async verifyOrderOwnership(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+    if (!order) throw new BadRequestException('Sipariş bulunamadı');
+    if (order.userId !== userId) {
+      throw new BadRequestException('Sipariş bulunamadı');
+    }
+    return order;
+  }
+
+  async createCheckoutSessionSecure(
+    orderId: string,
+    method: PaymentMethod,
+    userId: string,
+  ) {
+    await this.verifyOrderOwnership(orderId, userId);
+    return this.createCheckoutSession(orderId, method);
+  }
+
+  async initGooglePaySecure(orderId: string, userId: string) {
+    await this.verifyOrderOwnership(orderId, userId);
+    return this.initGooglePay(orderId);
+  }
+
+  async initApplePaySecure(orderId: string, userId: string) {
+    await this.verifyOrderOwnership(orderId, userId);
+    return this.initApplePay(orderId);
   }
 
   // ══════════════════════════════════════════════
@@ -407,18 +467,28 @@ export class PaymentService {
     const merchantKey = this.config.get<string>('paytr.merchantKey');
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
 
-    if (merchantKey && merchantSalt) {
-      const hashStr = data.merchant_oid + merchantSalt + data.status + data.total_amount;
-      const expectedHash = crypto
-        .createHmac('sha256', merchantKey)
-        .update(hashStr)
-        .digest('base64');
+    if (!merchantKey || !merchantSalt) {
+      this.logger.error(
+        'PayTR webhook credentials not configured — rejecting webhook',
+      );
+      return { status: 'FAIL' };
+    }
 
-      if (data.hash !== expectedHash) {
-        this.logger.error('PayTR webhook hash mismatch');
-        await this.logPayment(data.merchant_oid, 'paytr.webhook.hash_mismatch', data);
-        return { status: 'FAIL' };
-      }
+    const hashStr =
+      data.merchant_oid + merchantSalt + data.status + data.total_amount;
+    const expectedHash = crypto
+      .createHmac('sha256', merchantKey)
+      .update(hashStr)
+      .digest('base64');
+
+    if (data.hash !== expectedHash) {
+      this.logger.error('PayTR webhook hash mismatch');
+      await this.logPayment(
+        data.merchant_oid,
+        'paytr.webhook.hash_mismatch',
+        data,
+      );
+      return { status: 'FAIL' };
     }
 
     const payment = await this.prisma.payment.findUnique({
@@ -430,32 +500,63 @@ export class PaymentService {
       return { status: 'FAIL' };
     }
 
-    const newStatus = data.status === 'success' ? PaymentStatus.COMPLETED : PaymentStatus.FAILED;
+    const newStatus =
+      data.status === 'success'
+        ? PaymentStatus.COMPLETED
+        : PaymentStatus.FAILED;
 
-    await this.prisma.payment.update({
-      where: { id: payment.id },
-      data: {
-        status: newStatus,
-        paidAt: newStatus === PaymentStatus.COMPLETED ? new Date() : null,
-        providerPaymentId: data.merchant_oid,
-        providerData: data as any,
-      },
+    // Use transaction for atomic updates
+    await this.prisma.$transaction(async (tx) => {
+      await tx.payment.update({
+        where: { id: payment.id },
+        data: {
+          status: newStatus,
+          paidAt: newStatus === PaymentStatus.COMPLETED ? new Date() : null,
+          providerPaymentId: data.merchant_oid,
+          providerData: data as any,
+        },
+      });
+
+      // Sipariş durumunu güncelle
+      if (newStatus === PaymentStatus.COMPLETED) {
+        await tx.order.update({
+          where: { id: payment.orderId },
+          data: { status: 'CONFIRMED', paidAt: new Date() },
+        });
+        this.logger.log(`Payment completed: ${payment.id}`);
+      } else {
+        // Payment failed - restore stock
+        const order = await tx.order.findUnique({
+          where: { id: payment.orderId },
+          include: { items: true },
+        });
+
+        if (order) {
+          // Restore stock for each item
+          for (const item of order.items) {
+            if (item.variantId) {
+              await tx.productVariant.update({
+                where: { id: item.variantId },
+                data: { stock: { increment: item.quantity } },
+              });
+            } else {
+              await tx.product.update({
+                where: { id: item.productId },
+                data: { stock: { increment: item.quantity } },
+              });
+            }
+          }
+        }
+
+        await tx.order.update({
+          where: { id: payment.orderId },
+          data: { status: 'PAYMENT_FAILED' },
+        });
+        this.logger.warn(
+          `Payment failed: ${payment.id} - ${data.failed_reason_msg}`,
+        );
+      }
     });
-
-    // Sipariş durumunu güncelle
-    if (newStatus === PaymentStatus.COMPLETED) {
-      await this.prisma.order.update({
-        where: { id: payment.orderId },
-        data: { status: 'CONFIRMED', paidAt: new Date() },
-      });
-      this.logger.log(`Payment completed: ${payment.id}`);
-    } else {
-      await this.prisma.order.update({
-        where: { id: payment.orderId },
-        data: { status: 'PAYMENT_FAILED' },
-      });
-      this.logger.warn(`Payment failed: ${payment.id} - ${data.failed_reason_msg}`);
-    }
 
     await this.logPayment(payment.id, `paytr.webhook.${data.status}`, data);
     return { status: 'OK' };
@@ -469,7 +570,9 @@ export class PaymentService {
   }) {
     const secretKey = this.config.get<string>('iyzico.secretKey');
     const apiKey = this.config.get<string>('iyzico.apiKey');
-    const baseUrl = this.config.get<string>('iyzico.baseUrl') || 'https://sandbox-api.iyzipay.com';
+    const baseUrl =
+      this.config.get<string>('iyzico.baseUrl') ||
+      'https://sandbox-api.iyzipay.com';
 
     // Token ile ödeme sonucunu sorgula
     const requestBody = {
@@ -479,18 +582,26 @@ export class PaymentService {
     };
 
     const randomString = this.generateRandomString(8);
-    const authString = this.generateIyzicoAuth(apiKey!, secretKey!, randomString, requestBody);
+    const authString = this.generateIyzicoAuth(
+      apiKey!,
+      secretKey!,
+      randomString,
+      requestBody,
+    );
 
     try {
-      const response = await fetch(`${baseUrl}/payment/iyzipos/checkoutform/auth/ecom/detail`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: authString,
-          'x-iyzi-rnd': randomString,
+      const response = await fetch(
+        `${baseUrl}/payment/iyzipos/checkoutform/auth/ecom/detail`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: authString,
+            'x-iyzi-rnd': randomString,
+          },
+          body: JSON.stringify(requestBody),
         },
-        body: JSON.stringify(requestBody),
-      });
+      );
 
       const result = await response.json();
 
@@ -503,32 +614,67 @@ export class PaymentService {
         return { status: 'FAIL' };
       }
 
-      const newStatus = result.paymentStatus === 'SUCCESS'
-        ? PaymentStatus.COMPLETED
-        : PaymentStatus.FAILED;
+      const newStatus =
+        result.paymentStatus === 'SUCCESS'
+          ? PaymentStatus.COMPLETED
+          : PaymentStatus.FAILED;
 
-      await this.prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: newStatus,
-          paidAt: newStatus === PaymentStatus.COMPLETED ? new Date() : null,
-          providerPaymentId: result.paymentId,
-          providerData: result as any,
-        },
+      // Use transaction for atomic updates
+      await this.prisma.$transaction(async (tx) => {
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: newStatus,
+            paidAt: newStatus === PaymentStatus.COMPLETED ? new Date() : null,
+            providerPaymentId: result.paymentId,
+            providerData: result,
+          },
+        });
+
+        if (newStatus === PaymentStatus.COMPLETED) {
+          await tx.order.update({
+            where: { id: payment.orderId },
+            data: { status: 'CONFIRMED', paidAt: new Date() },
+          });
+        } else {
+          // Payment failed - restore stock
+          const order = await tx.order.findUnique({
+            where: { id: payment.orderId },
+            include: { items: true },
+          });
+          if (order) {
+            for (const item of order.items) {
+              if (item.variantId) {
+                await tx.productVariant.update({
+                  where: { id: item.variantId },
+                  data: { stock: { increment: item.quantity } },
+                });
+              } else {
+                await tx.product.update({
+                  where: { id: item.productId },
+                  data: { stock: { increment: item.quantity } },
+                });
+              }
+            }
+          }
+          await tx.order.update({
+            where: { id: payment.orderId },
+            data: { status: 'PAYMENT_FAILED' },
+          });
+        }
       });
 
-      if (newStatus === PaymentStatus.COMPLETED) {
-        await this.prisma.order.update({
-          where: { id: payment.orderId },
-          data: { status: 'CONFIRMED', paidAt: new Date() },
-        });
-      }
-
-      await this.logPayment(payment.id, `iyzico.webhook.${result.paymentStatus}`, result);
+      await this.logPayment(
+        payment.id,
+        `iyzico.webhook.${result.paymentStatus}`,
+        result,
+      );
       return { status: 'OK' };
     } catch (error) {
       this.logger.error('iyzico webhook error:', error);
-      await this.logPayment(data.conversationId, 'iyzico.webhook.error', { error: String(error) });
+      await this.logPayment(data.conversationId, 'iyzico.webhook.error', {
+        error: String(error),
+      });
       return { status: 'FAIL' };
     }
   }
@@ -540,22 +686,64 @@ export class PaymentService {
   async refund(paymentId: string, amount: number, reason?: string) {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
-      include: { order: true },
+      include: {
+        order: { include: { items: true } },
+        refunds: { where: { status: 'COMPLETED' } },
+      },
     });
 
     if (!payment) throw new BadRequestException('Ödeme bulunamadı');
-    if (payment.status !== PaymentStatus.COMPLETED) {
-      throw new BadRequestException('Sadece tamamlanmış ödemeler iade edilebilir');
+    if (
+      payment.status !== PaymentStatus.COMPLETED &&
+      payment.status !== PaymentStatus.REFUNDED
+    ) {
+      throw new BadRequestException(
+        'Sadece tamamlanmış ödemeler iade edilebilir',
+      );
     }
 
-    // İade kaydı oluştur
-    const refund = await this.prisma.refund.create({
-      data: {
-        paymentId,
-        amount,
-        reason,
-        status: 'PENDING',
-      },
+    // Calculate total already refunded
+    const totalRefunded = payment.refunds.reduce(
+      (sum, r) => sum + Number(r.amount),
+      0,
+    );
+    const maxRefundable = Number(payment.amount) - totalRefunded;
+
+    if (amount > maxRefundable) {
+      throw new BadRequestException(
+        `İade tutarı maksimum ${maxRefundable.toFixed(2)} TL olabilir`,
+      );
+    }
+
+    // İade kaydı oluştur ve stok geri al (transaction ile)
+    const refund = await this.prisma.$transaction(async (tx) => {
+      const newRefund = await tx.refund.create({
+        data: {
+          paymentId,
+          amount,
+          reason,
+          status: 'PENDING',
+        },
+      });
+
+      // Restore stock for refunded order (full refund case)
+      if (amount === Number(payment.amount) && payment.order) {
+        for (const item of payment.order.items) {
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+      }
+
+      return newRefund;
     });
 
     // PayTR iade API çağrısı
@@ -563,10 +751,16 @@ export class PaymentService {
     const merchantKey = this.config.get<string>('paytr.merchantKey');
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
 
-    if (merchantId && merchantKey && merchantSalt && payment.providerPaymentId) {
+    if (
+      merchantId &&
+      merchantKey &&
+      merchantSalt &&
+      payment.providerPaymentId
+    ) {
       try {
         const refundAmount = Math.round(amount * 100); // Kuruş
-        const hashStr = merchantId + payment.providerPaymentId + refundAmount + merchantSalt;
+        const hashStr =
+          merchantId + payment.providerPaymentId + refundAmount + merchantSalt;
         const paytrToken = crypto
           .createHmac('sha256', merchantKey)
           .update(hashStr)
@@ -621,7 +815,11 @@ export class PaymentService {
       });
     }
 
-    await this.logPayment(paymentId, 'refund.created', { amount, reason, refundId: refund.id });
+    await this.logPayment(paymentId, 'refund.created', {
+      amount,
+      reason,
+      refundId: refund.id,
+    });
     return refund;
   }
 

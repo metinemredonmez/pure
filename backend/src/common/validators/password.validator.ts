@@ -82,20 +82,23 @@ export class IsStrongPasswordConstraint implements ValidatorConstraintInterface 
     }
 
     // Özel karakter kontrolü
-    if (!/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'/`~]/.test(password)) {
-      this.failureReason = 'Şifre en az 1 özel karakter içermeli (!@#$%^&* vb.)';
+    if (!/[!@#$%^&*(),.?":{}|<>\-_=+[\]\\;'/`~]/.test(password)) {
+      this.failureReason =
+        'Şifre en az 1 özel karakter içermeli (!@#$%^&* vb.)';
       return false;
     }
 
     // Yaygın şifre kontrolü
     if (this.commonPasswords.includes(password.toLowerCase())) {
-      this.failureReason = 'Bu şifre çok yaygın. Lütfen daha güçlü bir şifre seçin';
+      this.failureReason =
+        'Bu şifre çok yaygın. Lütfen daha güçlü bir şifre seçin';
       return false;
     }
 
     // Ardışık karakter kontrolü (aaa, 111, abc, 123 vb.)
     if (this.hasSequentialChars(password, 4)) {
-      this.failureReason = 'Şifre ardışık karakterler içermemeli (aaaa, 1234, abcd vb.)';
+      this.failureReason =
+        'Şifre ardışık karakterler içermemeli (aaaa, 1234, abcd vb.)';
       return false;
     }
 
@@ -195,7 +198,7 @@ export function calculatePasswordStrength(password: string): {
   if (/[0-9]/.test(password)) score += 15;
   else suggestions.push('Rakam ekleyin');
 
-  if (/[!@#$%^&*(),.?":{}|<>\-_=+\[\]\\;'/`~]/.test(password)) score += 20;
+  if (/[!@#$%^&*(),.?":{}|<>\-_=+[\]\\;'/`~]/.test(password)) score += 20;
   else suggestions.push('Özel karakter ekleyin');
 
   // Benzersizlik bonusu

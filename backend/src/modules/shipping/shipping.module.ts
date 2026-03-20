@@ -21,12 +21,7 @@ import { IdentityModule } from '../identity/identity.module';
     ShippingWebhookController,
     PublicShippingController,
   ],
-  providers: [
-    ShippingService,
-    YurticiCarrier,
-    ArasCarrier,
-    MngCarrier,
-  ],
+  providers: [ShippingService, YurticiCarrier, ArasCarrier, MngCarrier],
   exports: [ShippingService],
 })
 export class ShippingModule {}

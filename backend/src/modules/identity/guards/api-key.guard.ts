@@ -6,6 +6,7 @@ import {
   Logger,
   SetMetadata,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { EncryptionService } from '../../../common/services/encryption.service';
@@ -25,10 +26,10 @@ export class ApiKeyGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // @RequireApiKey() decorator'ı var mı kontrol et
-    const requireApiKey = this.reflector.getAllAndOverride<boolean>(REQUIRE_API_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requireApiKey = this.reflector.getAllAndOverride<boolean>(
+      REQUIRE_API_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requireApiKey) return true;
 
@@ -47,10 +48,7 @@ export class ApiKeyGuard implements CanActivate {
     const keyRecord = await this.prisma.apiKey.findFirst({
       where: {
         isActive: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } },
-        ],
+        OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
       },
     });
 
@@ -83,7 +81,10 @@ export class ApiKeyGuard implements CanActivate {
     return true;
   }
 
-  private async verifyApiKey(apiKey: string, storedHash: string): Promise<boolean> {
+  private async verifyApiKey(
+    apiKey: string,
+    storedHash: string,
+  ): Promise<boolean> {
     // API key formatı: prefix_randomstring
     const hash = this.encryption.hashApiKey(apiKey);
     return hash === storedHash;
@@ -96,8 +97,19 @@ export class ApiKeyGuard implements CanActivate {
 @Injectable()
 export class WebhookHmacGuard implements CanActivate {
   private readonly logger = new Logger(WebhookHmacGuard.name);
+  private readonly webhookSecret: string | undefined;
 
-  constructor(private encryption: EncryptionService) {}
+  constructor(
+    private encryption: EncryptionService,
+    private config: ConfigService,
+  ) {
+    this.webhookSecret = this.config.get('app.webhookSecret');
+    if (!this.webhookSecret && process.env.NODE_ENV === 'production') {
+      throw new Error(
+        'WEBHOOK_SECRET environment variable is required in production',
+      );
+    }
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -115,11 +127,11 @@ export class WebhookHmacGuard implements CanActivate {
     // Body'yi string olarak al
     const body = JSON.stringify(request.body);
 
-    // Webhook secret'ı (route'a göre farklı olabilir)
-    const webhookSecret = process.env.WEBHOOK_SECRET || 'default_webhook_secret';
+    // Webhook secret from config
+    const secret = this.webhookSecret || 'dev-webhook-secret-change-in-prod';
 
     // HMAC doğrula
-    const isValid = this.encryption.verifyHmac(body, signature, webhookSecret);
+    const isValid = this.encryption.verifyHmac(body, signature, secret);
 
     if (!isValid) {
       this.logger.warn('Invalid webhook signature');

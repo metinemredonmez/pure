@@ -42,22 +42,22 @@ export class SubscriptionController {
   @ApiBearerAuth('access-token')
   @Post('subscriptions/:id/pause')
   @ApiOperation({ summary: 'Pause subscription' })
-  pause(@Param('id') id: string) {
-    return this.subscriptionService.pause(id);
+  pause(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.subscriptionService.pauseForUser(id, userId);
   }
 
   @ApiBearerAuth('access-token')
   @Post('subscriptions/:id/resume')
   @ApiOperation({ summary: 'Resume subscription' })
-  resume(@Param('id') id: string) {
-    return this.subscriptionService.resume(id);
+  resume(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.subscriptionService.resumeForUser(id, userId);
   }
 
   @ApiBearerAuth('access-token')
   @Post('subscriptions/:id/cancel')
   @ApiOperation({ summary: 'Cancel subscription' })
-  cancel(@Param('id') id: string) {
-    return this.subscriptionService.cancel(id);
+  cancel(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.subscriptionService.cancelForUser(id, userId);
   }
 
   @ApiBearerAuth('access-token')

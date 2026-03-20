@@ -36,6 +36,7 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
+import { JwtBlacklistGuard } from './modules/identity/guards/jwt-blacklist.guard';
 import { RolesGuard } from './modules/identity/guards/roles.guard';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -90,6 +91,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
   providers: [
     // Global JWT auth guard (all routes protected by default)
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    // Global JWT blacklist guard (checks if token is revoked)
+    { provide: APP_GUARD, useClass: JwtBlacklistGuard },
     // Global roles guard
     { provide: APP_GUARD, useClass: RolesGuard },
     // Global rate limiting

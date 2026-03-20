@@ -11,7 +11,11 @@ export class EncryptionService {
     // 32 byte key for AES-256
     const secret =
       this.config.get('app.encryptionKey') || this.config.get('jwt.secret');
-    this.key = crypto.scryptSync(secret, 'salt', 32);
+    const salt = this.config.get('app.encryptionSalt');
+    if (!secret) {
+      throw new Error('Encryption key or JWT secret must be configured');
+    }
+    this.key = crypto.scryptSync(secret, salt, 32);
   }
 
   /**

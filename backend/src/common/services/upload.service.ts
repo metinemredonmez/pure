@@ -30,16 +30,25 @@ export class UploadService {
     private config: ConfigService,
     private prisma: PrismaService,
   ) {
+    const accessKey = this.config.get('minio.accessKey');
+    const secretKey = this.config.get('minio.secretKey');
+
+    if (process.env.NODE_ENV === 'production' && (!accessKey || !secretKey)) {
+      throw new Error(
+        'MINIO_ACCESS_KEY and MINIO_SECRET_KEY environment variables are required in production',
+      );
+    }
+
     this.minioClient = new Minio.Client({
       endPoint: this.config.get('minio.endpoint') || 'localhost',
       port: parseInt(this.config.get('minio.port') || '9002'),
       useSSL: this.config.get('minio.useSSL') === 'true',
-      accessKey: this.config.get('minio.accessKey') || 'olentia_minio',
-      secretKey: this.config.get('minio.secretKey') || 'olentia_minio_secret',
+      accessKey: accessKey || 'dev_minio_access',
+      secretKey: secretKey || 'dev_minio_secret',
     });
 
     this.bucket = this.config.get('minio.bucket') || 'olentia-media';
-    this.ensureBucket();
+    void this.ensureBucket();
   }
 
   private async ensureBucket() {
@@ -294,14 +303,18 @@ export class UploadService {
       socket.setTimeout(10000);
 
       socket.on('timeout', () => {
-        this.logger.warn('ClamAV timeout — dosya kabul edildi (scan atlandı)');
+        this.logger.error(
+          'ClamAV timeout — dosya reddedildi (güvenlik nedeniyle)',
+        );
         socket.destroy();
-        resolve({ clean: true });
+        resolve({ clean: false, virus: 'SCAN_TIMEOUT' });
       });
 
       socket.on('error', (err) => {
-        this.logger.warn(`ClamAV bağlantı hatası: ${err.message} — dosya kabul edildi`);
-        resolve({ clean: true });
+        this.logger.error(
+          `ClamAV bağlantı hatası: ${err.message} — dosya reddedildi`,
+        );
+        resolve({ clean: false, virus: 'SCAN_UNAVAILABLE' });
       });
 
       socket.on('data', (data) => {
@@ -311,7 +324,10 @@ export class UploadService {
       socket.on('end', () => {
         // ClamAV cevabı: "stream: OK" veya "stream: VirusName FOUND"
         if (response.includes('FOUND')) {
-          const virusName = response.replace('stream: ', '').replace(' FOUND', '').trim();
+          const virusName = response
+            .replace('stream: ', '')
+            .replace(' FOUND', '')
+            .trim();
           this.logger.error(`🦠 Virus tespit edildi: ${virusName}`);
           resolve({ clean: false, virus: virusName });
         } else {

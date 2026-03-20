@@ -57,12 +57,16 @@ export class MngCarrier implements CarrierInterface {
 
       // Test modunda mock yanıt
       const mockTrackingNumber = `MNG${Date.now()}`;
-      this.logger.log(`[TEST MODE] MNG shipment created: ${mockTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] MNG shipment created: ${mockTrackingNumber}`,
+      );
 
       return {
         success: true,
         trackingNumber: mockTrackingNumber,
-        estimatedDelivery: new Date(Date.now() + (request.isExpress ? 1 : 2) * 24 * 60 * 60 * 1000),
+        estimatedDelivery: new Date(
+          Date.now() + (request.isExpress ? 1 : 2) * 24 * 60 * 60 * 1000,
+        ),
         rawResponse: { testMode: true, requestBody },
       };
     } catch (error: any) {
@@ -156,7 +160,9 @@ export class MngCarrier implements CarrierInterface {
     }
   }
 
-  async cancelShipment(trackingNumber: string): Promise<{ success: boolean; error?: string }> {
+  async cancelShipment(
+    trackingNumber: string,
+  ): Promise<{ success: boolean; error?: string }> {
     const { apiKey } = await this.getCredentials();
 
     if (!apiKey) {
@@ -175,7 +181,9 @@ export class MngCarrier implements CarrierInterface {
     }
   }
 
-  async createReturn(originalTrackingNumber: string): Promise<ShipmentResponse> {
+  async createReturn(
+    originalTrackingNumber: string,
+  ): Promise<ShipmentResponse> {
     const { apiKey } = await this.getCredentials();
 
     if (!apiKey) {
@@ -187,7 +195,9 @@ export class MngCarrier implements CarrierInterface {
 
     try {
       const returnTrackingNumber = `MNGR${Date.now()}`;
-      this.logger.log(`[TEST MODE] MNG return created: ${returnTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] MNG return created: ${returnTrackingNumber}`,
+      );
 
       return {
         success: true,

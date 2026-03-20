@@ -18,6 +18,7 @@ import { ReviewService } from './review.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { UserRole } from '@prisma/client';
 
 @ApiTags('Reviews')
 @Controller()
@@ -127,7 +128,7 @@ export class ReviewController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Get('admin/reviews')
   @ApiOperation({ summary: 'Admin: Get all reviews' })
   @ApiQuery({ name: 'page', required: false })
@@ -162,7 +163,7 @@ export class ReviewController {
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Post('admin/reviews/:id/approve')
   @ApiOperation({ summary: 'Admin: Approve/reject review' })
   adminApproveReview(
@@ -177,7 +178,7 @@ export class ReviewController {
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Delete('admin/reviews/:id')
   @ApiOperation({ summary: 'Admin: Delete review' })
   adminDeleteReview(@Param('id') reviewId: string) {

@@ -42,7 +42,7 @@ export class IntegrationSettingsService {
     if (setting.isEncrypted && setting.encryptedValue) {
       try {
         value = this.encryption.decrypt(setting.encryptedValue);
-      } catch (error) {
+      } catch (_error) {
         this.logger.error(`Failed to decrypt setting: ${key}`);
         return null;
       }
@@ -75,7 +75,9 @@ export class IntegrationSettingsService {
    * Get all settings for a group
    * Returns decrypted values
    */
-  async getByGroup(group: IntegrationGroup): Promise<Record<string, string | null>> {
+  async getByGroup(
+    group: IntegrationGroup,
+  ): Promise<Record<string, string | null>> {
     const settings = await this.prisma.integrationSetting.findMany({
       where: { group },
       orderBy: { sortOrder: 'asc' },
@@ -195,7 +197,11 @@ export class IntegrationSettingsService {
     }
 
     // Validate enum
-    if (setting.valueType === 'enum' && value && setting.enumOptions.length > 0) {
+    if (
+      setting.valueType === 'enum' &&
+      value &&
+      setting.enumOptions.length > 0
+    ) {
       if (!setting.enumOptions.includes(value)) {
         throw new BadRequestException(
           `Invalid value. Must be one of: ${setting.enumOptions.join(', ')}`,
@@ -245,7 +251,8 @@ export class IntegrationSettingsService {
    * Bulk update multiple settings
    */
   async bulkUpdate(updates: Array<{ key: string; value: string | null }>) {
-    const results: Array<{ key: string; success: boolean; error?: string }> = [];
+    const results: Array<{ key: string; success: boolean; error?: string }> =
+      [];
 
     for (const { key, value } of updates) {
       try {
@@ -262,7 +269,9 @@ export class IntegrationSettingsService {
   /**
    * Test a connection (for payment, email, etc.)
    */
-  async testConnection(group: IntegrationGroup): Promise<{ success: boolean; message: string }> {
+  async testConnection(
+    group: IntegrationGroup,
+  ): Promise<{ success: boolean; message: string }> {
     const settings = await this.getByGroup(group);
 
     switch (group) {
@@ -294,8 +303,10 @@ export class IntegrationSettingsService {
   private async testPaymentConnection(
     settings: Record<string, string | null>,
   ): Promise<{ success: boolean; message: string }> {
-    const paytrConfigured = !!settings.paytr_merchant_id && !!settings.paytr_merchant_key;
-    const iyzicoConfigured = !!settings.iyzico_api_key && !!settings.iyzico_secret_key;
+    const paytrConfigured =
+      !!settings.paytr_merchant_id && !!settings.paytr_merchant_key;
+    const iyzicoConfigured =
+      !!settings.iyzico_api_key && !!settings.iyzico_secret_key;
 
     const providers: string[] = [];
     if (paytrConfigured) providers.push('PayTR');
@@ -420,7 +431,8 @@ export class IntegrationSettingsService {
         key: 'iyzico_base_url',
         group: IntegrationGroup.PAYMENT,
         label: 'iyzico Base URL',
-        description: 'sandbox: sandbox-api.iyzipay.com / canlı: api.iyzipay.com',
+        description:
+          'sandbox: sandbox-api.iyzipay.com / canlı: api.iyzipay.com',
         valueType: 'string',
         isEncrypted: false,
         isRequired: false,

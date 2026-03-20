@@ -30,7 +30,7 @@ export class NotificationService {
     to: string,
     subject: string,
     html: string,
-    templateName?: string,
+    _templateName?: string,
   ) {
     try {
       const info = await this.transporter.sendMail({

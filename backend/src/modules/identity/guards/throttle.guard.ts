@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RedisService } from '../../../common/services/redis.service';
 
@@ -13,15 +14,26 @@ import { RedisService } from '../../../common/services/redis.service';
 export class LoginThrottleGuard implements CanActivate {
   private readonly logger = new Logger(LoginThrottleGuard.name);
 
-  // Konfigürasyon
-  private readonly MAX_ATTEMPTS = 5;
-  private readonly LOCKOUT_MINUTES = 30;
-  private readonly ATTEMPT_WINDOW_MINUTES = 15;
+  // Konfigürasyon from env
+  private readonly MAX_ATTEMPTS: number;
+  private readonly LOCKOUT_MINUTES: number;
+  private readonly ATTEMPT_WINDOW_MINUTES: number;
 
   constructor(
     private prisma: PrismaService,
     private redis: RedisService,
-  ) {}
+    private config: ConfigService,
+  ) {
+    this.MAX_ATTEMPTS = this.config.get<number>('identity.maxLoginAttempts', 5);
+    this.LOCKOUT_MINUTES = this.config.get<number>(
+      'identity.lockoutMinutes',
+      30,
+    );
+    this.ATTEMPT_WINDOW_MINUTES = this.config.get<number>(
+      'identity.attemptWindowMinutes',
+      15,
+    );
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();

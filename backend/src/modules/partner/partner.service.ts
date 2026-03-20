@@ -181,23 +181,39 @@ export class PartnerService {
   /**
    * Admin: Tüm Partnerleri Listele (harita için)
    */
-  async getAllPartners() {
-    return this.prisma.user.findMany({
-      where: { role: 'PARTNER', isActive: true },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        companyName: true,
-        partnerRegion: true,
-        latitude: true,
-        longitude: true,
-        locationLabel: true,
-        createdAt: true,
-        _count: { select: { partnerSales: true } },
+  async getAllPartners(page = 1, limit = 20) {
+    const safeLimit = Math.min(limit, 100);
+    const [data, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { role: 'PARTNER', isActive: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          companyName: true,
+          partnerRegion: true,
+          latitude: true,
+          longitude: true,
+          locationLabel: true,
+          createdAt: true,
+          _count: { select: { partnerSales: true } },
+        },
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
+      }),
+      this.prisma.user.count({ where: { role: 'PARTNER', isActive: true } }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit: safeLimit,
+        totalPages: Math.ceil(total / safeLimit),
       },
-    });
+    };
   }
 
   /**

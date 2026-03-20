@@ -67,10 +67,6 @@ import { IdentityModule } from '../identity/identity.module';
     CronJobService,
     OpsQueueProcessor,
   ],
-  exports: [
-    IntegrationSettingsService,
-    CacheManagementService,
-    CronJobService,
-  ],
+  exports: [IntegrationSettingsService, CacheManagementService, CronJobService],
 })
 export class OpsModule {}

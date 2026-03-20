@@ -161,7 +161,10 @@ export class AdminCronController {
       ],
     },
   })
-  async getJobLogs(@Param('name') name: string, @Query('limit') limit?: number) {
+  async getJobLogs(
+    @Param('name') name: string,
+    @Query('limit') limit?: number,
+  ) {
     return this.cronJobService.getJobLogs(name, limit || 50);
   }
 

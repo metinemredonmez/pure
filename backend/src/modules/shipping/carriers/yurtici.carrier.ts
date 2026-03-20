@@ -57,7 +57,9 @@ export class YurticiCarrier implements CarrierInterface {
 
       // Test modunda mock yanıt
       const mockTrackingNumber = `YK${Date.now()}`;
-      this.logger.log(`[TEST MODE] Yurtiçi shipment created: ${mockTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] Yurtiçi shipment created: ${mockTrackingNumber}`,
+      );
 
       return {
         success: true,
@@ -152,7 +154,9 @@ export class YurticiCarrier implements CarrierInterface {
     }
   }
 
-  async cancelShipment(trackingNumber: string): Promise<{ success: boolean; error?: string }> {
+  async cancelShipment(
+    trackingNumber: string,
+  ): Promise<{ success: boolean; error?: string }> {
     const { apiKey, apiPassword } = await this.getCredentials();
 
     if (!apiKey || !apiPassword) {
@@ -163,7 +167,9 @@ export class YurticiCarrier implements CarrierInterface {
     }
 
     try {
-      this.logger.log(`[TEST MODE] Yurtiçi shipment cancelled: ${trackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] Yurtiçi shipment cancelled: ${trackingNumber}`,
+      );
       return { success: true };
     } catch (error: any) {
       this.logger.error('Yurtiçi cancelShipment error:', error);
@@ -171,7 +177,9 @@ export class YurticiCarrier implements CarrierInterface {
     }
   }
 
-  async createReturn(originalTrackingNumber: string): Promise<ShipmentResponse> {
+  async createReturn(
+    originalTrackingNumber: string,
+  ): Promise<ShipmentResponse> {
     const { apiKey, apiPassword } = await this.getCredentials();
 
     if (!apiKey || !apiPassword) {
@@ -183,7 +191,9 @@ export class YurticiCarrier implements CarrierInterface {
 
     try {
       const returnTrackingNumber = `YKR${Date.now()}`;
-      this.logger.log(`[TEST MODE] Yurtiçi return created: ${returnTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] Yurtiçi return created: ${returnTrackingNumber}`,
+      );
 
       return {
         success: true,

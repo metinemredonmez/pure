@@ -46,15 +46,44 @@ export class ChatbotService {
     return session?.messages || [];
   }
 
-  // Admin: list sessions
-  async findAllSessions() {
-    return this.prisma.chatbotSession.findMany({
-      include: {
-        messages: { orderBy: { createdAt: 'desc' }, take: 1 },
-        _count: { select: { messages: true } },
-      },
+  /**
+   * Get user's own chat history (authenticated)
+   */
+  async getSessionHistoryByUser(userId: string) {
+    const sessions = await this.prisma.chatbotSession.findMany({
+      where: { userId },
+      include: { messages: { orderBy: { createdAt: 'asc' } } },
       orderBy: { updatedAt: 'desc' },
+      take: 10,
     });
+    return sessions;
+  }
+
+  // Admin: list sessions (with pagination)
+  async findAllSessions(page = 1, limit = 20) {
+    const safeLimit = Math.min(limit, 100);
+    const [data, total] = await Promise.all([
+      this.prisma.chatbotSession.findMany({
+        include: {
+          messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+          _count: { select: { messages: true } },
+        },
+        orderBy: { updatedAt: 'desc' },
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
+      }),
+      this.prisma.chatbotSession.count(),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit: safeLimit,
+        totalPages: Math.ceil(total / safeLimit),
+      },
+    };
   }
 
   // Phase 1: Rule-based intent detection

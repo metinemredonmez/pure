@@ -62,7 +62,13 @@ async function bootstrap() {
   app.use(require('express').urlencoded({ extended: true, limit: '10mb' }));
 
   // Cookie parser (JWT HttpOnly cookies + CSRF)
-  app.use(cookieParser(process.env.COOKIE_SECRET || 'olentia-cookie-secret'));
+  const cookieSecret = process.env.COOKIE_SECRET;
+  if (process.env.NODE_ENV === 'production' && !cookieSecret) {
+    throw new Error(
+      'COOKIE_SECRET environment variable is required in production',
+    );
+  }
+  app.use(cookieParser(cookieSecret || 'dev-cookie-secret-change-in-prod'));
 
   // CSRF Protection — Double Submit Cookie Pattern
   // API JWT Bearer token zaten CSRF'e karşı koruma sağlar (cookie değil header'da)
@@ -151,4 +157,7 @@ async function bootstrap() {
   console.log(`🚀 Olentia API running on http://localhost:${port}`);
   console.log(`📚 Swagger docs: http://localhost:${port}/api/docs`);
 }
-bootstrap();
+bootstrap().catch((err) => {
+  console.error('Failed to start application:', err);
+  process.exit(1);
+});

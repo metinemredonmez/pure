@@ -217,6 +217,7 @@ model Address {
 
   orders      Order[]
 
+  @@index([userId])
   @@map("addresses")
 }
 
@@ -233,6 +234,9 @@ model AuditLog {
   userAgent String?
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
   @@map("audit_logs")
 }
 
@@ -347,6 +351,11 @@ model Product {
   wishlistItems   WishlistItem[]
   prices          ProductPrice[]
 
+  @@index([categoryId])
+  @@index([status])
+  @@index([isActive])
+  @@index([isFeatured])
+  @@index([status, isActive, isFeatured])
   @@map("products")
 }
 
@@ -409,6 +418,8 @@ model Cart {
 
   items     CartItem[]
 
+  @@index([userId])
+  @@index([expiresAt])
   @@map("carts")
 }
 
@@ -473,6 +484,10 @@ model Order {
   payment         Payment?
   shipments       ShipmentRecord[]
 
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, status])
   @@map("orders")
 }
 
@@ -578,6 +593,8 @@ model Refund {
   processedAt       DateTime? // İade işlem tarihi
   createdAt         DateTime  @default(now())
 
+  @@index([paymentId])
+  @@index([status])
   @@map("refunds")
 }
 
@@ -589,6 +606,8 @@ model PaymentLog {
   data      Json?
   createdAt DateTime @default(now())
 
+  @@index([paymentId])
+  @@index([createdAt])
   @@map("payment_logs")
 }
 
@@ -640,6 +659,10 @@ model Subscription {
 
   cycles            SubscriptionCycle[]
 
+  @@index([userId])
+  @@index([status])
+  @@index([nextBillingDate])
+  @@index([status, nextBillingDate])
   @@map("subscriptions")
 }
 
@@ -654,6 +677,9 @@ model SubscriptionCycle {
   paymentId      String?
   createdAt      DateTime     @default(now())
 
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([billingDate])
   @@map("subscription_cycles")
 }
 
@@ -690,6 +716,9 @@ model B2bLead {
   quotes       B2bQuote[]
   contracts    B2bContract[]
 
+  @@index([status])
+  @@index([assignedTo])
+  @@index([createdAt])
   @@map("b2b_leads")
 }
 
@@ -767,6 +796,9 @@ model BlogPost {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([isPublished])
+  @@index([categoryId])
+  @@index([publishedAt])
   @@map("blog_posts")
 }
 
@@ -848,6 +880,10 @@ model SupportTicket {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  @@index([userId])
+  @@index([status])
+  @@index([assignedTo])
+  @@index([createdAt])
   @@map("support_tickets")
 }
 
@@ -1017,6 +1053,9 @@ model WebhookLog {
   attempt     Int      @default(1)
   sentAt      DateTime @default(now())
 
+  @@index([webhookId])
+  @@index([sentAt])
+  @@index([success])
   @@map("webhook_logs")
 }
 
@@ -1038,6 +1077,9 @@ model PartnerSale {
   saleDate   DateTime @default(now())
   createdAt  DateTime @default(now())
 
+  @@index([partnerId])
+  @@index([saleDate])
+  @@index([region])
   @@map("partner_sales")
 }
 

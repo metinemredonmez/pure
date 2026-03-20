@@ -15,6 +15,7 @@ import {
   UpdateProductDto,
   CreateVariantDto,
 } from './dto/product.dto';
+import { CreateCategoryDto, CreateCollectionDto } from './dto/catalog.dto';
 import { PaginationDto } from '../../common/pipes/pagination.pipe';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -93,25 +94,15 @@ export class CatalogController {
   @Roles(UserRole.ADMIN)
   @Post('admin/categories')
   @ApiOperation({ summary: 'Create category (admin)' })
-  createCategory(
-    @Body()
-    data: {
-      name: string;
-      slug: string;
-      description?: string;
-      parentId?: string;
-    },
-  ) {
-    return this.catalogService.createCategory(data);
+  createCategory(@Body() dto: CreateCategoryDto) {
+    return this.catalogService.createCategory(dto);
   }
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)
   @Post('admin/collections')
   @ApiOperation({ summary: 'Create collection (admin)' })
-  createCollection(
-    @Body() data: { name: string; slug: string; description?: string },
-  ) {
-    return this.catalogService.createCollection(data);
+  createCollection(@Body() dto: CreateCollectionDto) {
+    return this.catalogService.createCollection(dto);
   }
 }

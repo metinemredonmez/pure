@@ -21,6 +21,11 @@ import {
 import { UserService } from './user.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UploadService } from '../../common/services/upload.service';
+import {
+  CreateAddressDto,
+  UpdateAddressDto,
+  UpdateProfileDto,
+} from './dto/user.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
@@ -52,8 +57,11 @@ export class UserController {
 
   @Post('me/addresses')
   @ApiOperation({ summary: 'Create new address' })
-  createAddress(@CurrentUser('id') userId: string, @Body() data: any) {
-    return this.userService.createAddress(userId, data);
+  createAddress(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateAddressDto,
+  ) {
+    return this.userService.createAddress(userId, dto);
   }
 
   @Put('me/addresses/:id')
@@ -61,9 +69,9 @@ export class UserController {
   updateAddress(
     @CurrentUser('id') userId: string,
     @Param('id') addressId: string,
-    @Body() data: any,
+    @Body() dto: UpdateAddressDto,
   ) {
-    return this.userService.updateAddress(userId, addressId, data);
+    return this.userService.updateAddress(userId, addressId, dto);
   }
 
   @Delete('me/addresses/:id')
@@ -128,8 +136,11 @@ export class UserController {
 
   @Patch('me/profile')
   @ApiOperation({ summary: 'Update profile' })
-  updateProfile(@CurrentUser('id') userId: string, @Body() data: any) {
-    return this.userService.updateProfile(userId, data);
+  updateProfile(
+    @CurrentUser('id') userId: string,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.userService.updateProfile(userId, dto);
   }
 
   @Post('me/avatar')

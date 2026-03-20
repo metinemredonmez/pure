@@ -33,9 +33,7 @@ import { IntegrationGroup } from '@prisma/client';
 @Roles('ADMIN')
 @Controller('admin/settings/integrations')
 export class IntegrationSettingsController {
-  constructor(
-    private readonly settingsService: IntegrationSettingsService,
-  ) {}
+  constructor(private readonly settingsService: IntegrationSettingsService) {}
 
   // ══════════════════════════════════════════════
   // LIST & READ

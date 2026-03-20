@@ -16,7 +16,11 @@ import {
 } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import {
+  CreateCouponDto,
+  UpdateCouponDto,
+  ValidateCouponDto,
+} from './dto/admin.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth('access-token')
@@ -99,29 +103,24 @@ export class AdminController {
 
   @Post('coupons')
   @ApiOperation({ summary: 'Create coupon' })
-  createCoupon(
-    @Body()
-    data: {
-      code: string;
-      description?: string;
-      type: string;
-      value: number;
-      minOrderAmount?: number;
-      maxDiscount?: number;
-      maxUses?: number;
-      expiresAt?: string;
-    },
-  ) {
+  createCoupon(@Body() dto: CreateCouponDto) {
     return this.adminService.createCoupon({
-      ...data,
-      expiresAt: data.expiresAt ? new Date(data.expiresAt) : undefined,
+      code: dto.code,
+      description: dto.description,
+      type: dto.type,
+      value: dto.value,
+      minOrderAmount: dto.minOrderAmount,
+      maxDiscount: dto.maxDiscount,
+      maxUses: dto.maxUses,
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
     });
   }
 
   @Put('coupons/:id')
   @ApiOperation({ summary: 'Update coupon' })
-  updateCoupon(@Param('id') id: string, @Body() data: any) {
-    if (data.expiresAt) data.expiresAt = new Date(data.expiresAt);
+  updateCoupon(@Param('id') id: string, @Body() dto: UpdateCouponDto) {
+    const data = { ...dto } as Record<string, unknown>;
+    if (dto.expiresAt) data.expiresAt = new Date(dto.expiresAt);
     return this.adminService.updateCoupon(id, data);
   }
 
@@ -133,8 +132,8 @@ export class AdminController {
 
   @Post('coupons/validate')
   @ApiOperation({ summary: 'Validate coupon code' })
-  validateCoupon(@Body() data: { code: string; subtotal: number }) {
-    return this.adminService.validateCoupon(data.code, data.subtotal);
+  validateCoupon(@Body() dto: ValidateCouponDto) {
+    return this.adminService.validateCoupon(dto.code, dto.subtotal);
   }
 
   // ══════════════════════════════════════════════

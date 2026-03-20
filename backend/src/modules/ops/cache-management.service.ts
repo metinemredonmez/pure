@@ -22,7 +22,7 @@ export const CACHE_GROUPS = {
   settings: {
     name: 'Ayarlar',
     prefix: 'cache:settings:*',
-    description: 'Integration settings (3rd party key\'ler)',
+    description: "Integration settings (3rd party key'ler)",
   },
   shipping: {
     name: 'Kargo',
@@ -42,7 +42,7 @@ export const CACHE_GROUPS = {
   dashboard: {
     name: 'Dashboard',
     prefix: 'cache:dashboard:*',
-    description: 'Admin dashboard KPI\'ları',
+    description: "Admin dashboard KPI'ları",
   },
   sessions: {
     name: 'Oturumlar',
@@ -135,7 +135,9 @@ export class CacheManagementService {
   /**
    * Clear cache by group
    */
-  async clearGroup(group: CacheGroupKey): Promise<{ success: boolean; deletedCount: number; message: string }> {
+  async clearGroup(
+    group: CacheGroupKey,
+  ): Promise<{ success: boolean; deletedCount: number; message: string }> {
     const config = CACHE_GROUPS[group];
     if (!config) {
       return {
@@ -148,7 +150,9 @@ export class CacheManagementService {
     try {
       const deletedCount = await this.redis.deleteByPattern(config.prefix);
 
-      this.logger.log(`Cache group cleared: ${group} - ${deletedCount} keys deleted`);
+      this.logger.log(
+        `Cache group cleared: ${group} - ${deletedCount} keys deleted`,
+      );
 
       return {
         success: true,
@@ -194,14 +198,21 @@ export class CacheManagementService {
    */
   async clearByPattern(pattern: string): Promise<{ deletedCount: number }> {
     const deletedCount = await this.redis.deleteByPattern(pattern);
-    this.logger.log(`Cache cleared by pattern: ${pattern} - ${deletedCount} keys deleted`);
+    this.logger.log(
+      `Cache cleared by pattern: ${pattern} - ${deletedCount} keys deleted`,
+    );
     return { deletedCount };
   }
 
   /**
    * Get available cache groups
    */
-  getGroups(): { key: string; name: string; description: string; prefix: string }[] {
+  getGroups(): {
+    key: string;
+    name: string;
+    description: string;
+    prefix: string;
+  }[] {
     return Object.entries(CACHE_GROUPS).map(([key, config]) => ({
       key,
       name: config.name,
@@ -286,7 +297,11 @@ export class CacheManagementService {
         take: 20,
       });
       for (const product of featuredProducts) {
-        await this.redis.set(`cache:products:detail:${product.id}`, product, 3600);
+        await this.redis.set(
+          `cache:products:detail:${product.id}`,
+          product,
+          3600,
+        );
         itemsCached++;
       }
       if (featuredProducts.length > 0) warmedGroups.push('products');
@@ -336,19 +351,27 @@ export class CacheManagementService {
       if (faqItems.length > 0) warmedGroups.push('cms');
 
       // 7. Cache integration settings (non-encrypted only)
-      const integrationSettings = await this.prisma.integrationSetting.findMany({
-        where: { isEncrypted: false },
-        select: { key: true, plainValue: true, group: true },
-      });
+      const integrationSettings = await this.prisma.integrationSetting.findMany(
+        {
+          where: { isEncrypted: false },
+          select: { key: true, plainValue: true, group: true },
+        },
+      );
       for (const setting of integrationSettings) {
         if (setting.plainValue) {
-          await this.redis.set(`cache:settings:${setting.key}`, setting.plainValue, 3600);
+          await this.redis.set(
+            `cache:settings:${setting.key}`,
+            setting.plainValue,
+            3600,
+          );
           itemsCached++;
         }
       }
       if (integrationSettings.length > 0) warmedGroups.push('settings');
 
-      this.logger.log(`Cache warm-up completed: ${itemsCached} items cached in ${warmedGroups.length} groups`);
+      this.logger.log(
+        `Cache warm-up completed: ${itemsCached} items cached in ${warmedGroups.length} groups`,
+      );
     } catch (error) {
       this.logger.error('Cache warm-up failed', error);
     }

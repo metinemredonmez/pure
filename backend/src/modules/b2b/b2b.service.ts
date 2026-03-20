@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LeadStatus } from '@prisma/client';
 
@@ -19,14 +19,31 @@ export class B2bService {
     return this.prisma.b2bLead.create({ data });
   }
 
-  // Admin: list leads
-  async findAllLeads(status?: LeadStatus) {
+  // Admin: list leads (with pagination)
+  async findAllLeads(status?: LeadStatus, page = 1, limit = 20) {
     const where = status ? { status } : {};
-    return this.prisma.b2bLead.findMany({
-      where,
-      include: { quotes: true, contracts: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    const safeLimit = Math.min(limit, 100);
+
+    const [data, total] = await Promise.all([
+      this.prisma.b2bLead.findMany({
+        where,
+        include: { quotes: true, contracts: true },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
+      }),
+      this.prisma.b2bLead.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit: safeLimit,
+        totalPages: Math.ceil(total / safeLimit),
+      },
+    };
   }
 
   // Admin: update lead status
@@ -42,7 +59,7 @@ export class B2bService {
     });
   }
 
-  // Admin: create quote
+  // Admin: create quote (with transaction)
   async createQuote(
     leadId: string,
     data: {
@@ -55,20 +72,21 @@ export class B2bService {
       notes?: string;
     },
   ) {
-    const quote = await this.prisma.b2bQuote.create({
-      data: { leadId, ...data },
-    });
+    return this.prisma.$transaction(async (tx) => {
+      const quote = await tx.b2bQuote.create({
+        data: { leadId, ...data },
+      });
 
-    // Auto-update lead status
-    await this.prisma.b2bLead.update({
-      where: { id: leadId },
-      data: { status: LeadStatus.PROPOSAL_SENT },
-    });
+      await tx.b2bLead.update({
+        where: { id: leadId },
+        data: { status: LeadStatus.PROPOSAL_SENT },
+      });
 
-    return quote;
+      return quote;
+    });
   }
 
-  // Admin: create contract (lead won)
+  // Admin: create contract (lead won) — transaction + UUID-based number
   async createContract(
     leadId: string,
     data: {
@@ -78,19 +96,23 @@ export class B2bService {
       monthlyPrice: number;
     },
   ) {
-    const count = await this.prisma.b2bContract.count();
-    const contractNumber = `OLN-B2B-${new Date().getFullYear()}-${String(count + 1).padStart(4, '0')}`;
+    return this.prisma.$transaction(async (tx) => {
+      // Use timestamp + random suffix to avoid race condition
+      const timestamp = Date.now().toString(36).toUpperCase();
+      const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+      const contractNumber = `OLN-B2B-${new Date().getFullYear()}-${timestamp}${random}`;
 
-    const contract = await this.prisma.b2bContract.create({
-      data: { leadId, contractNumber, ...data },
+      const contract = await tx.b2bContract.create({
+        data: { leadId, contractNumber, ...data },
+      });
+
+      await tx.b2bLead.update({
+        where: { id: leadId },
+        data: { status: LeadStatus.WON },
+      });
+
+      return contract;
     });
-
-    await this.prisma.b2bLead.update({
-      where: { id: leadId },
-      data: { status: LeadStatus.WON },
-    });
-
-    return contract;
   }
 
   // Admin: assign machine to contract

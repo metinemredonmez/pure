@@ -15,6 +15,13 @@ import { NotificationService } from './notification.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@prisma/client';
+import {
+  UpdateTemplateDto,
+  SendEmailDto,
+  SendTemplatedEmailDto,
+  SendInAppDto,
+  CreateTemplateDto,
+} from './dto/notification.dto';
 
 // ============================================
 // KULLANICI BİLDİRİMLERİ (In-App)
@@ -68,47 +75,31 @@ export class NotificationController {
   @Roles(UserRole.ADMIN)
   @Post('send')
   @ApiOperation({ summary: 'Send custom email (admin)' })
-  sendEmail(@Body() body: { to: string; subject: string; html: string }) {
-    return this.notificationService.sendEmail(body.to, body.subject, body.html);
+  sendEmail(@Body() dto: SendEmailDto) {
+    return this.notificationService.sendEmail(dto.to, dto.subject, dto.html);
   }
 
   @Roles(UserRole.ADMIN)
   @Post('send-template')
   @ApiOperation({ summary: 'Send templated email (admin)' })
-  sendTemplated(
-    @Body()
-    body: {
-      to: string;
-      template: string;
-      variables: Record<string, string>;
-    },
-  ) {
+  sendTemplated(@Body() dto: SendTemplatedEmailDto) {
     return this.notificationService.sendTemplatedEmail(
-      body.to,
-      body.template,
-      body.variables,
+      dto.to,
+      dto.template,
+      dto.variables,
     );
   }
 
   @Roles(UserRole.ADMIN)
   @Post('send-inapp')
   @ApiOperation({ summary: 'Kullanıcıya anlık bildirim gönder (admin)' })
-  sendInApp(
-    @Body()
-    body: {
-      userId: string;
-      title: string;
-      message: string;
-      type?: string;
-      link?: string;
-    },
-  ) {
+  sendInApp(@Body() dto: SendInAppDto) {
     return this.notificationService.sendInApp(
-      body.userId,
-      body.title,
-      body.message,
-      body.type,
-      body.link,
+      dto.userId,
+      dto.title,
+      dto.message,
+      dto.type,
+      dto.link,
     );
   }
 
@@ -122,23 +113,15 @@ export class NotificationController {
   @Roles(UserRole.ADMIN)
   @Post('templates')
   @ApiOperation({ summary: 'Create email template (admin)' })
-  createTemplate(
-    @Body()
-    data: {
-      name: string;
-      channel: string;
-      subject?: string;
-      body: string;
-    },
-  ) {
-    return this.notificationService.createTemplate(data);
+  createTemplate(@Body() dto: CreateTemplateDto) {
+    return this.notificationService.createTemplate(dto);
   }
 
   @Roles(UserRole.ADMIN)
   @Put('templates/:id')
   @ApiOperation({ summary: 'Update email template (admin)' })
-  updateTemplate(@Param('id') id: string, @Body() data: any) {
-    return this.notificationService.updateTemplate(id, data);
+  updateTemplate(@Param('id') id: string, @Body() dto: UpdateTemplateDto) {
+    return this.notificationService.updateTemplate(id, dto);
   }
 
   @Roles(UserRole.ADMIN)

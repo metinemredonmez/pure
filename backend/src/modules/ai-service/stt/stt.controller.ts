@@ -4,6 +4,9 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -25,7 +28,18 @@ export class SttController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(FileInterceptor('audio'))
   async transcribe(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 25 * 1024 * 1024 }), // 25MB max
+          new FileTypeValidator({
+            fileType: /(audio\/(wav|mp3|mpeg|ogg|webm|flac|m4a)|video\/webm)/,
+          }),
+        ],
+        fileIsRequired: true,
+      }),
+    )
+    file: Express.Multer.File,
     @Query('language') language?: string,
   ) {
     return this.sttService.transcribe(file.buffer, language || 'tr');

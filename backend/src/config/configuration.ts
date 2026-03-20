@@ -1,5 +1,24 @@
+// Required environment variables - will throw on startup if missing
+const requiredEnvVars = ['JWT_SECRET', 'COOKIE_SECRET', 'ENCRYPTION_SALT'];
+
+// Validate required env vars in production
+if (process.env.NODE_ENV === 'production') {
+  for (const envVar of requiredEnvVars) {
+    if (!process.env[envVar]) {
+      throw new Error(`Missing required environment variable: ${envVar}`);
+    }
+  }
+}
+
 export default () => ({
   port: parseInt(process.env.PORT || '4000', 10),
+  app: {
+    encryptionKey: process.env.ENCRYPTION_KEY,
+    encryptionSalt:
+      process.env.ENCRYPTION_SALT || 'olentia-default-salt-change-in-prod',
+    cookieSecret: process.env.COOKIE_SECRET,
+    webhookSecret: process.env.WEBHOOK_SECRET,
+  },
   database: {
     url: process.env.DATABASE_URL,
   },
@@ -8,7 +27,11 @@ export default () => ({
     port: parseInt(process.env.REDIS_PORT || '6380', 10),
   },
   jwt: {
-    secret: process.env.JWT_SECRET,
+    secret:
+      process.env.JWT_SECRET ||
+      (process.env.NODE_ENV !== 'production'
+        ? 'dev-jwt-secret-change-in-prod'
+        : undefined),
     accessExpiry: process.env.JWT_ACCESS_EXPIRY || '15m',
     refreshExpiry: process.env.JWT_REFRESH_EXPIRY || '7d',
   },
@@ -73,6 +96,24 @@ export default () => ({
   googleMaps: {
     apiKey: process.env.GOOGLE_MAPS_API_KEY,
     geocodingEnabled: process.env.GOOGLE_MAPS_GEOCODING === 'true',
+  },
+  order: {
+    freeShippingThreshold: parseInt(
+      process.env.ORDER_FREE_SHIPPING_THRESHOLD || '500',
+      10,
+    ),
+    defaultShippingCost: parseFloat(
+      process.env.ORDER_DEFAULT_SHIPPING_COST || '39.9',
+    ),
+    taxRate: parseFloat(process.env.ORDER_TAX_RATE || '0.20'),
+  },
+  identity: {
+    maxLoginAttempts: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5', 10),
+    lockoutMinutes: parseInt(process.env.LOCKOUT_MINUTES || '30', 10),
+    attemptWindowMinutes: parseInt(
+      process.env.ATTEMPT_WINDOW_MINUTES || '15',
+      10,
+    ),
   },
   openai: {
     apiKey: process.env.OPENAI_API_KEY,

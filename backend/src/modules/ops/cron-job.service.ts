@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -276,7 +276,9 @@ export class CronJobService implements OnModuleInit {
       data: { isActive: !job.isActive },
     });
 
-    this.logger.log(`Job ${name} toggled to ${updated.isActive ? 'active' : 'inactive'}`);
+    this.logger.log(
+      `Job ${name} toggled to ${updated.isActive ? 'active' : 'inactive'}`,
+    );
 
     return { isActive: updated.isActive };
   }
@@ -284,14 +286,19 @@ export class CronJobService implements OnModuleInit {
   /**
    * Trigger a job manually
    */
-  async triggerJob(name: string): Promise<{ triggered: boolean; jobId: string }> {
+  async triggerJob(
+    name: string,
+  ): Promise<{ triggered: boolean; jobId: string }> {
     const job = await this.prisma.cronJob.findUnique({ where: { name } });
     if (!job) {
       throw new Error(`Job not found: ${name}`);
     }
 
     // Add job to queue
-    const queueJob = await this.opsQueue.add(name, { manual: true, triggeredAt: new Date() });
+    const queueJob = await this.opsQueue.add(name, {
+      manual: true,
+      triggeredAt: new Date(),
+    });
 
     this.logger.log(`Job ${name} triggered manually, jobId: ${queueJob.id}`);
 
@@ -345,7 +352,9 @@ export class CronJobService implements OnModuleInit {
    * Log job start
    */
   async logJobStart(jobName: string): Promise<string> {
-    const job = await this.prisma.cronJob.findUnique({ where: { name: jobName } });
+    const job = await this.prisma.cronJob.findUnique({
+      where: { name: jobName },
+    });
     if (!job) {
       throw new Error(`Job not found: ${jobName}`);
     }
@@ -376,7 +385,9 @@ export class CronJobService implements OnModuleInit {
     result?: any,
     error?: string,
   ): Promise<void> {
-    const startLog = await this.prisma.cronJobLog.findUnique({ where: { id: logId } });
+    const startLog = await this.prisma.cronJobLog.findUnique({
+      where: { id: logId },
+    });
     if (!startLog) return;
 
     const finishedAt = new Date();
@@ -385,7 +396,8 @@ export class CronJobService implements OnModuleInit {
     await this.prisma.cronJobLog.update({
       where: { id: logId },
       data: {
-        status: status === 'SUCCESS' ? CronJobStatus.SUCCESS : CronJobStatus.FAILED,
+        status:
+          status === 'SUCCESS' ? CronJobStatus.SUCCESS : CronJobStatus.FAILED,
         finishedAt,
         duration,
         result: result ? JSON.parse(JSON.stringify(result)) : null,

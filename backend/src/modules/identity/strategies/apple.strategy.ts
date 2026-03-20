@@ -17,7 +17,9 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
       teamID: config.get<string>('apple.teamId') || 'TEAM_ID',
       keyID: config.get<string>('apple.keyId') || 'KEY_ID',
       privateKeyString: config.get<string>('apple.privateKey') || '',
-      callbackURL: config.get<string>('apple.callbackUrl') || 'http://localhost:3000/api/auth/apple/callback',
+      callbackURL:
+        config.get<string>('apple.callbackUrl') ||
+        'http://localhost:3000/api/auth/apple/callback',
       scope: ['name', 'email'],
       passReqToCallback: true,
     });
@@ -43,10 +45,7 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
       // Mevcut kullanıcıyı bul veya oluştur
       let user = await this.prisma.user.findFirst({
         where: {
-          OR: [
-            { appleId },
-            { email: email || undefined },
-          ],
+          OR: [{ appleId }, { email: email || undefined }],
         },
       });
 

@@ -22,9 +22,10 @@ import { LoginDto } from './dto/login.dto';
 import { EnableMfaDto } from './dto/mfa.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { VerifyEmailDto, ResendVerificationDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/verify-email.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { LoginThrottleGuard } from './guards/throttle.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -39,6 +40,7 @@ export class IdentityController {
   }
 
   @Public()
+  @UseGuards(LoginThrottleGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login with email + password (+ optional MFA)' })
   login(@Body() dto: LoginDto, @Req() req) {

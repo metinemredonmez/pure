@@ -1,10 +1,18 @@
-import { Injectable, BadRequestException, Logger, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ShippingCarrier, ShipmentStatus, OrderStatus } from '@prisma/client';
 import { YurticiCarrier } from './carriers/yurtici.carrier';
 import { ArasCarrier } from './carriers/aras.carrier';
 import { MngCarrier } from './carriers/mng.carrier';
-import { CarrierInterface, ShipmentRequest } from './carriers/carrier.interface';
+import {
+  CarrierInterface,
+  ShipmentRequest,
+} from './carriers/carrier.interface';
 
 @Injectable()
 export class ShippingService {
@@ -56,7 +64,10 @@ export class ShippingService {
       throw new NotFoundException('Sipariş bulunamadı');
     }
 
-    if (order.status !== OrderStatus.CONFIRMED && order.status !== OrderStatus.PREPARING) {
+    if (
+      order.status !== OrderStatus.CONFIRMED &&
+      order.status !== OrderStatus.PREPARING
+    ) {
       throw new BadRequestException('Sipariş kargoya verilecek durumda değil');
     }
 
@@ -70,11 +81,11 @@ export class ShippingService {
 
     // Calculate total weight
     const totalWeight = order.items.reduce((sum, item) => {
-      return sum + (item.quantity * 0.5); // Varsayılan 500g per item
+      return sum + item.quantity * 0.5; // Varsayılan 500g per item
     }, 0);
 
     // Get shipping settings
-    const settings = await this.getSettings();
+    const _settings = await this.getSettings();
 
     // Prepare shipment request
     const request: ShipmentRequest = {
@@ -88,7 +99,8 @@ export class ShippingService {
       senderPostalCode: '34710',
       recipientName: `${order.address.firstName} ${order.address.lastName}`,
       recipientPhone: order.address.phone,
-      recipientAddress: `${order.address.line1} ${order.address.line2 || ''}`.trim(),
+      recipientAddress:
+        `${order.address.line1} ${order.address.line2 || ''}`.trim(),
       recipientCity: order.address.city,
       recipientDistrict: order.address.district,
       recipientPostalCode: order.address.postalCode,
@@ -106,31 +118,36 @@ export class ShippingService {
       throw new BadRequestException(`Kargo oluşturulamadı: ${result.error}`);
     }
 
-    // Create shipment record
-    const shipment = await this.prisma.shipmentRecord.create({
-      data: {
-        orderId: order.id,
-        carrier,
-        trackingNumber: result.trackingNumber,
-        status: ShipmentStatus.PREPARING,
-        weight: totalWeight,
-        desi: Math.ceil(totalWeight * 1.5),
-        estimatedDelivery: result.estimatedDelivery,
-        carrierData: result.rawResponse,
-      },
+    // Create shipment record + status history in transaction
+    const shipment = await this.prisma.$transaction(async (tx) => {
+      const newShipment = await tx.shipmentRecord.create({
+        data: {
+          orderId: order.id,
+          carrier,
+          trackingNumber: result.trackingNumber,
+          status: ShipmentStatus.PREPARING,
+          weight: totalWeight,
+          desi: Math.ceil(totalWeight * 1.5),
+          estimatedDelivery: result.estimatedDelivery,
+          carrierData: result.rawResponse,
+        },
+      });
+
+      await tx.shipmentStatusHistory.create({
+        data: {
+          shipmentId: newShipment.id,
+          status: ShipmentStatus.PREPARING,
+          description: 'Kargo kaydı oluşturuldu',
+          timestamp: new Date(),
+        },
+      });
+
+      return newShipment;
     });
 
-    // Add initial status history
-    await this.prisma.shipmentStatusHistory.create({
-      data: {
-        shipmentId: shipment.id,
-        status: ShipmentStatus.PREPARING,
-        description: 'Kargo kaydı oluşturuldu',
-        timestamp: new Date(),
-      },
-    });
-
-    this.logger.log(`Shipment created: ${shipment.id} for order ${order.orderNumber}`);
+    this.logger.log(
+      `Shipment created: ${shipment.id} for order ${order.orderNumber}`,
+    );
 
     return shipment;
   }
@@ -150,44 +167,45 @@ export class ShippingService {
       throw new NotFoundException('Hazırlanan kargo kaydı bulunamadı');
     }
 
-    // Update shipment status
-    await this.prisma.shipmentRecord.update({
-      where: { id: shipment.id },
-      data: {
-        status: ShipmentStatus.SHIPPED,
-        shippedAt: new Date(),
-      },
+    // All updates in a single transaction
+    await this.prisma.$transaction(async (tx) => {
+      await tx.shipmentRecord.update({
+        where: { id: shipment.id },
+        data: {
+          status: ShipmentStatus.SHIPPED,
+          shippedAt: new Date(),
+        },
+      });
+
+      await tx.shipmentStatusHistory.create({
+        data: {
+          shipmentId: shipment.id,
+          status: ShipmentStatus.SHIPPED,
+          description: 'Kargo gönderildi',
+          timestamp: new Date(),
+        },
+      });
+
+      await tx.order.update({
+        where: { id: orderId },
+        data: {
+          status: OrderStatus.SHIPPED,
+          trackingNumber: shipment.trackingNumber,
+        },
+      });
+
+      await tx.orderStatusHistory.create({
+        data: {
+          orderId,
+          status: OrderStatus.SHIPPED,
+          note: `Kargo takip no: ${shipment.trackingNumber}`,
+        },
+      });
     });
 
-    // Add status history
-    await this.prisma.shipmentStatusHistory.create({
-      data: {
-        shipmentId: shipment.id,
-        status: ShipmentStatus.SHIPPED,
-        description: 'Kargo gönderildi',
-        timestamp: new Date(),
-      },
-    });
-
-    // Update order status
-    await this.prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status: OrderStatus.SHIPPED,
-        trackingNumber: shipment.trackingNumber,
-      },
-    });
-
-    // Add order status history
-    await this.prisma.orderStatusHistory.create({
-      data: {
-        orderId,
-        status: OrderStatus.SHIPPED,
-        note: `Kargo takip no: ${shipment.trackingNumber}`,
-      },
-    });
-
-    this.logger.log(`Order shipped: ${orderId}, tracking: ${shipment.trackingNumber}`);
+    this.logger.log(
+      `Order shipped: ${orderId}, tracking: ${shipment.trackingNumber}`,
+    );
 
     return shipment;
   }
@@ -252,7 +270,9 @@ export class ShippingService {
     const result = await carrier.createReturn(originalShipment.trackingNumber!);
 
     if (!result.success) {
-      throw new BadRequestException(`İade kargo oluşturulamadı: ${result.error}`);
+      throw new BadRequestException(
+        `İade kargo oluşturulamadı: ${result.error}`,
+      );
     }
 
     // Create return shipment record
@@ -272,7 +292,9 @@ export class ShippingService {
       data: { status: OrderStatus.RETURNED },
     });
 
-    this.logger.log(`Return shipment created: ${returnShipment.id} for order ${order.orderNumber}`);
+    this.logger.log(
+      `Return shipment created: ${returnShipment.id} for order ${order.orderNumber}`,
+    );
 
     return returnShipment;
   }
@@ -305,15 +327,28 @@ export class ShippingService {
    * Get shipping dashboard stats
    */
   async getDashboard() {
-    const [preparing, shipped, inTransit, delivered, returned] = await Promise.all([
-      this.prisma.shipmentRecord.count({ where: { status: ShipmentStatus.PREPARING } }),
-      this.prisma.shipmentRecord.count({ where: { status: ShipmentStatus.SHIPPED } }),
-      this.prisma.shipmentRecord.count({
-        where: { status: { in: [ShipmentStatus.IN_TRANSIT, ShipmentStatus.OUT_FOR_DELIVERY] } },
-      }),
-      this.prisma.shipmentRecord.count({ where: { status: ShipmentStatus.DELIVERED } }),
-      this.prisma.shipmentRecord.count({ where: { status: ShipmentStatus.RETURNED } }),
-    ]);
+    const [preparing, shipped, inTransit, delivered, returned] =
+      await Promise.all([
+        this.prisma.shipmentRecord.count({
+          where: { status: ShipmentStatus.PREPARING },
+        }),
+        this.prisma.shipmentRecord.count({
+          where: { status: ShipmentStatus.SHIPPED },
+        }),
+        this.prisma.shipmentRecord.count({
+          where: {
+            status: {
+              in: [ShipmentStatus.IN_TRANSIT, ShipmentStatus.OUT_FOR_DELIVERY],
+            },
+          },
+        }),
+        this.prisma.shipmentRecord.count({
+          where: { status: ShipmentStatus.DELIVERED },
+        }),
+        this.prisma.shipmentRecord.count({
+          where: { status: ShipmentStatus.RETURNED },
+        }),
+      ]);
 
     // Recent shipments
     const recentShipments = await this.prisma.shipmentRecord.findMany({
@@ -394,7 +429,11 @@ export class ShippingService {
     if (result.currentStatus) {
       const newStatus = this.mapCarrierStatus(result.currentStatus);
       if (newStatus !== shipment.status) {
-        await this.updateShipmentStatus(shipment.id, newStatus, result.currentLocation);
+        await this.updateShipmentStatus(
+          shipment.id,
+          newStatus,
+          result.currentLocation,
+        );
       }
     }
 
@@ -431,7 +470,9 @@ export class ShippingService {
     });
 
     if (!shipment) {
-      this.logger.warn(`Shipment not found for webhook: ${data.trackingNumber}`);
+      this.logger.warn(
+        `Shipment not found for webhook: ${data.trackingNumber}`,
+      );
       return { success: false, error: 'Shipment not found' };
     }
 
@@ -453,7 +494,9 @@ export class ShippingService {
     // Update shipment
     await this.updateShipmentStatus(shipment.id, newStatus, data.location);
 
-    this.logger.log(`Webhook processed: ${data.trackingNumber} -> ${newStatus}`);
+    this.logger.log(
+      `Webhook processed: ${data.trackingNumber} -> ${newStatus}`,
+    );
 
     return { success: true };
   }
@@ -568,10 +611,20 @@ export class ShippingService {
   // ══════════════════════════════════════════════
 
   private async findZone(city: string) {
+    // Query DB with case-insensitive city match using has filter
+    const zone = await this.prisma.shippingZone.findFirst({
+      where: {
+        isActive: true,
+        cities: { has: city },
+      },
+    });
+
+    if (zone) return zone;
+
+    // Fallback: try case-insensitive search
     const zones = await this.prisma.shippingZone.findMany({
       where: { isActive: true },
     });
-
     return zones.find((z) =>
       z.cities.some((c) => c.toLowerCase() === city.toLowerCase()),
     );
@@ -600,7 +653,7 @@ export class ShippingService {
   private async updateShipmentStatus(
     shipmentId: string,
     status: ShipmentStatus,
-    location?: string,
+    _location?: string,
   ) {
     const updateData: any = { status };
 

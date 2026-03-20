@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -86,7 +82,7 @@ export class UserService {
       isDefault: boolean;
     }>,
   ) {
-    const address = await this.getAddress(userId, addressId);
+    const _address = await this.getAddress(userId, addressId);
 
     if (data.isDefault) {
       await this.prisma.address.updateMany({

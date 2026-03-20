@@ -42,7 +42,11 @@ export class GdprService {
     if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
 
     // Hassas verileri temizle
-    const { passwordHash, mfaSecret, ...safeUser } = user;
+    const {
+      passwordHash: _passwordHash,
+      mfaSecret: _mfaSecret,
+      ...safeUser
+    } = user;
 
     // Wishlist
     const wishlist = await this.prisma.wishlist.findUnique({

@@ -103,7 +103,35 @@ export class CatalogService {
     });
   }
 
-  async updateStock(variantId: string, stock: number) {
+  /**
+   * Update stock with atomic increment/decrement
+   * Use positive delta to add stock, negative to remove
+   */
+  async updateStock(variantId: string, delta: number) {
+    if (delta < 0) {
+      // Check current stock first to prevent negative
+      const variant = await this.prisma.productVariant.findUnique({
+        where: { id: variantId },
+        select: { stock: true },
+      });
+      if (!variant) {
+        throw new NotFoundException('Variant not found');
+      }
+      if (variant.stock + delta < 0) {
+        throw new NotFoundException('Yetersiz stok');
+      }
+    }
+
+    return this.prisma.productVariant.update({
+      where: { id: variantId },
+      data: { stock: { increment: delta } },
+    });
+  }
+
+  /**
+   * Set absolute stock value (for admin inventory management)
+   */
+  async setStock(variantId: string, stock: number) {
     return this.prisma.productVariant.update({
       where: { id: variantId },
       data: { stock },

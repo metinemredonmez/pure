@@ -1,4 +1,14 @@
-import { Controller, Post, Get, Body, Param, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  Headers,
+  Query,
+  ParseIntPipe,
+  DefaultValuePipe,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ChatbotService } from './chatbot.service';
 import { Public } from '../../common/decorators/public.decorator';
@@ -26,18 +36,29 @@ export class ChatbotController {
     );
   }
 
-  @Public()
-  @Get('chatbot/history/:sessionId')
-  @ApiOperation({ summary: 'Get chat history' })
-  getHistory(@Param('sessionId') sessionId: string) {
-    return this.chatbotService.getSessionHistory(sessionId);
+  @ApiBearerAuth('access-token')
+  @Get('chatbot/history')
+  @ApiOperation({ summary: 'Get my chat history (authenticated)' })
+  getMyHistory(@CurrentUser('id') userId: string) {
+    return this.chatbotService.getSessionHistoryByUser(userId);
   }
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN, UserRole.SUPPORT)
   @Get('admin/chatbot/sessions')
   @ApiOperation({ summary: 'List chatbot sessions (admin)' })
-  findAllSessions() {
-    return this.chatbotService.findAllSessions();
+  findAllSessions(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.chatbotService.findAllSessions(page, limit);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN, UserRole.SUPPORT)
+  @Get('admin/chatbot/sessions/:sessionId')
+  @ApiOperation({ summary: 'Get session history (admin)' })
+  getSessionHistory(@Param('sessionId') sessionId: string) {
+    return this.chatbotService.getSessionHistory(sessionId);
   }
 }

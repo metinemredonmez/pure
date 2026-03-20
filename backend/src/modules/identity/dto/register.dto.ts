@@ -16,7 +16,8 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'SecurePass123!',
-    description: 'En az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermeli',
+    description:
+      'En az 8 karakter, 1 büyük harf, 1 küçük harf, 1 rakam ve 1 özel karakter içermeli',
   })
   @IsString()
   @MinLength(8, { message: 'Şifre en az 8 karakter olmalı' })

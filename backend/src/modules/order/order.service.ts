@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
   PaginationDto,
@@ -8,7 +13,10 @@ import { OrderStatus } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+  ) {}
 
   async create(
     userId: string,
@@ -18,96 +26,165 @@ export class OrderService {
       note?: string;
     },
   ) {
-    // Get user cart
-    const cart = await this.prisma.cart.findFirst({
-      where: { userId },
-      include: {
-        items: { include: { product: true, variant: true } },
-      },
-    });
-
-    if (!cart || cart.items.length === 0) {
-      throw new NotFoundException('Cart is empty');
-    }
-
-    // Calculate totals
-    let subtotal = 0;
-    const orderItems = cart.items.map((item) => {
-      const unitPrice = item.variant
-        ? Number(item.variant.price)
-        : Number(item.product.price);
-      const totalPrice = unitPrice * item.quantity;
-      subtotal += totalPrice;
-
-      return {
-        productId: item.productId,
-        variantId: item.variantId,
-        productName: item.product.name,
-        variantName: item.variant?.name,
-        quantity: item.quantity,
-        unitPrice,
-        totalPrice,
-      };
-    });
-
-    // Apply coupon if provided
-    let discount = 0;
-    let couponId: string | null = null;
-    if (data.couponCode) {
-      const coupon = await this.prisma.coupon.findUnique({
-        where: { code: data.couponCode },
-      });
-      if (coupon && coupon.isActive) {
-        if (coupon.type === 'percentage') {
-          discount = subtotal * (Number(coupon.value) / 100);
-          // maxDiscount varsa uygula
-          if (coupon.maxDiscount && discount > Number(coupon.maxDiscount)) {
-            discount = Number(coupon.maxDiscount);
-          }
-        } else if (coupon.type === 'fixed') {
-          discount = Number(coupon.value);
-        }
-        // free_shipping tipinde discount = 0, kargo ayrıca handle edilecek
-        couponId = coupon.id;
-        await this.prisma.coupon.update({
-          where: { id: coupon.id },
-          data: { usedCount: { increment: 1 } },
+    // Use transaction for atomic order creation with stock management
+    return this.prisma.$transaction(
+      async (tx) => {
+        // Get user cart
+        const cart = await tx.cart.findFirst({
+          where: { userId },
+          include: {
+            items: { include: { product: true, variant: true } },
+          },
         });
-      }
-    }
 
-    const shippingCost = subtotal >= 500 ? 0 : 39.9; // Free shipping over 500 TL
-    const tax = (subtotal - discount) * 0.2; // %20 KDV
-    const total = subtotal - discount + shippingCost + tax;
+        if (!cart || cart.items.length === 0) {
+          throw new NotFoundException('Cart is empty');
+        }
 
-    // Generate order number
-    const count = await this.prisma.order.count();
-    const orderNumber = `OLN-${new Date().getFullYear()}-${String(count + 1).padStart(6, '0')}`;
+        // Validate stock availability and prepare order items
+        let subtotal = 0;
+        const orderItems: any[] = [];
+        const stockUpdates: {
+          variantId?: string;
+          productId: string;
+          quantity: number;
+        }[] = [];
 
-    const order = await this.prisma.order.create({
-      data: {
-        orderNumber,
-        userId,
-        addressId: data.addressId,
-        subtotal,
-        shippingCost,
-        discount,
-        tax,
-        total,
-        couponId,
-        note: data.note,
-        items: { create: orderItems },
-        statusHistory: {
-          create: { status: OrderStatus.PENDING },
-        },
+        for (const item of cart.items) {
+          // Check stock - use variant stock if variant exists, otherwise product stock
+          const availableStock = item.variant
+            ? item.variant.stock
+            : item.product.stock;
+
+          if (availableStock < item.quantity) {
+            throw new BadRequestException(
+              `Yetersiz stok: ${item.product.name}${item.variant ? ` (${item.variant.name})` : ''} - Mevcut: ${availableStock}, İstenen: ${item.quantity}`,
+            );
+          }
+
+          const unitPrice = item.variant
+            ? Number(item.variant.price)
+            : Number(item.product.price);
+          const totalPrice = unitPrice * item.quantity;
+          subtotal += totalPrice;
+
+          orderItems.push({
+            productId: item.productId,
+            variantId: item.variantId,
+            productName: item.product.name,
+            variantName: item.variant?.name,
+            quantity: item.quantity,
+            unitPrice,
+            totalPrice,
+          });
+
+          stockUpdates.push({
+            variantId: item.variantId || undefined,
+            productId: item.productId,
+            quantity: item.quantity,
+          });
+        }
+
+        // Decrement stock atomically
+        for (const update of stockUpdates) {
+          if (update.variantId) {
+            await tx.productVariant.update({
+              where: { id: update.variantId },
+              data: { stock: { decrement: update.quantity } },
+            });
+          } else {
+            await tx.product.update({
+              where: { id: update.productId },
+              data: { stock: { decrement: update.quantity } },
+            });
+          }
+        }
+
+        // Apply coupon if provided
+        let discount = 0;
+        let couponId: string | null = null;
+        if (data.couponCode) {
+          const coupon = await tx.coupon.findUnique({
+            where: { code: data.couponCode },
+          });
+          if (coupon && coupon.isActive) {
+            // Check usage limits
+            if (coupon.maxUses && coupon.usedCount >= coupon.maxUses) {
+              throw new BadRequestException('Kupon kullanım limiti dolmuş');
+            }
+            // Check expiry
+            if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
+              throw new BadRequestException('Kuponun süresi dolmuş');
+            }
+
+            if (coupon.type === 'percentage') {
+              discount = subtotal * (Number(coupon.value) / 100);
+              // maxDiscount varsa uygula
+              if (coupon.maxDiscount && discount > Number(coupon.maxDiscount)) {
+                discount = Number(coupon.maxDiscount);
+              }
+            } else if (coupon.type === 'fixed') {
+              discount = Number(coupon.value);
+            }
+            // free_shipping tipinde discount = 0, kargo ayrıca handle edilecek
+            couponId = coupon.id;
+            await tx.coupon.update({
+              where: { id: coupon.id },
+              data: { usedCount: { increment: 1 } },
+            });
+          }
+        }
+
+        const freeShippingThreshold = this.config.get<number>(
+          'order.freeShippingThreshold',
+          500,
+        );
+        const defaultShippingCost = this.config.get<number>(
+          'order.defaultShippingCost',
+          39.9,
+        );
+        const taxRate = this.config.get<number>('order.taxRate', 0.2);
+
+        const shippingCost =
+          subtotal >= freeShippingThreshold ? 0 : defaultShippingCost;
+        const tax = (subtotal - discount) * taxRate;
+        const total = subtotal - discount + shippingCost + tax;
+
+        // Generate unique order number using timestamp + random suffix (race-safe)
+        const timestamp = Date.now().toString(36).toUpperCase();
+        const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const orderNumber = `OLN-${new Date().getFullYear()}-${timestamp}${random}`;
+
+        const order = await tx.order.create({
+          data: {
+            orderNumber,
+            userId,
+            addressId: data.addressId,
+            subtotal,
+            shippingCost,
+            discount,
+            tax,
+            total,
+            couponId,
+            note: data.note,
+            items: { create: orderItems },
+            statusHistory: {
+              create: { status: OrderStatus.PENDING },
+            },
+          },
+          include: { items: true, statusHistory: true },
+        });
+
+        // Clear cart
+        await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+
+        return order;
       },
-      include: { items: true, statusHistory: true },
-    });
-
-    // Clear cart
-    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
-
-    return order;
+      {
+        // Use serializable isolation for stock operations
+        isolationLevel: 'Serializable',
+      },
+    );
   }
 
   async findUserOrders(
@@ -150,6 +227,26 @@ export class OrderService {
       },
     });
     if (!order) throw new NotFoundException('Order not found');
+    return order;
+  }
+
+  /**
+   * Find order by ID with ownership check
+   */
+  async findByIdForUser(id: string, userId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: { include: { product: true, variant: true } },
+        statusHistory: { orderBy: { createdAt: 'desc' } },
+        payment: true,
+        address: true,
+      },
+    });
+    if (!order) throw new NotFoundException('Sipariş bulunamadı');
+    if (order.userId !== userId) {
+      throw new NotFoundException('Sipariş bulunamadı'); // Don't reveal existence
+    }
     return order;
   }
 

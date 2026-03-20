@@ -14,6 +14,11 @@ import { PaginationDto } from '../../common/pipes/pagination.pipe';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import {
+  CreateBlogPostDto,
+  UpdateBlogPostDto,
+  UpsertSeoDto,
+} from './dto/cms.dto';
 
 @ApiTags('CMS')
 @Controller()
@@ -55,16 +60,16 @@ export class CmsController {
   @Roles(UserRole.ADMIN)
   @Post('admin/blog/posts')
   @ApiOperation({ summary: 'Create blog post (admin)' })
-  createPost(@Body() data: any) {
-    return this.cmsService.createPost(data);
+  createPost(@Body() dto: CreateBlogPostDto) {
+    return this.cmsService.createPost(dto);
   }
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)
   @Put('admin/blog/posts/:id')
   @ApiOperation({ summary: 'Update blog post (admin)' })
-  updatePost(@Param('id') id: string, @Body() data: any) {
-    return this.cmsService.updatePost(id, data);
+  updatePost(@Param('id') id: string, @Body() dto: UpdateBlogPostDto) {
+    return this.cmsService.updatePost(id, dto);
   }
 
   @ApiBearerAuth('access-token')
@@ -89,7 +94,7 @@ export class CmsController {
   @Roles(UserRole.ADMIN)
   @Put('admin/seo/:pagePath')
   @ApiOperation({ summary: 'Update SEO metadata (admin)' })
-  upsertSeo(@Param('pagePath') pagePath: string, @Body() data: any) {
-    return this.cmsService.upsertSeo(`/${pagePath}`, data);
+  upsertSeo(@Param('pagePath') pagePath: string, @Body() dto: UpsertSeoDto) {
+    return this.cmsService.upsertSeo(`/${pagePath}`, dto);
   }
 }

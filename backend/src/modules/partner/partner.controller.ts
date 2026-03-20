@@ -11,26 +11,9 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { UserRole } from '@prisma/client';
 import { PartnerService } from './partner.service';
-
-// DTOs
-class CreateSaleDto {
-  amount: number;
-  commission?: number;
-  latitude?: number;
-  longitude?: number;
-  region?: string;
-  note?: string;
-}
-
-class UpdatePartnerProfileDto {
-  companyName?: string;
-  phone?: string;
-  latitude?: number;
-  longitude?: number;
-  locationLabel?: string;
-  partnerRegion?: string;
-}
+import { CreateSaleDto, UpdatePartnerProfileDto } from './dto/partner.dto';
 
 @ApiTags('Partner Portal')
 @ApiBearerAuth()
@@ -43,14 +26,14 @@ export class PartnerController {
   // ============================================
 
   @Get('dashboard')
-  @Roles('PARTNER' as any)
+  @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Partner dashboard — özet metrikler' })
   async getDashboard(@CurrentUser() user: any) {
     return this.partnerService.getDashboard(user.sub);
   }
 
   @Get('sales')
-  @Roles('PARTNER' as any)
+  @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Partner satışları listele' })
   async getSales(
     @CurrentUser() user: any,
@@ -69,14 +52,14 @@ export class PartnerController {
   }
 
   @Post('sales')
-  @Roles('PARTNER' as any)
+  @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Yeni satış kaydı oluştur' })
   async createSale(@CurrentUser() user: any, @Body() dto: CreateSaleDto) {
     return this.partnerService.createSale(user.sub, dto);
   }
 
   @Put('profile')
-  @Roles('PARTNER' as any)
+  @Roles(UserRole.PARTNER)
   @ApiOperation({ summary: 'Partner profili güncelle' })
   async updateProfile(
     @CurrentUser() user: any,
@@ -90,14 +73,17 @@ export class PartnerController {
   // ============================================
 
   @Get('admin/list')
-  @Roles('ADMIN' as any)
-  @ApiOperation({ summary: 'Admin: Tüm partnerları listele (harita için)' })
-  async getAllPartners() {
-    return this.partnerService.getAllPartners();
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin: Tüm partnerları listele' })
+  async getAllPartners(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.partnerService.getAllPartners(page, limit);
   }
 
   @Get('admin/sales-map')
-  @Roles('ADMIN' as any)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Admin: Satış haritası — koordinatlı tüm satışlar' })
   async getSalesMap(
     @Query('startDate') startDate?: string,
@@ -110,7 +96,7 @@ export class PartnerController {
   }
 
   @Get('admin/regional-performance')
-  @Roles('ADMIN' as any)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Admin: Bölgesel performans analizi' })
   async getRegionalPerformance() {
     return this.partnerService.getRegionalPerformance();

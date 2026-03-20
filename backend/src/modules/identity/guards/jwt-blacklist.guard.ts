@@ -39,19 +39,27 @@ export class JwtBlacklistGuard implements CanActivate {
 
     if (isBlacklisted) {
       this.logger.warn('Blacklisted token used');
-      throw new UnauthorizedException('Token geçersiz. Lütfen tekrar giriş yapın.');
+      throw new UnauthorizedException(
+        'Token geçersiz. Lütfen tekrar giriş yapın.',
+      );
     }
 
     // Kullanıcı ID'si ile de kontrol et (tüm token'ları invalidate etmek için)
     if (request.user?.id) {
-      const userInvalidatedAt = await this.redis.getRaw(`user_tokens_invalid:${request.user.id}`);
+      const userInvalidatedAt = await this.redis.getRaw(
+        `user_tokens_invalid:${request.user.id}`,
+      );
 
       if (userInvalidatedAt) {
         // Token oluşturulma zamanını kontrol et (JWT payload'dan)
         const tokenIat = request.user.iat;
         if (tokenIat && tokenIat * 1000 < parseInt(userInvalidatedAt, 10)) {
-          this.logger.warn(`All tokens invalidated for user: ${request.user.id}`);
-          throw new UnauthorizedException('Oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.');
+          this.logger.warn(
+            `All tokens invalidated for user: ${request.user.id}`,
+          );
+          throw new UnauthorizedException(
+            'Oturumunuz sonlandırıldı. Lütfen tekrar giriş yapın.',
+          );
         }
       }
     }
@@ -78,5 +86,9 @@ export async function invalidateAllUserTokens(
   redis: RedisService,
   userId: string,
 ): Promise<void> {
-  await redis.set(`user_tokens_invalid:${userId}`, Date.now().toString(), 7 * 24 * 60 * 60); // 7 gün
+  await redis.set(
+    `user_tokens_invalid:${userId}`,
+    Date.now().toString(),
+    7 * 24 * 60 * 60,
+  ); // 7 gün
 }

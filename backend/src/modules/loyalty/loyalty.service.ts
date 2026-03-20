@@ -49,6 +49,21 @@ export class LoyaltyService {
 
   constructor(private prisma: PrismaService) {}
 
+  /**
+   * Get effective config (DB overrides DEFAULT_CONFIG)
+   */
+  private async getEffectiveConfig(): Promise<typeof DEFAULT_CONFIG> {
+    const dbConfig = await this.prisma.loyaltyConfig.findMany();
+    if (dbConfig.length === 0) return DEFAULT_CONFIG;
+
+    const overrides: Record<string, any> = {};
+    dbConfig.forEach((c) => {
+      const num = Number(c.value);
+      overrides[c.key] = isNaN(num) ? c.value : num;
+    });
+    return { ...DEFAULT_CONFIG, ...overrides };
+  }
+
   // ============================================
   // HESAP YÖNETİMİ
   // ============================================
@@ -72,10 +87,12 @@ export class LoyaltyService {
       },
     });
 
+    const config = await this.getEffectiveConfig();
+
     // Kayıt bonusu
     await this.addPoints(
       account.id,
-      DEFAULT_CONFIG.SIGNUP_BONUS,
+      config.SIGNUP_BONUS,
       PointTransactionType.EARN_SIGNUP,
       "Olentia Pure'a hoş geldin bonusu",
     );
@@ -88,13 +105,13 @@ export class LoyaltyService {
       if (referrer) {
         await this.addPoints(
           referrer.id,
-          DEFAULT_CONFIG.REFERRAL_POINTS,
+          config.REFERRAL_POINTS,
           PointTransactionType.EARN_REFERRAL,
           'Arkadaş davet puanı',
         );
         await this.addPoints(
           account.id,
-          DEFAULT_CONFIG.REFERRAL_FRIEND_POINTS,
+          config.REFERRAL_FRIEND_POINTS,
           PointTransactionType.EARN_REFERRAL,
           'Davet bonusu — hoş geldin!',
         );
@@ -120,30 +137,32 @@ export class LoyaltyService {
       throw new NotFoundException('Loyalty hesabı bulunamadı');
     }
 
+    const config = await this.getEffectiveConfig();
+
     const nextTier = this.getNextTier(account.tier);
-    const nextTierPoints = this.getNextTierThreshold(account.tier);
+    const nextTierPoints = this.getNextTierThreshold(account.tier, config);
     const progressToNextTier = nextTierPoints
       ? Math.min(100, Math.round((account.totalPoints / nextTierPoints) * 100))
       : 100;
 
     // Sonraki ücretsiz kahveye kaç sipariş kaldı
     const ordersToNextFree =
-      DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS -
-      (account.totalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS);
+      config.MILESTONE_EVERY_N_ORDERS -
+      (account.totalOrders % config.MILESTONE_EVERY_N_ORDERS);
 
     const pendingFreeRewards =
       account.freeRewardsEarned - account.freeRewardsClaimed;
 
     return {
       ...account,
-      tierMultiplier: this.getTierMultiplier(account.tier),
+      tierMultiplier: this.getTierMultiplier(account.tier, config),
       nextTier,
       nextTierPoints,
       progressToNextTier,
       ordersToNextFree,
       pendingFreeRewards,
       pointsValueTL: (
-        account.availablePoints / DEFAULT_CONFIG.POINTS_TO_TL_RATE
+        account.availablePoints / config.POINTS_TO_TL_RATE
       ).toFixed(2),
     };
   }
@@ -162,17 +181,18 @@ export class LoyaltyService {
     isSubscription: boolean = false,
   ) {
     const account = await this.ensureAccount(userId);
+    const config = await this.getEffectiveConfig();
 
     // Tier çarpanı
-    const tierMultiplier = this.getTierMultiplier(account.tier);
+    const tierMultiplier = this.getTierMultiplier(account.tier, config);
 
     // Abonelik çarpanı
     const subscriptionMultiplier = isSubscription
-      ? DEFAULT_CONFIG.SUBSCRIPTION_BONUS_MULTIPLIER
+      ? config.SUBSCRIPTION_BONUS_MULTIPLIER
       : 1;
 
     // Puan hesapla: TL * puan oranı * tier çarpanı * abonelik çarpanı
-    const basePoints = Math.floor(orderTotal * DEFAULT_CONFIG.POINTS_PER_TL);
+    const basePoints = Math.floor(orderTotal * config.POINTS_PER_TL);
     const finalPoints = Math.floor(
       basePoints * tierMultiplier * subscriptionMultiplier,
     );
@@ -205,18 +225,18 @@ export class LoyaltyService {
     if (newTotalOrders === 1) {
       await this.addPoints(
         account.id,
-        DEFAULT_CONFIG.FIRST_ORDER_BONUS,
+        config.FIRST_ORDER_BONUS,
         PointTransactionType.EARN_FIRST_ORDER,
         'İlk sipariş tebrik bonusu! 🎉',
         orderId,
       );
     }
 
-    // Milestone kontrolü: Her 10 siparişte ücretsiz kahve
-    if (newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0) {
+    // Milestone kontrolü: Her N siparişte ücretsiz kahve
+    if (newTotalOrders % config.MILESTONE_EVERY_N_ORDERS === 0) {
       await this.addPoints(
         account.id,
-        DEFAULT_CONFIG.MILESTONE_BONUS_POINTS,
+        config.MILESTONE_BONUS_POINTS,
         PointTransactionType.EARN_MILESTONE,
         `🎁 ${newTotalOrders}. sipariş milestone bonusu — Ücretsiz kahve kazandın!`,
         orderId,
@@ -236,15 +256,14 @@ export class LoyaltyService {
     return {
       pointsEarned: finalPoints,
       totalOrders: newTotalOrders,
-      isMilestone:
-        newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0,
+      isMilestone: newTotalOrders % config.MILESTONE_EVERY_N_ORDERS === 0,
       milestoneReward:
-        newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS === 0
+        newTotalOrders % config.MILESTONE_EVERY_N_ORDERS === 0
           ? 'Ücretsiz kahve kazandınız! 🎉'
           : null,
       ordersToNextFree:
-        DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS -
-        (newTotalOrders % DEFAULT_CONFIG.MILESTONE_EVERY_N_ORDERS),
+        config.MILESTONE_EVERY_N_ORDERS -
+        (newTotalOrders % config.MILESTONE_EVERY_N_ORDERS),
     };
   }
 
@@ -253,13 +272,14 @@ export class LoyaltyService {
    */
   async earnFromReview(userId: string, productName: string) {
     const account = await this.ensureAccount(userId);
+    const config = await this.getEffectiveConfig();
     await this.addPoints(
       account.id,
-      DEFAULT_CONFIG.REVIEW_POINTS,
+      config.REVIEW_POINTS,
       PointTransactionType.EARN_REVIEW,
       `"${productName}" için yorum puanı`,
     );
-    return { pointsEarned: DEFAULT_CONFIG.REVIEW_POINTS };
+    return { pointsEarned: config.REVIEW_POINTS };
   }
 
   /**
@@ -267,13 +287,14 @@ export class LoyaltyService {
    */
   async earnBirthdayBonus(userId: string) {
     const account = await this.ensureAccount(userId);
+    const config = await this.getEffectiveConfig();
     await this.addPoints(
       account.id,
-      DEFAULT_CONFIG.BIRTHDAY_POINTS,
+      config.BIRTHDAY_POINTS,
       PointTransactionType.EARN_BIRTHDAY,
       'Doğum günün kutlu olsun! 🎂 Hediye puanın burada.',
     );
-    return { pointsEarned: DEFAULT_CONFIG.BIRTHDAY_POINTS };
+    return { pointsEarned: config.BIRTHDAY_POINTS };
   }
 
   // ============================================
@@ -286,9 +307,11 @@ export class LoyaltyService {
   async redeemForDiscount(userId: string, points: number): Promise<any> {
     const account = await this.ensureAccount(userId);
 
-    if (points < DEFAULT_CONFIG.MIN_REDEEM_POINTS) {
+    const config = await this.getEffectiveConfig();
+
+    if (points < config.MIN_REDEEM_POINTS) {
       throw new BadRequestException(
-        `Minimum ${DEFAULT_CONFIG.MIN_REDEEM_POINTS} puan kullanılmalıdır`,
+        `Minimum ${config.MIN_REDEEM_POINTS} puan kullanılmalıdır`,
       );
     }
 
@@ -298,7 +321,7 @@ export class LoyaltyService {
       );
     }
 
-    const discountTL = points / DEFAULT_CONFIG.POINTS_TO_TL_RATE;
+    const discountTL = points / config.POINTS_TO_TL_RATE;
     const code = `LP-${this.generateShortCode()}`;
 
     // Puanı düş
@@ -647,8 +670,9 @@ export class LoyaltyService {
     description: string,
     orderId?: string,
   ) {
+    const config = await this.getEffectiveConfig();
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + DEFAULT_CONFIG.POINT_EXPIRY_DAYS);
+    expiresAt.setDate(expiresAt.getDate() + config.POINT_EXPIRY_DAYS);
 
     await this.prisma.$transaction([
       this.prisma.pointTransaction.create({
@@ -725,12 +749,14 @@ export class LoyaltyService {
     });
     if (!account) return;
 
+    const config = await this.getEffectiveConfig();
+
     let newTier: LoyaltyTier;
-    if (account.totalPoints >= DEFAULT_CONFIG.TIER_PLATINUM) {
+    if (account.totalPoints >= config.TIER_PLATINUM) {
       newTier = LoyaltyTier.PLATINUM;
-    } else if (account.totalPoints >= DEFAULT_CONFIG.TIER_GOLD) {
+    } else if (account.totalPoints >= config.TIER_GOLD) {
       newTier = LoyaltyTier.GOLD;
-    } else if (account.totalPoints >= DEFAULT_CONFIG.TIER_SILVER) {
+    } else if (account.totalPoints >= config.TIER_SILVER) {
       newTier = LoyaltyTier.SILVER;
     } else {
       newTier = LoyaltyTier.BRONZE;
@@ -745,16 +771,19 @@ export class LoyaltyService {
     }
   }
 
-  private getTierMultiplier(tier: LoyaltyTier): number {
+  private getTierMultiplier(
+    tier: LoyaltyTier,
+    config = DEFAULT_CONFIG,
+  ): number {
     switch (tier) {
       case LoyaltyTier.PLATINUM:
-        return DEFAULT_CONFIG.TIER_PLATINUM_MULTIPLIER;
+        return config.TIER_PLATINUM_MULTIPLIER;
       case LoyaltyTier.GOLD:
-        return DEFAULT_CONFIG.TIER_GOLD_MULTIPLIER;
+        return config.TIER_GOLD_MULTIPLIER;
       case LoyaltyTier.SILVER:
-        return DEFAULT_CONFIG.TIER_SILVER_MULTIPLIER;
+        return config.TIER_SILVER_MULTIPLIER;
       default:
-        return DEFAULT_CONFIG.TIER_BRONZE_MULTIPLIER;
+        return config.TIER_BRONZE_MULTIPLIER;
     }
   }
 
@@ -771,14 +800,17 @@ export class LoyaltyService {
     }
   }
 
-  private getNextTierThreshold(tier: LoyaltyTier): number | null {
+  private getNextTierThreshold(
+    tier: LoyaltyTier,
+    config = DEFAULT_CONFIG,
+  ): number | null {
     switch (tier) {
       case LoyaltyTier.BRONZE:
-        return DEFAULT_CONFIG.TIER_SILVER;
+        return config.TIER_SILVER;
       case LoyaltyTier.SILVER:
-        return DEFAULT_CONFIG.TIER_GOLD;
+        return config.TIER_GOLD;
       case LoyaltyTier.GOLD:
-        return DEFAULT_CONFIG.TIER_PLATINUM;
+        return config.TIER_PLATINUM;
       default:
         return null;
     }

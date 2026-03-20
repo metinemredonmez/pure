@@ -129,8 +129,14 @@ export class IdentityService {
 
   // ── Brute-force Protection: Handle failed login ──
   private async handleFailedLogin(email: string) {
-    const MAX_ATTEMPTS = 5;
-    const LOCKOUT_DURATION_MINUTES = 30;
+    const MAX_ATTEMPTS = this.configService.get<number>(
+      'identity.maxLoginAttempts',
+      5,
+    );
+    const LOCKOUT_DURATION_MINUTES = this.configService.get<number>(
+      'identity.lockoutDurationMinutes',
+      30,
+    );
 
     // Son 15 dakikadaki başarısız girişleri say
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
@@ -327,7 +333,11 @@ export class IdentityService {
   // ── Helper: remove sensitive fields ──
   private sanitizeUser(user: any) {
     if (!user) return null;
-    const { passwordHash, mfaSecret, ...safe } = user;
+    const {
+      passwordHash: _passwordHash,
+      mfaSecret: _mfaSecret,
+      ...safe
+    } = user;
     return safe;
   }
 

@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
@@ -137,32 +136,46 @@ export class ReviewService {
       isVerified = !!hasOrder;
     }
 
-    // Yorum oluştur
-    const review = await this.prisma.review.create({
-      data: {
-        productId,
-        userId,
-        orderId: data.orderId,
-        rating: data.rating,
-        title: data.title,
-        comment: data.comment,
-        images: data.images || [],
-        isVerified,
-        isApproved: true, // Auto-approve (veya false yapıp admin onayı bekleyebilirsiniz)
-        isPublished: true,
-      },
-    });
+    // Yorum oluştur + loyalty puanı ekle — tek transaction
+    const review = await this.prisma.$transaction(async (tx) => {
+      const newReview = await tx.review.create({
+        data: {
+          productId,
+          userId,
+          orderId: data.orderId,
+          rating: data.rating,
+          title: data.title,
+          comment: data.comment,
+          images: data.images || [],
+          isVerified,
+          isApproved: true,
+          isPublished: true,
+        },
+      });
 
-    // Ürün ortalama puanını güncelle
-    await this.updateProductRating(productId);
+      // Ürün ortalama puanını güncelle
+      const reviews = await tx.review.findMany({
+        where: { productId, isPublished: true, isApproved: true },
+        select: { rating: true },
+      });
+      const total = reviews.length;
+      const avgRating =
+        total > 0
+          ? Math.round(
+              (reviews.reduce((acc, r) => acc + r.rating, 0) / total) * 10,
+            ) / 10
+          : 0;
+      await tx.product.update({
+        where: { id: productId },
+        data: { avgRating, reviewCount: total },
+      });
 
-    // Loyalty puanı ekle (varsa)
-    try {
-      const loyaltyAccount = await this.prisma.loyaltyAccount.findUnique({
+      // Loyalty puanı ekle
+      const loyaltyAccount = await tx.loyaltyAccount.findUnique({
         where: { userId },
       });
       if (loyaltyAccount) {
-        await this.prisma.pointTransaction.create({
+        await tx.pointTransaction.create({
           data: {
             loyaltyAccountId: loyaltyAccount.id,
             type: 'EARN_REVIEW',
@@ -170,7 +183,7 @@ export class ReviewService {
             description: `Ürün yorumu: ${product.name}`,
           },
         });
-        await this.prisma.loyaltyAccount.update({
+        await tx.loyaltyAccount.update({
           where: { id: loyaltyAccount.id },
           data: {
             totalPoints: { increment: 25 },
@@ -178,9 +191,9 @@ export class ReviewService {
           },
         });
       }
-    } catch (e) {
-      // Loyalty hatası review'u engellemez
-    }
+
+      return newReview;
+    });
 
     return review;
   }
@@ -258,7 +271,7 @@ export class ReviewService {
     });
   }
 
-  async reportReview(reviewId: string, userId: string, reason?: string) {
+  async reportReview(reviewId: string, _userId: string, _reason?: string) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
     });

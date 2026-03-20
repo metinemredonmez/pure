@@ -56,7 +56,9 @@ export class ArasCarrier implements CarrierInterface {
 
       // Test modunda mock yanıt
       const mockTrackingNumber = `AR${Date.now()}`;
-      this.logger.log(`[TEST MODE] Aras shipment created: ${mockTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] Aras shipment created: ${mockTrackingNumber}`,
+      );
 
       return {
         success: true,
@@ -149,7 +151,9 @@ export class ArasCarrier implements CarrierInterface {
     }
   }
 
-  async cancelShipment(trackingNumber: string): Promise<{ success: boolean; error?: string }> {
+  async cancelShipment(
+    trackingNumber: string,
+  ): Promise<{ success: boolean; error?: string }> {
     const { apiKey } = await this.getCredentials();
 
     if (!apiKey) {
@@ -168,7 +172,9 @@ export class ArasCarrier implements CarrierInterface {
     }
   }
 
-  async createReturn(originalTrackingNumber: string): Promise<ShipmentResponse> {
+  async createReturn(
+    originalTrackingNumber: string,
+  ): Promise<ShipmentResponse> {
     const { apiKey } = await this.getCredentials();
 
     if (!apiKey) {
@@ -180,7 +186,9 @@ export class ArasCarrier implements CarrierInterface {
 
     try {
       const returnTrackingNumber = `ARR${Date.now()}`;
-      this.logger.log(`[TEST MODE] Aras return created: ${returnTrackingNumber}`);
+      this.logger.log(
+        `[TEST MODE] Aras return created: ${returnTrackingNumber}`,
+      );
 
       return {
         success: true,

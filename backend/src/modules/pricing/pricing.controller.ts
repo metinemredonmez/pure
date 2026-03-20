@@ -18,7 +18,13 @@ import { PricingService } from './pricing.service';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
-import { PriceChannel } from '@prisma/client';
+import { PriceChannel, UserRole } from '@prisma/client';
+import {
+  UpdateVolumeDiscountDto,
+  SetProductPriceDto,
+  SetCustomerPriceDto,
+  CreateVolumeDiscountDto,
+} from './dto/pricing.dto';
 
 @ApiTags('Pricing')
 @Controller()
@@ -72,7 +78,7 @@ export class PricingController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Get('admin/products/:productId/prices')
   @ApiOperation({ summary: 'Admin: Get all channel prices for product' })
   getProductPrices(@Param('productId') productId: string) {
@@ -80,35 +86,27 @@ export class PricingController {
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Post('admin/products/:productId/prices')
   @ApiOperation({ summary: 'Admin: Set channel price' })
   setProductPrice(
     @Param('productId') productId: string,
     @CurrentUser('id') userId: string,
-    @Body()
-    data: {
-      variantId?: string;
-      channel: PriceChannel;
-      price: number;
-      minQuantity?: number;
-      startsAt?: string;
-      endsAt?: string;
-    },
+    @Body() dto: SetProductPriceDto,
   ) {
     return this.pricingService.setProductPrice(
       productId,
       {
-        ...data,
-        startsAt: data.startsAt ? new Date(data.startsAt) : undefined,
-        endsAt: data.endsAt ? new Date(data.endsAt) : undefined,
+        ...dto,
+        startsAt: dto.startsAt ? new Date(dto.startsAt) : undefined,
+        endsAt: dto.endsAt ? new Date(dto.endsAt) : undefined,
       },
       userId,
     );
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Delete('admin/prices/:id')
   @ApiOperation({ summary: 'Admin: Delete price' })
   deleteProductPrice(@Param('id') priceId: string) {
@@ -120,7 +118,7 @@ export class PricingController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN', 'SALES')
+  @Roles(UserRole.ADMIN, UserRole.SALES)
   @Get('admin/customers/:customerId/prices')
   @ApiOperation({ summary: 'Admin: Get customer special prices' })
   getCustomerPrices(@Param('customerId') customerId: string) {
@@ -128,37 +126,27 @@ export class PricingController {
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN', 'SALES')
+  @Roles(UserRole.ADMIN, UserRole.SALES)
   @Post('admin/customers/:customerId/prices')
   @ApiOperation({ summary: 'Admin: Set customer special price' })
   setCustomerPrice(
     @Param('customerId') customerId: string,
     @CurrentUser('id') userId: string,
-    @Body()
-    data: {
-      productId: string;
-      variantId?: string;
-      contractId?: string;
-      price: number;
-      discount?: number;
-      minQuantity?: number;
-      startsAt?: string;
-      endsAt?: string;
-    },
+    @Body() dto: SetCustomerPriceDto,
   ) {
     return this.pricingService.setCustomerPrice(
       customerId,
       {
-        ...data,
-        startsAt: data.startsAt ? new Date(data.startsAt) : undefined,
-        endsAt: data.endsAt ? new Date(data.endsAt) : undefined,
+        ...dto,
+        startsAt: dto.startsAt ? new Date(dto.startsAt) : undefined,
+        endsAt: dto.endsAt ? new Date(dto.endsAt) : undefined,
       },
       userId,
     );
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN', 'SALES')
+  @Roles(UserRole.ADMIN, UserRole.SALES)
   @Delete('admin/customer-prices/:id')
   @ApiOperation({ summary: 'Admin: Delete customer price' })
   deleteCustomerPrice(@Param('id') priceId: string) {
@@ -170,7 +158,7 @@ export class PricingController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Get('admin/volume-discounts')
   @ApiOperation({ summary: 'Admin: Get volume discounts' })
   @ApiQuery({ name: 'channel', required: false })
@@ -179,32 +167,26 @@ export class PricingController {
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Post('admin/volume-discounts')
   @ApiOperation({ summary: 'Admin: Create volume discount' })
-  createVolumeDiscount(
-    @Body()
-    data: {
-      name: string;
-      channel: PriceChannel;
-      minQuantity: number;
-      maxQuantity?: number;
-      discountPercent: number;
-    },
-  ) {
-    return this.pricingService.setVolumeDiscount(data);
+  createVolumeDiscount(@Body() dto: CreateVolumeDiscountDto) {
+    return this.pricingService.setVolumeDiscount(dto);
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Put('admin/volume-discounts/:id')
   @ApiOperation({ summary: 'Admin: Update volume discount' })
-  updateVolumeDiscount(@Param('id') id: string, @Body() data: any) {
-    return this.pricingService.updateVolumeDiscount(id, data);
+  updateVolumeDiscount(
+    @Param('id') id: string,
+    @Body() dto: UpdateVolumeDiscountDto,
+  ) {
+    return this.pricingService.updateVolumeDiscount(id, dto);
   }
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Delete('admin/volume-discounts/:id')
   @ApiOperation({ summary: 'Admin: Delete volume discount' })
   deleteVolumeDiscount(@Param('id') id: string) {
@@ -216,7 +198,7 @@ export class PricingController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('ADMIN')
+  @Roles(UserRole.ADMIN)
   @Get('admin/products/:productId/price-history')
   @ApiOperation({ summary: 'Admin: Get price change history' })
   @ApiQuery({ name: 'channel', required: false })
@@ -234,7 +216,7 @@ export class PricingController {
   // ══════════════════════════════════════════════
 
   @ApiBearerAuth('access-token')
-  @Roles('PARTNER')
+  @Roles(UserRole.PARTNER)
   @Get('partner/products/:productId/price')
   @ApiOperation({ summary: 'Partner: Get my cost and margin' })
   @ApiQuery({ name: 'variantId', required: false })

@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -88,12 +87,11 @@ export class AdminService {
       this.prisma.product.count({ where: { status: 'ACTIVE' } }),
       this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
       this.prisma.order.count({ where: { status: 'PENDING' } }),
-      this.prisma.product.count({
-        where: {
-          status: 'ACTIVE',
-          stock: { lte: this.prisma.product.fields.lowStockThreshold },
-        },
-      }),
+      // Low stock: products where stock <= lowStockThreshold (using raw query for cross-column compare)
+      this.prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(*)::int as count FROM "Product"
+        WHERE status = 'ACTIVE' AND stock <= "lowStockThreshold"
+      `.then((r) => Number(r[0]?.count || 0)),
     ]);
 
     // Değişim oranları hesapla
@@ -344,10 +342,19 @@ export class AdminService {
   // ══════════════════════════════════════════════
 
   async getLowStockProducts() {
+    // Use raw query to compare stock against each product's own lowStockThreshold
+    const lowStockIds = await this.prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM "Product"
+      WHERE status = 'ACTIVE' AND stock <= "lowStockThreshold"
+      ORDER BY stock ASC
+      LIMIT 20
+    `;
+
+    if (lowStockIds.length === 0) return [];
+
     return this.prisma.product.findMany({
       where: {
-        status: 'ACTIVE',
-        stock: { lte: 20 }, // veya dynamic threshold
+        id: { in: lowStockIds.map((r) => r.id) },
       },
       select: {
         id: true,
@@ -359,7 +366,6 @@ export class AdminService {
         images: { take: 1 },
       },
       orderBy: { stock: 'asc' },
-      take: 20,
     });
   }
 

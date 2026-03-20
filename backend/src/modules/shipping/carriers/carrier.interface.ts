@@ -75,7 +75,9 @@ export interface CarrierInterface {
   /**
    * Cancel a shipment
    */
-  cancelShipment(trackingNumber: string): Promise<{ success: boolean; error?: string }>;
+  cancelShipment(
+    trackingNumber: string,
+  ): Promise<{ success: boolean; error?: string }>;
 
   /**
    * Create a return shipment

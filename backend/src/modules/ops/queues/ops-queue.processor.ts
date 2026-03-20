@@ -94,12 +94,18 @@ export class OpsQueueProcessor extends WorkerHost {
       this.logger.log(`Job ${jobName} completed successfully`);
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error(`Job ${jobName} failed: ${errorMessage}`);
 
       // Log failure
       if (logId) {
-        await this.cronJobService.logJobComplete(logId, 'FAILED', null, errorMessage);
+        await this.cronJobService.logJobComplete(
+          logId,
+          'FAILED',
+          null,
+          errorMessage,
+        );
       }
 
       throw error;
@@ -131,7 +137,11 @@ export class OpsQueueProcessor extends WorkerHost {
   /**
    * 2. Subscription Renewal - Process due subscriptions
    */
-  private async processSubscriptionRenewal(): Promise<{ processed: number; failed: number; orders: number }> {
+  private async processSubscriptionRenewal(): Promise<{
+    processed: number;
+    failed: number;
+    orders: number;
+  }> {
     const dueSubscriptions = await this.prisma.subscription.findMany({
       where: {
         status: 'ACTIVE',
@@ -201,7 +211,9 @@ export class OpsQueueProcessor extends WorkerHost {
       }
     }
 
-    this.logger.log(`Subscription renewal: ${processed} processed, ${failed} failed, ${orders} orders created`);
+    this.logger.log(
+      `Subscription renewal: ${processed} processed, ${failed} failed, ${orders} orders created`,
+    );
     return { processed, failed, orders };
   }
 
@@ -274,14 +286,19 @@ export class OpsQueueProcessor extends WorkerHost {
       });
     }
 
-    this.logger.log(`Order auto complete: ${ordersToComplete.length} orders processed`);
+    this.logger.log(
+      `Order auto complete: ${ordersToComplete.length} orders processed`,
+    );
     return { completed: ordersToComplete.length };
   }
 
   /**
    * 5. Loyalty Birthday - Give birthday bonus points
    */
-  private async processLoyaltyBirthday(): Promise<{ awarded: number; points: number }> {
+  private async processLoyaltyBirthday(): Promise<{
+    awarded: number;
+    points: number;
+  }> {
     const today = new Date();
     const month = today.getMonth() + 1;
     const day = today.getDate();
@@ -351,14 +368,19 @@ export class OpsQueueProcessor extends WorkerHost {
       awarded++;
     }
 
-    this.logger.log(`Loyalty birthday: ${awarded} users awarded ${BIRTHDAY_POINTS * awarded} points`);
+    this.logger.log(
+      `Loyalty birthday: ${awarded} users awarded ${BIRTHDAY_POINTS * awarded} points`,
+    );
     return { awarded, points: BIRTHDAY_POINTS * awarded };
   }
 
   /**
    * 6. Loyalty Expiry - Expire old points
    */
-  private async processLoyaltyExpiry(): Promise<{ expired: number; points: number }> {
+  private async processLoyaltyExpiry(): Promise<{
+    expired: number;
+    points: number;
+  }> {
     const expiredTransactions = await this.prisma.pointTransaction.findMany({
       where: {
         points: { gt: 0 },
@@ -395,14 +417,19 @@ export class OpsQueueProcessor extends WorkerHost {
       totalPoints += tx.points;
     }
 
-    this.logger.log(`Loyalty expiry: ${totalExpired} transactions, ${totalPoints} points expired`);
+    this.logger.log(
+      `Loyalty expiry: ${totalExpired} transactions, ${totalPoints} points expired`,
+    );
     return { expired: totalExpired, points: totalPoints };
   }
 
   /**
    * 7. Price Schedule - Apply scheduled price changes
    */
-  private async processPriceSchedule(): Promise<{ activated: number; deactivated: number }> {
+  private async processPriceSchedule(): Promise<{
+    activated: number;
+    deactivated: number;
+  }> {
     const now = new Date();
 
     // Activate scheduled prices
@@ -428,14 +455,19 @@ export class OpsQueueProcessor extends WorkerHost {
     await this.cacheService.clearGroup('pricing');
     await this.cacheService.clearGroup('products');
 
-    this.logger.log(`Price schedule: ${activated.count} activated, ${deactivated.count} deactivated`);
+    this.logger.log(
+      `Price schedule: ${activated.count} activated, ${deactivated.count} deactivated`,
+    );
     return { activated: activated.count, deactivated: deactivated.count };
   }
 
   /**
    * 8. Stock Alert - Send low stock notifications
    */
-  private async processStockAlert(): Promise<{ alerts: number; products: string[] }> {
+  private async processStockAlert(): Promise<{
+    alerts: number;
+    products: string[];
+  }> {
     const lowStockProducts = await this.prisma.product.findMany({
       where: {
         isActive: true,
@@ -472,14 +504,19 @@ export class OpsQueueProcessor extends WorkerHost {
       );
     }
 
-    this.logger.log(`Stock alert: ${criticalProducts.length} products low on stock`);
+    this.logger.log(
+      `Stock alert: ${criticalProducts.length} products low on stock`,
+    );
     return { alerts: criticalProducts.length, products: productNames };
   }
 
   /**
    * 9. Dashboard Refresh - Refresh dashboard cache with pre-calculated KPIs
    */
-  private async processDashboardRefresh(): Promise<{ refreshed: boolean; kpis: any }> {
+  private async processDashboardRefresh(): Promise<{
+    refreshed: boolean;
+    kpis: any;
+  }> {
     await this.cacheService.clearGroup('dashboard');
 
     // Calculate KPIs
@@ -505,11 +542,16 @@ export class OpsQueueProcessor extends WorkerHost {
       }),
       this.prisma.order.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
       this.prisma.order.aggregate({
-        where: { createdAt: { gte: thirtyDaysAgo }, status: { not: 'CANCELLED' } },
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+          status: { not: 'CANCELLED' },
+        },
         _sum: { total: true },
       }),
       this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
-      this.prisma.b2bLead.count({ where: { createdAt: { gte: thirtyDaysAgo } } }),
+      this.prisma.b2bLead.count({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+      }),
       this.prisma.product.count({
         where: { isActive: true, status: 'ACTIVE' },
       }),
@@ -536,7 +578,10 @@ export class OpsQueueProcessor extends WorkerHost {
   /**
    * 10. Shipment Tracking - Update shipment statuses from carrier APIs
    */
-  private async processShipmentTracking(): Promise<{ updated: number; errors: number }> {
+  private async processShipmentTracking(): Promise<{
+    updated: number;
+    errors: number;
+  }> {
     const activeShipments = await this.prisma.shipmentRecord.findMany({
       where: {
         status: { in: ['SHIPPED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY'] },
@@ -593,7 +638,9 @@ export class OpsQueueProcessor extends WorkerHost {
           updated++;
         }
       } catch (err) {
-        this.logger.error(`Shipment tracking error for ${shipment.trackingNumber}: ${err}`);
+        this.logger.error(
+          `Shipment tracking error for ${shipment.trackingNumber}: ${err}`,
+        );
         errors++;
       }
     }
@@ -634,7 +681,7 @@ export class OpsQueueProcessor extends WorkerHost {
         });
 
         sent++;
-      } catch (err) {
+      } catch (_err) {
         await this.prisma.sentNotification.update({
           where: { id: email.id },
           data: { status: 'failed' },
@@ -665,7 +712,10 @@ export class OpsQueueProcessor extends WorkerHost {
   /**
    * 13. Session Cleanup - Remove old sessions
    */
-  private async processSessionCleanup(): Promise<{ sessions: number; tokens: number }> {
+  private async processSessionCleanup(): Promise<{
+    sessions: number;
+    tokens: number;
+  }> {
     // Clean Redis sessions older than 7 days
     const sessionKeys = await this.redis.scan('session:*');
     let sessionsDeleted = 0;
@@ -691,14 +741,19 @@ export class OpsQueueProcessor extends WorkerHost {
       },
     });
 
-    this.logger.log(`Session cleanup: ${sessionsDeleted} sessions, ${tokenResult.count} tokens deleted`);
+    this.logger.log(
+      `Session cleanup: ${sessionsDeleted} sessions, ${tokenResult.count} tokens deleted`,
+    );
     return { sessions: sessionsDeleted, tokens: tokenResult.count };
   }
 
   /**
    * 14. Analytics Daily - Calculate daily analytics
    */
-  private async processAnalyticsDaily(): Promise<{ calculated: boolean; report: any }> {
+  private async processAnalyticsDaily(): Promise<{
+    calculated: boolean;
+    report: any;
+  }> {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
     yesterday.setHours(0, 0, 0, 0);
@@ -712,7 +767,7 @@ export class OpsQueueProcessor extends WorkerHost {
       newUsers,
       revenue,
       topProducts,
-      ordersByStatus,
+      _ordersByStatus,
       subscriptionsCount,
     ] = await Promise.all([
       this.prisma.order.count({
@@ -722,7 +777,10 @@ export class OpsQueueProcessor extends WorkerHost {
         where: { createdAt: { gte: yesterday, lt: today } },
       }),
       this.prisma.order.aggregate({
-        where: { createdAt: { gte: yesterday, lt: today }, status: { not: 'CANCELLED' } },
+        where: {
+          createdAt: { gte: yesterday, lt: today },
+          status: { not: 'CANCELLED' },
+        },
         _sum: { total: true },
       }),
       this.prisma.orderItem.groupBy({
@@ -772,14 +830,19 @@ export class OpsQueueProcessor extends WorkerHost {
       },
     });
 
-    this.logger.log(`Analytics daily: ${orders} orders, ${newUsers} new users, ${revenue._sum.total || 0} TL`);
+    this.logger.log(
+      `Analytics daily: ${orders} orders, ${newUsers} new users, ${revenue._sum.total || 0} TL`,
+    );
     return { calculated: true, report };
   }
 
   /**
    * 15. B2B Lead Followup - Send followup reminders to sales team
    */
-  private async processB2bLeadFollowup(): Promise<{ reminded: number; leads: string[] }> {
+  private async processB2bLeadFollowup(): Promise<{
+    reminded: number;
+    leads: string[];
+  }> {
     const threeDaysAgo = new Date();
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
 
@@ -816,15 +879,17 @@ export class OpsQueueProcessor extends WorkerHost {
 
     // Send notifications to assigned users or all sales team
     for (const [userId, leads] of leadsByUser) {
-      const targetUsers = userId === 'unassigned'
-        ? salesTeam.map((u) => u.id)
-        : [userId];
+      const targetUsers =
+        userId === 'unassigned' ? salesTeam.map((u) => u.id) : [userId];
 
       for (const targetId of targetUsers) {
         await this.createNotification(
           targetId,
           '📋 B2B Lead Takip Hatırlatması',
-          `${leads.length} lead 3 gündür güncellenmedi: ${leads.slice(0, 2).map((l) => l.companyName).join(', ')}${leads.length > 2 ? '...' : ''}`,
+          `${leads.length} lead 3 gündür güncellenmedi: ${leads
+            .slice(0, 2)
+            .map((l) => l.companyName)
+            .join(', ')}${leads.length > 2 ? '...' : ''}`,
           'warning',
           '/admin/b2b/leads?filter=stale',
         );
@@ -832,7 +897,9 @@ export class OpsQueueProcessor extends WorkerHost {
       }
     }
 
-    this.logger.log(`B2B lead followup: ${staleLeads.length} stale leads, ${reminded} reminders sent`);
+    this.logger.log(
+      `B2B lead followup: ${staleLeads.length} stale leads, ${reminded} reminders sent`,
+    );
     return { reminded, leads: leadNames };
   }
 
@@ -864,15 +931,33 @@ export class OpsQueueProcessor extends WorkerHost {
   /**
    * Map carrier status to ShipmentStatus enum
    */
-  private mapCarrierStatus(carrierStatus: string): 'PREPARING' | 'SHIPPED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'RETURNED' | 'CANCELLED' {
-    const statusMap: Record<string, 'PREPARING' | 'SHIPPED' | 'IN_TRANSIT' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'RETURNED' | 'CANCELLED'> = {
-      'HAZIRLANIYOR': 'PREPARING',
-      'KARGOYA_VERILDI': 'SHIPPED',
-      'YOLDA': 'IN_TRANSIT',
-      'DAGITIMDA': 'OUT_FOR_DELIVERY',
-      'TESLIM_EDILDI': 'DELIVERED',
-      'IADE': 'RETURNED',
-      'IPTAL': 'CANCELLED',
+  private mapCarrierStatus(
+    carrierStatus: string,
+  ):
+    | 'PREPARING'
+    | 'SHIPPED'
+    | 'IN_TRANSIT'
+    | 'OUT_FOR_DELIVERY'
+    | 'DELIVERED'
+    | 'RETURNED'
+    | 'CANCELLED' {
+    const statusMap: Record<
+      string,
+      | 'PREPARING'
+      | 'SHIPPED'
+      | 'IN_TRANSIT'
+      | 'OUT_FOR_DELIVERY'
+      | 'DELIVERED'
+      | 'RETURNED'
+      | 'CANCELLED'
+    > = {
+      HAZIRLANIYOR: 'PREPARING',
+      KARGOYA_VERILDI: 'SHIPPED',
+      YOLDA: 'IN_TRANSIT',
+      DAGITIMDA: 'OUT_FOR_DELIVERY',
+      TESLIM_EDILDI: 'DELIVERED',
+      IADE: 'RETURNED',
+      IPTAL: 'CANCELLED',
     };
     return statusMap[carrierStatus] || 'IN_TRANSIT';
   }

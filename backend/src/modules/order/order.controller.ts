@@ -12,7 +12,8 @@ import { OrderService } from './order.service';
 import { PaginationDto } from '../../common/pipes/pagination.pipe';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { UserRole, OrderStatus } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -24,11 +25,8 @@ export class OrderController {
 
   @Post('orders')
   @ApiOperation({ summary: 'Create order from cart' })
-  create(
-    @CurrentUser('id') userId: string,
-    @Body() body: { addressId: string; couponCode?: string; note?: string },
-  ) {
-    return this.orderService.create(userId, body);
+  create(@CurrentUser('id') userId: string, @Body() dto: CreateOrderDto) {
+    return this.orderService.create(userId, dto);
   }
 
   @Get('orders')
@@ -42,8 +40,8 @@ export class OrderController {
 
   @Get('orders/:id')
   @ApiOperation({ summary: 'Get order details' })
-  findOne(@Param('id') id: string) {
-    return this.orderService.findById(id);
+  findOne(@CurrentUser('id') userId: string, @Param('id') id: string) {
+    return this.orderService.findByIdForUser(id, userId);
   }
 
   // ── Admin endpoints ──
@@ -61,8 +59,8 @@ export class OrderController {
   updateStatus(
     @Param('id') id: string,
     @CurrentUser('id') adminId: string,
-    @Body() body: { status: OrderStatus; note?: string },
+    @Body() dto: UpdateOrderStatusDto,
   ) {
-    return this.orderService.updateStatus(id, body.status, adminId, body.note);
+    return this.orderService.updateStatus(id, dto.status, adminId, dto.note);
   }
 }

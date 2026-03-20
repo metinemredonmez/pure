@@ -15,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../identity/guards/jwt-auth.guard';
 import { RolesGuard } from '../identity/guards/roles.guard';
+import { WebhookHmacGuard } from '../identity/guards/api-key.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { ShippingService } from './shipping.service';
@@ -125,6 +126,7 @@ export class UserShippingController {
 // ══════════════════════════════════════════════
 
 @ApiTags('Webhooks - Shipping')
+@UseGuards(WebhookHmacGuard)
 @Controller('webhooks/shipping')
 export class ShippingWebhookController {
   constructor(private readonly shippingService: ShippingService) {}

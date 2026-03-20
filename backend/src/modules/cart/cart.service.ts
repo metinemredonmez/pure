@@ -80,6 +80,57 @@ export class CartService {
     return { message: 'Item removed' };
   }
 
+  /**
+   * Secure update with ownership check
+   */
+  async updateItemQuantitySecure(
+    itemId: string,
+    quantity: number,
+    userId: string | null,
+    sessionId: string | null,
+  ) {
+    const item = await this.prisma.cartItem.findUnique({
+      where: { id: itemId },
+      include: { cart: true },
+    });
+    if (!item) throw new NotFoundException('Sepet öğesi bulunamadı');
+
+    // Verify ownership
+    const isOwner =
+      (userId && item.cart.userId === userId) ||
+      (sessionId && item.cart.sessionId === sessionId);
+    if (!isOwner) {
+      throw new NotFoundException('Sepet öğesi bulunamadı');
+    }
+
+    return this.updateItemQuantity(itemId, quantity);
+  }
+
+  /**
+   * Secure remove with ownership check
+   */
+  async removeItemSecure(
+    itemId: string,
+    userId: string | null,
+    sessionId: string | null,
+  ) {
+    const item = await this.prisma.cartItem.findUnique({
+      where: { id: itemId },
+      include: { cart: true },
+    });
+    if (!item) throw new NotFoundException('Sepet öğesi bulunamadı');
+
+    // Verify ownership
+    const isOwner =
+      (userId && item.cart.userId === userId) ||
+      (sessionId && item.cart.sessionId === sessionId);
+    if (!isOwner) {
+      throw new NotFoundException('Sepet öğesi bulunamadı');
+    }
+
+    return this.removeItem(itemId);
+  }
+
   async clearCart(userId?: string | null, sessionId?: string | null) {
     const cart = await this.getCart(userId, sessionId);
     await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
@@ -88,41 +139,50 @@ export class CartService {
 
   // Merge guest cart into user cart after login
   async mergeCarts(userId: string, sessionId: string) {
-    const guestCart = await this.prisma.cart.findFirst({
-      where: { sessionId },
-      include: { items: true },
-    });
-    if (!guestCart || guestCart.items.length === 0) return;
-
-    const userCart = await this.getCart(userId);
-
-    for (const item of guestCart.items) {
-      const existing = await this.prisma.cartItem.findFirst({
-        where: {
-          cartId: userCart.id,
-          productId: item.productId,
-          variantId: item.variantId,
-        },
+    await this.prisma.$transaction(async (tx) => {
+      const guestCart = await tx.cart.findFirst({
+        where: { sessionId },
+        include: { items: true },
       });
+      if (!guestCart || guestCart.items.length === 0) return;
 
-      if (existing) {
-        await this.prisma.cartItem.update({
-          where: { id: existing.id },
-          data: { quantity: existing.quantity + item.quantity },
-        });
-      } else {
-        await this.prisma.cartItem.create({
-          data: {
-            cartId: userCart.id,
-            productId: item.productId,
-            variantId: item.variantId,
-            quantity: item.quantity,
-          },
+      let userCart = await tx.cart.findFirst({
+        where: { userId },
+        include: { items: true },
+      });
+      if (!userCart) {
+        userCart = await tx.cart.create({
+          data: { userId },
+          include: { items: true },
         });
       }
-    }
 
-    // Delete guest cart
-    await this.prisma.cart.delete({ where: { id: guestCart.id } });
+      for (const item of guestCart.items) {
+        const existing = userCart.items.find(
+          (i) =>
+            i.productId === item.productId && i.variantId === item.variantId,
+        );
+
+        if (existing) {
+          await tx.cartItem.update({
+            where: { id: existing.id },
+            data: { quantity: existing.quantity + item.quantity },
+          });
+        } else {
+          await tx.cartItem.create({
+            data: {
+              cartId: userCart.id,
+              productId: item.productId,
+              variantId: item.variantId,
+              quantity: item.quantity,
+            },
+          });
+        }
+      }
+
+      // Delete guest cart items first (FK constraint), then cart
+      await tx.cartItem.deleteMany({ where: { cartId: guestCart.id } });
+      await tx.cart.delete({ where: { id: guestCart.id } });
+    });
   }
 }
