@@ -33,10 +33,8 @@ export class UploadService {
     const accessKey = this.config.get('minio.accessKey');
     const secretKey = this.config.get('minio.secretKey');
 
-    if (process.env.NODE_ENV === 'production' && (!accessKey || !secretKey)) {
-      throw new Error(
-        'MINIO_ACCESS_KEY and MINIO_SECRET_KEY environment variables are required in production',
-      );
+    if (!accessKey || !secretKey) {
+      this.logger.warn('MinIO credentials not configured — file uploads will use local disk storage');
     }
 
     this.minioClient = new Minio.Client({
