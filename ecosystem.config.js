@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'olentia-api',
       cwd: './backend',
-      script: 'dist/main.js',
+      script: 'dist/src/main.js',
       instances: 'max',
       exec_mode: 'cluster',
       env_production: {
