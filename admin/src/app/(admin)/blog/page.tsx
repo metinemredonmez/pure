@@ -78,7 +78,7 @@ export default function BlogPage() {
       setEditingPost(post);
       setForm({
         title: post.title, slug: post.slug, excerpt: post.excerpt || '',
-        content: post.content || '', status: post.status,
+        content: post.content || '', status: post.status || 'draft',
         tags: post.tags?.join(', ') || '', coverImage: (post as any).coverImage || '', metaTitle: '', metaDescription: '',
       });
     } else {
