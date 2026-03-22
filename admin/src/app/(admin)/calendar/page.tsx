@@ -272,6 +272,7 @@ export default function CalendarPage() {
       payment: '/payments',
       subscription: '/subscriptions',
       shipping: '/shipping',
+      meeting: '/calendar',
     };
     router.push(routes[event.type]);
   };
