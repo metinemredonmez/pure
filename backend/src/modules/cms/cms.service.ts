@@ -25,7 +25,9 @@ export class CmsService {
     const [data, total] = await Promise.all([
       this.prisma.blogPost.findMany({
         where,
-        include: { category: true },
+        include: {
+          category: true,
+        },
         skip: query.skip,
         take: query.limit,
         orderBy: { publishedAt: 'desc' },
@@ -86,6 +88,14 @@ export class CmsService {
     sortOrder?: number;
   }) {
     return this.prisma.faqItem.create({ data });
+  }
+
+  async updateFaq(id: string, data: Record<string, any>) {
+    return this.prisma.faqItem.update({ where: { id }, data });
+  }
+
+  async deleteFaq(id: string) {
+    return this.prisma.faqItem.delete({ where: { id } });
   }
 
   // ── SEO ──

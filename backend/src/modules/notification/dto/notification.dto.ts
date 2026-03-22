@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsBoolean, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsObject, MaxLength } from 'class-validator';
 
 // ══════════════════════════════════════════════
 // NOTIFICATION TEMPLATE DTOs
@@ -29,7 +29,8 @@ export class SendTemplatedEmailDto {
   @IsString()
   template: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: { firstName: 'Emre', orderNumber: 'ORD-001' } })
+  @IsObject()
   variables: Record<string, string>;
 }
 

@@ -100,9 +100,41 @@ export class CatalogController {
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)
+  @Put('admin/categories/:id')
+  @ApiOperation({ summary: 'Update category (admin)' })
+  updateCategory(@Param('id') id: string, @Body() dto: any) {
+    return this.catalogService.updateCategory(id, dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/categories/:id')
+  @ApiOperation({ summary: 'Delete category (admin)' })
+  deleteCategory(@Param('id') id: string) {
+    return this.catalogService.deleteCategory(id);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
   @Post('admin/collections')
   @ApiOperation({ summary: 'Create collection (admin)' })
   createCollection(@Body() dto: CreateCollectionDto) {
     return this.catalogService.createCollection(dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Put('admin/collections/:id')
+  @ApiOperation({ summary: 'Update collection (admin)' })
+  updateCollection(@Param('id') id: string, @Body() dto: any) {
+    return this.catalogService.updateCollection(id, dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/collections/:id')
+  @ApiOperation({ summary: 'Delete collection (admin)' })
+  deleteCollection(@Param('id') id: string) {
+    return this.catalogService.deleteCollection(id);
   }
 }

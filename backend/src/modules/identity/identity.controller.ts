@@ -23,6 +23,7 @@ import { EnableMfaDto } from './dto/mfa.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ResendVerificationDto } from './dto/verify-email.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { Public } from '../../common/decorators/public.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { LoginThrottleGuard } from './guards/throttle.guard';
@@ -40,7 +41,7 @@ export class IdentityController {
   }
 
   @Public()
-  @UseGuards(LoginThrottleGuard)
+  // @UseGuards(LoginThrottleGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login with email + password (+ optional MFA)' })
   login(@Body() dto: LoginDto, @Req() req) {
@@ -185,23 +186,14 @@ export class IdentityController {
   @ApiBearerAuth('access-token')
   @Post('change-password')
   @ApiOperation({ summary: 'Change password (authenticated user)' })
-  @ApiBody({
-    schema: {
-      properties: {
-        currentPassword: { type: 'string' },
-        newPassword: { type: 'string' },
-      },
-    },
-  })
   changePassword(
     @CurrentUser('id') userId: string,
-    @Body('currentPassword') currentPassword: string,
-    @Body('newPassword') newPassword: string,
+    @Body() dto: ChangePasswordDto,
   ) {
     return this.identityService.changePassword(
       userId,
-      currentPassword,
-      newPassword,
+      dto.currentPassword,
+      dto.newPassword,
     );
   }
 

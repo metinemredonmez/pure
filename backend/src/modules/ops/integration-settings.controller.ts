@@ -21,6 +21,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { IntegrationSettingsService } from './integration-settings.service';
 import {
   UpdateSettingDto,
+  UpdateSettingValueDto,
   BulkUpdateSettingsDto,
   TestConnectionDto,
   SettingsListResponseDto,
@@ -103,7 +104,7 @@ export class IntegrationSettingsController {
   @ApiOperation({ summary: 'Update a single setting' })
   async updateSetting(
     @Param('key') key: string,
-    @Body() dto: UpdateSettingDto,
+    @Body() dto: UpdateSettingValueDto,
   ) {
     return this.settingsService.update(key, dto.value ?? null);
   }

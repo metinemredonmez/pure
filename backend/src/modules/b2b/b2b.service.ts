@@ -115,6 +115,20 @@ export class B2bService {
     });
   }
 
+  // Admin: delete lead (cascade quotes)
+  async deleteLead(id: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.b2bQuote.deleteMany({ where: { leadId: id } });
+      // Delete contracts + machine assignments
+      const contracts = await tx.b2bContract.findMany({ where: { leadId: id }, select: { id: true } });
+      for (const c of contracts) {
+        await tx.machineAssignment.deleteMany({ where: { contractId: c.id } });
+      }
+      await tx.b2bContract.deleteMany({ where: { leadId: id } });
+      return tx.b2bLead.delete({ where: { id } });
+    });
+  }
+
   // Admin: assign machine to contract
   async assignMachine(
     contractId: string,

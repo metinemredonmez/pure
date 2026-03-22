@@ -146,6 +146,27 @@ export class UpdateBlogPostDto {
 }
 
 // ══════════════════════════════════════════════
+// FAQ DTOs
+// ══════════════════════════════════════════════
+
+export class CreateFaqDto {
+  @ApiProperty({ example: 'Kahve nasıl saklanmalı?' })
+  @IsString()
+  @MaxLength(500)
+  question: string;
+
+  @ApiProperty({ example: 'Kahveyi serin, kuru ve karanlık bir yerde saklayın.' })
+  @IsString()
+  @MaxLength(5000)
+  answer: string;
+
+  @ApiProperty({ example: 'Genel' })
+  @IsString()
+  @MaxLength(100)
+  category: string;
+}
+
+// ══════════════════════════════════════════════
 // SEO DTOs
 // ══════════════════════════════════════════════
 

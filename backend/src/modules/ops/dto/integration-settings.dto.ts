@@ -9,6 +9,13 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IntegrationGroup } from '@prisma/client';
 
+export class UpdateSettingValueDto {
+  @ApiPropertyOptional({ example: '123456', nullable: true })
+  @IsOptional()
+  @IsString()
+  value?: string | null;
+}
+
 export class UpdateSettingDto {
   @ApiProperty({ example: 'paytr_merchant_id' })
   @IsString()

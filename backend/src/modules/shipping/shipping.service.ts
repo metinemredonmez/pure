@@ -26,6 +26,57 @@ export class ShippingService {
   ) {}
 
   // ══════════════════════════════════════════════
+  // LIST SHIPMENTS (ADMIN)
+  // ══════════════════════════════════════════════
+
+  async getShipments(filters: { page?: number; limit?: number; status?: string }) {
+    const { page = 1, limit = 10, status } = filters;
+
+    const where: any = {};
+    if (status) where.status = status;
+
+    const [shipments, total] = await Promise.all([
+      this.prisma.shipmentRecord.findMany({
+        where,
+        include: {
+          order: {
+            select: {
+              id: true,
+              orderNumber: true,
+              user: { select: { email: true, firstName: true, lastName: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.shipmentRecord.count({ where }),
+    ]);
+
+    return {
+      data: shipments.map((s) => ({
+        id: s.id,
+        trackingNumber: s.trackingNumber,
+        carrier: s.carrier,
+        status: s.status,
+        estimatedDelivery: s.estimatedDelivery,
+        order: s.order ? { id: s.order.id, orderNumber: s.order.orderNumber } : null,
+        user: s.order?.user || null,
+        createdAt: s.createdAt,
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async updateShipmentRecord(id: string, data: Record<string, any>) {
+    return this.prisma.shipmentRecord.update({
+      where: { id },
+      data,
+    });
+  }
+
+  // ══════════════════════════════════════════════
   // CARRIER ROUTING
   // ══════════════════════════════════════════════
 
@@ -566,6 +617,17 @@ export class ShippingService {
       estimatedDays: zone?.estimatedDays || 3,
       carrierPrices,
     };
+  }
+
+  // ══════════════════════════════════════════════
+  // ZONES
+  // ══════════════════════════════════════════════
+
+  async getZones() {
+    return this.prisma.shippingZone.findMany({
+      where: { isActive: true },
+      orderBy: { name: 'asc' },
+    });
   }
 
   // ══════════════════════════════════════════════

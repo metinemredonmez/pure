@@ -54,6 +54,13 @@ export class OrderController {
   }
 
   @Roles(UserRole.ADMIN)
+  @Get('admin/orders/:id')
+  @ApiOperation({ summary: 'Get order details (admin - bypasses ownership)' })
+  findOneAdmin(@Param('id') id: string) {
+    return this.orderService.findById(id);
+  }
+
+  @Roles(UserRole.ADMIN)
   @Patch('admin/orders/:id/status')
   @ApiOperation({ summary: 'Update order status (admin)' })
   updateStatus(

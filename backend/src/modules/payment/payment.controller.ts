@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -64,6 +64,59 @@ export class PaymentController {
   }
 
   // ── Admin ──
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/payments')
+  @ApiOperation({ summary: 'List all payments (admin)' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'status', required: false, type: String })
+  @ApiQuery({ name: 'method', required: false, type: String })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'startDate', required: false, type: String })
+  @ApiQuery({ name: 'endDate', required: false, type: String })
+  @ApiQuery({ name: 'sortBy', required: false, type: String })
+  @ApiQuery({ name: 'sortOrder', required: false, type: String })
+  getPayments(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('status') status?: string,
+    @Query('method') method?: string,
+    @Query('search') search?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
+    return this.paymentService.adminGetPayments({
+      page,
+      limit,
+      status,
+      method,
+      search,
+      startDate,
+      endDate,
+      sortBy,
+      sortOrder,
+    });
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/payments/stats')
+  @ApiOperation({ summary: 'Payment statistics (admin)' })
+  getPaymentStats() {
+    return this.paymentService.adminGetPaymentStats();
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/payments/:id')
+  @ApiOperation({ summary: 'Get payment detail (admin)' })
+  getPaymentDetail(@Param('id') id: string) {
+    return this.paymentService.getPaymentStatus(id);
+  }
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)

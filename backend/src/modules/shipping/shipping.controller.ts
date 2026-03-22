@@ -3,8 +3,10 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -38,6 +40,24 @@ import { ShippingCarrier } from '@prisma/client';
 @Controller('admin/shipping')
 export class AdminShippingController {
   constructor(private readonly shippingService: ShippingService) {}
+
+  // 0. GET /admin/shipping — Tüm kargoları listele
+  @Get()
+  @ApiOperation({ summary: 'List all shipments (paginated)' })
+  async getShipments(@Query() query: { page?: string; limit?: string; status?: string }) {
+    return this.shippingService.getShipments({
+      page: query.page ? parseInt(query.page) : 1,
+      limit: query.limit ? parseInt(query.limit) : 10,
+      status: query.status,
+    });
+  }
+
+  // 0b. PATCH /admin/shipping/:id — Kargo güncelle
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update shipment' })
+  async updateShipment(@Param('id') id: string, @Body() body: Record<string, any>) {
+    return this.shippingService.updateShipmentRecord(id, body);
+  }
 
   // 1. POST /admin/shipping/create — Sipariş için kargo kaydı oluştur
   @Post('create')
@@ -92,6 +112,12 @@ export class AdminShippingController {
   @ApiOperation({ summary: 'Get shipping settings' })
   async getSettings() {
     return this.shippingService.getSettings();
+  }
+
+  @Get('zones')
+  @ApiOperation({ summary: 'Get shipping zones' })
+  async getZones() {
+    return this.shippingService.getZones();
   }
 }
 

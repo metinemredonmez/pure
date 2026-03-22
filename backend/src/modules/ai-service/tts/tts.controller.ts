@@ -1,10 +1,22 @@
 import { Controller, Post, Body, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, IsOptional, MaxLength } from 'class-validator';
 import { TtsService } from './tts.service';
 
 class SynthesizeDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(5000)
   text: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
   voice?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(10)
   language?: string;
 }
 

@@ -9,13 +9,13 @@ async function main() {
   // ── 1. Admin User ──
   const adminPassword = await bcrypt.hash('Admin2026!@#', 12);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@olentia.com' },
+    where: { email: 'donmezemre02@gmail.com' },
     update: {},
     create: {
-      email: 'admin@olentia.com',
+      email: 'donmezemre02@gmail.com',
       passwordHash: adminPassword,
-      firstName: 'Olentia',
-      lastName: 'Admin',
+      firstName: 'Pure',
+      lastName: 'Olentia',
       role: UserRole.ADMIN,
       provider: AuthProvider.LOCAL,
       emailVerified: true,
@@ -24,69 +24,6 @@ async function main() {
     },
   });
   console.log('✅ Admin user:', admin.email);
-
-  // ── 2. Test Customer ──
-  const customerPassword = await bcrypt.hash('Customer2026!', 12);
-  const customer = await prisma.user.upsert({
-    where: { email: 'test@olentia.com' },
-    update: {},
-    create: {
-      email: 'test@olentia.com',
-      passwordHash: customerPassword,
-      firstName: 'Test',
-      lastName: 'Müşteri',
-      role: UserRole.CUSTOMER,
-      provider: AuthProvider.LOCAL,
-      emailVerified: true,
-      isActive: true,
-      privacyAccepted: true,
-    },
-  });
-  console.log('✅ Test customer:', customer.email);
-
-  // ── 3. Sales User ──
-  const salesPassword = await bcrypt.hash('Sales2026!', 12);
-  const sales = await prisma.user.upsert({
-    where: { email: 'sales@olentia.com' },
-    update: {},
-    create: {
-      email: 'sales@olentia.com',
-      passwordHash: salesPassword,
-      firstName: 'Satış',
-      lastName: 'Uzmanı',
-      role: UserRole.SALES,
-      provider: AuthProvider.LOCAL,
-      emailVerified: true,
-      isActive: true,
-      privacyAccepted: true,
-    },
-  });
-  console.log('✅ Sales user:', sales.email);
-
-  // ── 4. Partner User ──
-  const partnerPassword = await bcrypt.hash('Partner2026!', 12);
-  const partner = await prisma.user.upsert({
-    where: { email: 'partner@olentia.com' },
-    update: {},
-    create: {
-      email: 'partner@olentia.com',
-      passwordHash: partnerPassword,
-      firstName: 'İstanbul',
-      lastName: 'Partner',
-      role: UserRole.PARTNER,
-      provider: AuthProvider.LOCAL,
-      emailVerified: true,
-      isActive: true,
-      isPartner: true,
-      companyName: 'Kadıköy Kahve Evi',
-      partnerRegion: 'İstanbul - Anadolu',
-      latitude: 40.9906,
-      longitude: 29.0291,
-      locationLabel: 'Kadıköy Mağaza',
-      privacyAccepted: true,
-    },
-  });
-  console.log('✅ Partner user:', partner.email);
 
   // ── 5. Kategoriler ──
   const categories = await Promise.all([
@@ -748,10 +685,10 @@ async function main() {
 
   // ── 12. Loyalty Accounts ──
   await prisma.loyaltyAccount.upsert({
-    where: { userId: customer.id },
+    where: { userId: admin.id },
     update: {},
     create: {
-      userId: customer.id,
+      userId: admin.id,
       referralCode: 'OLP-TEST0001',
       totalPoints: 0,
       availablePoints: 0,

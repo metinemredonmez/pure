@@ -179,6 +179,23 @@ export class PartnerService {
   }
 
   /**
+   * Admin: Partner deaktif et
+   */
+  async deactivatePartner(partnerId: string) {
+    return this.prisma.user.update({
+      where: { id: partnerId },
+      data: { isActive: false, role: 'CUSTOMER', isPartner: false },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        isActive: true,
+      },
+    });
+  }
+
+  /**
    * Admin: Tüm Partnerleri Listele (harita için)
    */
   async getAllPartners(page = 1, limit = 20) {

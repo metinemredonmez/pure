@@ -17,6 +17,7 @@ import { UserRole } from '@prisma/client';
 import {
   CreateBlogPostDto,
   UpdateBlogPostDto,
+  CreateFaqDto,
   UpsertSeoDto,
 } from './dto/cms.dto';
 
@@ -85,9 +86,25 @@ export class CmsController {
   @Post('admin/faq')
   @ApiOperation({ summary: 'Create FAQ item (admin)' })
   createFaq(
-    @Body() data: { question: string; answer: string; category: string },
+    @Body() data: CreateFaqDto,
   ) {
     return this.cmsService.createFaq(data);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Put('admin/faq/:id')
+  @ApiOperation({ summary: 'Update FAQ item (admin)' })
+  updateFaq(@Param('id') id: string, @Body() data: any) {
+    return this.cmsService.updateFaq(id, data);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/faq/:id')
+  @ApiOperation({ summary: 'Delete FAQ item (admin)' })
+  deleteFaq(@Param('id') id: string) {
+    return this.cmsService.deleteFaq(id);
   }
 
   @ApiBearerAuth('access-token')

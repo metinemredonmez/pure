@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { UserRole, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
@@ -289,5 +290,277 @@ export class UserService {
         createdAt: true,
       },
     });
+  }
+
+  // ══════════════════════════════════════════════
+  // ADMIN USER MANAGEMENT
+  // ══════════════════════════════════════════════
+
+  async adminGetUsers(query: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: string;
+    isActive?: boolean;
+    sortBy?: string;
+    sortOrder?: string;
+  }) {
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.min(100, Math.max(1, query.limit || 20));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.UserWhereInput = {};
+
+    // Search by email, firstName, lastName
+    if (query.search) {
+      where.OR = [
+        { email: { contains: query.search, mode: 'insensitive' } },
+        { firstName: { contains: query.search, mode: 'insensitive' } },
+        { lastName: { contains: query.search, mode: 'insensitive' } },
+        { phone: { contains: query.search } },
+      ];
+    }
+
+    // Filter by role
+    if (query.role) {
+      where.role = query.role as UserRole;
+    }
+
+    // Filter by isActive (ban status)
+    if (query.isActive !== undefined) {
+      where.isActive = query.isActive;
+    }
+
+    // Sort
+    const orderBy: Prisma.UserOrderByWithRelationInput = {};
+    const sortField = query.sortBy || 'createdAt';
+    const sortDir = query.sortOrder === 'asc' ? 'asc' : 'desc';
+    orderBy[sortField] = sortDir;
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          avatar: true,
+          role: true,
+          isActive: true,
+          emailVerified: true,
+          provider: true,
+          isPartner: true,
+          companyName: true,
+          createdAt: true,
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
+        },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      data: users,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async adminGetUserById(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        role: true,
+        isActive: true,
+        emailVerified: true,
+        provider: true,
+        isPartner: true,
+        companyName: true,
+        taxNumber: true,
+        partnerRegion: true,
+        mfaEnabled: true,
+        marketingConsent: true,
+        createdAt: true,
+        updatedAt: true,
+        addresses: true,
+        orders: {
+          take: 10,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            total: true,
+            createdAt: true,
+          },
+        },
+        subscriptions: {
+          take: 5,
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            status: true,
+            plan: { select: { name: true } },
+            nextBillingDate: true,
+          },
+        },
+        loyaltyAccount: {
+          select: {
+            availablePoints: true,
+            tier: true,
+            totalPoints: true,
+          },
+        },
+        _count: {
+          select: {
+            orders: true,
+          },
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+
+    // Calculate total spent
+    const totalSpent = await this.prisma.order.aggregate({
+      where: { userId, status: { in: ['DELIVERED', 'SHIPPED', 'CONFIRMED'] } },
+      _sum: { total: true },
+    });
+
+    return {
+      ...user,
+      totalSpent: totalSpent._sum.total || 0,
+    };
+  }
+
+  async adminUpdateRole(userId: string, role: string, adminId: string) {
+    // Prevent self-demotion
+    if (userId === adminId && role !== 'ADMIN') {
+      throw new ForbiddenException('Kendi rolünüzü düşüremezsiniz');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role: role as UserRole },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+    });
+  }
+
+  async adminBanUser(userId: string, banned: boolean, reason?: string, adminId?: string) {
+    // Prevent self-ban
+    if (userId === adminId) {
+      throw new ForbiddenException('Kendinizi banlayamazsınız');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+
+    // Don't allow banning admins
+    if (user.role === 'ADMIN' && banned) {
+      throw new ForbiddenException('Admin kullanıcıları banlayamazsınız');
+    }
+
+    // Update user
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: { isActive: !banned },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        isActive: true,
+      },
+    });
+
+    // If banning, revoke all refresh tokens
+    if (banned) {
+      await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    }
+
+    return {
+      ...updatedUser,
+      message: banned ? 'Kullanıcı banlandı' : 'Kullanıcı banı kaldırıldı',
+      reason,
+    };
+  }
+
+  async adminGetUserStats() {
+    const [
+      totalUsers,
+      activeUsers,
+      bannedUsers,
+      adminUsers,
+      partnerUsers,
+      newUsersToday,
+      newUsersThisMonth,
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.user.count({ where: { isActive: true } }),
+      this.prisma.user.count({ where: { isActive: false } }),
+      this.prisma.user.count({ where: { role: 'ADMIN' } }),
+      this.prisma.user.count({ where: { isPartner: true } }),
+      this.prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          },
+        },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          },
+        },
+      }),
+    ]);
+
+    // Role distribution
+    const roleDistribution = await this.prisma.user.groupBy({
+      by: ['role'],
+      _count: true,
+    });
+
+    return {
+      totalUsers,
+      activeUsers,
+      bannedUsers,
+      adminUsers,
+      partnerUsers,
+      newUsersToday,
+      newUsersThisMonth,
+      roleDistribution: roleDistribution.map((r) => ({
+        role: r.role,
+        count: r._count,
+      })),
+    };
   }
 }

@@ -16,6 +16,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthProvider } from '@prisma/client';
 import { NotificationService } from '../notification/notification.service';
+import { EncryptionService } from '../../common/services/encryption.service';
 
 @Injectable()
 export class IdentityService {
@@ -24,6 +25,7 @@ export class IdentityService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private notificationService: NotificationService,
+    private encryptionService: EncryptionService,
   ) {}
 
   // ── Register (email + password) ──
@@ -111,7 +113,8 @@ export class IdentityService {
       if (!dto.mfaCode) {
         return { requiresMfa: true, userId: user.id };
       }
-      const result = verifySync({ token: dto.mfaCode, secret: user.mfaSecret });
+      const decryptedMfaSecret = this.encryptionService.decrypt(user.mfaSecret);
+      const result = verifySync({ token: dto.mfaCode, secret: decryptedMfaSecret });
       const isValid = result.valid;
       if (!isValid) {
         await logAttempt(false);
@@ -262,9 +265,11 @@ export class IdentityService {
     });
     const qrCode = await QRCode.toDataURL(otpAuthUrl);
 
+    // Encrypt MFA secret before storing
+    const encryptedSecret = this.encryptionService.encrypt(secret);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { mfaSecret: secret },
+      data: { mfaSecret: encryptedSecret },
     });
 
     return { qrCode, secret };
@@ -276,7 +281,9 @@ export class IdentityService {
     if (!user || !user.mfaSecret)
       throw new BadRequestException('Setup MFA first');
 
-    const result = verifySync({ token: code, secret: user.mfaSecret });
+    // Decrypt MFA secret for verification
+    const decryptedSecret = this.encryptionService.decrypt(user.mfaSecret);
+    const result = verifySync({ token: code, secret: decryptedSecret });
     const isValid = result.valid;
     if (!isValid) throw new BadRequestException('Invalid code');
 

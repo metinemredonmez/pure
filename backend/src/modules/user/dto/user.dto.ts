@@ -143,6 +143,69 @@ export class UpdateAddressDto {
 // PROFILE DTOs
 // ══════════════════════════════════════════════
 
+// ══════════════════════════════════════════════
+// ADMIN USER DTOs
+// ══════════════════════════════════════════════
+
+export class AdminUserQueryDto {
+  @ApiPropertyOptional({ example: 1 })
+  @IsOptional()
+  @IsNumber()
+  page?: number;
+
+  @ApiPropertyOptional({ example: 20 })
+  @IsOptional()
+  @IsNumber()
+  limit?: number;
+
+  @ApiPropertyOptional({ example: 'ahmet@example.com' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ example: 'CUSTOMER' })
+  @IsOptional()
+  @IsString()
+  role?: string;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
+  @ApiPropertyOptional({ example: 'createdAt' })
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @ApiPropertyOptional({ example: 'desc' })
+  @IsOptional()
+  @IsString()
+  sortOrder?: string;
+}
+
+export class AdminUpdateRoleDto {
+  @ApiProperty({ example: 'ADMIN', enum: ['CUSTOMER', 'ADMIN', 'SALES', 'SUPPORT', 'PARTNER'] })
+  @IsString()
+  role: string;
+}
+
+export class AdminBanUserDto {
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  banned: boolean;
+
+  @ApiPropertyOptional({ example: 'Spam hesabı' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
+}
+
+// ══════════════════════════════════════════════
+// PROFILE DTOs
+// ══════════════════════════════════════════════
+
 export class UpdateProfileDto {
   @ApiPropertyOptional({ example: 'Ahmet' })
   @IsOptional()

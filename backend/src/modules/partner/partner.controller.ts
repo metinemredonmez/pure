@@ -3,7 +3,10 @@ import {
   Get,
   Post,
   Put,
+  Patch,
+  Delete,
   Body,
+  Param,
   Query,
   ParseIntPipe,
   DefaultValuePipe,
@@ -80,6 +83,23 @@ export class PartnerController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
   ) {
     return this.partnerService.getAllPartners(page, limit);
+  }
+
+  @Patch('admin/:id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin: Partner bilgilerini güncelle' })
+  async adminUpdatePartner(
+    @Param('id') id: string,
+    @Body() dto: UpdatePartnerProfileDto,
+  ) {
+    return this.partnerService.updateProfile(id, dto);
+  }
+
+  @Delete('admin/:id')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Admin: Partner sil (deaktif et)' })
+  async adminDeletePartner(@Param('id') id: string) {
+    return this.partnerService.deactivatePartner(id);
   }
 
   @Get('admin/sales-map')

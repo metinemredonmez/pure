@@ -1,9 +1,14 @@
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { IsString, IsNotEmpty, MaxLength } from 'class-validator';
 import { Roles } from '../../../common/decorators/roles.decorator';
 import { AnalysisService } from './analysis.service';
+import { UserRole } from '@prisma/client';
 
 class AnalysisQueryDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(1000)
   question: string;
 }
 
@@ -14,7 +19,7 @@ export class AnalysisController {
   constructor(private readonly analysisService: AnalysisService) {}
 
   @Get('daily-report')
-  @Roles('ADMIN' as any)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: 'Günlük analiz raporu — Sabah açılış modu',
     description:
@@ -26,7 +31,7 @@ export class AnalysisController {
   }
 
   @Get('voice-report')
-  @Roles('ADMIN' as any)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: 'Sesli rapor metni — TTS ile okunacak',
     description:
@@ -39,7 +44,7 @@ export class AnalysisController {
   }
 
   @Post('query')
-  @Roles('ADMIN' as any)
+  @Roles(UserRole.ADMIN)
   @ApiOperation({
     summary: 'Doğal dil ile analiz sorgusu (Phase 2)',
     description:

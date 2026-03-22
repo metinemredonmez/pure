@@ -3,6 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { GdprService } from './gdpr.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
+import { UpdateConsentDto, UpdateCookieConsentDto } from './dto/gdpr.dto';
 
 @ApiTags('GDPR/KVKK')
 @Controller('gdpr')
@@ -54,16 +55,16 @@ export class GdprController {
   @ApiOperation({ summary: 'Update consent preference' })
   updateConsent(
     @CurrentUser('id') userId: string,
-    @Body() data: { consentType: string; accepted: boolean; version: string },
+    @Body() dto: UpdateConsentDto,
     @Req() req,
   ) {
-    const ipAddress = req.ip || req.headers['x-forwarded-for'];
+    const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
     return this.gdprService.updateConsent(
       userId,
-      data.consentType,
-      data.accepted,
-      data.version,
+      dto.consentType,
+      dto.accepted,
+      dto.version,
       ipAddress,
       userAgent,
     );
@@ -77,7 +78,7 @@ export class GdprController {
     @Body('version') version: string,
     @Req() req,
   ) {
-    const ipAddress = req.ip || req.headers['x-forwarded-for'];
+    const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
     return this.gdprService.acceptPrivacyPolicy(
       userId,
@@ -95,24 +96,15 @@ export class GdprController {
   @Post('cookies')
   @ApiOperation({ summary: 'Update cookie consent preferences' })
   updateCookieConsent(
-    @Body()
-    data: {
-      email?: string;
-      preferences: {
-        necessary: boolean;
-        analytics: boolean;
-        marketing: boolean;
-        preferences: boolean;
-      };
-    },
+    @Body() dto: UpdateCookieConsentDto,
     @Req() req,
   ) {
-    const ipAddress = req.ip || req.headers['x-forwarded-for'];
+    const ipAddress = req.ip || (req.headers['x-forwarded-for'] as string);
     const userAgent = req.headers['user-agent'];
     return this.gdprService.updateCookieConsent(
       null,
-      data.email || null,
-      data.preferences,
+      dto.email || null,
+      dto.preferences,
       ipAddress,
       userAgent,
     );

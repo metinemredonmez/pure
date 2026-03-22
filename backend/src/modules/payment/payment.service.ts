@@ -4,14 +4,45 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { PaymentMethod, PaymentStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 
+// Callback type for subscription payment completion
+export type SubscriptionPaymentCallback = (
+  subscriptionId: string,
+  paymentToken: string | null,
+  cardLast4: string | null,
+  cardBrand: string | null,
+  provider: string,
+) => Promise<void>;
+
+export type SubscriptionPaymentFailedCallback = (
+  subscriptionId: string,
+  error: string,
+) => Promise<void>;
+
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
+
+  // Subscription callback — set by SubscriptionService on init
+  private onSubscriptionPaymentComplete?: SubscriptionPaymentCallback;
+  private onSubscriptionPaymentFailed?: SubscriptionPaymentFailedCallback;
 
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
   ) {}
+
+  /**
+   * Register callback for subscription payment events.
+   * Called by SubscriptionService.onModuleInit()
+   */
+  registerSubscriptionCallbacks(
+    onComplete: SubscriptionPaymentCallback,
+    onFailed: SubscriptionPaymentFailedCallback,
+  ) {
+    this.onSubscriptionPaymentComplete = onComplete;
+    this.onSubscriptionPaymentFailed = onFailed;
+    this.logger.log('Subscription payment callbacks registered');
+  }
 
   // ══════════════════════════════════════════════
   // CHECKOUT SESSION
@@ -559,6 +590,34 @@ export class PaymentService {
     });
 
     await this.logPayment(payment.id, `paytr.webhook.${data.status}`, data);
+
+    // ─── Subscription payment detection ───
+    const providerData = payment.providerData as any;
+    if (providerData?.isSubscriptionPayment && providerData?.subscriptionId) {
+      const subId = providerData.subscriptionId;
+      if (newStatus === PaymentStatus.COMPLETED) {
+        // Extract card token from PayTR response (utoken for recurring)
+        const cardToken = (data as any).utoken || null;
+        const cardLast4 = (data as any).card_last4 || null;
+        const cardBrand = (data as any).card_brand || null;
+        try {
+          await this.onSubscriptionPaymentComplete?.(
+            subId, cardToken, cardLast4, cardBrand, 'paytr',
+          );
+        } catch (e) {
+          this.logger.error(`Subscription completion failed for ${subId}:`, e);
+        }
+      } else {
+        try {
+          await this.onSubscriptionPaymentFailed?.(
+            subId, data.failed_reason_msg || 'Payment failed',
+          );
+        } catch (e) {
+          this.logger.error(`Subscription failure handler failed for ${subId}:`, e);
+        }
+      }
+    }
+
     return { status: 'OK' };
   }
 
@@ -669,6 +728,33 @@ export class PaymentService {
         `iyzico.webhook.${result.paymentStatus}`,
         result,
       );
+
+      // ─── Subscription payment detection ───
+      const providerData = payment.providerData as any;
+      if (providerData?.isSubscriptionPayment && providerData?.subscriptionId) {
+        const subId = providerData.subscriptionId;
+        if (newStatus === PaymentStatus.COMPLETED) {
+          const cardToken = result.cardToken || null;
+          const cardLast4 = result.cardAssociation || null;
+          const cardBrand = result.cardFamily || null;
+          try {
+            await this.onSubscriptionPaymentComplete?.(
+              subId, cardToken, cardLast4, cardBrand, 'iyzico',
+            );
+          } catch (e) {
+            this.logger.error(`Subscription completion failed for ${subId}:`, e);
+          }
+        } else {
+          try {
+            await this.onSubscriptionPaymentFailed?.(
+              subId, result.errorMessage || 'Payment failed',
+            );
+          } catch (e) {
+            this.logger.error(`Subscription failure handler failed for ${subId}:`, e);
+          }
+        }
+      }
+
       return { status: 'OK' };
     } catch (error) {
       this.logger.error('iyzico webhook error:', error);
@@ -849,5 +935,178 @@ export class PaymentService {
 
     if (!payment) throw new BadRequestException('Ödeme bulunamadı');
     return payment;
+  }
+
+  // ══════════════════════════════════════════════
+  // ADMIN PAYMENT MANAGEMENT
+  // ══════════════════════════════════════════════
+
+  async adminGetPayments(query: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    method?: string;
+    search?: string;
+    startDate?: string;
+    endDate?: string;
+    sortBy?: string;
+    sortOrder?: string;
+  }) {
+    const page = Math.max(1, query.page || 1);
+    const limit = Math.min(100, Math.max(1, query.limit || 20));
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    // Filter by status
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    // Filter by method
+    if (query.method) {
+      where.method = query.method;
+    }
+
+    // Search by order number or user email
+    if (query.search) {
+      where.order = {
+        OR: [
+          { orderNumber: { contains: query.search, mode: 'insensitive' } },
+          { user: { email: { contains: query.search, mode: 'insensitive' } } },
+        ],
+      };
+    }
+
+    // Date range filter
+    if (query.startDate || query.endDate) {
+      where.createdAt = {};
+      if (query.startDate) {
+        where.createdAt.gte = new Date(query.startDate);
+      }
+      if (query.endDate) {
+        where.createdAt.lte = new Date(query.endDate);
+      }
+    }
+
+    // Sort
+    const orderBy: any = {};
+    const sortField = query.sortBy || 'createdAt';
+    const sortDir = query.sortOrder === 'asc' ? 'asc' : 'desc';
+    orderBy[sortField] = sortDir;
+
+    const [payments, total] = await Promise.all([
+      this.prisma.payment.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy,
+        include: {
+          order: {
+            select: {
+              orderNumber: true,
+              status: true,
+              user: {
+                select: {
+                  id: true,
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          refunds: {
+            select: {
+              id: true,
+              amount: true,
+              status: true,
+              createdAt: true,
+            },
+          },
+        },
+      }),
+      this.prisma.payment.count({ where }),
+    ]);
+
+    return {
+      data: payments,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async adminGetPaymentStats() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
+
+    const [
+      totalPayments,
+      successfulPayments,
+      failedPayments,
+      pendingPayments,
+      todayRevenue,
+      thisMonthRevenue,
+      lastMonthRevenue,
+      totalRefunds,
+      refundAmount,
+    ] = await Promise.all([
+      this.prisma.payment.count(),
+      this.prisma.payment.count({ where: { status: PaymentStatus.COMPLETED } }),
+      this.prisma.payment.count({ where: { status: PaymentStatus.FAILED } }),
+      this.prisma.payment.count({ where: { status: PaymentStatus.PENDING } }),
+      this.prisma.payment.aggregate({
+        where: { status: PaymentStatus.COMPLETED, paidAt: { gte: today } },
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: { status: PaymentStatus.COMPLETED, paidAt: { gte: thisMonth } },
+        _sum: { amount: true },
+      }),
+      this.prisma.payment.aggregate({
+        where: {
+          status: PaymentStatus.COMPLETED,
+          paidAt: { gte: lastMonth, lte: lastMonthEnd },
+        },
+        _sum: { amount: true },
+      }),
+      this.prisma.refund.count({ where: { status: 'COMPLETED' } }),
+      this.prisma.refund.aggregate({
+        where: { status: 'COMPLETED' },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    // Payment method distribution
+    const methodDistribution = await this.prisma.payment.groupBy({
+      by: ['method'],
+      where: { status: PaymentStatus.COMPLETED },
+      _count: true,
+      _sum: { amount: true },
+    });
+
+    return {
+      totalPayments,
+      successfulPayments,
+      failedPayments,
+      pendingPayments,
+      todayRevenue: todayRevenue._sum.amount || 0,
+      thisMonthRevenue: thisMonthRevenue._sum.amount || 0,
+      lastMonthRevenue: lastMonthRevenue._sum.amount || 0,
+      totalRefunds,
+      totalRefundAmount: refundAmount._sum.amount || 0,
+      methodDistribution: methodDistribution.map((m) => ({
+        method: m.method,
+        count: m._count,
+        amount: m._sum.amount || 0,
+      })),
+    };
   }
 }

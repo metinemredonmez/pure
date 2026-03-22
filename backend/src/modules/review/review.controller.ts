@@ -19,6 +19,11 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
+import {
+  CreateReviewDto,
+  UpdateReviewDto,
+  AdminApproveReviewDto,
+} from './dto/review.dto';
 
 @ApiTags('Reviews')
 @Controller()
@@ -59,16 +64,9 @@ export class ReviewController {
   createReview(
     @CurrentUser('id') userId: string,
     @Param('productId') productId: string,
-    @Body()
-    data: {
-      rating: number;
-      title?: string;
-      comment?: string;
-      images?: string[];
-      orderId?: string;
-    },
+    @Body() dto: CreateReviewDto,
   ) {
-    return this.reviewService.createReview(userId, productId, data);
+    return this.reviewService.createReview(userId, productId, dto);
   }
 
   @ApiBearerAuth('access-token')
@@ -77,15 +75,9 @@ export class ReviewController {
   updateReview(
     @CurrentUser('id') userId: string,
     @Param('id') reviewId: string,
-    @Body()
-    data: {
-      rating?: number;
-      title?: string;
-      comment?: string;
-      images?: string[];
-    },
+    @Body() dto: UpdateReviewDto,
   ) {
-    return this.reviewService.updateReview(userId, reviewId, data);
+    return this.reviewService.updateReview(userId, reviewId, dto);
   }
 
   @ApiBearerAuth('access-token')
@@ -107,9 +99,12 @@ export class ReviewController {
 
   @ApiBearerAuth('access-token')
   @Post('reviews/:id/helpful')
-  @ApiOperation({ summary: 'Mark review as helpful' })
-  markHelpful(@Param('id') reviewId: string) {
-    return this.reviewService.markReviewHelpful(reviewId);
+  @ApiOperation({ summary: 'Mark review as helpful (once per user)' })
+  markHelpful(
+    @CurrentUser('id') userId: string,
+    @Param('id') reviewId: string,
+  ) {
+    return this.reviewService.markReviewHelpful(reviewId, userId);
   }
 
   @ApiBearerAuth('access-token')
@@ -168,12 +163,12 @@ export class ReviewController {
   @ApiOperation({ summary: 'Admin: Approve/reject review' })
   adminApproveReview(
     @Param('id') reviewId: string,
-    @Body() data: { approve: boolean; adminNote?: string },
+    @Body() dto: AdminApproveReviewDto,
   ) {
     return this.reviewService.adminApproveReview(
       reviewId,
-      data.approve,
-      data.adminNote,
+      dto.approve,
+      dto.adminNote,
     );
   }
 

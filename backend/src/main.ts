@@ -5,13 +5,22 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import * as helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { Request, Response, NextFunction } from 'express';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import * as path from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Global prefix
-  app.setGlobalPrefix(process.env.API_PREFIX || 'api');
+  app.setGlobalPrefix(process.env.API_PREFIX || 'api', {
+    exclude: ['uploads/*path'],
+  });
+
+  // Static file serving for uploads
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // ═══════════════════════════════════════
   // SECURITY MIDDLEWARE
@@ -38,7 +47,7 @@ async function bootstrap() {
   );
 
   // CORS - Whitelist configuration
-  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000')
+  const allowedOrigins = (process.env.CORS_ORIGINS || 'http://localhost:3000,http://localhost:3001')
     .split(',')
     .map((o) => o.trim());
 

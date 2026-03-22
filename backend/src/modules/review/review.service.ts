@@ -264,11 +264,27 @@ export class ReviewService {
     });
   }
 
-  async markReviewHelpful(reviewId: string) {
-    return this.prisma.review.update({
-      where: { id: reviewId },
-      data: { helpfulCount: { increment: 1 } },
+  async markReviewHelpful(reviewId: string, userId: string) {
+    // Check if user already voted
+    const existing = await this.prisma.reviewHelpful.findUnique({
+      where: { reviewId_userId: { reviewId, userId } },
     });
+    if (existing) {
+      throw new BadRequestException('Bu yorumu zaten faydalı olarak işaretlediniz');
+    }
+
+    // Create vote + increment count in transaction
+    await this.prisma.$transaction([
+      this.prisma.reviewHelpful.create({
+        data: { reviewId, userId },
+      }),
+      this.prisma.review.update({
+        where: { id: reviewId },
+        data: { helpfulCount: { increment: 1 } },
+      }),
+    ]);
+
+    return { message: 'Yorum faydalı olarak işaretlendi' };
   }
 
   async reportReview(reviewId: string, _userId: string, _reason?: string) {

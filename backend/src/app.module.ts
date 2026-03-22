@@ -33,6 +33,7 @@ import { GdprModule } from './modules/gdpr/gdpr.module';
 import { PricingModule } from './modules/pricing/pricing.module';
 import { OpsModule } from './modules/ops/ops.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
+import { CalendarModule } from './modules/calendar/calendar.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -86,6 +87,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     PricingModule,
     OpsModule,
     ShippingModule,
+    CalendarModule,
   ],
   controllers: [AppController],
   providers: [

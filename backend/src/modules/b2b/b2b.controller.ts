@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -57,6 +58,14 @@ export class B2bController {
       dto.assignedTo,
       dto.notes,
     );
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/b2b/leads/:id')
+  @ApiOperation({ summary: 'Delete lead (admin)' })
+  deleteLead(@Param('id') id: string) {
+    return this.b2bService.deleteLead(id);
   }
 
   @ApiBearerAuth('access-token')

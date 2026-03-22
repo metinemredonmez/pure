@@ -27,6 +27,14 @@ export class CatalogService {
       ];
     }
 
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.categoryId) {
+      where.categoryId = query.categoryId;
+    }
+
     const [data, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
@@ -142,8 +150,13 @@ export class CatalogService {
 
   async findAllCategories() {
     return this.prisma.category.findMany({
-      where: { isActive: true },
-      include: { children: true },
+      include: {
+        children: {
+          include: { _count: { select: { products: true } } },
+          orderBy: { sortOrder: 'asc' },
+        },
+        _count: { select: { products: true } },
+      },
       orderBy: { sortOrder: 'asc' },
     });
   }
@@ -156,6 +169,14 @@ export class CatalogService {
     image?: string;
   }) {
     return this.prisma.category.create({ data });
+  }
+
+  async updateCategory(id: string, data: Record<string, any>) {
+    return this.prisma.category.update({ where: { id }, data });
+  }
+
+  async deleteCategory(id: string) {
+    return this.prisma.category.delete({ where: { id } });
   }
 
   // ── Collections ──
@@ -174,6 +195,14 @@ export class CatalogService {
     image?: string;
   }) {
     return this.prisma.collection.create({ data });
+  }
+
+  async updateCollection(id: string, data: Record<string, any>) {
+    return this.prisma.collection.update({ where: { id }, data });
+  }
+
+  async deleteCollection(id: string) {
+    return this.prisma.collection.delete({ where: { id } });
   }
 
   // ── Helper ──

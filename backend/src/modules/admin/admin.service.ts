@@ -89,7 +89,7 @@ export class AdminService {
       this.prisma.order.count({ where: { status: 'PENDING' } }),
       // Low stock: products where stock <= lowStockThreshold (using raw query for cross-column compare)
       this.prisma.$queryRaw<[{ count: bigint }]>`
-        SELECT COUNT(*)::int as count FROM "Product"
+        SELECT COUNT(*)::int as count FROM products
         WHERE status = 'ACTIVE' AND stock <= "lowStockThreshold"
       `.then((r) => Number(r[0]?.count || 0)),
     ]);
@@ -119,15 +119,20 @@ export class AdminService {
         orders: monthOrders,
         revenue: monthRevenueValue,
         newCustomers: monthNewCustomers,
-        revenueGrowth: Math.round(revenueGrowth * 10) / 10,
-        orderGrowth: Math.round(orderGrowth * 10) / 10,
       },
-      totals: {
+      total: {
+        orders: monthOrders,
+        revenue: monthRevenueValue,
         customers: totalCustomers,
         products: totalProducts,
         activeSubscriptions,
         pendingOrders,
         lowStockProducts,
+      },
+      growth: {
+        orders: Math.round(orderGrowth * 10) / 10,
+        revenue: Math.round(revenueGrowth * 10) / 10,
+        customers: 0,
       },
     };
   }
@@ -209,8 +214,12 @@ export class AdminService {
     return orderItems.map((item) => {
       const product = products.find((p) => p.id === item.productId);
       return {
+        productId: item.productId,
+        name: product?.name || 'Unknown',
         product: product || { id: item.productId, name: 'Unknown' },
+        totalSold: item._sum.quantity || 0,
         totalQuantity: item._sum.quantity,
+        revenue: Number(item._sum.totalPrice),
         totalRevenue: Number(item._sum.totalPrice),
       };
     });
@@ -344,7 +353,7 @@ export class AdminService {
   async getLowStockProducts() {
     // Use raw query to compare stock against each product's own lowStockThreshold
     const lowStockIds = await this.prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "Product"
+      SELECT id FROM products
       WHERE status = 'ACTIVE' AND stock <= "lowStockThreshold"
       ORDER BY stock ASC
       LIMIT 20

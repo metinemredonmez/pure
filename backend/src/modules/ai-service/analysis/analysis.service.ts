@@ -215,23 +215,150 @@ export class AnalysisService {
   }
 
   /**
-   * LangChain ile doğal dil analiz sorgusu
-   * Phase 2: "Geçen haftanın en çok satan ürünü ne?" gibi sorulara cevap
+   * OpenAI ile doğal dil analiz sorgusu
+   * Veritabanından güncel verileri çekip context olarak gönderir
    */
   async queryAnalysis(
     question: string,
   ): Promise<{ answer: string; data?: any }> {
     this.logger.log(`Analysis query: ${question}`);
 
-    // TODO: Phase 2 - LangChain + SQL Agent entegrasyonu
-    // const agent = createSqlAgent({
-    //   llm: new ChatOpenAI({ modelName: 'gpt-4' }),
-    //   db: this.prisma,
-    //   topK: 10,
-    // });
+    const apiKey = this.configService.get('OPENAI_API_KEY');
+    const model = this.configService.get('OPENAI_MODEL') || 'gpt-4o';
+
+    // Veritabanından güncel metrikleri topla
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - 7);
+
+    const [
+      totalOrders, monthlyOrders, weeklyOrders,
+      totalCustomers, totalProducts,
+      activeSubscriptions, b2bLeads,
+      recentOrders, topVariants,
+    ] = await Promise.all([
+      this.prisma.order.count(),
+      this.prisma.order.count({ where: { createdAt: { gte: startOfMonth } } }),
+      this.prisma.order.count({ where: { createdAt: { gte: startOfWeek } } }),
+      this.prisma.user.count({ where: { role: 'CUSTOMER' } }),
+      this.prisma.product.count({ where: { isActive: true } }),
+      this.prisma.subscription.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.b2bLead.count(),
+      this.prisma.order.findMany({
+        take: 20,
+        orderBy: { createdAt: 'desc' },
+        select: { total: true, status: true, createdAt: true },
+      }),
+      this.prisma.orderItem.groupBy({
+        by: ['productId'],
+        _sum: { quantity: true },
+        _count: true,
+        orderBy: { _sum: { quantity: 'desc' } },
+        take: 5,
+      }),
+    ]);
+
+    const monthlyRevenue = recentOrders
+      .filter(o => new Date(o.createdAt) >= startOfMonth)
+      .reduce((s, o) => s + Number(o.total), 0);
+
+    // Top ürün isimlerini al
+    let topProductNames: string[] = [];
+    if (topVariants.length > 0) {
+      const products = await this.prisma.product.findMany({
+        where: { id: { in: topVariants.map(v => v.productId) } },
+        select: { id: true, name: true },
+      });
+      topProductNames = topVariants.map(v => {
+        const p = products.find(pr => pr.id === v.productId);
+        return `${p?.name || 'Bilinmeyen'} (${v._sum.quantity} adet)`;
+      });
+    }
+
+    const context = `
+Olentia Pure — Kahve E-ticaret Admin Paneli Verileri (${now.toLocaleDateString('tr-TR')}):
+- Toplam siparis: ${totalOrders}
+- Bu ayki siparis: ${monthlyOrders}
+- Bu haftaki siparis: ${weeklyOrders}
+- Bu ayki ciro: ₺${monthlyRevenue.toLocaleString('tr-TR')}
+- Toplam musteri: ${totalCustomers}
+- Aktif urun: ${totalProducts}
+- Aktif abonelik: ${activeSubscriptions}
+- B2B lead sayisi: ${b2bLeads}
+- En cok satan urunler: ${topProductNames.length > 0 ? topProductNames.join(', ') : 'Veri yok'}
+- Son siparis durumlari: ${recentOrders.slice(0, 5).map(o => `₺${Number(o.total).toFixed(0)} (${o.status})`).join(', ') || 'Yok'}
+`.trim();
+
+    // OpenAI API key yoksa basit cevap ver
+    if (!apiKey) {
+      return this.generateSimpleAnswer(question, context);
+    }
+
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages: [
+            {
+              role: 'system',
+              content: `Sen Olentia Pure kahve e-ticaret platformunun AI analiz asistanısın. Türkçe cevap ver. Kısa, net ve veri odaklı cevaplar ver. Emoji kullan. Verilen veritabanı verilerini kullanarak soruları cevapla.\n\nGüncel Veriler:\n${context}`,
+            },
+            { role: 'user', content: question },
+          ],
+          max_tokens: 500,
+          temperature: 0.7,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.choices?.[0]?.message?.content) {
+        return { answer: data.choices[0].message.content };
+      }
+
+      return { answer: `API yanıt veremedi: ${data.error?.message || 'Bilinmeyen hata'}` };
+    } catch (error) {
+      this.logger.error(`OpenAI query error: ${error.message}`);
+      return this.generateSimpleAnswer(question, context);
+    }
+  }
+
+  /**
+   * OpenAI yoksa basit istatistik cevabı
+   */
+  private generateSimpleAnswer(question: string, context: string): { answer: string } {
+    const q = question.toLowerCase();
+    const lines = context.split('\n').filter(l => l.includes(':'));
+
+    if (q.includes('siparis') || q.includes('order')) {
+      const monthly = lines.find(l => l.includes('ayki siparis'));
+      return { answer: `📦 ${monthly?.trim() || 'Siparis verisi bulunamadi.'}` };
+    }
+    if (q.includes('ciro') || q.includes('gelir') || q.includes('revenue')) {
+      const rev = lines.find(l => l.includes('ciro'));
+      return { answer: `💰 ${rev?.trim() || 'Ciro verisi bulunamadi.'}` };
+    }
+    if (q.includes('musteri') || q.includes('customer')) {
+      const cust = lines.find(l => l.includes('musteri'));
+      return { answer: `👥 ${cust?.trim() || 'Musteri verisi bulunamadi.'}` };
+    }
+    if (q.includes('urun') || q.includes('product') || q.includes('satan')) {
+      const prod = lines.find(l => l.includes('satan'));
+      return { answer: `☕ ${prod?.trim() || 'Urun verisi bulunamadi.'}` };
+    }
+    if (q.includes('abonelik') || q.includes('subscription')) {
+      const sub = lines.find(l => l.includes('abonelik'));
+      return { answer: `📋 ${sub?.trim() || 'Abonelik verisi bulunamadi.'}` };
+    }
 
     return {
-      answer: `[Analiz sorgusu alındı: "${question}" — Phase 2'de LangChain ile aktif olacak]`,
+      answer: `📊 Mevcut veriler:\n${context}\n\n💡 Daha detaylı analiz için OpenAI API key'i ayarlardan ekleyin.`,
     };
   }
 }
