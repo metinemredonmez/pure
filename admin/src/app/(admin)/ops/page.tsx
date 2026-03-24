@@ -10,7 +10,7 @@ export default function OpsPage() {
   const [loading, setLoading] = useState(true);
   const [cacheStats, setCacheStats] = useState<Record<string, unknown> | null>(null);
   const [cronJobs, setCronJobs] = useState<{ name: string; schedule?: string; isActive?: boolean; lastRun?: string; status?: string }[]>([]);
-  const [integrationGroups, setIntegrationGroups] = useState<{ group: string; count: number; configured: number }[]>([]);
+  const [integrationGroups, setIntegrationGroups] = useState<{ group: string; label: string; totalSettings: number; configuredSettings: number }[]>([]);
   const [actionMsg, setActionMsg] = useState('');
 
   useEffect(() => {
@@ -74,9 +74,9 @@ export default function OpsPage() {
             : integrationGroups.length === 0 ? <TableRow><TableCell colSpan={4} align="center" sx={{ py: 6 }}><Typography color="text.secondary">Entegrasyon bulunamadı</Typography></TableCell></TableRow>
             : integrationGroups.map((g) => (
               <TableRow key={g.group} hover>
-                <TableCell><Typography variant="body2" fontWeight={600}>{g.group}</Typography></TableCell>
-                <TableCell align="center"><Chip label={g.count} size="small" variant="outlined" /></TableCell>
-                <TableCell align="center"><Chip label={g.configured} size="small" color={g.configured === g.count ? 'success' : 'warning'} variant="outlined" /></TableCell>
+                <TableCell><Typography variant="body2" fontWeight={600}>{g.label || g.group}</Typography></TableCell>
+                <TableCell align="center"><Chip label={g.totalSettings || 0} size="small" variant="outlined" /></TableCell>
+                <TableCell align="center"><Chip label={g.configuredSettings || 0} size="small" color={g.configuredSettings === g.totalSettings ? 'success' : 'warning'} variant="outlined" /></TableCell>
                 <TableCell align="center"><Button size="small" onClick={() => handleTestConnection(g.group)}>Test Et</Button></TableCell>
               </TableRow>
             ))}
