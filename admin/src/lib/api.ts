@@ -717,6 +717,10 @@ export const integrationsApi = {
     const { data } = await api.post('/admin/settings/integrations/test', { group });
     return data;
   },
+  seed: async () => {
+    const { data } = await api.post('/admin/settings/integrations/seed');
+    return data;
+  },
 };
 
 // Coupons API

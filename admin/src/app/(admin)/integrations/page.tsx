@@ -178,8 +178,28 @@ export default function IntegrationsPage() {
       />
 
       {settings.length === 0 && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          Henüz entegrasyon ayarı bulunamadı. Backend&apos;de seed endpoint&apos;ini çalıştırın: POST /admin/settings/integrations/seed
+        <Alert
+          severity="info"
+          sx={{ mb: 2 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={async () => {
+                try {
+                  await integrationsApi.seed();
+                  setToast({ open: true, message: 'Entegrasyon ayarları oluşturuldu!', severity: 'success' });
+                  fetchSettings();
+                } catch {
+                  setToast({ open: true, message: 'Seed işlemi başarısız', severity: 'error' });
+                }
+              }}
+            >
+              Ayarları Oluştur
+            </Button>
+          }
+        >
+          Henüz entegrasyon ayarı bulunamadı. &quot;Ayarları Oluştur&quot; butonuna tıklayın.
         </Alert>
       )}
 
