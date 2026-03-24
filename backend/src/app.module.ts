@@ -41,6 +41,7 @@ import { JwtBlacklistGuard } from './modules/identity/guards/jwt-blacklist.guard
 import { RolesGuard } from './modules/identity/guards/roles.guard';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
+import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 
 @Module({
   imports: [
@@ -103,6 +104,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     { provide: APP_FILTER, useClass: GlobalExceptionFilter },
     // Global response transform
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
+    // Global audit logging for admin operations
+    { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],
 })
 export class AppModule {}
