@@ -12,7 +12,7 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
     },
     {
       id: '3',
-      href: '/collections/ekipman',
+      href: '/ekipmanlar',
       name: 'Ekipmanlar',
     },
     {
@@ -33,7 +33,7 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
     {
       id: '7',
       href: '/contact',
-      name: 'Iletisim',
+      name: 'İletişim',
     },
   ]
 }

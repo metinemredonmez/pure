@@ -99,10 +99,10 @@ export default async function B2BPage() {
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a href="#form" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-white/90">
-              Teklif Alin
+              Teklif Alın
             </a>
-            <a href="/references" className="rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">
-              Referanslarimiz
+            <a href="/franchise" className="rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">
+              Franchise
             </a>
           </div>
         </div>

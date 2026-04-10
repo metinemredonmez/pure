@@ -22,32 +22,31 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
   {
     id: '2',
-    title: 'Kesfet',
+    title: 'Keşfet',
     menus: [
-      { href: '/about', label: 'Hakkimizda' },
+      { href: '/about', label: 'Hakkımızda' },
       { href: '/blog', label: 'Kahve Rehberi' },
       { href: '/subscription', label: 'Abonelik' },
-      { href: '/collections/equipment', label: 'Ekipmanlar' },
+      { href: '/ekipmanlar', label: 'Ekipmanlar' },
     ],
   },
   {
     id: '3',
     title: 'Kurumsal',
     menus: [
-      { href: '/b2b', label: 'Kurumsal Satis' },
+      { href: '/b2b', label: 'Kurumsal Satış' },
       { href: '/franchise', label: 'Franchise' },
-      { href: '/references', label: 'Referanslar' },
-      { href: '/contact', label: 'Iletisim' },
+      { href: '/contact', label: 'İletişim' },
     ],
   },
   {
     id: '4',
     title: 'Destek',
     menus: [
-      { href: '/', label: 'Siparis Takibi' },
-      { href: '/', label: 'Iade & Degisim' },
-      { href: '/', label: 'SSS' },
-      { href: '/', label: 'Gizlilik Politikasi' },
+      { href: '/siparis-takibi', label: 'Sipariş Takibi' },
+      { href: '/iade-degisim', label: 'İade & Değişim' },
+      { href: '/sss', label: 'SSS' },
+      { href: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
     ],
   },
 ]
