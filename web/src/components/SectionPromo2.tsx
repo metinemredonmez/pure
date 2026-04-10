@@ -32,16 +32,14 @@ const SectionPromo2: FC<SectionPromo2Props> = ({ className }) => {
           </div>
         </div>
 
-        <div className="relative mt-10 block max-w-xl lg:absolute lg:top-10 lg:bottom-10 lg:left-10 lg:mt-0 lg:max-w-[calc(50%-40px)]">
-          <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
-            <Image
-              alt="Hediye paketi kahve setleri"
-              src="/hero/hediye-paketi.jpg"
-              fill
-              sizes="(max-width: 768px) 100vw, 45vw"
-              className="object-cover"
-            />
-          </div>
+        <div className="relative mt-10 block aspect-square w-full max-w-xl overflow-hidden rounded-2xl lg:absolute lg:top-10 lg:bottom-10 lg:left-10 lg:mt-0 lg:aspect-auto lg:w-[calc(50%-40px)] lg:max-w-none">
+          <Image
+            alt="Hediye paketi kahve setleri"
+            src="/hero/hediye-paketi.jpg"
+            fill
+            sizes="(max-width: 768px) 100vw, 45vw"
+            className="object-cover"
+          />
         </div>
       </div>
     </div>
