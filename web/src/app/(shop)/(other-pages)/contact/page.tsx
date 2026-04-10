@@ -12,15 +12,15 @@ export const metadata: Metadata = {
 const info = [
   {
     title: 'ADRES',
-    desc: 'Pure Olentia Kahve, İstanbul, Türkiye',
+    desc: 'Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul',
   },
   {
     title: 'E-POSTA',
-    desc: 'hello@olentia.com',
+    desc: 'info@pureolentia.com',
   },
   {
     title: 'TELEFON',
-    desc: '+90 (212) 000 00 00',
+    desc: '0552 462 29 54',
   },
 ]
 
@@ -57,7 +57,7 @@ const PageContact = async () => {
         {/* Harita */}
         <div className="overflow-hidden rounded-2xl">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3011.6504900564!2d29.0193!3d40.9907!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDU5JzI2LjUiTiAyOcKwMDEnMDkuNSJF!5e0!3m2!1str!2str!4v1"
+            src="https://maps.google.com/maps?q=Abdurrahmangazi%2C%20Nane%20Sk.%20No%3A8%2C%2034887%20Sancaktepe%2F%C4%B0stanbul&output=embed"
             width="100%"
             height="400"
             allowFullScreen

@@ -39,56 +39,39 @@ const demo_filters_options: FilterOption[] = [
     type: 'checkbox',
     hugeIcon: Note01Icon,
     options: [
-      {
-        name: 'En Yeni',
-        value: 'new-arrivals',
-      },
-      {
-        name: 'Backpacks',
-        value: 'backpacks',
-      },
-      {
-        name: 'Travel Bags',
-        value: 'travel-bags',
-      },
-      {
-        name: 'Accessories',
-        value: 'accessories',
-      },
-      {
-        name: 'Tshirts',
-        value: 'tshirts',
-      },
-      {
-        name: 'Hoodies',
-        value: 'hoodies',
-      },
+      { name: 'Single Origin', value: 'single-origin' },
+      { name: 'Blend', value: 'blend' },
+      { name: 'Türk Kahvesi', value: 'turk-kahvesi' },
+      { name: 'Filtre Kahve', value: 'filtre' },
+      { name: 'Espresso', value: 'espresso' },
+      { name: 'Soğuk Kahve', value: 'soguk-kahve' },
+      { name: 'Öğütülmüş', value: 'ogutulmus' },
+      { name: 'Ekipman', value: 'ekipman' },
     ],
   },
   {
-    id: 'colors',
+    id: 'roast',
     name: 'Kavurma',
     type: 'checkbox',
     hugeIcon: PaintBucketIcon,
     options: [
-      { name: 'Beige', value: 'beige' },
-      { name: 'Blue', value: 'blue' },
-      { name: 'Black', value: 'black' },
-      { name: 'Brown', value: 'brown' },
-      { name: 'Green', value: 'green' },
+      { name: 'Açık Kavurma', value: 'light' },
+      { name: 'Orta Kavurma', value: 'medium' },
+      { name: 'Orta-Koyu Kavurma', value: 'medium-dark' },
+      { name: 'Koyu Kavurma', value: 'dark' },
     ],
   },
   {
-    id: 'sizes',
+    id: 'weight',
     name: 'Gramaj',
     type: 'checkbox',
     hugeIcon: PackageDimensions01Icon,
     options: [
-      { name: 'XS', value: 'xs' },
-      { name: 'S', value: 's' },
-      { name: 'M', value: 'm' },
-      { name: 'L', value: 'l' },
-      { name: 'XL', value: 'xl' },
+      { name: '100 gr', value: '100g' },
+      { name: '200 gr', value: '200g' },
+      { name: '250 gr', value: '250g' },
+      { name: '500 gr', value: '500g' },
+      { name: '1 kg', value: '1kg' },
     ],
   },
   {
@@ -96,20 +79,20 @@ const demo_filters_options: FilterOption[] = [
     name: 'Fiyat',
     type: 'price-range',
     min: 0,
-    max: 1000,
+    max: 2000,
     hugeIcon: DollarCircleIcon,
   },
   {
     id: 'sort-by',
-    name: 'Sort by',
+    name: 'Sıralama',
     type: 'radio',
     hugeIcon: Note01Icon,
     options: [
-      { name: 'Most Popular', value: 'most-popular' },
-      { name: 'Best Rating', value: 'best-rating' },
+      { name: 'En Popüler', value: 'most-popular' },
+      { name: 'En Çok Puan Alan', value: 'best-rating' },
       { name: 'En Yeni', value: 'newest' },
-      { name: 'Fiyat: Dusukten Yuksege', value: 'price-low-high' },
-      { name: 'Fiyat: Yuksekten Dusuge', value: 'price-high-low' },
+      { name: 'Fiyat: Düşükten Yükseğe', value: 'price-low-high' },
+      { name: 'Fiyat: Yüksekten Düşüğe', value: 'price-high-low' },
     ],
   },
 ]
@@ -221,10 +204,10 @@ export const FiltersMenuTabs = ({
 
                       <div className="flex items-center justify-between rounded-b-2xl bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
                         <Headless.CloseButton className="-mx-3" size="smaller" as={ButtonThird} type="button">
-                          Cancel
+                          İptal
                         </Headless.CloseButton>
                         <Headless.CloseButton size="smaller" as={ButtonPrimary} type="submit">
-                          Apply
+                          Uygula
                         </Headless.CloseButton>
                       </div>
                     </div>
@@ -336,7 +319,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
         onClick={() => setShowAllFilter(true)}
       >
         <HugeiconsIcon icon={FilterVerticalIcon} size={18} />
-        <span className="ms-2">All filters</span>
+        <span className="ms-2">Tüm Filtreler</span>
         <ChevronDownIcon className="ms-3 size-4" />
         {checkedNumber ? (
           <span className="absolute top-0 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
@@ -361,7 +344,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
           >
             <div className="relative shrink-0 border-b border-neutral-200 p-4 text-center sm:px-8 dark:border-neutral-800">
               <Headless.DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                Filters
+                Filtreler
               </Headless.DialogTitle>
               <div className="absolute end-2 top-2">
                 <Headless.CloseButton
@@ -426,10 +409,10 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
 
             <div className="flex shrink-0 items-center justify-between bg-neutral-50 p-4 sm:px-8 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
               <Headless.CloseButton as={ButtonThird} size="smaller" className="-mx-2" type="button">
-                Cancel
+                İptal
               </Headless.CloseButton>
               <Headless.CloseButton as={ButtonPrimary} size="smaller" type="submit">
-                Apply filters
+                Filtreleri Uygula
               </Headless.CloseButton>
             </div>
           </Headless.DialogPanel>
