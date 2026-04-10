@@ -35,8 +35,10 @@ const widgetMenus: WidgetFooterMenu[] = [
     title: 'Kurumsal',
     menus: [
       { href: '/b2b', label: 'Kurumsal Satış' },
+      { href: '/toptan-satis', label: 'Toptan Satış' },
+      { href: '/kurumsal-hediye', label: 'Kurumsal Hediye' },
       { href: '/franchise', label: 'Franchise' },
-      { href: '/contact', label: 'İletişim' },
+      { href: '/kahve-okulu', label: 'Kahve Okulu' },
     ],
   },
   {
@@ -45,8 +47,20 @@ const widgetMenus: WidgetFooterMenu[] = [
     menus: [
       { href: '/siparis-takibi', label: 'Sipariş Takibi' },
       { href: '/iade-degisim', label: 'İade & Değişim' },
+      { href: '/odeme-teslimat', label: 'Ödeme & Teslimat' },
       { href: '/sss', label: 'SSS' },
+      { href: '/contact', label: 'İletişim' },
+    ],
+  },
+  {
+    id: '5',
+    title: 'Yasal',
+    menus: [
       { href: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
+      { href: '/kvkk', label: 'KVKK' },
+      { href: '/mesafeli-satis', label: 'Mesafeli Satış' },
+      { href: '/kullanim-kosullari', label: 'Kullanım Koşulları' },
+      { href: '/cerez-politikasi', label: 'Çerez Politikası' },
     ],
   },
 ]
