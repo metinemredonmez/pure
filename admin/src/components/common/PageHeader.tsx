@@ -15,9 +15,10 @@ interface PageHeaderProps {
   subtitle?: string;
   breadcrumbs?: Crumb[];
   action?: ReactNode;
+  icon?: ReactNode;
 }
 
-export default function PageHeader({ title, subtitle, breadcrumbs, action }: PageHeaderProps) {
+export default function PageHeader({ title, subtitle, breadcrumbs, action, icon }: PageHeaderProps) {
   return (
     <Box sx={{ mb: 2.5 }}>
       {breadcrumbs && breadcrumbs.length > 0 && (
@@ -34,10 +35,17 @@ export default function PageHeader({ title, subtitle, breadcrumbs, action }: Pag
           )}
         </Breadcrumbs>
       )}
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Box>
-          <Typography variant="h5" fontWeight={700}>{title}</Typography>
-          {subtitle && <Typography variant="body2" color="text.secondary">{subtitle}</Typography>}
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {icon && (
+            <Box sx={{ display: 'flex', alignItems: 'center', color: 'primary.main' }}>
+              {icon}
+            </Box>
+          )}
+          <Box>
+            <Typography variant="h5" fontWeight={700}>{title}</Typography>
+            {subtitle && <Typography variant="body2" color="text.secondary">{subtitle}</Typography>}
+          </Box>
         </Box>
         {action && <Box>{action}</Box>}
       </Box>

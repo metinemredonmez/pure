@@ -11,7 +11,7 @@ interface Column {
 
 interface ExportButtonProps {
   data: any[];
-  columns: Column[];
+  columns?: Column[];
   filename?: string;
 }
 
@@ -27,10 +27,18 @@ function escapeCSV(val: unknown): string {
 export default function ExportButton({ data, columns, filename = 'export' }: ExportButtonProps) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
+  // If no columns specified, derive from keys of the first row
+  const resolvedColumns: Column[] =
+    columns && columns.length > 0
+      ? columns
+      : data.length > 0
+        ? Object.keys(data[0] as Record<string, unknown>).map((k) => ({ key: k, label: k }))
+        : [];
+
   const exportCSV = () => {
-    const header = columns.map(c => escapeCSV(c.label)).join(',');
+    const header = resolvedColumns.map(c => escapeCSV(c.label)).join(',');
     const rows = data.map(row =>
-      columns.map(c => {
+      resolvedColumns.map(c => {
         const keys = c.key.split('.');
         let val: unknown = row;
         for (const k of keys) { val = (val as Record<string, unknown>)?.[k]; }
@@ -47,7 +55,7 @@ export default function ExportButton({ data, columns, filename = 'export' }: Exp
   const exportJSON = () => {
     const filtered = data.map(row => {
       const obj: Record<string, unknown> = {};
-      columns.forEach(c => {
+      resolvedColumns.forEach(c => {
         const keys = c.key.split('.');
         let val: unknown = row;
         for (const k of keys) { val = (val as Record<string, unknown>)?.[k]; }
