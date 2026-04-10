@@ -660,25 +660,56 @@ export default function PagesPage() {
   };
 
   const handleSeedSupportPages = async () => {
-    if (!confirm('5 destek sayfası (Ekipmanlar, Sipariş Takibi, İade & Değişim, SSS, Gizlilik Politikası) taslak olarak oluşturulacak. Devam edilsin mi?')) return;
+    const count = SUPPORT_PAGE_TEMPLATES.length;
+    if (
+      !confirm(
+        `${count} sayfa yayınlanmış olarak oluşturulacak:\n` +
+          `\n• Destek: Ekipmanlar, Sipariş Takibi, İade & Değişim, SSS, Gizlilik Politikası` +
+          `\n• Yasal: Mesafeli Satış, Kullanım Koşulları, Çerez Politikası, KVKK` +
+          `\n• Ticari: Ödeme & Teslimat, Toptan Satış, Kurumsal Hediye, Kahve Okulu, Kampanyalar` +
+          `\n• İçerik: Menşei Hikayeleri, Sürdürülebilirlik, Kahve Sözlüğü, Demleme Rehberi` +
+          `\n\nAynı slug'a sahip mevcut sayfalar atlanır. Devam edilsin mi?`
+      )
+    )
+      return;
     setSaving(true);
+    let created = 0;
+    let skipped = 0;
+    let failed = 0;
     try {
       const existingSlugs = new Set(pages.map((p) => p.slug));
       for (const tpl of SUPPORT_PAGE_TEMPLATES) {
-        if (existingSlugs.has(tpl.slug)) continue;
-        await websiteApi.createPage({
-          title: tpl.title,
-          slug: tpl.slug,
-          sections: [{ type: 'html', content: tpl.content }],
-          isPublished: true,
-          seoTitle: tpl.title + ' - Pure Olentia',
-          seoDescription: tpl.seoDescription,
-          seoImage: '',
-        });
+        if (existingSlugs.has(tpl.slug)) {
+          skipped++;
+          continue;
+        }
+        try {
+          await websiteApi.createPage({
+            title: tpl.title,
+            slug: tpl.slug,
+            sections: [{ type: 'html', content: tpl.content }],
+            isPublished: true,
+            seoTitle: tpl.title + ' - Pure Olentia',
+            seoDescription: tpl.seoDescription,
+            seoImage: '',
+          });
+          created++;
+        } catch {
+          failed++;
+        }
       }
-      fetchPages();
-    } catch { /* toast */ }
-    finally { setSaving(false); }
+      await fetchPages();
+      alert(
+        `Sayfa oluşturma tamamlandı.\n\n` +
+          `✅ Oluşturulan: ${created}\n` +
+          `⏭ Atlanan (zaten var): ${skipped}\n` +
+          (failed > 0 ? `❌ Hata: ${failed}\n` : '')
+      );
+    } catch {
+      alert('Sayfalar oluşturulurken bir hata oluştu.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (id: string) => {

@@ -965,6 +965,213 @@ async function main() {
   }
   console.log(`✅ ${settings.length} sistem ayarı oluşturuldu`);
 
+  // ══════════════════════════════════════
+  // 15. Website CMS — Banners, Brands, References, Machines, Site Settings, Pages
+  // ══════════════════════════════════════
+
+  // ── 15.1 Hero Banners ──
+  const banners = [
+    {
+      title: 'Türk Kahvesi 100gr',
+      subtitle: 'Taş değirmenden gelen lezzet — 100gr tekli',
+      image: '/hero/turk-kahvesi-100gr.jpg',
+      ctaText: 'Ürünü İncele',
+      ctaUrl: '/products/turk-kahvesi-100gr',
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      title: 'Brazil Vila Boa — Filtre Kahve',
+      subtitle: 'Brezilya menşeili filtre kahve',
+      image: '/hero/brazil-santos.jpg',
+      ctaText: 'Ürünü İncele',
+      ctaUrl: '/products/brazil-santos',
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      title: 'Türk Kahvesi 200gr',
+      subtitle: 'Geleneksel 200gr paket',
+      image: '/hero/turk-kahvesi-200gr.jpg',
+      ctaText: 'Ürünü İncele',
+      ctaUrl: '/products/turk-kahvesi-200gr',
+      sortOrder: 3,
+      isActive: true,
+    },
+  ];
+  for (const b of banners) {
+    const existing = await prisma.heroBanner.findFirst({ where: { title: b.title } });
+    if (!existing) await prisma.heroBanner.create({ data: b });
+  }
+  console.log(`✅ ${banners.length} hero banner oluşturuldu`);
+
+  // ── 15.2 Brands ──
+  const brandList = [
+    { name: 'Hario', description: 'Japon kökenli manuel demleme ekipmanları', sortOrder: 1, isActive: true },
+    { name: 'Chemex', description: 'Klasik cam demleme karafları', sortOrder: 2, isActive: true },
+    { name: 'Aeropress', description: 'Kompakt ve çok yönlü espresso/filtre cihazı', sortOrder: 3, isActive: true },
+    { name: 'Kalita', description: 'Düz tabanlı tutarlı filtre dripleri', sortOrder: 4, isActive: true },
+    { name: 'Baratza', description: 'Profesyonel ev öğütücüleri', sortOrder: 5, isActive: true },
+    { name: 'Acaia', description: 'Hassas dijital baristalık terazileri', sortOrder: 6, isActive: true },
+  ];
+  for (const b of brandList) {
+    const existing = await prisma.brand.findFirst({ where: { name: b.name } });
+    if (!existing) await prisma.brand.create({ data: b });
+  }
+  console.log(`✅ ${brandList.length} marka oluşturuldu`);
+
+  // ── 15.3 References (Müşteri Yorumları) ──
+  const references = [
+    {
+      companyName: 'Kadıköy Cafe & Bistro',
+      contactPerson: 'Ahmet Yılmaz',
+      sector: 'Kafe / Restoran',
+      testimonial:
+        'Pure Olentia ile çalışmaya başladığımızdan beri müşterilerimizin kahve yorumları tamamen değişti. Taze kavurma ve tutarlı kalite bizim için çok değerli.',
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      companyName: 'Beyoğlu Boutique Hotel',
+      contactPerson: 'Zeynep Kara',
+      sector: 'Otel',
+      testimonial:
+        'Kahvaltı servisimizde Pure Olentia kahveleri kullanıyoruz. Misafirlerimiz özellikle sabah kahvelerini övüyor. Lojistik ve tedarik mükemmel.',
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      companyName: 'Teknoloji Ofisi A.Ş.',
+      contactPerson: 'Mert Bozkurt',
+      sector: 'Ofis / Kurumsal',
+      testimonial:
+        'Ofisimizdeki 50+ çalışanımız için aylık kahve aboneliği kullanıyoruz. Her ay farklı menşei deneyimi çalışanlarımızı çok mutlu ediyor.',
+      sortOrder: 3,
+      isActive: true,
+    },
+    {
+      companyName: 'Sancaktepe Kahve Evi',
+      contactPerson: 'Selin Demir',
+      sector: 'Specialty Cafe',
+      testimonial:
+        'Barista eğitimi ve ekipman danışmanlığıyla birlikte tam bir çözüm ortağı. Pure Olentia sayesinde menümüzü tamamen yeniledik.',
+      sortOrder: 4,
+      isActive: true,
+    },
+  ];
+  for (const r of references) {
+    const existing = await prisma.reference.findFirst({ where: { companyName: r.companyName } });
+    if (!existing) await prisma.reference.create({ data: r });
+  }
+  console.log(`✅ ${references.length} referans oluşturuldu`);
+
+  // ── 15.4 Machines ──
+  const machines = [
+    {
+      name: 'La Marzocco Linea Mini',
+      slug: 'la-marzocco-linea-mini',
+      description: 'Ev kullanımı için tasarlanmış ticari sınıf espresso makinesi. Dual boiler, PID kontrolü.',
+      images: ['/hero/brazil-santos.jpg'],
+      capacity: '1 grup',
+      dailyCupMin: 20,
+      dailyCupMax: 60,
+      drinkCount: 3,
+      features: ['Dual boiler', 'PID sıcaklık kontrolü', 'Ön ısıtmalı buhar grubu', 'Ticari sınıf'],
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      name: 'Rocket Appartamento',
+      slug: 'rocket-appartamento',
+      description: 'Kompakt tasarım, E61 grup başlığı, heat exchanger. Ev baristası için ideal.',
+      images: ['/hero/turk-kahvesi-100gr.jpg'],
+      capacity: '1 grup',
+      dailyCupMin: 10,
+      dailyCupMax: 30,
+      drinkCount: 3,
+      features: ['E61 grup başlığı', 'Heat exchanger', 'Rotary pompa', 'Estetik tasarım'],
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      name: 'Mahlkönig EK43',
+      slug: 'mahlkonig-ek43',
+      description: 'Dünyanın en iyi öğütücülerinden. Filtre, espresso ve Türk kahvesi için tek ayar.',
+      images: ['/hero/turk-kahvesi-200gr.jpg'],
+      capacity: 'Profesyonel',
+      dailyCupMin: 50,
+      dailyCupMax: 500,
+      drinkCount: 5,
+      features: ['98mm düz burr', 'Geniş öğütme aralığı', 'Düşük retention', 'SCA standart'],
+      sortOrder: 3,
+      isActive: true,
+    },
+  ];
+  for (const m of machines) {
+    const existing = await prisma.machine.findUnique({ where: { slug: m.slug } });
+    if (!existing) await prisma.machine.create({ data: m });
+  }
+  console.log(`✅ ${machines.length} makine oluşturuldu`);
+
+  // ── 15.5 Site Settings ──
+  const siteSettings: Array<{ key: string; value: any }> = [
+    { key: 'contact_address', value: 'Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul' },
+    { key: 'contact_phone', value: '0552 462 29 54' },
+    { key: 'contact_email', value: 'info@pureolentia.com' },
+    { key: 'social_instagram', value: 'https://instagram.com/pureolentia' },
+    { key: 'social_facebook', value: 'https://facebook.com/pureolentia' },
+    { key: 'social_twitter', value: 'https://twitter.com/pureolentia' },
+    { key: 'social_youtube', value: 'https://youtube.com/@pureolentia' },
+    { key: 'footer_tagline', value: 'Tarladan fincana izlenebilir specialty kahve deneyimi.' },
+    { key: 'free_shipping_threshold', value: '300' },
+    { key: 'announcement_text', value: '300 TL üzeri siparişlerde ücretsiz kargo' },
+  ];
+  for (const s of siteSettings) {
+    await prisma.siteSettings.upsert({
+      where: { key: s.key },
+      update: { value: s.value },
+      create: s,
+    });
+  }
+  console.log(`✅ ${siteSettings.length} site ayarı oluşturuldu`);
+
+  // ── 15.6 CMS Pages (18 kurumsal / destek / yasal / içerik) ──
+  const cmsPages = [
+    { slug: 'ekipmanlar', title: 'Ekipmanlar', seoDescription: 'Specialty kahve demleme ekipmanları rehberi.', content: `<h2>Kahve Ekipmanları Rehberi</h2><p>Her demleme yönteminin kendine özgü bir dili vardır. Doğru ekipmanla kahvenizin karakterini ortaya çıkarabilirsiniz.</p><h3>Filtre Kahve</h3><ul><li><strong>Hario V60:</strong> Aromayı öne çıkaran koni filtre.</li><li><strong>Chemex:</strong> Kalın kağıt filtre ile berrak içim.</li><li><strong>Kalita Wave:</strong> Düz tabanlı, tutarlı demleme.</li></ul><h3>Daldırma</h3><ul><li><strong>French Press:</strong> Yoğun gövdeli, geleneksel.</li><li><strong>Aeropress:</strong> Kompakt, seyahat dostu.</li></ul><h3>Espresso ve Türk Kahvesi</h3><ul><li><strong>Espresso Makinesi</strong></li><li><strong>Moka Pot</strong></li><li><strong>Cezve</strong></li></ul>` },
+    { slug: 'siparis-takibi', title: 'Sipariş Takibi', seoDescription: 'Pure Olentia siparişinizi takip edin.', content: `<h2>Siparişiniz Nerede?</h2><p>Sipariş numaranız ve e-posta adresinizle sorgulama yapabilirsiniz.</p><h3>Siparişinizin Yolculuğu</h3><ol><li><strong>Sipariş Alındı</strong></li><li><strong>Taze Kavrulur</strong> — 24 saat içinde</li><li><strong>Paketleme</strong></li><li><strong>Kargoya Teslim</strong></li><li><strong>Kapınızda</strong> — 1-3 iş günü</li></ol><p>Destek: info@pureolentia.com · 0552 462 29 54</p>` },
+    { slug: 'iade-degisim', title: 'İade & Değişim', seoDescription: 'Pure Olentia iade ve değişim koşulları.', content: `<h2>İade & Değişim Koşulları</h2><p>14 gün içinde iade hakkınız vardır.</p><h3>Koşullar</h3><ul><li>Ambalajı açılmamış kahve ürünleri iade edilebilir.</li><li>Ekipmanlar orijinal ambalajında olmalıdır.</li><li>İade kargo ücreti müşteriye aittir.</li></ul><h3>Süreç</h3><ol><li>info@pureolentia.com adresine bildirim gönderin.</li><li>24 saat içinde iade kodu iletilir.</li><li>Ürünü gönderin.</li><li>7 iş günü içinde ücret iadesi yapılır.</li></ol>` },
+    { slug: 'sss', title: 'Sıkça Sorulan Sorular', seoDescription: 'Pure Olentia SSS.', content: `<h2>Sıkça Sorulan Sorular</h2><h3>Siparişim ne zaman elime ulaşır?</h3><p>24 saat içinde kavrulur, 1-3 iş günü içinde kapınızda.</p><h3>Kargo ücreti ne kadar?</h3><p>300 TL üzeri siparişlerde ücretsiz kargo.</p><h3>Kahvelerinizin tazeliği nasıl?</h3><p>Tüm kahvelerimiz sipariş sonrası kavrulur.</p><h3>Abonelik nasıl çalışır?</h3><p>Plan seçin, her ay taze kahveniz kapınıza gelir.</p><h3>Ödeme yöntemleri?</h3><p>Kredi kartı, banka kartı, havale/EFT.</p>` },
+    { slug: 'gizlilik-politikasi', title: 'Gizlilik Politikası', seoDescription: 'Pure Olentia KVKK gizlilik politikası.', content: `<h2>Gizlilik Politikası</h2><p>6698 sayılı KVKK uyarınca, kişisel verileriniz <strong>Pure Olentia Kahve</strong> tarafından işlenmektedir.</p><p><strong>Adres:</strong> Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul<br/><strong>E-posta:</strong> info@pureolentia.com<br/><strong>Telefon:</strong> 0552 462 29 54</p><h3>İşlenen Veriler</h3><ul><li>Kimlik ve iletişim bilgileri</li><li>Sipariş ve fatura bilgileri</li><li>Pazarlama tercihleri</li></ul><h3>Haklarınız</h3><p>KVKK Madde 11 uyarınca bilgi talep etme, düzeltme, silme haklarınız vardır.</p>` },
+    { slug: 'mesafeli-satis', title: 'Mesafeli Satış Sözleşmesi', seoDescription: 'Pure Olentia mesafeli satış sözleşmesi.', content: `<h2>Mesafeli Satış Sözleşmesi</h2><p>6502 sayılı Tüketicinin Korunması Hakkında Kanun uyarınca düzenlenmiştir.</p><h3>1. Taraflar</h3><p><strong>Satıcı:</strong> Pure Olentia Kahve — Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul</p><h3>2. Ödeme ve Teslimat</h3><p>Ödeme güvenli altyapı (PayTR/Iyzico) ile yapılır. Ürünler 1-3 iş günü içinde teslim edilir.</p><h3>3. Cayma Hakkı</h3><p>Alıcı 14 gün içinde cayma hakkına sahiptir. Ambalajı açılmış kahve ürünleri cayma kapsamı dışındadır.</p><h3>4. Uyuşmazlık</h3><p>Tüketici Hakem Heyetleri ve Tüketici Mahkemeleri yetkilidir.</p>` },
+    { slug: 'kullanim-kosullari', title: 'Kullanım Koşulları', seoDescription: 'Pure Olentia web sitesi kullanım koşulları.', content: `<h2>Kullanım Koşulları</h2><p>Pure Olentia web sitesini kullanarak bu koşulları kabul etmiş sayılırsınız.</p><h3>Üyelik</h3><ul><li>18 yaşından büyük olmanız gerekir.</li><li>Hesap güvenliği size aittir.</li></ul><h3>Fikri Mülkiyet</h3><p>Tüm içerikler Pure Olentia'nın fikri mülkiyetidir.</p><h3>Değişiklikler</h3><p>Pure Olentia bu koşulları önceden bildirmeksizin güncelleme hakkına sahiptir.</p>` },
+    { slug: 'cerez-politikasi', title: 'Çerez Politikası', seoDescription: 'Pure Olentia çerez politikası.', content: `<h2>Çerez Politikası</h2><p>Sitemizde çerezler kullanılmaktadır.</p><h3>Çerez Türleri</h3><ul><li><strong>Zorunlu:</strong> Site işleyişi için gereklidir.</li><li><strong>Analitik:</strong> Ziyaretçi davranışlarını anlamak için.</li><li><strong>Pazarlama:</strong> Sadece onayınızla kullanılır.</li></ul><h3>Yönetim</h3><p>Tarayıcı ayarlarınızdan çerezleri silebilir veya engelleyebilirsiniz.</p>` },
+    { slug: 'kvkk', title: 'KVKK Aydınlatma Metni', seoDescription: 'Pure Olentia KVKK aydınlatma metni.', content: `<h2>KVKK Aydınlatma Metni</h2><p>6698 sayılı KVKK uyarınca hazırlanmıştır.</p><h3>Veri Sorumlusu</h3><p>Pure Olentia Kahve<br/>info@pureolentia.com · 0552 462 29 54</p><h3>İşlenen Veriler</h3><ul><li>Kimlik ve iletişim bilgileri</li><li>Sipariş bilgileri</li><li>İşlem güvenliği</li></ul><h3>Haklarınız</h3><p>KVKK Madde 11 hakları ve başvuru için: info@pureolentia.com</p>` },
+    { slug: 'odeme-teslimat', title: 'Ödeme & Teslimat', seoDescription: 'Pure Olentia ödeme ve teslimat bilgileri.', content: `<h2>Ödeme & Teslimat</h2><h3>Ödeme Yöntemleri</h3><ul><li>Kredi / Banka Kartı (PayTR / Iyzico)</li><li>Havale / EFT</li><li>Anlaşmalı bankalar için taksit</li></ul><h3>Kargo Süreleri</h3><ul><li><strong>İstanbul içi:</strong> 1 iş günü</li><li><strong>Büyükşehirler:</strong> 1-2 iş günü</li><li><strong>Diğer iller:</strong> 2-3 iş günü</li></ul><h3>Kargo Ücreti</h3><p>300 TL üzeri ücretsiz. Abonelik siparişlerinde her zaman ücretsiz.</p>` },
+    { slug: 'toptan-satis', title: 'Toptan Satış', seoDescription: 'Pure Olentia toptan kahve satışı.', content: `<h2>Toptan Satış</h2><p>Kafe, restoran, otel ve ofisler için özel toptan fiyatlar.</p><h3>Neler Sunuyoruz</h3><ul><li>Özel toptan fiyatlar</li><li>Düzenli teslimat programı</li><li>Özel blend geliştirme</li><li>Barista eğitimi desteği</li><li>Ekipman danışmanlığı</li></ul><h3>Başvuru</h3><p>info@pureolentia.com · 0552 462 29 54</p>` },
+    { slug: 'kurumsal-hediye', title: 'Kurumsal Hediye', seoDescription: 'Pure Olentia kurumsal hediye paketleri.', content: `<h2>Kurumsal Hediye Paketleri</h2><p>Çalışanlarınız ve müşterileriniz için özel kahve hediyesi.</p><h3>Neden Pure Olentia?</h3><ul><li>Taze kavrulmuş specialty kahve</li><li>Özel tasarım kutu</li><li>Logonuzla markalama</li><li>Türkiye geneline teslimat</li></ul><h3>Teklif için</h3><p>info@pureolentia.com · 0552 462 29 54</p>` },
+    { slug: 'kahve-okulu', title: 'Kahve Okulu', seoDescription: 'Pure Olentia kahve okulu eğitimleri.', content: `<h2>Pure Olentia Kahve Okulu</h2><p>Specialty kahve dünyasını derinlemesine öğrenin.</p><h3>Programlar</h3><h4>Başlangıç</h4><p>Kahve 101, demleme temelleri · 1 gün</p><h4>Ev Baristası</h4><p>V60, Chemex, Aeropress, cupping · 2 gün</p><h4>Pro Barista Sertifika</h4><p>Espresso, latte art, SCA hazırlığı · 5 gün</p><h3>Kurumsal Eğitim</h3><p>Ekibinize özel eğitim için: info@pureolentia.com</p>` },
+    { slug: 'kampanyalar', title: 'Kampanyalar', seoDescription: 'Pure Olentia güncel kampanyalar.', content: `<h2>Güncel Kampanyalar</h2><h3>🎁 Abonelik İndirimi</h3><p>Aylık abonelikte <strong>%15 indirim</strong>.</p><h3>🚚 Ücretsiz Kargo</h3><p>300 TL üzeri siparişlerde ücretsiz kargo.</p><h3>☕ Hediye Setleri</h3><p>3'lü Türk Kahvesi setinde özel fiyat.</p><h3>🏢 Kurumsal İndirim</h3><p>10 kg ve üzeri toptan fiyat.</p>` },
+    { slug: 'menseiler', title: 'Menşei Hikayeleri', seoDescription: 'Pure Olentia kahvelerinin geldiği topraklar.', content: `<h2>Her Fincanın Arkasında Bir Hikaye</h2><h3>🇪🇹 Etiyopya</h3><p>Kahvenin anavatanı. Çiçeksi, meyvemsi, karmaşık aromalar.</p><h3>🇨🇴 Kolombiya</h3><p>Dengeli, tatlı, kolay içilir. Karamel ve fındık notaları.</p><h3>🇧🇷 Brezilya</h3><p>Gövdeli ve zengin. Çikolata ve fındık. Espresso için ideal.</p><h3>🇰🇪 Kenya</h3><p>Parlak ve asidik. Yoğun meyve notaları.</p><h3>🇬🇹 Guatemala</h3><p>Volkanik topraklar. Baharatlı ve çikolatalı.</p>` },
+    { slug: 'surdurulebilirlik', title: 'Sürdürülebilirlik', seoDescription: 'Pure Olentia sürdürülebilir kahve anlayışı.', content: `<h2>Sürdürülebilir Kahve</h2><h3>🌱 Direct Trade</h3><p>Doğrudan üreticiden alıyoruz. Çiftçi hak ettiği fiyatı alır.</p><h3>🌍 Çevre</h3><ul><li>Gölge altı yetiştirme</li><li>Geri dönüştürülebilir ambalaj</li><li>Karbon ayak izi azaltımı</li></ul><h3>👥 Sosyal</h3><ul><li>Kadın kooperatiflerine destek</li><li>Çocuk işçiliğine sıfır tolerans</li><li>Çiftçi çocukları eğitim desteği</li></ul>` },
+    { slug: 'kahve-sozlugu', title: 'Kahve Sözlüğü', seoDescription: 'Kahve terimleri sözlüğü.', content: `<h2>Kahve Sözlüğü</h2><ul><li><strong>Arabica:</strong> En kaliteli kahve türü.</li><li><strong>Bloom:</strong> Demleme başında CO₂ çıkışı.</li><li><strong>Body:</strong> Kahvenin ağızda dolgunluğu.</li><li><strong>Crema:</strong> Espresso üzerindeki altın köpük.</li><li><strong>Cupping:</strong> Kahve tadım metodolojisi.</li><li><strong>Direct Trade:</strong> Doğrudan ticaret.</li><li><strong>Extraction:</strong> Kahve özünün suya geçmesi.</li><li><strong>Microlot:</strong> Tek bahçeden özel kahve.</li><li><strong>Single Origin:</strong> Tek menşei kahve.</li><li><strong>Specialty:</strong> 80+ puan alan premium sınıf.</li><li><strong>Terroir:</strong> Yetişme koşullarının etkisi.</li></ul>` },
+    { slug: 'demleme-rehberi', title: 'Demleme Rehberi', seoDescription: 'V60, Chemex, French Press, Aeropress, Cezve tarifleri.', content: `<h2>Demleme Rehberi</h2><h3>☕ V60</h3><p><strong>Oran:</strong> 15g / 250ml (1:16) · <strong>Öğütme:</strong> Orta-ince · <strong>Süre:</strong> 2:30-3:00</p><h3>⚗️ Chemex</h3><p><strong>Oran:</strong> 30g / 500ml (1:17) · <strong>Öğütme:</strong> Orta · <strong>Süre:</strong> 4-5 dk</p><h3>🫗 French Press</h3><p><strong>Oran:</strong> 30g / 500ml · <strong>Öğütme:</strong> İri · <strong>Süre:</strong> 4 dk</p><h3>🚀 Aeropress</h3><p><strong>Oran:</strong> 15g / 220ml · <strong>Öğütme:</strong> Orta-ince · <strong>Süre:</strong> 2 dk</p><h3>🇹🇷 Cezve</h3><p>1 fincan su + 1.5 tatlı kaşığı toz kahve · Düşük ateş · 4-5 dk</p>` },
+  ];
+  for (const p of cmsPages) {
+    await prisma.page.upsert({
+      where: { slug: p.slug },
+      update: {},
+      create: {
+        slug: p.slug,
+        title: p.title,
+        sections: [{ type: 'html', content: p.content }],
+        isPublished: true,
+        seoTitle: `${p.title} - Pure Olentia`,
+        seoDescription: p.seoDescription,
+      },
+    });
+  }
+  console.log(`✅ ${cmsPages.length} CMS sayfası oluşturuldu`);
+
   console.log('\n🎉 Seed tamamlandı!\n');
   console.log('── Giriş Bilgileri ──');
   console.log('Admin:    admin@olentia.com    / Admin2026!@#');
