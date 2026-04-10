@@ -1113,18 +1113,25 @@ async function main() {
   }
   console.log(`✅ ${machines.length} makine oluşturuldu`);
 
-  // ── 15.5 Site Settings ──
+  // ── 15.5 Site Settings (keys match admin/website/site-settings form) ──
   const siteSettings: Array<{ key: string; value: any }> = [
-    { key: 'contact_address', value: 'Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul' },
-    { key: 'contact_phone', value: '0552 462 29 54' },
-    { key: 'contact_email', value: 'info@pureolentia.com' },
-    { key: 'social_instagram', value: 'https://instagram.com/pureolentia' },
-    { key: 'social_facebook', value: 'https://facebook.com/pureolentia' },
-    { key: 'social_twitter', value: 'https://twitter.com/pureolentia' },
-    { key: 'social_youtube', value: 'https://youtube.com/@pureolentia' },
-    { key: 'footer_tagline', value: 'Tarladan fincana izlenebilir specialty kahve deneyimi.' },
-    { key: 'free_shipping_threshold', value: '300' },
-    { key: 'announcement_text', value: '300 TL üzeri siparişlerde ücretsiz kargo' },
+    { key: 'siteName', value: 'Pure Olentia' },
+    { key: 'logo', value: '/logo.png' },
+    { key: 'favicon', value: '/icon.png' },
+    { key: 'footerText', value: 'Tarladan fincana izlenebilir specialty kahve deneyimi.' },
+    { key: 'phone', value: '0552 462 29 54' },
+    { key: 'email', value: 'info@pureolentia.com' },
+    { key: 'address', value: 'Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul' },
+    { key: 'mapLat', value: '40.9961' },
+    { key: 'mapLng', value: '29.2309' },
+    { key: 'workingHours', value: 'Pzt-Cum 09:00-18:00' },
+    { key: 'facebook', value: 'https://facebook.com/pureolentia' },
+    { key: 'instagram', value: 'https://instagram.com/pureolentia' },
+    { key: 'twitter', value: 'https://twitter.com/pureolentia' },
+    { key: 'linkedin', value: 'https://linkedin.com/company/pureolentia' },
+    { key: 'youtube', value: 'https://youtube.com/@pureolentia' },
+    { key: 'kvkkText', value: 'Kişisel verileriniz 6698 sayılı KVKK kapsamında işlenmektedir.' },
+    { key: 'cookiePolicy', value: 'Sitemizde deneyiminizi iyileştirmek için çerezler kullanılmaktadır.' },
   ];
   for (const s of siteSettings) {
     await prisma.siteSettings.upsert({

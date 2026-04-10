@@ -1,5 +1,6 @@
 import Logo from '@/components/Logo'
 import { CustomLink } from '@/data/types'
+import { getSiteSettings } from '@/lib/site-settings'
 import SocialsList1 from '@/shared/SocialsList1/SocialsList1'
 import React from 'react'
 
@@ -55,7 +56,9 @@ const widgetMenus: WidgetFooterMenu[] = [
   },
 ]
 
-const Footer: React.FC = () => {
+const Footer: React.FC = async () => {
+  const settings = await getSiteSettings()
+
   const renderWidgetMenuItem = (menu: WidgetFooterMenu, index: number) => {
     return (
       <div key={index} className="text-sm">
@@ -88,9 +91,45 @@ const Footer: React.FC = () => {
             <div className="col-span-2 flex items-center md:col-span-3">
               <SocialsList1 />
             </div>
+            {settings.footerText && (
+              <p className="col-span-4 text-xs text-neutral-500 dark:text-neutral-400 lg:max-w-xs">
+                {settings.footerText}
+              </p>
+            )}
           </div>
           {widgetMenus.map(renderWidgetMenuItem)}
         </div>
+
+        {/* Contact info row */}
+        {(settings.address || settings.phone || settings.email) && (
+          <div className="container mt-12 grid grid-cols-1 gap-6 border-t border-neutral-200 pt-8 text-sm text-neutral-600 sm:grid-cols-3 dark:border-neutral-700 dark:text-neutral-400">
+            {settings.address && (
+              <div>
+                <p className="mb-1 font-semibold text-neutral-800 dark:text-neutral-200">Adres</p>
+                <p>{settings.address}</p>
+              </div>
+            )}
+            {settings.phone && (
+              <div>
+                <p className="mb-1 font-semibold text-neutral-800 dark:text-neutral-200">Telefon</p>
+                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="hover:text-primary-600">
+                  {settings.phone}
+                </a>
+                {settings.workingHours && (
+                  <p className="mt-1 text-xs text-neutral-500">{settings.workingHours}</p>
+                )}
+              </div>
+            )}
+            {settings.email && (
+              <div>
+                <p className="mb-1 font-semibold text-neutral-800 dark:text-neutral-200">E-posta</p>
+                <a href={`mailto:${settings.email}`} className="hover:text-primary-600">
+                  {settings.email}
+                </a>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Trust badges + copyright */}
@@ -127,7 +166,7 @@ const Footer: React.FC = () => {
 
           {/* Copyright */}
           <p className="text-xs text-neutral-400">
-            &copy; {new Date().getFullYear()} Pure Olentia. Tum haklari saklidir.
+            &copy; {new Date().getFullYear()} {settings.siteName || 'Pure Olentia'}. Tüm hakları saklıdır.
           </p>
         </div>
       </div>

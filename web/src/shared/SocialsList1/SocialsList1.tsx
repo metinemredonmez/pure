@@ -1,24 +1,27 @@
 import facebook from '@/images/socials/facebook.svg'
-import telegram from '@/images/socials/telegram.svg'
 import twitter from '@/images/socials/twitter.svg'
 import youtube from '@/images/socials/youtube.svg'
+import { getSiteSettings } from '@/lib/site-settings'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { FC } from 'react'
 import { Link } from '../link'
 
 interface SocialsList1Props {
   className?: string
 }
 
-const socials = [
-  { name: 'Instagram', icon: facebook, href: 'https://instagram.com/pureolentia' },
-  { name: 'Facebook', icon: facebook, href: 'https://facebook.com/pureolentia' },
-  { name: 'Youtube', icon: youtube, href: 'https://youtube.com/@pureolentia' },
-  { name: 'Twitter', icon: twitter, href: 'https://x.com/pureolentia' },
-]
+const SocialsList1 = async ({ className }: SocialsList1Props) => {
+  const settings = await getSiteSettings()
 
-const SocialsList1: FC<SocialsList1Props> = ({ className }) => {
+  const socials: { name: string; icon: any; href: string }[] = [
+    settings.instagram && { name: 'Instagram', icon: facebook, href: settings.instagram },
+    settings.facebook && { name: 'Facebook', icon: facebook, href: settings.facebook },
+    settings.youtube && { name: 'Youtube', icon: youtube, href: settings.youtube },
+    settings.twitter && { name: 'Twitter', icon: twitter, href: settings.twitter },
+  ].filter(Boolean) as { name: string; icon: any; href: string }[]
+
+  if (!socials.length) return null
+
   return (
     <div className={clsx('flex flex-col gap-y-3', className)}>
       {socials.map((item, index) => (
