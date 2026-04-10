@@ -18,7 +18,7 @@ const IMAGE_BASE = API_URL.replace(/\/api\/?$/, '')
 /**
  * Resolve image URL - if relative (starts with /), prepend backend base URL
  */
-function resolveImageUrl(url: string): string {
+export function resolveImageUrl(url: string): string {
   if (!url) return ''
   if (url.startsWith('http://') || url.startsWith('https://')) return url
   if (url.startsWith('/uploads/')) return `${IMAGE_BASE}${url}`

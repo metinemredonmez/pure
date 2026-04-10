@@ -17,43 +17,40 @@ const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
   return (
     <div className={`group/CollectionCard3 relative block ${className}`}>
       <div
-        className={`aspect-w-16 relative h-0 w-full overflow-hidden rounded-2xl aspect-h-11 sm:aspect-h-9 ${collection.color}`}
+        className={`relative flex min-h-[260px] items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:min-h-[300px] sm:p-8 ${collection.color}`}
       >
-        <div>
-          <div className="absolute inset-5 sm:inset-8">
-            {collection.image && (
-              <div className="absolute end-0 h-full w-full max-w-52">
-                <Image
-                  alt={collection.image.alt || ''}
-                  src={collection.image}
-                  fill
-                  className="object-cover object-center rounded-2xl drop-shadow-xl"
-                  sizes="300px"
-                />
-              </div>
+        {/* Text — left half */}
+        <div className="relative z-10 flex w-1/2 flex-col pr-2">
+          <div>
+            <span className="mb-2 block text-sm text-neutral-700">{collection.title}</span>
+            {collection.description && (
+              <h2
+                className="line-clamp-3 text-lg font-semibold text-neutral-900 sm:text-xl md:text-2xl"
+                dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
+              />
             )}
           </div>
-        </div>
-        <span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover/CollectionCard3:opacity-40"></span>
-
-        <div>
-          <div className="absolute inset-5 flex flex-col sm:inset-8">
-            <div className="max-w-xs">
-              <span className={`mb-2 block text-sm text-neutral-700`}>{collection.title}</span>
-              {collection.description && (
-                <h2
-                  className={`text-xl font-semibold text-neutral-900 md:text-2xl`}
-                  dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
-                ></h2>
-              )}
-            </div>
-            <div className="mt-auto">
-              <Button color="light" className="[--btn-border:white]/0">
-                Hepsini Gör
-              </Button>
-            </div>
+          <div className="mt-auto pt-6">
+            <Button color="light" className="[--btn-border:white]/0">
+              Hepsini Gör
+            </Button>
           </div>
         </div>
+
+        {/* Image — right half */}
+        {collection.image && (
+          <div className="relative w-1/2 overflow-hidden rounded-2xl">
+            <Image
+              alt={collection.image.alt || ''}
+              src={collection.image}
+              fill
+              className="object-cover object-center drop-shadow-xl"
+              sizes="300px"
+            />
+          </div>
+        )}
+
+        <span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover/CollectionCard3:opacity-40"></span>
       </div>
 
       <Link href={'/collections/' + collection.handle} className="absolute inset-0" />

@@ -9,8 +9,8 @@ import SectionPromo3 from '@/components/SectionPromo3'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
 import { getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
-import { getApiProducts, getApiCategories, getApiCollections } from '@/lib/api'
-import { adaptProduct, adaptCategory, adaptCollection } from '@/lib/adapters'
+import { getApiProducts, getApiCategories, getApiCollections, getApiBanners } from '@/lib/api'
+import { adaptProduct, adaptCategory, adaptCollection, resolveImageUrl } from '@/lib/adapters'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -23,6 +23,8 @@ async function PageHome() {
   let products: any[] = []
   let categories: any[] = []
   let collections: any[] = []
+
+  let backendBanners: any[] = []
 
   try {
     const apiProducts = await getApiProducts({ limit: 20 }) as any
@@ -41,6 +43,13 @@ async function PageHome() {
     const colData = apiCollections?.data || apiCollections || []
     if (Array.isArray(colData) && colData.length) {
       collections = colData.map((c: any, i: number) => adaptCollection(c, i))
+    }
+
+    // Fetch hero banners from backend (admin-managed via /website/banners)
+    const apiBanners = await getApiBanners() as any
+    const bannerData = apiBanners?.data || apiBanners || []
+    if (Array.isArray(bannerData) && bannerData.length) {
+      backendBanners = bannerData
     }
   } catch (e) {
     console.warn('API unavailable, using static data')
@@ -100,25 +109,38 @@ async function PageHome() {
     if (s) bySlug[s] = p
   })
 
-  const heroSlides = HERO_CONFIG.map((h) => {
-    const slug = h.slugs.find((s) => bySlug[s]) || h.fallbackSlug
-    const p = bySlug[slug]
-    return {
-      id: p?.id || slug,
-      imageUrl: h.imageUrl,
-      heading: h.title, // prefer our curated title over backend name
-      subHeading: h.subHeading,
-      btnText: 'Ürünü İncele',
-      btnHref: `/products/${slug}`,
-    }
-  })
+  // Prefer admin-managed HeroBanner records; fall back to curated HERO_CONFIG
+  const heroSlides = backendBanners.length
+    ? backendBanners
+        .filter((b: any) => b?.image)
+        .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+        .map((b: any) => ({
+          id: b.id,
+          imageUrl: resolveImageUrl(b.image),
+          heading: b.title || 'Pure Olentia',
+          subHeading: b.subtitle || '',
+          btnText: b.ctaText || 'İncele',
+          btnHref: b.ctaUrl || '/collections/all',
+        }))
+    : HERO_CONFIG.map((h) => {
+        const slug = h.slugs.find((s) => bySlug[s]) || h.fallbackSlug
+        const p = bySlug[slug]
+        return {
+          id: p?.id || slug,
+          imageUrl: h.imageUrl,
+          heading: h.title,
+          subHeading: h.subHeading,
+          btnText: 'Ürünü İncele',
+          btnHref: `/products/${slug}`,
+        }
+      })
 
   return (
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 slides={heroSlides} />
       <SectionCollectionSlider className="mt-24 lg:mt-32" collections={featuredCollections} />
 
-      <div className="relative container my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
+      <div className="relative container mt-24 flex flex-col gap-y-24 lg:mt-32 lg:gap-y-32">
         <SectionSliderProductCard data={carouselProducts1} />
         <Divider />
         <SectionPromo1 />
@@ -130,6 +152,10 @@ async function PageHome() {
         <SectionPromo2 />
         <SectionSliderLargeProduct products={carouselProducts3} />
         <SectionGridFeatureItems data={products} />
+      </div>
+
+      {/* Newsletter — tight spacing, no extra top padding */}
+      <div className="container mt-12 pb-16 lg:mt-16 lg:pb-24">
         <SectionPromo3 />
       </div>
     </div>

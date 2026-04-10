@@ -1,6 +1,5 @@
 import Logo from '@/components/Logo'
 import backgroundLineSvg from '@/images/Moon.svg'
-import rightImgDemo from '@/images/promo2.png'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 
 import clsx from 'clsx'
@@ -33,8 +32,16 @@ const SectionPromo2: FC<SectionPromo2Props> = ({ className }) => {
           </div>
         </div>
 
-        <div className="relative mt-10 block max-w-xl lg:absolute lg:bottom-0 lg:left-0 lg:mt-0 lg:max-w-[calc(50%-40px)]">
-          <Image alt="section promo 2" src={rightImgDemo} sizes="(max-width: 768px) 100vw, 50vw" className="rounded-2xl" />
+        <div className="relative mt-10 block max-w-xl lg:absolute lg:top-10 lg:bottom-10 lg:left-10 lg:mt-0 lg:max-w-[calc(50%-40px)]">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl">
+            <Image
+              alt="Hediye paketi kahve setleri"
+              src="/hero/hediye-paketi.jpg"
+              fill
+              sizes="(max-width: 768px) 100vw, 45vw"
+              className="object-cover"
+            />
+          </div>
         </div>
       </div>
     </div>
