@@ -1,0 +1,75 @@
+import HIW1img from '@/images/HIW1img.png'
+import HIW2img from '@/images/HIW2img.png'
+import HIW3img from '@/images/HIW3img.png'
+import HIW4img from '@/images/HIW4img.png'
+import VectorImg from '@/images/VectorHIW.svg'
+import { Badge } from '@/shared/badge'
+import NcImage from '@/shared/NcImage/NcImage'
+import Image from 'next/image'
+import { FC } from 'react'
+
+export interface SectionHowItWorkProps {
+  className?: string
+  data?: (typeof DEMO_DATA)[0][]
+}
+
+const DEMO_DATA = [
+  {
+    id: 1,
+    img: HIW1img,
+    imgDark: HIW1img,
+    title: 'Kahveni Seç',
+    desc: 'Menşei, kavurma ve aroma profiline göre ideal kahveni bul',
+  },
+  {
+    id: 2,
+    img: HIW2img,
+    imgDark: HIW2img,
+    title: 'Taze Kavrulur',
+    desc: 'Siparişin üzerine özenle kavrulur, tazeliği garanti edilir',
+  },
+  {
+    id: 3,
+    img: HIW3img,
+    imgDark: HIW3img,
+    title: 'Hızlı Teslimat',
+    desc: 'Kavrulduktan sonra 24 saat içinde kargoya verilir',
+  },
+  {
+    id: 4,
+    img: HIW4img,
+    imgDark: HIW4img,
+    title: 'Keyfini Çıkar',
+    desc: 'Taze kahvenin muhteşem aromasını her yudumda hisset',
+  },
+]
+
+const SectionHowItWork: FC<SectionHowItWorkProps> = ({ className = '', data = DEMO_DATA }) => {
+  return (
+    <div className={`nc-SectionHowItWork ${className}`}>
+      <div className="relative grid gap-10 sm:grid-cols-2 sm:gap-16 lg:grid-cols-4 xl:gap-20">
+        <Image className="absolute inset-x-0 top-5 hidden md:block" src={VectorImg} alt="vector" />
+        {data.map((item, index) => (
+          <div key={item.id} className="relative mx-auto flex max-w-xs flex-col items-center gap-2">
+            <NcImage
+              containerClassName="mb-4 sm:mb-10 w-[140px] h-[140px] mx-auto"
+              className="rounded-2xl object-cover w-full h-full"
+              src={item.img}
+              sizes="150px"
+              alt="HIW"
+            />
+            <div className="mt-auto text-center">
+              <Badge
+                color={!index ? 'red' : index === 1 ? 'indigo' : index === 2 ? 'yellow' : 'purple'}
+              >{`Adım ${index + 1}`}</Badge>
+              <h3 className="mt-5 text-base font-semibold">{item.title}</h3>
+              <span className="mt-4 block text-sm leading-6 text-neutral-600 dark:text-neutral-400">{item.desc}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default SectionHowItWork
