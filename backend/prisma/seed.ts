@@ -383,6 +383,190 @@ async function main() {
   }
   console.log('✅ Ürün varyantları oluşturuldu (250g çekirdek, 250g filtre, 1kg)');
 
+  // ── 7.5 Ürün Görselleri ──
+  // Gerçek Pure Olentia fotografları (backend/uploads/products'a kopyalanmış olmalı)
+  const productImages: Record<string, string[]> = {
+    'ethiopia-yirgacheffe': [
+      '/uploads/products/brazil.jpg',
+      '/uploads/products/brazil-2.jpg',
+    ],
+    'colombia-supremo': [
+      '/uploads/products/brazil-2.jpg',
+      '/uploads/products/brazil.jpg',
+    ],
+    'brazil-santos': [
+      '/uploads/products/brazil.jpg',
+      '/uploads/products/brazil-2.jpg',
+    ],
+    'kenya-aa': [
+      '/uploads/products/brazil.jpg',
+      '/uploads/products/brazil-2.jpg',
+    ],
+    'guatemala-antigua': [
+      '/uploads/products/brazil-2.jpg',
+      '/uploads/products/brazil.jpg',
+    ],
+    'olentia-house-blend': [
+      '/uploads/products/turk-kahvesi-200gr.jpg',
+      '/uploads/products/turk-kahvesi-200gr-1.jpg',
+      '/uploads/products/turk-kahvesi-200gr-2.jpg',
+      '/uploads/products/turk-kahvesi-200gr-3.jpg',
+    ],
+    'turk-kahvesi-geleneksel': [
+      '/uploads/products/turk-kahvesi-100gr.jpg',
+      '/uploads/products/turk-kahvesi-tekli-1.jpg',
+      '/uploads/products/turk-kahvesi-tekli-2.jpg',
+      '/uploads/products/turk-kahvesi-tekli-3.jpg',
+    ],
+    'cold-brew-konsantre': [
+      '/uploads/products/turk-kahvesi-12li-kutu.jpg',
+      '/uploads/products/turk-kahvesi-12li-1.jpg',
+      '/uploads/products/turk-kahvesi-12li-2.jpg',
+      '/uploads/products/turk-kahvesi-12li-3.jpg',
+    ],
+  };
+
+  for (const product of products) {
+    const images = productImages[product.slug];
+    if (!images) continue;
+
+    // Önceki görselleri temizle
+    await prisma.productImage.deleteMany({ where: { productId: product.id } });
+
+    // Yeni görselleri ekle
+    for (let i = 0; i < images.length; i++) {
+      await prisma.productImage.create({
+        data: {
+          productId: product.id,
+          url: images[i],
+          alt: product.name,
+          sortOrder: i,
+        },
+      });
+    }
+  }
+  console.log('✅ Ürün görselleri eklendi (Pure Olentia arşivinden)');
+
+  // ── 7.6 Ek Türk Kahvesi Ürünleri (farklı gramajlar) ──
+  // Desktop/PureOlentia klasöründe olan türk kahvesi varyantlarını ayrı ürün olarak ekle
+  const turkishCoffeeCategory = categories.find(c => c.slug === 'turk-kahvesi') || categories[5];
+
+  const turkCoffeeProducts = [
+    {
+      name: 'Türk Kahvesi 100gr',
+      slug: 'turk-kahvesi-100gr',
+      sku: 'OLP-TRK-100',
+      barcode: '8690001000010',
+      price: 99.90,
+      stock: 500,
+      shortDescription: 'Geleneksel 100gr Türk Kahvesi',
+      description: 'Özenle kavrulmuş ve ince öğütülmüş geleneksel Türk kahvesi. 100gr paket.',
+      images: [
+        '/uploads/products/turk-kahvesi-100gr.jpg',
+        '/uploads/products/turk-kahvesi-tekli-1.jpg',
+        '/uploads/products/turk-kahvesi-tekli-2.jpg',
+        '/uploads/products/turk-kahvesi-tekli-3.jpg',
+      ],
+    },
+    {
+      name: 'Türk Kahvesi 200gr',
+      slug: 'turk-kahvesi-200gr',
+      sku: 'OLP-TRK-200',
+      barcode: '8690001000011',
+      price: 179.90,
+      stock: 300,
+      shortDescription: 'Geleneksel 200gr Türk Kahvesi',
+      description: 'Özenle kavrulmuş ve ince öğütülmüş geleneksel Türk kahvesi. 200gr paket.',
+      images: [
+        '/uploads/products/turk-kahvesi-200gr.jpg',
+        '/uploads/products/turk-kahvesi-200gr-1.jpg',
+        '/uploads/products/turk-kahvesi-200gr-2.jpg',
+        '/uploads/products/turk-kahvesi-200gr-3.jpg',
+      ],
+    },
+    {
+      name: 'Türk Kahvesi 3\'lü Set',
+      slug: 'turk-kahvesi-3lu-set',
+      sku: 'OLP-TRK-3LU',
+      barcode: '8690001000012',
+      price: 259.90,
+      stock: 150,
+      shortDescription: '3 adet 100gr Türk Kahvesi set',
+      description: '3 adet 100gr geleneksel Türk kahvesi. Hediye paketi olarak ideal.',
+      images: [
+        '/uploads/products/turk-kahvesi-3lu-1.jpg',
+        '/uploads/products/turk-kahvesi-3lu-2.jpg',
+        '/uploads/products/turk-kahvesi-3lu-3.jpg',
+      ],
+    },
+    {
+      name: 'Türk Kahvesi 12\'li Kutu',
+      slug: 'turk-kahvesi-12li-kutu',
+      sku: 'OLP-TRK-12LI',
+      barcode: '8690001000013',
+      price: 899.90,
+      stock: 80,
+      shortDescription: '12 x 100gr Türk Kahvesi kutu',
+      description: '12 adet 100gr geleneksel Türk kahvesi. İşletmeler ve toplu alım için ideal.',
+      images: [
+        '/uploads/products/turk-kahvesi-12li-kutu.jpg',
+        '/uploads/products/turk-kahvesi-12li-1.jpg',
+        '/uploads/products/turk-kahvesi-12li-2.jpg',
+        '/uploads/products/turk-kahvesi-12li-3.jpg',
+      ],
+    },
+  ];
+
+  for (const p of turkCoffeeProducts) {
+    const product = await prisma.product.upsert({
+      where: { slug: p.slug },
+      update: {
+        name: p.name,
+        price: p.price,
+        stock: p.stock,
+        description: p.description,
+        shortDescription: p.shortDescription,
+      },
+      create: {
+        name: p.name,
+        slug: p.slug,
+        sku: p.sku,
+        barcode: p.barcode,
+        price: p.price,
+        costPrice: p.price * 0.4,
+        stock: p.stock,
+        lowStockThreshold: 20,
+        description: p.description,
+        shortDescription: p.shortDescription,
+        categoryId: turkishCoffeeCategory.id,
+        origin: 'Blend',
+        region: 'Brezilya, Kolombiya',
+        roastLevel: 'MEDIUM',
+        grindType: 'TURKISH',
+        process: 'Geleneksel',
+        aromaProfile: ['çikolata', 'baharat'],
+        flavorNotes: 'Yoğun, baharatlı, çikolatamsı',
+        isActive: true,
+        isFeatured: true,
+        status: 'ACTIVE',
+      },
+    });
+
+    // Resimler
+    await prisma.productImage.deleteMany({ where: { productId: product.id } });
+    for (let i = 0; i < p.images.length; i++) {
+      await prisma.productImage.create({
+        data: {
+          productId: product.id,
+          url: p.images[i],
+          alt: p.name,
+          sortOrder: i,
+        },
+      });
+    }
+  }
+  console.log('✅ 4 ek Türk Kahvesi ürünü eklendi (100gr, 200gr, 3\'lü, 12\'li)');
+
   // ── 8. Koleksiyonlar ──
   const collections = await Promise.all([
     prisma.collection.upsert({
