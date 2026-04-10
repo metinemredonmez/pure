@@ -11,6 +11,7 @@ export interface SectionHeroProps {
 }
 
 const SectionHero: FC<SectionHeroProps> = ({ className = '', rightImg, heading, subHeading, btnText }) => {
+  const imgSrc = typeof rightImg === 'string' ? rightImg : rightImg
   return (
     <div className={`nc-SectionHero relative ${className}`}>
       <div className="relative flex flex-col items-center gap-y-14 text-center lg:flex-row lg:gap-x-20 lg:gap-y-0 lg:text-left">
@@ -23,7 +24,13 @@ const SectionHero: FC<SectionHeroProps> = ({ className = '', rightImg, heading, 
         </div>
 
         <div className="flex-1">
-          <Image className="w-full" src={rightImg} alt="" priority />
+          <div className="relative aspect-square w-full overflow-hidden rounded-3xl">
+            {typeof rightImg === 'string' ? (
+              <Image fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" src={rightImg} alt="Pure Olentia" priority />
+            ) : (
+              <Image fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover" src={rightImg} alt="Pure Olentia" priority />
+            )}
+          </div>
         </div>
       </div>
     </div>

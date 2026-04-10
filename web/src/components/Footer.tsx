@@ -11,16 +11,6 @@ interface WidgetFooterMenu {
 
 const widgetMenus: WidgetFooterMenu[] = [
   {
-    id: '1',
-    title: 'Kahveler',
-    menus: [
-      { href: '/collections/single-origin', label: 'Single Origin' },
-      { href: '/collections/blend', label: 'Blend' },
-      { href: '/collections/espresso', label: 'Espresso' },
-      { href: '/collections/filter', label: 'Filtre Kahve' },
-    ],
-  },
-  {
     id: '2',
     title: 'Keşfet',
     menus: [
