@@ -1,13 +1,9 @@
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
-import { Input } from '@/shared/input'
-import { Textarea } from '@/shared/textarea'
 import { Metadata } from 'next'
-import Form from 'next/form'
+import B2BForm from './B2BForm'
 
 export const metadata: Metadata = {
-  title: 'Kurumsal Satis',
-  description: 'Pure Olentia kurumsal kahve cozumleri.',
+  title: 'Kurumsal Satış',
+  description: 'Pure Olentia kurumsal kahve çözümleri. Ofis, restoran, otel ve kafeler için özel fiyatlarla specialty kahve tedariği.',
 }
 
 const features = [
@@ -76,12 +72,7 @@ const stats = [
   { value: '24s', label: 'Teslimat' },
 ]
 
-export default async function B2BPage() {
-  const handleSubmit = async (formData: FormData) => {
-    'use server'
-    console.log(Object.fromEntries(formData.entries()))
-  }
-
+export default function B2BPage() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero - full width gradient */}
@@ -146,54 +137,12 @@ export default async function B2BPage() {
         {/* Form */}
         <div id="form" className="mx-auto mt-24 max-w-xl scroll-mt-20">
           <div className="text-center">
-            <h2 className="text-2xl font-semibold">Teklif Alin</h2>
+            <h2 className="text-2xl font-semibold">Teklif Alın</h2>
             <p className="mt-2 text-neutral-500 dark:text-neutral-400">
-              Formu doldurun, 24 saat icinde size donelim.
+              Formu doldurun, 24 saat içinde size dönelim.
             </p>
           </div>
-          <Form action={handleSubmit} className="mt-10">
-            <Fieldset>
-              <FieldGroup>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field>
-                    <Label>Ad Soyad</Label>
-                    <Input name="name" placeholder="Adiniz Soyadiniz" required />
-                  </Field>
-                  <Field>
-                    <Label>Firma Adi</Label>
-                    <Input name="company" placeholder="Firma adi" required />
-                  </Field>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field>
-                    <Label>E-posta</Label>
-                    <Input name="email" type="email" placeholder="ornek@firma.com" required />
-                  </Field>
-                  <Field>
-                    <Label>Telefon</Label>
-                    <Input name="phone" placeholder="+90 5XX XXX XX XX" />
-                  </Field>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field>
-                    <Label>Sektor</Label>
-                    <Input name="sector" placeholder="Otel, Restoran, Ofis..." />
-                  </Field>
-                  <Field>
-                    <Label>Aylik Tuketim (kg)</Label>
-                    <Input name="volume" type="number" placeholder="ornegin: 50" />
-                  </Field>
-                </div>
-                <Field>
-                  <Label>Mesajiniz</Label>
-                  <Textarea name="message" rows={4} placeholder="Ihtiyaclarinizi anlatabilirsiniz..." />
-                </Field>
-                <ButtonPrimary type="submit" className="w-full">
-                  Teklif Talep Et
-                </ButtonPrimary>
-              </FieldGroup>
-            </Fieldset>
-          </Form>
+          <B2BForm />
         </div>
       </div>
     </div>
