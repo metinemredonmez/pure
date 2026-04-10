@@ -7,7 +7,6 @@ import SectionCollectionSlider2 from '@/components/SectionCollectionSlider2'
 import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
 import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore'
 import SectionHero2 from '@/components/SectionHero/SectionHero2'
-import SectionHowItWork from '@/components/SectionHowItWork/SectionHowItWork'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
@@ -73,15 +72,56 @@ async function PageHome() {
   const featuredCollections = collections.length ? collections.slice(0, 4) : categories.slice(0, 4)
   const departmentCollections = categories.slice(0, 4)
 
-  // Hero slides: top-selling products from backend (fallback to defaults in component)
-  const heroSlides = products.slice(0, 5).map((p: any, i: number) => ({
-    id: p.id || i,
-    imageUrl: p.featuredImage?.src || p.images?.[0]?.src || '',
-    heading: p.title || p.name || 'Pure Olentia',
-    subHeading: p.description?.slice(0, 80) || 'En çok tercih edilen kahvelerimiz',
-    btnText: 'Ürünü İncele',
-    btnHref: `/products/${p.handle || p.slug || ''}`,
-  })).filter((s) => s.imageUrl)
+  // Hero slides: 3 curated Pure Olentia products with real product photos
+  // 1) Türk Kahvesi 100gr tekli, 2) Brazil Santos 250gr (espresso), 3) Signature Blend (filtre)
+  const HERO_CONFIG: Array<{
+    slugs: string[] // preferred slug order — use first found in products
+    fallbackSlug: string
+    title: string
+    subHeading: string
+    imageUrl: string // real Pure Olentia product photo
+  }> = [
+    {
+      slugs: ['turk-kahvesi-100gr', 'turk-kahvesi-geleneksel'],
+      fallbackSlug: 'turk-kahvesi-100gr',
+      title: 'Türk Kahvesi 100gr',
+      subHeading: 'Geleneksel 100gr tekli Türk kahvesi',
+      imageUrl: '/hero/turk-kahvesi-100gr.jpg',
+    },
+    {
+      slugs: ['brazil-santos'],
+      fallbackSlug: 'brazil-santos',
+      title: 'Brazil Santos 250gr',
+      subHeading: 'Espresso için ideal — Brezilya 250gr',
+      imageUrl: '/hero/brazil-santos.jpg',
+    },
+    {
+      slugs: ['olentia-house-blend'],
+      fallbackSlug: 'olentia-house-blend',
+      title: 'Signature Blend',
+      subHeading: 'Filtre için özel harman',
+      imageUrl: '/hero/signature-blend.jpg',
+    },
+  ]
+
+  const bySlug: Record<string, any> = {}
+  products.forEach((p: any) => {
+    const s = p.handle || p.slug
+    if (s) bySlug[s] = p
+  })
+
+  const heroSlides = HERO_CONFIG.map((h) => {
+    const slug = h.slugs.find((s) => bySlug[s]) || h.fallbackSlug
+    const p = bySlug[slug]
+    return {
+      id: p?.id || slug,
+      imageUrl: h.imageUrl,
+      heading: p?.title || p?.name || h.title,
+      subHeading: h.subHeading,
+      btnText: 'Ürünü İncele',
+      btnHref: `/products/${slug}`,
+    }
+  })
 
   return (
     <div className="nc-PageHome relative overflow-hidden">
@@ -91,9 +131,6 @@ async function PageHome() {
       <div className="relative container my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
         <SectionSliderProductCard data={carouselProducts1} />
         <Divider />
-        <div className="pb-16">
-          <SectionHowItWork />
-        </div>
         <SectionPromo1 />
         <div className="relative pt-24 pb-20 lg:pt-28">
           <BackgroundSection />

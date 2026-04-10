@@ -5,7 +5,6 @@ import SectionCollectionSlider from '@/components/SectionCollectionSlider'
 import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
 import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore'
 import SectionHero3 from '@/components/SectionHero/SectionHero3'
-import SectionHowItWork from '@/components/SectionHowItWork/SectionHowItWork'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo3 from '@/components/SectionPromo3'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
@@ -50,8 +49,7 @@ async function PageHome2() {
       </div>
 
       <div className="relative container my-24 flex flex-col gap-y-24 lg:my-36 lg:gap-y-36">
-        <SectionHowItWork />
-        <SectionSliderProductCard data={carouselProducts2} subHeading="New Sports equipment" />
+        <SectionSliderProductCard data={carouselProducts2} subHeading="Yeni kahveler" />
         <SectionPromo3 />
         <SectionSliderLargeProduct products={carouselProducts3} />
         <div className="relative pt-24 pb-20 lg:pt-28">

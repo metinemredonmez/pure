@@ -127,7 +127,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     }, 1000)
   }
 
-  // ===================================================
+  // =================================================== render
 
   const renderItem = (index: number) => {
     const isActive = indexActive === index
@@ -189,15 +189,16 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         </div>
 
         <div className="relative -z-10 flex-1/2 lg:pr-10">
-          <Image
-            sizes="(max-width: 768px) 100vw, 60vw"
-            className="h-auto w-full max-w-[40rem] rounded-3xl object-cover fade--animation__image select-none"
-            src={item.imageUrl}
-            alt={item.heading}
-            width={790}
-            height={790}
-            priority
-          />
+          <div className="relative aspect-square w-full max-w-[40rem] overflow-hidden rounded-3xl fade--animation__image select-none">
+            <Image
+              sizes="(max-width: 768px) 100vw, 60vw"
+              className="object-cover"
+              src={item.imageUrl}
+              alt={item.heading}
+              fill
+              priority
+            />
+          </div>
         </div>
       </div>
     )
