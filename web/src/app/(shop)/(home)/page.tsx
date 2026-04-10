@@ -1,19 +1,16 @@
 import { Divider } from '@/components/Divider'
 import Heading from '@/components/Heading/Heading'
-import SectionClientSay from '@/components/SectionClientSay'
 import SectionCollectionSlider from '@/components/SectionCollectionSlider'
 import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
 import SectionHero2 from '@/components/SectionHero/SectionHero2'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo2 from '@/components/SectionPromo2'
+import SectionPromo3 from '@/components/SectionPromo3'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
-import SectionMagazine5 from '@/components/blog/SectionMagazine5'
-import { getBlogPosts, getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
+import { getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
 import { getApiProducts, getApiCategories, getApiCollections } from '@/lib/api'
 import { adaptProduct, adaptCategory, adaptCollection } from '@/lib/adapters'
-import { Button } from '@/shared/Button/Button'
-import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -57,8 +54,6 @@ async function PageHome() {
     const staticCollections = await getStaticCollections()
     categories = staticCollections.slice(0, 7)
   }
-
-  const blogPosts = await getBlogPosts()
 
   const carouselProducts1 = products.slice(0, 5)
   const carouselProducts2 = products.slice(3, 10)
@@ -135,20 +130,7 @@ async function PageHome() {
         <SectionPromo2 />
         <SectionSliderLargeProduct products={carouselProducts3} />
         <SectionGridFeatureItems data={products} />
-        <Divider />
-        <div>
-          <Heading headingDim="Pure Olentia Blog">Son Yazılar</Heading>
-          <SectionMagazine5 posts={blogPosts} />
-          <div className="mt-20 flex justify-center">
-            <Button href="/blog" outline>
-              Tüm Blog Yazıları
-              <ArrowRightIcon className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        <Divider />
-        <SectionClientSay />
+        <SectionPromo3 />
       </div>
     </div>
   )

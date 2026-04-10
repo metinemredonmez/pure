@@ -9,7 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Olentia Admin Panel',
+  title: 'Pure Olentia — Admin',
   description: 'Pure Olentia - Admin Yönetim Paneli',
 };
 
