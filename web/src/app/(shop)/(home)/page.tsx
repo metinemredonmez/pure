@@ -1,18 +1,15 @@
-import BackgroundSection from '@/components/BackgroundSection/BackgroundSection'
 import { Divider } from '@/components/Divider'
 import Heading from '@/components/Heading/Heading'
 import SectionClientSay from '@/components/SectionClientSay'
 import SectionCollectionSlider from '@/components/SectionCollectionSlider'
-import SectionCollectionSlider2 from '@/components/SectionCollectionSlider2'
 import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
-import SectionGridMoreExplore from '@/components/SectionGridMoreExplore/SectionGridMoreExplore'
 import SectionHero2 from '@/components/SectionHero/SectionHero2'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
 import SectionMagazine5 from '@/components/blog/SectionMagazine5'
-import { getBlogPosts, getCollections as getStaticCollections, getGroupCollections, getProducts as getStaticProducts } from '@/data/data'
+import { getBlogPosts, getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
 import { getApiProducts, getApiCategories, getApiCollections } from '@/lib/api'
 import { adaptProduct, adaptCategory, adaptCollection } from '@/lib/adapters'
 import { Button } from '@/shared/Button/Button'
@@ -61,7 +58,6 @@ async function PageHome() {
     categories = staticCollections.slice(0, 7)
   }
 
-  const groupCollections = await getGroupCollections()
   const blogPosts = await getBlogPosts()
 
   const carouselProducts1 = products.slice(0, 5)
@@ -70,10 +66,9 @@ async function PageHome() {
 
   // Use backend collections for featured, fallback to categories
   const featuredCollections = collections.length ? collections.slice(0, 4) : categories.slice(0, 4)
-  const departmentCollections = categories.slice(0, 4)
 
-  // Hero slides: 3 curated Pure Olentia products with real product photos
-  // 1) Türk Kahvesi 100gr tekli, 2) Brazil Santos 250gr (espresso), 3) Signature Blend (filtre)
+  // Hero slides: 3 curated Pure Olentia products with REAL product photos
+  // Admin can later swap these via website/banners (HeroBanner model)
   const HERO_CONFIG: Array<{
     slugs: string[] // preferred slug order — use first found in products
     fallbackSlug: string
@@ -85,22 +80,22 @@ async function PageHome() {
       slugs: ['turk-kahvesi-100gr', 'turk-kahvesi-geleneksel'],
       fallbackSlug: 'turk-kahvesi-100gr',
       title: 'Türk Kahvesi 100gr',
-      subHeading: 'Geleneksel 100gr tekli Türk kahvesi',
+      subHeading: 'Taş değirmenden gelen lezzet — 100gr tekli',
       imageUrl: '/hero/turk-kahvesi-100gr.jpg',
     },
     {
       slugs: ['brazil-santos'],
       fallbackSlug: 'brazil-santos',
-      title: 'Brazil Santos 250gr',
-      subHeading: 'Espresso için ideal — Brezilya 250gr',
+      title: 'Brazil Vila Boa — Filtre Kahve',
+      subHeading: 'Brezilya menşeili filtre kahve',
       imageUrl: '/hero/brazil-santos.jpg',
     },
     {
-      slugs: ['olentia-house-blend'],
-      fallbackSlug: 'olentia-house-blend',
-      title: 'Signature Blend',
-      subHeading: 'Filtre için özel harman',
-      imageUrl: '/hero/signature-blend.jpg',
+      slugs: ['turk-kahvesi-200gr', 'turk-kahvesi-geleneksel'],
+      fallbackSlug: 'turk-kahvesi-200gr',
+      title: 'Türk Kahvesi 200gr',
+      subHeading: 'Geleneksel 200gr paket',
+      imageUrl: '/hero/turk-kahvesi-200gr.jpg',
     },
   ]
 
@@ -116,7 +111,7 @@ async function PageHome() {
     return {
       id: p?.id || slug,
       imageUrl: h.imageUrl,
-      heading: p?.title || p?.name || h.title,
+      heading: h.title, // prefer our curated title over backend name
       subHeading: h.subHeading,
       btnText: 'Ürünü İncele',
       btnHref: `/products/${slug}`,
@@ -132,27 +127,21 @@ async function PageHome() {
         <SectionSliderProductCard data={carouselProducts1} />
         <Divider />
         <SectionPromo1 />
-        <div className="relative pt-24 pb-20 lg:pt-28">
-          <BackgroundSection />
-          <SectionGridMoreExplore groupCollections={groupCollections} />
-        </div>
         <SectionSliderProductCard
           data={carouselProducts2}
-          heading="Cok Satanlar"
+          heading="Çok Satanlar"
           subHeading="En sevilen kahvelerimiz"
         />
         <SectionPromo2 />
         <SectionSliderLargeProduct products={carouselProducts3} />
         <SectionGridFeatureItems data={products} />
         <Divider />
-        <SectionCollectionSlider2 collections={departmentCollections} />
-        <Divider />
         <div>
-          <Heading headingDim="Pure Olentia Blog">Son Yazilar</Heading>
+          <Heading headingDim="Pure Olentia Blog">Son Yazılar</Heading>
           <SectionMagazine5 posts={blogPosts} />
           <div className="mt-20 flex justify-center">
             <Button href="/blog" outline>
-              Tum blog yazilari
+              Tüm Blog Yazıları
               <ArrowRightIcon className="h-4 w-4" />
             </Button>
           </div>

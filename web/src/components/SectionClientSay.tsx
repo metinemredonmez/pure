@@ -3,40 +3,48 @@
 import Heading from '@/components/Heading/Heading'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import { useCarouselDotButton } from '@/hooks/use-carousel-dot-buttons'
-import userImage1 from '@/images/users/1.png'
-import userImage2 from '@/images/users/2.png'
-import userImage3 from '@/images/users/3.png'
-import userImage4 from '@/images/users/4.png'
-import userImage5 from '@/images/users/5.png'
-import userImage6 from '@/images/users/6.png'
-import userImage7 from '@/images/users/7.png'
-import qlImage from '@/images/users/ql.png'
-import qrImage from '@/images/users/qr.png'
 import { StarIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import type { EmblaOptionsType } from 'embla-carousel'
 import Autoplay from 'embla-carousel-autoplay'
 import useEmblaCarousel from 'embla-carousel-react'
-import Image from 'next/image'
 import { FC } from 'react'
 
 export const DEMO_DATA = [
   {
     id: 1,
-    clientName: 'Ahmet Y.',
-    content: 'Kahve kalitesi muhtesem. Taze kavrulmus olarak geldigini her yudumda hissediyorsunuz. Artik sadece Pure Olentia tercih ediyorum.',
+    clientName: 'Ahmet Yılmaz',
+    content:
+      'Kahve kalitesi muhteşem. Taze kavrulmuş olarak geldiğini her yudumda hissediyorsunuz. Artık sadece Pure Olentia tercih ediyorum.',
+    color: 'bg-amber-500',
   },
   {
     id: 2,
-    clientName: 'Zeynep K.',
-    content: 'Abonelik sistemi cok pratik. Her ay farkli bir mensei deniyorum. Kahve kesif yolculugum burada basladi.',
+    clientName: 'Zeynep Kara',
+    content:
+      'Abonelik sistemi çok pratik. Her ay farklı bir menşei deniyorum. Kahve keşif yolculuğum burada başladı.',
+    color: 'bg-rose-500',
   },
   {
     id: 3,
-    clientName: 'Mert B.',
-    content: 'Izlenebilirlik ozelligi harika. Kahvemin hangi ciftlikten geldigini, nasil islendigini bilmek guven veriyor.',
+    clientName: 'Mert Bozkurt',
+    content:
+      'İzlenebilirlik özelliği harika. Kahvemin hangi çiftlikten geldiğini, nasıl işlendiğini bilmek güven veriyor.',
+    color: 'bg-emerald-600',
+  },
+  {
+    id: 4,
+    clientName: 'Selin Demir',
+    content:
+      'Ofisimiz için toplu sipariş veriyoruz. Kalite tutarlı, teslimat hızlı. Çalışanlarımız kahvenin farkını hemen fark etti.',
+    color: 'bg-indigo-500',
   },
 ]
+
+const getInitials = (name: string) => {
+  const parts = name.split(' ').filter(Boolean)
+  return (parts[0]?.[0] || '') + (parts[1]?.[0] || '')
+}
 
 export interface SectionClientSayProps {
   className?: string
@@ -54,12 +62,12 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
   heading = 'Müşterilerimiz ne diyor?',
   subHeading = 'Pure Olentia ailesinden geri bildirimler',
 }) => {
-  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [Autoplay({ playOnInit: true, delay: 2000 })])
+  const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [Autoplay({ playOnInit: true, delay: 4500 })])
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
   const { selectedIndex, scrollSnaps, onDotButtonClick } = useCarouselDotButton(emblaApi)
 
   return (
-    <div className={clsx('relative flow-root', className)}>
+    <div className={clsx('relative', className)}>
       <Heading
         description={subHeading}
         isCenter
@@ -70,94 +78,61 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
       >
         {heading}
       </Heading>
-      <div className="relative mx-auto max-w-2xl md:mb-16">
-        {/* BACKGROUND USER IMAGES */}
-        <div className="hidden md:block">
-          <Image sizes="100px" width={60} height={60} className="absolute top-9 -left-20" src={userImage2} alt="" />
-          <Image
-            sizes="100px"
-            width={60}
-            height={60}
-            className="absolute right-full bottom-[100px] mr-40"
-            src={userImage3}
-            alt=""
-          />
-          <Image
-            sizes="100px"
-            width={60}
-            height={60}
-            className="absolute top-full left-[140px]"
-            src={userImage4}
-            alt=""
-          />
-          <Image
-            sizes="100px"
-            width={60}
-            height={60}
-            className="absolute right-[140px] -bottom-10"
-            src={userImage5}
-            alt=""
-          />
-          <Image
-            sizes="100px"
-            width={60}
-            height={60}
-            className="absolute bottom-[80px] left-full ml-32"
-            src={userImage6}
-            alt=""
-          />
-          <Image sizes="100px" width={60} height={60} className="absolute top-10 -right-10" src={userImage7} alt="" />
-        </div>
 
-        {/* MAIN USER IMAGE */}
-        <Image className="mx-auto" src={userImage1} width={125} height={120} alt="" />
-
-        {/* SLIDER */}
-        <div className="relative mt-12 lg:mt-16">
-          <Image
-            className="absolute top-1 right-full -mr-16 opacity-50 md:opacity-100 lg:mr-3"
-            src={qlImage}
-            width={50}
-            height={44}
-            alt=""
-          />
-          <Image
-            className="absolute top-1 left-full -ml-16 opacity-50 md:opacity-100 lg:ml-3"
-            src={qrImage}
-            width={50}
-            height={44}
-            alt=""
-          />
-          <div className={'embla'} ref={emblaRef}>
-            <ul className="embla__container">
-              {DEMO_DATA.map((item) => (
-                <li key={item.id} className="flex embla__slide basis-full flex-col items-center text-center">
-                  <span className="block text-2xl">{item.content}</span>
-                  <span className="mt-8 block text-2xl font-semibold">{item.clientName}</span>
-                  <div className="mt-3.5 flex items-center space-x-0.5 text-yellow-500">
-                    <StarIcon className="h-6 w-6" />
-                    <StarIcon className="h-6 w-6" />
-                    <StarIcon className="h-6 w-6" />
-                    <StarIcon className="h-6 w-6" />
-                    <StarIcon className="h-6 w-6" />
-                  </div>
-                </li>
-              ))}
-            </ul>
-
-            <div className="embla__dots flex items-center justify-center pt-10">
-              {scrollSnaps.map((_, index) => (
-                <button
-                  type="button"
-                  key={index}
-                  onClick={() => onDotButtonClick(index)}
+      <div className="relative mx-auto mt-12 max-w-3xl">
+        <div className="embla" ref={emblaRef}>
+          <ul className="embla__container">
+            {DEMO_DATA.map((item) => (
+              <li
+                key={item.id}
+                className="embla__slide flex basis-full flex-col items-center px-4 text-center sm:px-8"
+              >
+                {/* Google-style initial avatar */}
+                <div
                   className={clsx(
-                    index === selectedIndex ? 'bg-neutral-700' : 'bg-neutral-300',
-                    'mx-1 size-2 rounded-full focus:outline-none'
+                    'flex size-16 items-center justify-center rounded-full text-xl font-semibold text-white',
+                    item.color
                   )}
-                ></button>
-              ))}
-            </div>
+                >
+                  {getInitials(item.clientName)}
+                </div>
+
+                {/* Rating */}
+                <div className="mt-4 flex items-center gap-0.5 text-amber-500">
+                  <StarIcon className="size-5" />
+                  <StarIcon className="size-5" />
+                  <StarIcon className="size-5" />
+                  <StarIcon className="size-5" />
+                  <StarIcon className="size-5" />
+                </div>
+
+                {/* Content */}
+                <p className="mt-5 max-w-xl text-base leading-relaxed text-neutral-700 sm:text-lg dark:text-neutral-300">
+                  “{item.content}”
+                </p>
+
+                {/* Name */}
+                <p className="mt-5 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                  {item.clientName}
+                </p>
+                <p className="text-xs text-neutral-500">Pure Olentia Müşterisi</p>
+              </li>
+            ))}
+          </ul>
+
+          <div className="embla__dots mt-10 flex items-center justify-center gap-1.5">
+            {scrollSnaps.map((_, index) => (
+              <button
+                type="button"
+                key={index}
+                onClick={() => onDotButtonClick(index)}
+                aria-label={`Yorum ${index + 1}`}
+                className={clsx(
+                  index === selectedIndex ? 'w-6 bg-primary-700' : 'w-2 bg-neutral-300 dark:bg-neutral-700',
+                  'h-2 rounded-full transition-all'
+                )}
+              />
+            ))}
           </div>
         </div>
       </div>

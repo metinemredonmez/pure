@@ -20,14 +20,14 @@ export interface HeaderFilterSectionProps {
 
 const HeaderFilterSection: FC<HeaderFilterSectionProps> = ({ className = 'mb-12', heading }) => {
   const [isOpen, setIsOpen] = useState(true)
-  const [tabActive, setTabActive] = useState('All items')
+  const [tabActive, setTabActive] = useState('Tümü')
 
   return (
     <div className={`relative flex flex-col ${className}`}>
       {heading && <Heading className="mb-12 text-neutral-900 dark:text-neutral-50">{heading}</Heading>}
       <div className="flex flex-col justify-between gap-y-6 lg:flex-row lg:items-center lg:gap-x-2 lg:gap-y-0">
         <Nav className="sm:gap-x-2">
-          {['All items', 'Women', 'Mans', 'Kids', 'jewels'].map((item, index) => (
+          {['Tümü', 'Çekirdek', 'Öğütülmüş', 'Filtre', 'Türk Kahvesi', 'Espresso'].map((item, index) => (
             <NavItem key={index} isActive={tabActive === item} onClick={() => setTabActive(item)}>
               {item}
             </NavItem>

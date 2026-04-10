@@ -21,7 +21,7 @@ const SectionGridFeatureItems: FC<SectionGridFeatureItemsProps> = ({ data }) => 
       </div>
       <div className="mt-16 flex items-center justify-center">
         <ButtonPrimary href="/collections/all">
-          Show me more
+          Daha Fazla Kahve
           <ArrowRightIcon className="ms-2 h-5 w-5" />
         </ButtonPrimary>
       </div>
