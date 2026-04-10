@@ -35,6 +35,14 @@ export const pagePermissions: PagePermission[] = [
   { path: '/audit-logs', roles: ['ADMIN'] },
   { path: '/profile', roles: ['ADMIN', 'SALES', 'PARTNER'] },
   { path: '/settings', roles: ['ADMIN'] },
+  { path: '/website/banners', roles: ['ADMIN'] },
+  { path: '/website/machines', roles: ['ADMIN'] },
+  { path: '/website/brands', roles: ['ADMIN'] },
+  { path: '/website/references', roles: ['ADMIN'] },
+  { path: '/website/pages', roles: ['ADMIN'] },
+  { path: '/website/site-settings', roles: ['ADMIN'] },
+  { path: '/website/leads', roles: ['ADMIN', 'SALES'] },
+  { path: '/website/franchise', roles: ['ADMIN', 'SALES'] },
 ];
 
 export function canAccessPage(role: UserRole, path: string): boolean {

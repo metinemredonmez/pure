@@ -17,6 +17,7 @@ import {
   HistoryOutlined as AuditIcon, StorageOutlined as OpsIcon, NotificationsOutlined as NotifIcon,
   IntegrationInstructionsOutlined as IntegrationIcon,
   CalendarMonthOutlined as CalendarIcon,
+  LanguageOutlined as WebsiteIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import { olentiaColors } from '@/lib/theme';
@@ -80,6 +81,19 @@ const menuItems: MenuItem[] = [
     children: [
       { title: 'Sistem Yönetimi', path: '/ops' },
       { title: 'Denetim Logları', path: '/audit-logs' },
+    ],
+  },
+  {
+    title: 'Web Sitesi', icon: <WebsiteIcon sx={{ fontSize: 20 }} />,
+    children: [
+      { title: 'Banner\'lar', path: '/website/banners' },
+      { title: 'Makineler', path: '/website/machines' },
+      { title: 'Markalar', path: '/website/brands' },
+      { title: 'Referanslar', path: '/website/references' },
+      { title: 'Sayfalar', path: '/website/pages' },
+      { title: 'Site Ayarları', path: '/website/site-settings' },
+      { title: 'Başvurular', path: '/website/leads' },
+      { title: 'Franchise', path: '/website/franchise' },
     ],
   },
   { title: 'Entegrasyonlar', path: '/integrations', icon: <IntegrationIcon sx={{ fontSize: 20 }} /> },

@@ -744,6 +744,53 @@ export const couponsApi = {
 };
 
 // Upload API
+// Website API
+export const websiteApi = {
+  // Banners
+  getBanners: async () => { const { data } = await api.get('/admin/banners'); return data; },
+  createBanner: async (banner: Record<string, unknown>) => { const { data } = await api.post('/admin/banners', banner); return data; },
+  updateBanner: async (id: string, banner: Record<string, unknown>) => { const { data } = await api.put(`/admin/banners/${id}`, banner); return data; },
+  deleteBanner: async (id: string) => { const { data } = await api.delete(`/admin/banners/${id}`); return data; },
+  reorderBanners: async (items: { id: string; sortOrder: number }[]) => { const { data } = await api.patch('/admin/banners/reorder', { items }); return data; },
+
+  // Machines
+  getMachines: async () => { const { data } = await api.get('/admin/machines'); return data; },
+  createMachine: async (machine: Record<string, unknown>) => { const { data } = await api.post('/admin/machines', machine); return data; },
+  updateMachine: async (id: string, machine: Record<string, unknown>) => { const { data } = await api.put(`/admin/machines/${id}`, machine); return data; },
+  deleteMachine: async (id: string) => { const { data } = await api.delete(`/admin/machines/${id}`); return data; },
+  reorderMachines: async (items: { id: string; sortOrder: number }[]) => { const { data } = await api.patch('/admin/machines/reorder', { items }); return data; },
+
+  // Brands
+  getBrands: async () => { const { data } = await api.get('/admin/brands'); return data; },
+  createBrand: async (brand: Record<string, unknown>) => { const { data } = await api.post('/admin/brands', brand); return data; },
+  updateBrand: async (id: string, brand: Record<string, unknown>) => { const { data } = await api.put(`/admin/brands/${id}`, brand); return data; },
+  deleteBrand: async (id: string) => { const { data } = await api.delete(`/admin/brands/${id}`); return data; },
+
+  // References
+  getReferences: async () => { const { data } = await api.get('/admin/references'); return data; },
+  createReference: async (ref: Record<string, unknown>) => { const { data } = await api.post('/admin/references', ref); return data; },
+  updateReference: async (id: string, ref: Record<string, unknown>) => { const { data } = await api.put(`/admin/references/${id}`, ref); return data; },
+  deleteReference: async (id: string) => { const { data } = await api.delete(`/admin/references/${id}`); return data; },
+
+  // Pages
+  getPages: async () => { const { data } = await api.get('/admin/pages'); return data; },
+  createPage: async (page: Record<string, unknown>) => { const { data } = await api.post('/admin/pages', page); return data; },
+  updatePage: async (id: string, page: Record<string, unknown>) => { const { data } = await api.put(`/admin/pages/${id}`, page); return data; },
+  deletePage: async (id: string) => { const { data } = await api.delete(`/admin/pages/${id}`); return data; },
+
+  // Franchise Applications
+  getFranchiseApplications: async (params?: { page?: number; limit?: number; status?: string }) => { const { data } = await api.get('/admin/franchise-applications', { params }); return data; },
+  getFranchiseStats: async () => { const { data } = await api.get('/admin/franchise-applications/stats'); return data; },
+  getFranchiseApplication: async (id: string) => { const { data } = await api.get(`/admin/franchise-applications/${id}`); return data; },
+  updateFranchiseStatus: async (id: string, payload: { status: string; adminNotes?: string }) => { const { data } = await api.patch(`/admin/franchise-applications/${id}/status`, payload); return data; },
+  deleteFranchiseApplication: async (id: string) => { const { data } = await api.delete(`/admin/franchise-applications/${id}`); return data; },
+
+  // Site Settings
+  getSettings: async () => { const { data } = await api.get('/admin/site-settings'); return data; },
+  updateSetting: async (key: string, value: unknown) => { const { data } = await api.put('/admin/site-settings', { key, value }); return data; },
+  updateMultipleSettings: async (settings: { key: string; value: unknown }[]) => { const { data } = await api.put('/admin/site-settings/bulk', { settings }); return data; },
+};
+
 export const uploadApi = {
   uploadSingle: async (file: File, folder?: string) => {
     const formData = new FormData();

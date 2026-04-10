@@ -1333,3 +1333,131 @@ enum UserRole {
   SUPPORT
   PARTNER
 }
+
+// ── Sprint 2: Website CMS ──
+
+model HeroBanner {
+  id          String    @id @default(cuid())
+  title       String
+  subtitle    String?
+  image       String
+  mobileImage String?
+  ctaText     String?
+  ctaUrl      String?
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("hero_banners")
+}
+
+model Machine {
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  description String?
+  images      String[]
+  capacity    String?
+  dailyCupMin Int?
+  dailyCupMax Int?
+  drinkCount  Int?
+  features    String[]
+  isActive    Boolean         @default(true)
+  sortOrder   Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  modules     MachineModule[]
+
+  @@map("machines")
+}
+
+model MachineModule {
+  id        String   @id @default(cuid())
+  machineId String
+  name      String
+  width     Int
+  height    Int
+  depth     Int
+  variant   String?
+  machine   Machine  @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("machine_modules")
+}
+
+model Brand {
+  id          String   @id @default(cuid())
+  name        String
+  logo        String?
+  description String?
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("brands")
+}
+
+model Reference {
+  id            String   @id @default(cuid())
+  companyName   String
+  logo          String?
+  testimonial   String?
+  contactPerson String?
+  sector        String?
+  isActive      Boolean  @default(true)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("references")
+}
+
+model Page {
+  id             String   @id @default(cuid())
+  title          String
+  slug           String   @unique
+  sections       Json     @default("[]")
+  isPublished    Boolean  @default(false)
+  seoTitle       String?
+  seoDescription String?
+  seoImage       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("pages")
+}
+
+model SiteSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value Json
+
+  @@map("site_settings")
+}
+
+model FranchiseApplication {
+  id                String   @id @default(cuid())
+  fullName          String
+  phone             String
+  email             String
+  city              String
+  locationType      String
+  locationTypeOther String?
+  budget            String
+  hasExperience     Boolean  @default(false)
+  experienceDetail  String?
+  plannedOpenDate   String
+  heardFrom         String?
+  notes             String?
+  status            String   @default("NEW")
+  adminNotes        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("franchise_applications")
+}

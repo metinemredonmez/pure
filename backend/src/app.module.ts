@@ -34,6 +34,7 @@ import { PricingModule } from './modules/pricing/pricing.module';
 import { OpsModule } from './modules/ops/ops.module';
 import { ShippingModule } from './modules/shipping/shipping.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
+import { WebsiteModule } from './modules/website/website.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -89,6 +90,9 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     OpsModule,
     ShippingModule,
     CalendarModule,
+
+    // Sprint 2 modules
+    WebsiteModule,
   ],
   controllers: [AppController],
   providers: [
