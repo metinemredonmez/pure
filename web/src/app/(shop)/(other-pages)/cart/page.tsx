@@ -132,7 +132,7 @@ const CartPage = async () => {
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Shipping estimate</span>
+                  <span>Tahmini kargo</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ${cart.cost.shipping.toFixed(2)}
                   </span>

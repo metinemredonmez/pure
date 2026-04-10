@@ -586,6 +586,125 @@ export async function getBlogPosts() {
     },
   ]
 }
+const BLOG_CONTENTS: Record<string, { content: string; tags: string[] }> = {
+  'specialty-kahve-nedir-rehber': {
+    tags: ['specialty', 'rehber', 'kahve kültürü'],
+    content: `
+      <p>Specialty kahve, Specialty Coffee Association (SCA) tarafından 100 puan üzerinden 80 ve üzeri puan alan kahvelere verilen isimdir. Bu puanlama; aroma, asidite, gövde, tatlılık, denge ve son tat gibi pek çok kriteri kapsar.</p>
+      <h3>Specialty kahveyi diğerlerinden ayıran nedir?</h3>
+      <p>Bir specialty kahvenin en önemli özelliği <strong>izlenebilirlik</strong>tir. Hangi ülkeden, hangi çiftlikten, hangi yükseklikten geldiğini, hatta kim tarafından toplandığını bile bilirsiniz. Pure Olentia olarak her çekirdeğin hikayesini paketin üzerinde paylaşıyoruz.</p>
+      <ol>
+        <li>Tek menşe (single origin) üretim</li>
+        <li>El ile hasat ve seçici işleme</li>
+        <li>Taze kavurma, taze tüketim (ideali 2-4 hafta)</li>
+        <li>Doğru demleme yöntemiyle maksimum aroma</li>
+      </ol>
+      <h3>Yeni başlayanlar için ipuçları</h3>
+      <p>Specialty kahveye yeni başlıyorsanız öneriniz orta kavrum bir <em>Colombia Supremo</em> veya <em>Brezilya Santos</em> ile başlamaktır. Bu kahveler dengeli yapıları ve kolay demlenebilir olmalarıyla öne çıkar.</p>
+      <blockquote><p>"İyi kahve sadece bir içecek değil, bir zanaattır. Tarla ile fincan arasındaki her adım özeni gerektirir."</p></blockquote>
+      <p>Specialty kahve yolculuğunuza Pure Olentia abonelik planları ile başlayabilir; her ay yeni bir menşei ve demleme rehberini kapınıza kadar getirebilirsiniz.</p>
+    `,
+  },
+  'v60-pour-over-nasil-yapilir': {
+    tags: ['v60', 'pour-over', 'demleme'],
+    content: `
+      <p>V60, Japon Hario firması tarafından tasarlanan ve dünya genelinde en popüler manuel demleme yöntemlerinden biri olan koni şeklinde bir filtredir. Doğru tekniklerle uygulandığında kahvenin aroma profilini öne çıkarır.</p>
+      <h3>İhtiyacınız olan ekipmanlar</h3>
+      <ul>
+        <li>Hario V60 filtre (01 veya 02 boyut)</li>
+        <li>V60 kağıt filtre</li>
+        <li>Gooseneck (kuğu boyunlu) ibrik</li>
+        <li>Hassas terazi (0.1 gr hassasiyetinde)</li>
+        <li>Orta-ince öğütülmüş taze kahve</li>
+      </ul>
+      <h3>Adım adım V60 demleme</h3>
+      <ol>
+        <li><strong>Oran:</strong> 15 gram kahve, 250 ml su (1:16.5 oranı)</li>
+        <li><strong>Su sıcaklığı:</strong> 92-94°C</li>
+        <li><strong>Bloom:</strong> 30 ml su ile 30 saniye şişmeye bırakın</li>
+        <li><strong>Ana dökme:</strong> Merkezden dışa spiral hareketlerle 100 ml ekleyin</li>
+        <li><strong>İkinci dökme:</strong> 1:15'te 150 ml daha ekleyin</li>
+        <li><strong>Toplam süre:</strong> 2:30 - 3:00 dakika arasında tamamlanmalı</li>
+      </ol>
+      <h3>Yaygın hatalar</h3>
+      <p>Çok ince öğütme, acı bir kahveye; çok kaba öğütme ise zayıf ve sulu bir kahveye neden olur. İlk denemelerde öğütme boyutunu ayarlamak en kritik adımdır.</p>
+      <blockquote><p>"V60, kahvenin karakterine bir mikrofon tutar; her nüansı duyurur."</p></blockquote>
+    `,
+  },
+  'etiyopya-kahvenin-anavatani': {
+    tags: ['etiyopya', 'yirgacheffe', 'menşei'],
+    content: `
+      <p>Kahve ağacının (Coffea arabica) doğal olarak yetiştiği tek yer Etiyopya'nın yüksek platolarıdır. Efsaneye göre Kaldi isimli bir çoban, keçilerinin kırmızı meyveler yedikten sonra enerjik olduklarını fark etmesiyle kahvenin keşfi başlamıştır.</p>
+      <h3>Öne çıkan bölgeler</h3>
+      <h4>Yirgacheffe</h4>
+      <p>Çiçeksi, narenciye ve bergamot notalarıyla tanınan Yirgacheffe, ince gövdeli ve parlak asiditeli kahveleriyle specialty dünyasının en sevilen bölgelerinden biridir.</p>
+      <h4>Sidamo</h4>
+      <p>Sidamo kahveleri genellikle yaban mersini, çikolata ve tatlı meyve notalarına sahiptir. Doğal işleme (natural process) ile işlendiğinde özellikle karakterlidir.</p>
+      <h4>Guji</h4>
+      <p>Son yıllarda öne çıkan Guji, tropik meyve ve şeker kamışı tatlılığıyla yarışmalarda üst sıralara yerleşmektedir.</p>
+      <h3>Etiyopya'da işleme</h3>
+      <p>Etiyopya'nın çoğu kahvesi hâlâ küçük ölçekli çiftçiler tarafından elde toplanır ve yerel yıkama istasyonlarına (washing station) götürülür. Bu geleneksel yapı kaliteyi doğrudan yükseltir.</p>
+      <blockquote><p>"Etiyopya fincanında bir çiçek bahçesi içtiğiniz hissi verir."</p></blockquote>
+    `,
+  },
+  'kahve-isleme-yontemleri': {
+    tags: ['işleme', 'washed', 'natural', 'honey'],
+    content: `
+      <p>Kahve meyvesi (cherry) toplandıktan sonra çekirdeğin meyveden ayrılması gerekir. Bu süreç <strong>işleme yöntemi</strong> olarak adlandırılır ve kahvenin fincanda aldığı tadı doğrudan etkiler.</p>
+      <h3>Washed (Yıkanmış) İşleme</h3>
+      <p>Meyve kabuğu hemen soyulur, çekirdekler fermantasyon tanklarında 12-72 saat bekletilir ve ardından yıkanır. Sonuç: <em>temiz, parlak, asiditesi yüksek</em> bir kahve. Colombia ve Kenya kahveleri çoğunlukla yıkanmış işlemle hazırlanır.</p>
+      <h3>Natural (Doğal) İşleme</h3>
+      <p>Çekirdek meyvenin içinde güneşte kurutulur (3-4 hafta). Meyvenin şekeri ve aroması çekirdeğe geçer. Sonuç: <em>yoğun, meyveli, şaraplı, tatlı</em> bir profil. Etiyopya ve Brezilya doğal işlemenin başkentleridir.</p>
+      <h3>Honey (Bal) İşleme</h3>
+      <p>Kabuk soyulur ama çekirdeğin üzerindeki yapışkan mucilage tabakası bırakılır. Ne kadar çok tabaka bırakıldığına göre <strong>white, yellow, red, black honey</strong> olarak isimlendirilir. Sonuç: <em>tatlılık ve gövde dengesi</em>. Costa Rica honey kahveleri en ünlüleridir.</p>
+      <blockquote><p>"İşleme yöntemini bilmek, kahvenin karakterini önceden tahmin etmenin en iyi yoludur."</p></blockquote>
+      <p>Pure Olentia arşivinde her üç yöntemle işlenmiş kahveleri deneyimleyebilir, hangi stilin damak tadınıza uyduğunu keşfedebilirsiniz.</p>
+    `,
+  },
+  'evde-espresso-ekipman-secimi': {
+    tags: ['espresso', 'ekipman', 'ev baristası'],
+    content: `
+      <p>Evde profesyonel kalitede espresso çekmek artık bir hayal değil. Ancak doğru ekipmanı seçmek ilk adım ve en kritik karardır.</p>
+      <h3>Öğütücü: Espresso'nun kalbi</h3>
+      <p>Espresso makinenizden önce <strong>iyi bir öğütücüye</strong> yatırım yapın. Ucuz bir öğütücü ile pahalı bir makine, mükemmel bir makine ile ucuz bir öğütücüden daha kötü sonuç verir. Önerilerimiz:</p>
+      <ul>
+        <li>Giriş: Eureka Mignon Specialità</li>
+        <li>Orta: Niche Zero</li>
+        <li>Pro: Mahlkönig E65S GbW</li>
+      </ul>
+      <h3>Espresso makinesi seçimi</h3>
+      <ol>
+        <li><strong>Yarı otomatik (semi-automatic):</strong> Baristanın müdahalesini gerektirir, öğrenmesi keyiflidir.</li>
+        <li><strong>Tam otomatik (super-automatic):</strong> Tek tuşla espresso, pratik ama kişiselleştirme sınırlı.</li>
+        <li><strong>Manuel kol (lever):</strong> Klasik deneyim, yüksek zanaat gerektirir.</li>
+      </ol>
+      <h3>Bütçe önerileri</h3>
+      <p>10.000 TL altı: Rancilio Silvia + giriş seviye öğütücü. 10.000 - 25.000 TL: Lelit Bianca + Eureka Specialità. 25.000 TL üzeri: Profitec 600 + Niche Zero.</p>
+      <blockquote><p>"İyi bir espresso için; taze kahve, iyi öğütücü ve sabit su sıcaklığı şarttır. Makine bu üçlünün sadece taşıyıcısıdır."</p></blockquote>
+    `,
+  },
+  'surdurulebilir-kahve-izlenebilirlik': {
+    tags: ['sürdürülebilirlik', 'izlenebilirlik', 'direct trade'],
+    content: `
+      <p>Pure Olentia'da kahvenin sadece fincanda değil, tarlada da iyi olmasını önemsiyoruz. Sürdürülebilirlik bizim için pazarlama değil, iş modelinin merkezidir.</p>
+      <h3>Direct Trade — doğrudan ticaret</h3>
+      <p>Kahvemizi büyük aracı kurumlardan değil, doğrudan üreticiden satın alıyoruz. Bu sayede çiftçi piyasa fiyatının <strong>2-3 katı</strong> prim alıyor ve kaliteye yatırım yapabilecek kaynağa kavuşuyor.</p>
+      <h3>İzlenebilirlik — tarladan fincana</h3>
+      <ul>
+        <li>Her paketin üzerinde hasat tarihi</li>
+        <li>Çiftçi/kooperatif adı ve fotoğrafı</li>
+        <li>Yükseklik, çeşit (varietal) ve işleme yöntemi</li>
+        <li>Kavurma tarihi ve tavsiye edilen tüketim aralığı</li>
+      </ul>
+      <h3>Çevresel etki</h3>
+      <p>Kullandığımız tüm ambalajlar geri dönüştürülebilir malzemelerden üretilir. Kahve telvelerini kompost programımız kapsamında yerel bahçelerde gübre olarak değerlendiriyoruz.</p>
+      <h3>Sosyal etki</h3>
+      <p>Her yıl gelirin %2'sini kahve üreticilerinin çocuklarının eğitimi için kullanılan bursa aktarıyoruz. Amacımız sadece iyi kahve değil, iyi bir gelecek.</p>
+      <blockquote><p>"Sürdürülebilirlik bir pazarlama terimi değil, sorumluluk sahibi bir işin doğal sonucudur."</p></blockquote>
+    `,
+  },
+}
+
 export async function getBlogPostsByHandle(handle: string) {
   // lower case the handle
   handle = handle.toLowerCase()
@@ -594,17 +713,20 @@ export async function getBlogPostsByHandle(handle: string) {
   let post = posts.find((post) => post.handle === handle)
 
   if (!post) {
-    // throw new Error(`Post with handle ${handle} not found.`)
-
-    // for demo purposes, we can log a warning and return the first post
     console.warn(`Post with handle ${handle} not found. Returning the first post as a fallback.`)
     post = posts[0]
   }
 
+  const extras = BLOG_CONTENTS[post.handle] || {
+    content:
+      '<p>Bu yazının içeriği yakında eklenecek. Pure Olentia blog arşivini takip ettiğiniz için teşekkürler.</p>',
+    tags: ['kahve'],
+  }
+
   return {
     ...post,
-    content: 'Lorem ipsum dolor ...',
-    tags: ['kahve', 'demleme', 'specialty'],
+    content: extras.content,
+    tags: extras.tags,
   }
 }
 

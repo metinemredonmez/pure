@@ -33,7 +33,7 @@ const PageForgotPass = () => {
           <Fieldset>
             <FieldGroup>
               <Field>
-                <Label>Email address</Label>
+                <Label>E-posta Adresi</Label>
                 <Input type="email" name="email" placeholder="example@example.com" />
               </Field>
               <ButtonPrimary className="w-full" type="submit">

@@ -27,19 +27,19 @@ const Page = () => {
         <Fieldset>
           <FieldGroup className="max-w-xl">
             <Field>
-              <Label>Current password</Label>
+              <Label>Mevcut Şifre</Label>
               <Input type="password" name="current-password" />
             </Field>
             <Field>
-              <Label>New password</Label>
+              <Label>Yeni Şifre</Label>
               <Input type="password" name="new-password" />
             </Field>
             <Field>
-              <Label>Confirm password</Label>
+              <Label>Şifreyi Onayla</Label>
               <Input type="password" name="confirm-password" />
             </Field>
             <div className="pt-2">
-              <ButtonPrimary>Update password</ButtonPrimary>
+              <ButtonPrimary>Şifreyi Güncelle</ButtonPrimary>
             </div>
           </FieldGroup>
         </Fieldset>

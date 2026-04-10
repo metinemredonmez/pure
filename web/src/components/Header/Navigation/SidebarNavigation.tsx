@@ -101,7 +101,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
 
   return (
     <div>
-      <span>Discover the most outstanding articles on all topics of life. Write your stories and share them</span>
+      <span>Pure Olentia ile kahve dünyasını keşfedin. Çekirdekten fincana her aşamayı sizinle paylaşıyoruz.</span>
 
       <div className="mt-4 flex items-center justify-between">
         <SocialsList />

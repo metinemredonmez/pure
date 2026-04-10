@@ -34,6 +34,8 @@ export const getApiPage = (slug: string) => fetchAPI<any>(`/public/pages/${slug}
 export const getApiSiteSettings = () => fetchAPI<any>('/public/site-settings')
 export const submitFranchiseApplication = (data: any) =>
   fetchAPI<any>('/public/franchise-application', { method: 'POST', body: JSON.stringify(data), revalidate: 0 })
+export const submitContactMessage = (data: { name: string; email: string; message: string; phone?: string; subject?: string }) =>
+  fetchAPI<any>('/public/contact-message', { method: 'POST', body: JSON.stringify(data), revalidate: 0 })
 
 // ============ CATALOG ============
 export const getApiProducts = (params?: Record<string, any>) => {

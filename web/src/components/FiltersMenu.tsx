@@ -130,7 +130,7 @@ export const FiltersMenuTabs = ({
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>No filter options available</div>
+    return <div>Filtre seçeneği bulunamadı</div>
   }
 
   return (
@@ -246,7 +246,7 @@ export const FiltersMenuSidebar = ({ filterOptions = demo_filters_options, class
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>No filter options available</div>
+    return <div>Filtre seçeneği bulunamadı</div>
   }
 
   return (
@@ -322,7 +322,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>No filter options available</div>
+    return <div>Filtre seçeneği bulunamadı</div>
   }
 
   const checkedNumber = 3 // Example logic for checked number, replace with actual logic

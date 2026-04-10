@@ -66,10 +66,10 @@ async function PageHome2() {
         <SectionGridFeatureItems data={products} />
         <Divider />
         <div>
-          <Heading headingDim="From the Ciseco blog">The latest news</Heading>
+          <Heading headingDim="Pure Olentia blogundan">Son Yazılar</Heading>
           <SectionMagazine5 posts={blogPosts} />
           <div className="mt-20 flex justify-center">
-            <ButtonSecondary href="/blog">Show all blog articles</ButtonSecondary>
+            <ButtonSecondary href="/blog">Tüm blog yazılarını göster</ButtonSecondary>
           </div>
         </div>
         <Divider />

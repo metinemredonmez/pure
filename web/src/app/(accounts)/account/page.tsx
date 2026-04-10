@@ -99,7 +99,7 @@ const Page = () => {
 
             {/* ---- */}
             <Field>
-              <Label>Phone number</Label>
+              <Label>Telefon Numarası</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={SmartPhone01Icon} size={16} />
                 <Input name="phone-number" defaultValue="003 888 232" />
@@ -111,7 +111,7 @@ const Page = () => {
               <Textarea rows={4} name="about-you" defaultValue="..." />
             </Field>
             <div className="pt-2">
-              <ButtonPrimary type="submit">Update account</ButtonPrimary>
+              <ButtonPrimary type="submit">Hesabı Güncelle</ButtonPrimary>
             </div>
           </div>
         </Fieldset>

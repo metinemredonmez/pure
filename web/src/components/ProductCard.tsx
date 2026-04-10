@@ -74,7 +74,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
           }}
         >
           <ArrowsPointingOutIcon className="-ml-1 size-3.5" />
-          <span>Quick view</span>
+          <span>Hızlı bakış</span>
         </button>
       </div>
     )

@@ -1,12 +1,8 @@
 import { Divider } from '@/components/Divider'
 import SectionPromo1 from '@/components/SectionPromo1'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import SocialsList from '@/shared/SocialsList/SocialsList'
-import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
-import { Input } from '@/shared/input'
-import { Textarea } from '@/shared/textarea'
 import { Metadata } from 'next'
-import Form from 'next/form'
+import ContactForm from './ContactForm'
 
 export const metadata: Metadata = {
   title: 'İletişim',
@@ -29,12 +25,6 @@ const info = [
 ]
 
 const PageContact = async () => {
-  const handleSubmit = async (formData: FormData) => {
-    'use server'
-    const formObject = Object.fromEntries(formData.entries())
-    console.log(formObject)
-  }
-
   return (
     <div className="pt-12 pb-16 sm:py-16 lg:py-24">
       <div className="container mx-auto flex max-w-6xl flex-col gap-y-16 lg:gap-y-28">
@@ -58,25 +48,7 @@ const PageContact = async () => {
           </div>
 
           <div>
-            <Form action={handleSubmit}>
-              <Fieldset>
-                <FieldGroup>
-                  <Field>
-                    <Label>Ad Soyad</Label>
-                    <Input name="name" placeholder="Adınız Soyadınız" type="text" />
-                  </Field>
-                  <Field>
-                    <Label>E-posta</Label>
-                    <Input name="email" type="email" placeholder="ornek@email.com" />
-                  </Field>
-                  <Field>
-                    <Label>Mesajınız</Label>
-                    <Textarea name="message" rows={6} />
-                  </Field>
-                  <ButtonPrimary type="submit">Mesaj Gönder</ButtonPrimary>
-                </FieldGroup>
-              </Fieldset>
-            </Form>
+            <ContactForm />
           </div>
         </div>
 

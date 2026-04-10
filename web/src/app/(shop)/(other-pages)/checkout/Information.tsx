@@ -79,9 +79,9 @@ const Information = () => {
 
       <div id="PaymentMethod" className="scroll-mt-5 rounded-xl border">
         <TabHeader
-          title="Payment method"
+          title="Ödeme Yöntemi"
           icon={CreditCardPosIcon}
-          value="Credit Card / xxx-xxx-xx55"
+          value="Kredi Kartı / xxx-xxx-xx55"
           onClickChange={() => {
             setTabActive('PaymentMethod')
             handleScrollToEl('PaymentMethod')
@@ -147,32 +147,32 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
       <Fieldset>
         <FieldGroup className="mt-0!">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-lg font-semibold">Contact infomation</h3>
+            <h3 className="text-lg font-semibold">İletişim Bilgileri</h3>
             <p className="text-sm">
-              Do not have an account?{` `}
+              Hesabınız yok mu?{` `}
               <Link href="/login" className="font-medium underline">
                 Giris Yap
               </Link>
             </p>
           </div>
           <Field className="max-w-lg">
-            <Label>Your phone number</Label>
+            <Label>Telefon Numarası</Label>
             <Input defaultValue={'+808 xxx'} type="tel" name="phone" />
           </Field>
           <Field className="max-w-lg">
-            <Label>Email address</Label>
+            <Label>E-posta Adresi</Label>
             <Input type="email" name="email" />
           </Field>
           <Field>
             <CheckboxField>
               <Checkbox name="newsletter" defaultChecked />
-              <Label>Email me news and offers</Label>
+              <Label>Bana yenilikler ve kampanyaları gönder</Label>
             </CheckboxField>
           </Field>
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-4">
-            <ButtonPrimary type="submit">Next to shipping address</ButtonPrimary>
+            <ButtonPrimary type="submit">Teslimat Adresine Geç</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               Cancel
             </ButtonThird>
@@ -199,11 +199,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
         <FieldGroup className="mt-0!">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
-              <Label>First name</Label>
+              <Label>Ad</Label>
               <Input defaultValue="Cole" name="first-name" />
             </Field>
             <Field>
-              <Label>Last name</Label>
+              <Label>Soyad</Label>
               <Input defaultValue="Enrico" name="last-name" />
             </Field>
           </div>
@@ -211,46 +211,46 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           {/* ============ */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-4">
             <Field className="sm:col-span-2">
-              <Label>Address</Label>
-              <Input placeholder="" defaultValue={'123, Dream Avenue, USA'} type={'text'} name="address" />
+              <Label>Adres</Label>
+              <Input placeholder="Sokak, mahalle, no" defaultValue={''} type={'text'} name="address" />
             </Field>
             <Field>
-              <Label>Apt, Suite *</Label>
-              <Input defaultValue="55U - DD5 " name="apt-suite" />
+              <Label>Daire / Kat</Label>
+              <Input defaultValue="" name="apt-suite" />
             </Field>
           </div>
 
           {/* ============ */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
-              <Label>City</Label>
-              <Input defaultValue="Norris" name="city" />
+              <Label>İl</Label>
+              <Input defaultValue="" name="city" />
             </Field>
             <Field>
-              <Label>Country</Label>
-              <Select defaultValue="United States " name="country">
-                <option value="United States">United States</option>
-                <option value="United States">Canada</option>
-                <option value="United States">Mexico</option>
-                <option value="United States">Israel</option>
-                <option value="United States">France</option>
-                <option value="United States">England</option>
-                <option value="United States">Laos</option>
-                <option value="United States">China</option>
+              <Label>Ülke</Label>
+              <Select defaultValue="Türkiye" name="country">
+                <option value="Turkey">Türkiye</option>
+                
+                
+                
+                
+                
+                
+                
               </Select>
             </Field>
             <Field>
-              <Label>State/Province</Label>
-              <Input defaultValue="Texas" name="state-province" />
+              <Label>İlçe</Label>
+              <Input defaultValue="" name="state-province" />
             </Field>
             <Field>
-              <Label>Postal code</Label>
-              <Input defaultValue="2500" name="postal-code" />
+              <Label>Posta Kodu</Label>
+              <Input defaultValue="" name="postal-code" />
             </Field>
           </div>
 
           <Field className="max-w-lg">
-            <Legend>Address type</Legend>
+            <Legend>Adres Tipi</Legend>
             <RadioGroup
               className="mt-1.5 grid grid-cols-1 gap-2 space-y-0! sm:grid-cols-2 sm:gap-3"
               name="address-type"
@@ -260,7 +260,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
               <RadioField>
                 <Label>
                   <span className="text-sm font-medium">
-                    Home <span className="font-light">(All Day Delivery)</span>
+                    Ev <span className="font-light">(Gün Boyu Teslimat)</span>
                   </span>
                 </Label>
                 <Radio value="at-home" defaultChecked />
@@ -269,9 +269,9 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
               <RadioField>
                 <Label>
                   <span className="text-sm font-medium">
-                    Office{' '}
+                    İş Yeri{' '}
                     <span className="font-light">
-                      (Delivery <span className="font-medium">9 AM - 5 PM</span>)
+                      (Teslimat <span className="font-medium">09:00 - 17:00</span>)
                     </span>
                   </span>
                 </Label>
@@ -282,7 +282,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-6">
-            <ButtonPrimary type="submit">Next to payment method</ButtonPrimary>
+            <ButtonPrimary type="submit">Ödeme Yöntemine Geç</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               Cancel
             </ButtonThird>
@@ -317,23 +317,23 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
               >
                 <HugeiconsIcon icon={CreditCardIcon} size={24} />
               </div>
-              <p className="font-medium sm:text-base">Debit / Credit Card</p>
+              <p className="font-medium sm:text-base">Banka / Kredi Kartı</p>
             </Label>
           </RadioField>
         </RadioGroup>
 
         <div className={clsx('space-y-5 py-6 sm:pl-10', active ? 'block' : 'hidden')}>
           <Field className="max-w-lg">
-            <Label>Card number</Label>
+            <Label>Kart Numarası</Label>
             <Input autoComplete="off" name="card-number" />
           </Field>
           <Field className="max-w-lg">
-            <Label>Name on Card</Label>
+            <Label>Kart Üzerindeki İsim</Label>
             <Input autoComplete="off" name="name-on-card" />
           </Field>
           <div className="flex flex-col gap-3 sm:flex-row">
             <Field className="flex-2/3">
-              <Label>Expiration date (MM/YY)</Label>
+              <Label>Son Kullanma Tarihi (AA/YY)</Label>
               <Input autoComplete="off" placeholder="MM/YY" name="expiration-date" />
             </Field>
             <Field className="flex-1/3">
@@ -367,24 +367,24 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
               >
                 <HugeiconsIcon icon={InternetIcon} size={24} />
               </div>
-              <p className="font-medium sm:text-base">Internet banking</p>
+              <p className="font-medium sm:text-base">İnternet Bankacılığı</p>
             </Label>
           </RadioField>
         </RadioGroup>
 
         <div className={clsx('py-6 sm:pl-10', active ? 'block' : 'hidden')}>
-          <Subheading>Your order will be delivered to you after you transfer to</Subheading>
+          <Subheading>Havale yaptıktan sonra siparişiniz işleme alınacaktır.</Subheading>
           <DescriptionList className="mt-3.5">
-            <DescriptionTerm>Customer</DescriptionTerm>
-            <DescriptionDetails>BooliiTheme</DescriptionDetails>
+            <DescriptionTerm>Müşteri</DescriptionTerm>
+            <DescriptionDetails>Pure Olentia</DescriptionDetails>
 
-            <DescriptionTerm>Bank name</DescriptionTerm>
-            <DescriptionDetails>Example Bank Name</DescriptionDetails>
+            <DescriptionTerm>Banka Adı</DescriptionTerm>
+            <DescriptionDetails>İş Bankası</DescriptionDetails>
 
-            <DescriptionTerm>Hesap number</DescriptionTerm>
+            <DescriptionTerm>Hesap Numarası</DescriptionTerm>
             <DescriptionDetails>555 888 777</DescriptionDetails>
 
-            <DescriptionTerm>Sort code</DescriptionTerm>
+            <DescriptionTerm>Şube Kodu</DescriptionTerm>
             <DescriptionDetails>999</DescriptionDetails>
 
             <DescriptionTerm>IBAN</DescriptionTerm>
@@ -426,8 +426,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
 
         <div className={clsx('py-6 sm:pl-10', active ? 'block' : 'hidden')}>
           <p className="leading-relaxed text-neutral-600 dark:text-neutral-400">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Itaque dolore quod quas fugit perspiciatis
-            architecto, temporibus quos ducimus libero explicabo?
+            Mobil cüzdanınızla hızlı ve güvenli ödeme yapın.
           </p>
         </div>
       </div>
