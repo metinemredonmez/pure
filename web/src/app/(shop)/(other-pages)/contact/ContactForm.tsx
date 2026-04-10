@@ -1,15 +1,17 @@
 'use client'
 
-import { submitContactMessage } from '@/lib/api'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
 import { Textarea } from '@/shared/textarea'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 export default function ContactForm() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  const formRef = useRef<HTMLFormElement>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -32,22 +34,36 @@ export default function ContactForm() {
     }
 
     try {
-      const res = await submitContactMessage(payload)
-      if (res?.success) {
-        setStatus('success')
-        ;(e.currentTarget as HTMLFormElement).reset()
-      } else {
+      const res = await fetch(`${API_URL}/public/contact-message`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        let serverMsg = ''
+        try {
+          const errBody = await res.json()
+          serverMsg = errBody?.message || errBody?.data?.message || ''
+        } catch {}
         setStatus('error')
-        setErrorMsg('Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.')
+        setErrorMsg(serverMsg || `Mesaj gönderilemedi (kod ${res.status}). Lütfen daha sonra tekrar deneyin.`)
+        return
       }
-    } catch {
+
+      // HTTP 2xx → treat as success regardless of body envelope shape
+      setStatus('success')
+      formRef.current?.reset()
+    } catch (err) {
       setStatus('error')
-      setErrorMsg('Mesaj gönderilemedi. Lütfen daha sonra tekrar deneyin.')
+      setErrorMsg(
+        'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin veya birkaç dakika sonra tekrar deneyin.'
+      )
     }
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <Fieldset>
         <FieldGroup>
           <Field>
