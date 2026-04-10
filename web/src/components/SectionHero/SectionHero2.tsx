@@ -13,8 +13,17 @@ import { FC, useEffect, useState } from 'react'
 import { useSwipeable } from 'react-swipeable'
 import { useInterval } from 'react-use'
 
-// DEMO DATA
-const data = [
+export interface HeroSlide {
+  id: number | string
+  imageUrl: string
+  heading: string
+  subHeading: string
+  btnText: string
+  btnHref: string
+}
+
+// Default fallback data (used when no slides prop passed)
+const defaultData: HeroSlide[] = [
   {
     id: 1,
     imageUrl: heroImage1.src,
@@ -43,11 +52,13 @@ const data = [
 
 interface Props {
   className?: string
+  slides?: HeroSlide[]
 }
 
 let TIME_OUT: NodeJS.Timeout | null = null
-const SectionHero2: FC<Props> = ({ className = '' }) => {
+const SectionHero2: FC<Props> = ({ className = '', slides }) => {
   // =================
+  const data: HeroSlide[] = slides && slides.length ? slides : defaultData
 
   const [isSlided, setIsSlided] = useState(false)
   const [indexActive, setIndexActive] = useState(0)

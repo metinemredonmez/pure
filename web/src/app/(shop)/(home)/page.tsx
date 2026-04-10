@@ -73,9 +73,19 @@ async function PageHome() {
   const featuredCollections = collections.length ? collections.slice(0, 4) : categories.slice(0, 4)
   const departmentCollections = categories.slice(0, 4)
 
+  // Hero slides: top-selling products from backend (fallback to defaults in component)
+  const heroSlides = products.slice(0, 5).map((p: any, i: number) => ({
+    id: p.id || i,
+    imageUrl: p.featuredImage?.src || p.images?.[0]?.src || '',
+    heading: p.title || p.name || 'Pure Olentia',
+    subHeading: p.description?.slice(0, 80) || 'En çok tercih edilen kahvelerimiz',
+    btnText: 'Ürünü İncele',
+    btnHref: `/products/${p.handle || p.slug || ''}`,
+  })).filter((s) => s.imageUrl)
+
   return (
     <div className="nc-PageHome relative overflow-hidden">
-      <SectionHero2 />
+      <SectionHero2 slides={heroSlides} />
       <SectionCollectionSlider className="mt-24 lg:mt-32" collections={featuredCollections} />
 
       <div className="relative container my-24 flex flex-col gap-y-24 lg:my-32 lg:gap-y-32">
