@@ -1,6 +1,5 @@
 import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism'
 import SectionPromo2 from '@/components/SectionPromo2'
-import SectionAds from '@/components/blog/SectionAds'
 import SectionGridPosts from '@/components/blog/SectionGridPosts'
 import SectionMagazine5 from '@/components/blog/SectionMagazine5'
 import { getBlogPosts } from '@/data/data'
@@ -9,7 +8,7 @@ import React from 'react'
 
 export const metadata: Metadata = {
   title: 'Blog',
-  description: 'Kahve dunyasindan haberler, rehberler ve tarifler.',
+  description: 'Pure Olentia blog — kahve dünyasından haberler, demleme rehberleri ve menşei hikayeleri.',
 }
 
 const BlogPage: React.FC = async () => {
@@ -22,8 +21,7 @@ const BlogPage: React.FC = async () => {
         <div className="pt-12 pb-16 lg:pb-28">
           <SectionMagazine5 posts={blogPosts} />
         </div>
-        <SectionAds />
-        <SectionGridPosts posts={blogPosts} className="py-16 lg:py-28" />
+        <SectionGridPosts posts={blogPosts} className="pb-16 lg:pb-28" />
         <SectionPromo2 className="pb-16 lg:pb-28" />
       </div>
     </div>

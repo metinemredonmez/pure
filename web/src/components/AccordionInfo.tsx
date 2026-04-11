@@ -6,47 +6,42 @@ import { FC } from 'react'
 
 const DEMO_DATA = [
   {
-    name: 'Description',
-    content:
-      'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
-  },
-  {
-    name: 'Fabric + Care',
+    name: 'Saklama Koşulları',
     content: `<ul class="list-disc list-inside leading-7">
-    <li>Made from a sheer Belgian power micromesh.</li>
-    <li>
-    74% Polyamide (Nylon) 26% Elastane (Spandex)
-    </li>
-    <li>
-    Adjustable hook & eye closure and straps
-    </li>
-    <li>
-    Hand wash in cold water, dry flat
-    </li>
+    <li>Serin, kuru ve doğrudan güneş ışığı almayan bir yerde saklayın.</li>
+    <li>Hava almayan, ağzı kapalı kaplarda muhafaza edin.</li>
+    <li>Buzdolabında saklamayın — nem ve koku aroma kaybına sebep olur.</li>
+    <li>Kavurma tarihinden itibaren 4 hafta içinde tüketmeniz önerilir.</li>
+    <li>Öğütülmüş kahveyi mümkünse 2 hafta içinde tüketin.</li>
   </ul>`,
   },
-
   {
-    name: 'How it Fits',
-    content:
-      "Use this as a guide. Preference is a huge factor — if you're near the top of a size range and/or prefer more coverage, you may want to size up.",
+    name: 'Demleme Önerileri',
+    content: `<ul class="list-disc list-inside leading-7">
+    <li><strong>V60 / Chemex:</strong> 1:16 oranı, 92-94°C su, orta-ince öğütme</li>
+    <li><strong>French Press:</strong> 1:15 oranı, 95°C su, iri öğütme, 4 dk bekletme</li>
+    <li><strong>Espresso:</strong> 18g → 36g çıkış, 9 bar, 25-30 saniye ekstraksiyon</li>
+    <li><strong>Türk Kahvesi:</strong> Toz inceliğinde öğütme, düşük ateşte yavaş pişirme</li>
+    <li>En iyi sonuç için her zaman taze öğütün.</li>
+  </ul>`,
   },
   {
-    name: 'FAQ',
-    content: `
-    <ul class="list-disc list-inside leading-7">
-    <li>All full-priced, unworn items, with tags attached and in their original packaging are eligible for return or exchange within 30 days of placing your order.</li>
-    <li>
-    Please note, packs must be returned in full. We do not accept partial returns of packs.
-    </li>
-    <li>
-    Want to know our full returns policies? Here you go.
-    </li>
-    <li>
-    Want more info about shipping, materials or care instructions? Here!
-    </li>
-  </ul>
-    `,
+    name: 'Kargo ve İade',
+    content: `<ul class="list-disc list-inside leading-7">
+    <li>Siparişiniz 24 saat içinde taze kavrulup kargoya verilir.</li>
+    <li>300 TL üzeri siparişlerde kargo ücretsizdir.</li>
+    <li>Türkiye geneline 1-3 iş günü içinde teslimat.</li>
+    <li>Ambalajı açılmamış ürünlerde 14 gün içinde iade hakkı.</li>
+  </ul>`,
+  },
+  {
+    name: 'Sıkça Sorulan Sorular',
+    content: `<ul class="list-disc list-inside leading-7">
+    <li>Kahveniz ne zaman kavruluyor? — Siparişiniz alındıktan sonra 24 saat içinde.</li>
+    <li>Hangi ödeme yöntemlerini kabul ediyorsunuz? — Kredi kartı, banka kartı ve havale/EFT.</li>
+    <li>Abonelik iptal edilebilir mi? — Evet, istediğiniz zaman hesap panelinizden.</li>
+    <li>Toplu sipariş indirimi var mı? — 10kg ve üzeri için özel fiyatlar için B2B sayfamıza bakın.</li>
+  </ul>`,
   },
 ]
 

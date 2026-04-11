@@ -17,7 +17,7 @@ interface SectionLatestPostsProps {
   heading?: string
 }
 
-const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts, heading = 'Latest articles 🎈' }) => {
+const SectionGridPosts: FC<SectionLatestPostsProps> = ({ className = '', posts, heading = 'Son Yazılar' }) => {
   return (
     <div className={`relative ${className}`}>
       <Heading>{heading}</Heading>
