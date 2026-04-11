@@ -156,6 +156,54 @@ export function adaptCategory(cat: any, index: number = 0) {
 }
 
 /**
+ * Backend BlogPost → Frontend TBlogPost format
+ */
+export function adaptBlogPost(post: any, index: number = 0) {
+  const img = getFallbackImage(index)
+  const coverSrc = post.coverImage ? resolveImageUrl(post.coverImage) : img.src
+  const published = post.publishedAt || post.createdAt
+  const dateObj = published ? new Date(published) : new Date()
+  const dateStr = dateObj.toLocaleDateString('tr-TR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+  })
+  // Rough read time: ~200 words/min from content length
+  const wordCount = (post.content || '').split(/\s+/).length
+  const readMinutes = Math.max(1, Math.round(wordCount / 200))
+
+  return {
+    id: post.id,
+    title: post.title,
+    handle: post.slug,
+    excerpt: post.excerpt || '',
+    featuredImage: {
+      src: coverSrc,
+      alt: post.title || '',
+      width: 800,
+      height: 533,
+    },
+    date: dateStr,
+    datetime: dateObj.toISOString().slice(0, 10),
+    category: {
+      title: post.category?.name || 'Blog',
+      href: post.category?.slug ? `/blog?category=${post.category.slug}` : '/blog',
+    },
+    timeToRead: `${readMinutes} dk okuma`,
+    author: {
+      name: 'Pure Olentia',
+      avatar: {
+        src: '/icon.png',
+        alt: 'Pure Olentia',
+        width: 40,
+        height: 40,
+      },
+      description: 'Pure Olentia specialty kahve ekibi.',
+    },
+  }
+}
+
+/**
  * Backend collection → Frontend TCollection format
  */
 export function adaptCollection(col: any, index: number = 0) {

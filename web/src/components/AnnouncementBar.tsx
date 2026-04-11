@@ -4,14 +4,27 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
 
-const announcements = [
-  { text: 'Taze kavrulmus kahveniz kapinizda!', href: '/collections/all', cta: 'Siparis Ver' },
-  { text: '₺300 uzeri siparislerde ucretsiz kargo', href: '/collections/all', cta: 'Alisverise Basla' },
-  { text: 'Aylik kahve aboneliginde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
-  { text: 'Kurumsal musterilere ozel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
+export interface AnnouncementItem {
+  text: string
+  href: string
+  cta: string
+}
+
+interface AnnouncementBarProps {
+  announcements?: AnnouncementItem[]
+}
+
+const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
+  { text: 'Taze kavrulmuş kahveniz kapınızda!', href: '/collections/all', cta: 'Sipariş Ver' },
+  { text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },
+  { text: 'Aylık kahve aboneliğinde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
+  { text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
 ]
 
-const AnnouncementBar: FC = () => {
+const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnouncements }) => {
+  const announcements =
+    propAnnouncements && propAnnouncements.length > 0 ? propAnnouncements : DEFAULT_ANNOUNCEMENTS
+
   const [visible, setVisible] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)

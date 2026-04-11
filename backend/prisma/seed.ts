@@ -1132,6 +1132,27 @@ async function main() {
     { key: 'youtube', value: 'https://youtube.com/@pureolentia' },
     { key: 'kvkkText', value: 'Kişisel verileriniz 6698 sayılı KVKK kapsamında işlenmektedir.' },
     { key: 'cookiePolicy', value: 'Sitemizde deneyiminizi iyileştirmek için çerezler kullanılmaktadır.' },
+    // Announcement bar — pipe-separated for rotation, or single line
+    {
+      key: 'announcementText',
+      value:
+        '300 TL üzeri siparişlerde ücretsiz kargo | Aylık kahve aboneliğinde %15 indirim | Kurumsal müşterilere özel fiyatlar | Taze kavrulmuş kahveniz kapınızda',
+    },
+    // Home promo sections — editable from admin
+    { key: 'promo1Title', value: 'Taze kavurma, hızlı teslimat.' },
+    { key: 'promo1Subtitle', value: 'Pure Olentia ile ücretsiz kargo ve abonelik indirimi fırsatı.' },
+    { key: 'promo1Cta', value: 'Kahveleri İncele' },
+    { key: 'promo2Title', value: 'Hediye paketi kahve setleri' },
+    {
+      key: 'promo2Subtitle',
+      value: 'Sevdiklerinize özel kahve deneyimi hediye edin. Taze kavrulmuş, özenle paketlenmiş.',
+    },
+    { key: 'promo2Cta', value: 'Hediye Setleri' },
+    { key: 'promo3Title', value: 'Fırsatları kaçırmayın.' },
+    {
+      key: 'promo3Subtitle',
+      value: 'Yeni mahsul kahveler, özel indirimler ve kahve dünyasından haberler.',
+    },
   ];
   for (const s of siteSettings) {
     await prisma.siteSettings.upsert({
@@ -1178,6 +1199,167 @@ async function main() {
     });
   }
   console.log(`✅ ${cmsPages.length} CMS sayfası oluşturuldu`);
+
+  // ── 15.7 Blog Categories + Posts ──
+  const blogCategoriesData = [
+    { name: 'Kahve Rehberi', slug: 'kahve-rehberi' },
+    { name: 'Demleme', slug: 'demleme' },
+    { name: 'Menşei', slug: 'mensei' },
+    { name: 'Kahve Bilimi', slug: 'kahve-bilimi' },
+    { name: 'Ekipman', slug: 'ekipman' },
+    { name: 'Sürdürülebilirlik', slug: 'surdurulebilirlik' },
+  ];
+  for (const c of blogCategoriesData) {
+    await prisma.blogCategory.upsert({
+      where: { slug: c.slug },
+      update: {},
+      create: c,
+    });
+  }
+  const catMap: Record<string, string> = {};
+  for (const c of await prisma.blogCategory.findMany()) {
+    catMap[c.slug] = c.id;
+  }
+  console.log(`✅ ${blogCategoriesData.length} blog kategorisi oluşturuldu`);
+
+  const blogPostsData = [
+    {
+      slug: 'specialty-kahve-nedir-rehber',
+      title: 'Specialty Kahve Nedir? Yeni Başlayanlar İçin Rehber',
+      excerpt:
+        'Specialty kahve, 80 puan ve üzeri alan, tarladan fincana kadar her aşaması izlenebilir kahvelere verilen isimdir. Bu rehberde temel kavramları ve demleme yöntemlerini keşfedin.',
+      content: `<p>Specialty kahve, Specialty Coffee Association (SCA) tarafından 100 puan üzerinden 80 ve üzeri puan alan kahvelere verilen isimdir. Bu puanlama; aroma, asidite, gövde, tatlılık, denge ve son tat gibi pek çok kriteri kapsar.</p>
+<h3>Specialty kahveyi diğerlerinden ayıran nedir?</h3>
+<p>Bir specialty kahvenin en önemli özelliği <strong>izlenebilirlik</strong>tir. Hangi ülkeden, hangi çiftlikten, hangi yükseklikten geldiğini, hatta kim tarafından toplandığını bile bilirsiniz.</p>
+<ol>
+<li>Tek menşe (single origin) üretim</li>
+<li>El ile hasat ve seçici işleme</li>
+<li>Taze kavurma, taze tüketim (ideali 2-4 hafta)</li>
+<li>Doğru demleme yöntemiyle maksimum aroma</li>
+</ol>
+<p>Specialty kahveye yeni başlıyorsanız öneriniz orta kavrum bir Colombia Supremo veya Brezilya Santos ile başlamaktır.</p>`,
+      coverImage: '/blog/blog1.jpg',
+      categorySlug: 'kahve-rehberi',
+      tags: ['specialty', 'rehber', 'kahve kültürü'],
+    },
+    {
+      slug: 'v60-pour-over-nasil-yapilir',
+      title: 'V60 ile Mükemmel Pour-Over Nasıl Yapılır?',
+      excerpt:
+        'Pour-over yöntemi ile kahvenizin tüm aroma notalarını ortaya çıkarabilirsiniz. Su sıcaklığından öğütme boyutuna, adım adım V60 demleme rehberi.',
+      content: `<p>V60, Japon Hario firması tarafından tasarlanan ve dünya genelinde en popüler manuel demleme yöntemlerinden biridir.</p>
+<h3>İhtiyacınız olan ekipmanlar</h3>
+<ul>
+<li>Hario V60 filtre</li>
+<li>V60 kağıt filtre</li>
+<li>Kuğu boyunlu ibrik</li>
+<li>Hassas terazi</li>
+<li>Orta-ince öğütülmüş taze kahve</li>
+</ul>
+<h3>Adım adım V60 demleme</h3>
+<ol>
+<li><strong>Oran:</strong> 15 gram kahve, 250 ml su (1:16.5)</li>
+<li><strong>Su sıcaklığı:</strong> 92-94°C</li>
+<li><strong>Bloom:</strong> 30 ml su ile 30 saniye</li>
+<li><strong>Ana dökme:</strong> Merkezden dışa spiral hareketlerle</li>
+<li><strong>Toplam süre:</strong> 2:30 - 3:00 dakika</li>
+</ol>`,
+      coverImage: '/blog/blog2.jpg',
+      categorySlug: 'demleme',
+      tags: ['v60', 'pour-over', 'demleme'],
+    },
+    {
+      slug: 'etiyopya-kahvenin-anavatani',
+      title: 'Etiyopya: Kahvenin Anavatanını Keşfedin',
+      excerpt:
+        'Kahvenin doğduğu topraklar olan Etiyopya, çiçeksi ve meyvemsi notalarıyla dünyada eşsiz bir yere sahiptir. Yirgacheffe, Sidamo ve Guji bölgelerinin hikayesi.',
+      content: `<p>Kahve ağacının doğal olarak yetiştiği tek yer Etiyopya'nın yüksek platolarıdır.</p>
+<h3>Öne çıkan bölgeler</h3>
+<h4>Yirgacheffe</h4>
+<p>Çiçeksi, narenciye ve bergamot notalarıyla tanınır. İnce gövdeli ve parlak asiditeli kahveleriyle öne çıkar.</p>
+<h4>Sidamo</h4>
+<p>Yaban mersini, çikolata ve tatlı meyve notalarına sahiptir. Doğal işleme ile özellikle karakterlidir.</p>
+<h4>Guji</h4>
+<p>Tropik meyve ve şeker kamışı tatlılığıyla yarışmalarda üst sıralara yerleşmektedir.</p>`,
+      coverImage: '/blog/blog3.jpg',
+      categorySlug: 'mensei',
+      tags: ['etiyopya', 'yirgacheffe', 'menşei'],
+    },
+    {
+      slug: 'kahve-isleme-yontemleri',
+      title: 'Kahvede İşleme Yöntemleri: Washed, Natural ve Honey',
+      excerpt:
+        'Kahve çekirdeğinin işlenme şekli, fincanınızdaki tadı doğrudan etkiler. Yıkanmış, doğal ve bal işleme yöntemlerinin farklarını ve aroma profillerini öğrenin.',
+      content: `<p>Kahve meyvesi toplandıktan sonra çekirdeğin meyveden ayrılması gerekir. Bu süreç <strong>işleme yöntemi</strong> olarak adlandırılır.</p>
+<h3>Washed (Yıkanmış) İşleme</h3>
+<p>Meyve kabuğu hemen soyulur, çekirdekler fermantasyon tanklarında bekletilir. Sonuç: temiz, parlak, asiditesi yüksek bir kahve.</p>
+<h3>Natural (Doğal) İşleme</h3>
+<p>Çekirdek meyvenin içinde güneşte kurutulur. Meyvenin şekeri çekirdeğe geçer. Sonuç: yoğun, meyveli, şaraplı, tatlı bir profil.</p>
+<h3>Honey (Bal) İşleme</h3>
+<p>Kabuk soyulur ama çekirdeğin üzerindeki yapışkan tabaka bırakılır. Tatlılık ve gövde dengesi.</p>`,
+      coverImage: '/blog/blog4.jpg',
+      categorySlug: 'kahve-bilimi',
+      tags: ['işleme', 'washed', 'natural', 'honey'],
+    },
+    {
+      slug: 'evde-espresso-ekipman-secimi',
+      title: 'Evde Espresso: Doğru Ekipman Seçimi',
+      excerpt:
+        'Ev ortamında profesyonel kalitede espresso yapmak artık mümkün. Bütçenize ve ihtiyacınıza göre doğru öğütücü ve espresso makinesi nasıl seçilir?',
+      content: `<p>Evde profesyonel kalitede espresso çekmek artık bir hayal değil.</p>
+<h3>Öğütücü: Espresso'nun kalbi</h3>
+<p>Espresso makinenizden önce iyi bir öğütücüye yatırım yapın.</p>
+<h3>Espresso makinesi seçimi</h3>
+<ol>
+<li><strong>Yarı otomatik:</strong> Baristanın müdahalesini gerektirir</li>
+<li><strong>Tam otomatik:</strong> Tek tuşla espresso, pratik</li>
+<li><strong>Manuel kol:</strong> Klasik deneyim, yüksek zanaat</li>
+</ol>`,
+      coverImage: '/blog/blog5.jpg',
+      categorySlug: 'ekipman',
+      tags: ['espresso', 'ekipman', 'ev baristası'],
+    },
+    {
+      slug: 'surdurulebilir-kahve-izlenebilirlik',
+      title: 'Sürdürülebilir Kahve: Tarladan Fincana İzlenebilirlik',
+      excerpt:
+        'Pure Olentia olarak kahvenin her aşamasını izlenebilir kılıyoruz. Çiftçiden kavurmacıya, lojistikten fincanınıza kadar tüm süreç şeffaf.',
+      content: `<p>Pure Olentia'da kahvenin sadece fincanda değil, tarlada da iyi olmasını önemsiyoruz.</p>
+<h3>Direct Trade — doğrudan ticaret</h3>
+<p>Kahvemizi doğrudan üreticiden satın alıyoruz. Çiftçi piyasa fiyatının 2-3 katı prim alıyor.</p>
+<h3>İzlenebilirlik</h3>
+<ul>
+<li>Her paketin üzerinde hasat tarihi</li>
+<li>Çiftçi/kooperatif adı ve fotoğrafı</li>
+<li>Yükseklik, çeşit (varietal) ve işleme yöntemi</li>
+<li>Kavurma tarihi ve tavsiye edilen tüketim aralığı</li>
+</ul>`,
+      coverImage: '/blog/blog6.jpg',
+      categorySlug: 'surdurulebilirlik',
+      tags: ['sürdürülebilirlik', 'izlenebilirlik', 'direct trade'],
+    },
+  ];
+
+  for (const p of blogPostsData) {
+    await prisma.blogPost.upsert({
+      where: { slug: p.slug },
+      update: {},
+      create: {
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        content: p.content,
+        coverImage: p.coverImage,
+        categoryId: catMap[p.categorySlug],
+        tags: p.tags,
+        isPublished: true,
+        publishedAt: new Date(),
+        seoTitle: `${p.title} | Pure Olentia`,
+        seoDescription: p.excerpt,
+      },
+    });
+  }
+  console.log(`✅ ${blogPostsData.length} blog yazısı oluşturuldu`);
 
   console.log('\n🎉 Seed tamamlandı!\n');
   console.log('── Giriş Bilgileri ──');

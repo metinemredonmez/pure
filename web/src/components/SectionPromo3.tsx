@@ -1,5 +1,6 @@
 import backgroundLineSvg from '@/images/BackgroundLine.svg'
 import rightImgDemo from '@/images/promo3.png'
+import { getSiteSettings } from '@/lib/site-settings'
 import ButtonCircle from '@/shared/Button/ButtonCircle'
 import NcImage from '@/shared/NcImage/NcImage'
 import { Badge } from '@/shared/badge'
@@ -7,13 +8,17 @@ import { Input } from '@/shared/input'
 import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import Image from 'next/image'
-import { FC } from 'react'
 
 export interface SectionPromo3Props {
   className?: string
 }
 
-const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
+const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
+  const settings = await getSiteSettings()
+  const title = settings.promo3Title || 'Fırsatları kaçırmayın.'
+  const subtitle =
+    settings.promo3Subtitle || 'Yeni mahsul kahveler, özel indirimler ve kahve dünyasından haberler.'
+
   return (
     <div className={clsx(className)}>
       <div className="relative flex flex-col rounded-2xl bg-neutral-50 p-6 sm:rounded-[40px] sm:p-8 lg:flex-row lg:p-12 xl:px-16 xl:py-14 dark:bg-neutral-800">
@@ -27,12 +32,8 @@ const SectionPromo3: FC<SectionPromo3Props> = ({ className }) => {
         </div>
 
         <div className="relative max-w-lg lg:w-1/2">
-          <h2 className="text-4xl leading-[1.15] font-semibold md:text-5xl">
-            Fırsatları <br /> kaçırmayın.
-          </h2>
-          <p className="mt-7 block text-neutral-500 dark:text-neutral-400">
-            Yeni mahsul kahveler, özel indirimler <br /> ve kahve dünyasından haberler.
-          </p>
+          <h2 className="text-4xl leading-[1.15] font-semibold md:text-5xl">{title}</h2>
+          <p className="mt-7 block text-neutral-500 dark:text-neutral-400">{subtitle}</p>
           <ul className="mt-10 flex flex-col gap-y-4">
             <li className="flex items-center gap-x-4">
               <Badge color="violet">01</Badge>

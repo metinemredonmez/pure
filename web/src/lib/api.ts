@@ -37,6 +37,18 @@ export const submitFranchiseApplication = (data: any) =>
 export const submitContactMessage = (data: { name: string; email: string; message: string; phone?: string; subject?: string }) =>
   fetchAPI<any>('/public/contact-message', { method: 'POST', body: JSON.stringify(data), revalidate: 0 })
 
+// ============ BLOG (PUBLIC) ============
+export const getApiBlogPosts = (params?: { page?: number; limit?: number; categorySlug?: string; search?: string }) => {
+  const q = new URLSearchParams()
+  if (params?.page) q.set('page', String(params.page))
+  if (params?.limit) q.set('limit', String(params.limit))
+  if (params?.categorySlug) q.set('categorySlug', params.categorySlug)
+  if (params?.search) q.set('search', params.search)
+  return fetchAPI<any>(`/public/blog-posts${q.toString() ? '?' + q : ''}`)
+}
+export const getApiBlogPostBySlug = (slug: string) => fetchAPI<any>(`/public/blog-posts/${slug}`)
+export const getApiBlogCategories = () => fetchAPI<any>('/public/blog-categories')
+
 // ============ CATALOG ============
 export const getApiProducts = (params?: Record<string, any>) => {
   const q = new URLSearchParams()
@@ -173,13 +185,7 @@ export const apiChangeSubscriptionGrind = (token: string, id: string, data: any)
 export const apiUpdateSubscriptionPayment = (token: string, id: string, data: any) =>
   fetchAPI<any>(`/subscriptions/${id}/payment-method`, { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 
-// ============ BLOG / CMS ============
-export const getApiBlogPosts = (params?: Record<string, any>) => {
-  const q = new URLSearchParams()
-  if (params) Object.entries(params).forEach(([k, v]) => v && q.set(k, String(v)))
-  return fetchAPI<any>(`/blog/posts${q.toString() ? '?' + q : ''}`)
-}
-export const getApiBlogPost = (slug: string) => fetchAPI<any>(`/blog/posts/${slug}`)
+// ============ FAQ / CMS ============
 export const getApiFAQ = () => fetchAPI<any>('/faq')
 
 // ============ CHATBOT ============

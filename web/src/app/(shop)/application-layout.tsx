@@ -1,4 +1,4 @@
-import AnnouncementBar from '@/components/AnnouncementBar'
+import AnnouncementBarServer from '@/components/AnnouncementBarServer'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header/Header'
 import AsideProductQuickView from '@/components/aside-product-quickview'
@@ -16,7 +16,7 @@ interface ComponentProps {
 const ApplicationLayout: React.FC<ComponentProps> = ({ children, header, footer }) => {
   return (
     <div>
-      <AnnouncementBar />
+      <AnnouncementBarServer />
       {header ? header : <Header hasBorderBottom />}
       {children}
       {footer ? footer : <Footer />}

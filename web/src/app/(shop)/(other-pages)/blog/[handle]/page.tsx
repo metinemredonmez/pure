@@ -1,6 +1,8 @@
 import { Divider } from '@/components/Divider'
 import PostCard1 from '@/components/blog/PostCard1'
-import { getBlogPosts, getBlogPostsByHandle } from '@/data/data'
+import { getBlogPosts as getStaticBlogPosts, getBlogPostsByHandle } from '@/data/data'
+import { adaptBlogPost } from '@/lib/adapters'
+import { getApiBlogPostBySlug, getApiBlogPosts } from '@/lib/api'
 import Avatar from '@/shared/Avatar/Avatar'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import SocialsList from '@/shared/SocialsList/SocialsList'
@@ -11,9 +13,23 @@ import { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
+async function fetchPostFromBackend(slug: string) {
+  try {
+    const res = (await getApiBlogPostBySlug(slug)) as any
+    const data = res?.data || res
+    if (data && data.id) {
+      const adapted = adaptBlogPost(data, 0) as any
+      adapted.content = data.content || ''
+      adapted.tags = Array.isArray(data.tags) ? data.tags : []
+      return adapted
+    }
+  } catch {}
+  return null
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params
-  const post = await getBlogPostsByHandle(handle)
+  const post = (await fetchPostFromBackend(handle)) || (await getBlogPostsByHandle(handle))
   if (!post) {
     return {
       title: 'Blog',
@@ -26,15 +42,28 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params
-  const { featuredImage, id, author, content, date, title, timeToRead, category, excerpt, tags } =
-    await getBlogPostsByHandle(handle)
+  const post = (await fetchPostFromBackend(handle)) || (await getBlogPostsByHandle(handle))
+  const { featuredImage, id, author, content, date, title, timeToRead, category, excerpt, tags } = post as any
 
   if (!id) {
     return notFound()
   }
 
-  // only get the first 4 posts demo
-  const relatedPosts = (await getBlogPosts()).slice(0, 4)
+  // Related posts from backend, fall back to static
+  let relatedPosts: any[] = []
+  try {
+    const res = (await getApiBlogPosts({ limit: 4 })) as any
+    const list: any[] = res?.data?.data || res?.data || []
+    if (Array.isArray(list) && list.length) {
+      relatedPosts = list
+        .filter((p: any) => p.slug !== handle)
+        .slice(0, 4)
+        .map((p: any, i: number) => adaptBlogPost(p, i))
+    }
+  } catch {}
+  if (!relatedPosts.length) {
+    relatedPosts = (await getStaticBlogPosts()).slice(0, 4)
+  }
 
   const renderHeader = () => {
     return (
@@ -86,9 +115,11 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   }
 
   const renderTags = () => {
+    const tagList: string[] = Array.isArray(tags) ? tags : []
+    if (!tagList.length) return null
     return (
       <div className="mx-auto flex w-full max-w-(--breakpoint-md) flex-wrap gap-2">
-        {tags.map((tag) => (
+        {tagList.map((tag: string) => (
           <Tag key={tag} className="mb-2">
             {tag}
           </Tag>

@@ -1,8 +1,11 @@
+import { apiGetSubscriptionPlans } from '@/lib/api'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { CheckIcon } from '@heroicons/react/24/solid'
 
 export interface PricingItem {
+  id?: string
+  slug?: string
   isPopular: boolean
   name: string
   pricing: string
@@ -11,7 +14,9 @@ export interface PricingItem {
   features: string[]
 }
 
-const pricings: PricingItem[] = [
+// Fallback plans used only when the backend has no active plans and the
+// API call returns an empty list. Kept minimal — admin is the real source.
+const FALLBACK_PLANS: PricingItem[] = [
   {
     isPopular: false,
     name: 'Keşif',
@@ -50,11 +55,57 @@ export const metadata = {
   description: 'Pure Olentia kahve abonelik planları. Her ay kapınıza taze kavrulmuş specialty kahve.',
 }
 
-const PageSubcription = () => {
+function formatPrice(price: number | string): string {
+  const num = typeof price === 'string' ? parseFloat(price) : price
+  if (isNaN(num)) return '₺0'
+  return `₺${num.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
+}
+
+function buildFeatures(plan: any): string[] {
+  const features: string[] = []
+  if (plan.monthlyWeight) {
+    const weight =
+      plan.monthlyWeight >= 1000
+        ? `${(plan.monthlyWeight / 1000).toLocaleString('tr-TR')} kg`
+        : `${plan.monthlyWeight} gr`
+    features.push(`Ayda ${weight} taze kahve`)
+  }
+  if (plan.discountPercent) features.push(`%${plan.discountPercent} abonelik indirimi`)
+  if (plan.freeShipping) features.push('Ücretsiz kargo')
+  features.push('İstediğiniz zaman iptal')
+  features.push('Demleme rehberi dahil')
+  return features
+}
+
+export default async function PageSubcription() {
+  // Fetch plans from backend; fall back to static list only if empty
+  let plans: PricingItem[] = []
+  try {
+    const res = (await apiGetSubscriptionPlans()) as any
+    const planData = res?.data || res || []
+    const list: any[] = Array.isArray(planData) ? planData : planData?.data || []
+    if (list.length) {
+      plans = list.map((plan, i) => ({
+        id: plan.id,
+        slug: plan.slug,
+        isPopular: i === Math.floor(list.length / 2),
+        name: plan.name,
+        pricing: formatPrice(plan.priceMonthly),
+        per: '/ay',
+        features: buildFeatures(plan),
+        desc: plan.description || 'Abone olun, kahvenizi her ay kapınıza taze kavrulmuş olarak alın.',
+      }))
+    }
+  } catch {
+    // fall through to fallback
+  }
+
+  if (!plans.length) plans = FALLBACK_PLANS
+
   const renderPricingItem = (pricing: PricingItem, index: number) => {
     return (
       <div
-        key={index}
+        key={pricing.id || index}
         className={`relative flex h-full flex-col overflow-hidden rounded-3xl border-2 px-6 py-8 ${
           pricing.isPopular ? 'border-primary-500' : 'border-neutral-100 dark:border-neutral-700'
         }`}
@@ -74,8 +125,8 @@ const PageSubcription = () => {
           </h2>
         </div>
         <nav className="mb-8 space-y-4">
-          {pricing.features.map((item, index) => (
-            <li className="flex items-center" key={index}>
+          {pricing.features.map((item, idx) => (
+            <li className="flex items-center" key={idx}>
               <span className="mr-4 inline-flex shrink-0 text-primary-600">
                 <CheckIcon className="h-5 w-5" aria-hidden="true" />
               </span>
@@ -85,9 +136,9 @@ const PageSubcription = () => {
         </nav>
         <div className="mt-auto flex flex-col">
           {pricing.isPopular ? (
-            <ButtonPrimary>Abone Ol</ButtonPrimary>
+            <ButtonPrimary href="/signup">Abone Ol</ButtonPrimary>
           ) : (
-            <ButtonSecondary>
+            <ButtonSecondary href="/signup">
               <span className="font-medium">Abone Ol</span>
             </ButtonSecondary>
           )}
@@ -108,10 +159,8 @@ const PageSubcription = () => {
         </span>
       </header>
       <section className="overflow-hidden text-sm text-neutral-600 md:text-base">
-        <div className="grid gap-5 lg:grid-cols-3 xl:gap-8">{pricings.map(renderPricingItem)}</div>
+        <div className="grid gap-5 lg:grid-cols-3 xl:gap-8">{plans.map(renderPricingItem)}</div>
       </section>
     </div>
   )
 }
-
-export default PageSubcription

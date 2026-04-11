@@ -32,6 +32,15 @@ export interface SiteSettings {
   youtube: string
   kvkkText: string
   cookiePolicy: string
+  announcementText: string
+  promo1Title: string
+  promo1Subtitle: string
+  promo1Cta: string
+  promo2Title: string
+  promo2Subtitle: string
+  promo2Cta: string
+  promo3Title: string
+  promo3Subtitle: string
 }
 
 const DEFAULTS: SiteSettings = {
@@ -52,6 +61,15 @@ const DEFAULTS: SiteSettings = {
   youtube: 'https://youtube.com/@pureolentia',
   kvkkText: '',
   cookiePolicy: '',
+  announcementText: '',
+  promo1Title: '',
+  promo1Subtitle: '',
+  promo1Cta: '',
+  promo2Title: '',
+  promo2Subtitle: '',
+  promo2Cta: '',
+  promo3Title: '',
+  promo3Subtitle: '',
 }
 
 function coerce(value: unknown): string {
