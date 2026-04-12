@@ -1,123 +1,136 @@
-import avatar from '@/images/users/avatar1.jpg'
+'use client'
+
+import { apiGetMe, apiUpdateProfile } from '@/lib/api'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import { Field, Fieldset, Label } from '@/shared/fieldset'
+import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input, InputGroup } from '@/shared/input'
-import { Select } from '@/shared/select'
-import { Textarea } from '@/shared/textarea'
 import {
-  Calendar01Icon,
-  ImageAdd02Icon,
   Mail01Icon,
   MapsLocation01Icon,
   SmartPhone01Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { Metadata } from 'next'
-import Form from 'next/form'
-import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
-export const metadata: Metadata = {
-  title: 'Hesap',
-  description: 'Hesap page',
-}
+export default function AccountPage() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [msg, setMsg] = useState('')
 
-const Page = () => {
-  const handleSubmit = async (formData: FormData) => {
-    'use server'
-    const formObject = Object.fromEntries(formData.entries())
-    console.log(formObject)
-    // Update the account
+  useEffect(() => {
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
+    apiGetMe(token).then((res: any) => {
+      const data = res?.data || res
+      if (data?.id) {
+        setUser(data)
+        localStorage.setItem('pureolentia_user', JSON.stringify(data))
+      }
+      setLoading(false)
+    })
+  }, [])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSaving(true)
+    setMsg('')
+
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) return
+
+    const fd = new FormData(e.currentTarget)
+    const payload = {
+      firstName: String(fd.get('firstName') || ''),
+      lastName: String(fd.get('lastName') || ''),
+      phone: String(fd.get('phone') || ''),
+      address: String(fd.get('address') || ''),
+    }
+
+    try {
+      const res = (await apiUpdateProfile(token, payload)) as any
+      if (res?.data || res?.id) {
+        setMsg('Bilgileriniz güncellendi.')
+        const updated = res?.data || res
+        setUser(updated)
+        localStorage.setItem('pureolentia_user', JSON.stringify(updated))
+      } else {
+        setMsg(res?.message || 'Güncelleme başarısız.')
+      }
+    } catch {
+      setMsg('Bir hata oluştu.')
+    }
+    setSaving(false)
+  }
+
+  if (loading) {
+    return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+  }
+
+  if (!user) {
+    return <div className="py-20 text-center text-neutral-400">Giriş yapmanız gerekiyor.</div>
   }
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
-      {/* HEADING */}
-      <h1 className="text-2xl font-semibold sm:text-3xl">Hesap infomation</h1>
+      <h1 className="text-2xl font-semibold sm:text-3xl">Hesap Bilgileri</h1>
 
-      <Form action={handleSubmit}>
-        <Fieldset className="flex flex-col md:flex-row">
-          <div className="flex shrink-0 items-start">
-            {/* AVATAR */}
-            <div className="relative flex overflow-hidden rounded-full">
-              <Image
-                src={avatar}
-                alt={'avatar'}
-                width={avatar.width}
-                height={avatar.height}
-                sizes="132px"
-                priority
-                className="z-0 size-32 rounded-full object-cover"
-              />
-              <div className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-black/60 text-neutral-50">
-                <HugeiconsIcon icon={ImageAdd02Icon} size={30} color="currentColor" strokeWidth={1.5} />
-                <span className="mt-1 text-xs">Change Image</span>
-              </div>
-              <input type="file" name="avatar" className="absolute inset-0 cursor-pointer opacity-0" />
+      <form onSubmit={handleSubmit}>
+        <Fieldset>
+          <FieldGroup className="max-w-2xl space-y-7">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field>
+                <Label>Ad</Label>
+                <Input name="firstName" defaultValue={user.firstName || ''} />
+              </Field>
+              <Field>
+                <Label>Soyad</Label>
+                <Input name="lastName" defaultValue={user.lastName || ''} />
+              </Field>
             </div>
-          </div>
-          <div className="mt-10 max-w-3xl grow space-y-7 md:mt-0 md:pl-16">
-            <Field>
-              <Label>Full name</Label>
-              <Input name="full-name" defaultValue="Enrico Cole" />
-            </Field>
 
-            {/* ---- */}
             <Field>
-              <Label>Email</Label>
+              <Label>E-posta</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={Mail01Icon} size={16} />
-                <Input name="email" type="email" placeholder="example@email.com" />
+                <Input name="email" type="email" defaultValue={user.email || ''} disabled className="opacity-60" />
               </InputGroup>
+              <p className="mt-1 text-xs text-neutral-400">E-posta adresi değiştirilemez.</p>
             </Field>
 
-            {/* ---- */}
-            <Field className="max-w-lg">
-              <Label>Date of birth</Label>
-              <InputGroup>
-                <HugeiconsIcon data-slot="icon" icon={Calendar01Icon} size={16} />
-                <Input name="date-of-birth" type="date" defaultValue="1990-07-22" />
-              </InputGroup>
-            </Field>
-            {/* ---- */}
             <Field>
-              <Label>Addess</Label>
-              <InputGroup>
-                <HugeiconsIcon data-slot="icon" icon={MapsLocation01Icon} size={16} />
-                <Input name="address" defaultValue="New york, USA" />
-              </InputGroup>
-            </Field>
-
-            {/* ---- */}
-            <Field>
-              <Label>Gender</Label>
-              <Select name="gender" defaultValue="Male">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </Select>
-            </Field>
-
-            {/* ---- */}
-            <Field>
-              <Label>Telefon Numarası</Label>
+              <Label>Telefon</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={SmartPhone01Icon} size={16} />
-                <Input name="phone-number" defaultValue="003 888 232" />
+                <Input name="phone" defaultValue={user.phone || ''} placeholder="05XX XXX XX XX" />
               </InputGroup>
             </Field>
-            {/* ---- */}
+
             <Field>
-              <Label>About you</Label>
-              <Textarea rows={4} name="about-you" defaultValue="..." />
+              <Label>Adres</Label>
+              <InputGroup>
+                <HugeiconsIcon data-slot="icon" icon={MapsLocation01Icon} size={16} />
+                <Input name="address" defaultValue={user.address || ''} placeholder="Şehir, İlçe" />
+              </InputGroup>
             </Field>
+
+            {msg && (
+              <div className={`rounded-lg px-4 py-3 text-sm ${msg.includes('güncellendi') ? 'border border-green-200 bg-green-50 text-green-800' : 'border border-red-200 bg-red-50 text-red-800'}`}>
+                {msg}
+              </div>
+            )}
+
             <div className="pt-2">
-              <ButtonPrimary type="submit">Hesabı Güncelle</ButtonPrimary>
+              <ButtonPrimary type="submit" disabled={saving}>
+                {saving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
+              </ButtonPrimary>
             </div>
-          </div>
+          </FieldGroup>
         </Fieldset>
-      </Form>
+      </form>
     </div>
   )
 }
-
-export default Page
