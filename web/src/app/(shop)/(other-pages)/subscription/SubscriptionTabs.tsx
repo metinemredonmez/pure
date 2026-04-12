@@ -1,5 +1,6 @@
 'use client'
 
+import { useCart } from '@/contexts/CartContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { CheckIcon } from '@heroicons/react/24/solid'
@@ -36,6 +37,8 @@ export default function SubscriptionTabs({
   const [tab, setTab] = useState<'bireysel' | 'kurumsal'>('bireysel')
   const [gramaj, setGramaj] = useState(250)
   const [kahveTipi, setKahveTipi] = useState('Filtre Kahve')
+  const [addedPlan, setAddedPlan] = useState<string | null>(null)
+  const { addItem } = useCart()
 
   const plans = tab === 'bireysel' ? bireyselPlans : kurumsalPlans
   const gramajOption = GRAMAJ_OPTIONS.find((g) => g.value === gramaj) || GRAMAJ_OPTIONS[0]
@@ -166,10 +169,44 @@ export default function SubscriptionTabs({
                 </nav>
                 <div className="mt-auto flex flex-col">
                   {plan.popular ? (
-                    <ButtonPrimary href="/signup">Abone Ol</ButtonPrimary>
+                    <ButtonPrimary
+                      onClick={() => {
+                        const label = tab === 'bireysel'
+                          ? `Abonelik ${plan.period} — ${gramajOption.label} ${kahveTipi}`
+                          : `Kurumsal Abonelik ${plan.period}`
+                        addItem({
+                          productId: `sub-${tab}-${plan.months}-${gramaj}-${kahveTipi}`,
+                          name: label,
+                          handle: 'subscription',
+                          price: Math.round(totalPrice),
+                          quantity: 1,
+                          size: tab === 'bireysel' ? `${gramajOption.label} / ${kahveTipi}` : undefined,
+                        })
+                        setAddedPlan(plan.period)
+                        setTimeout(() => setAddedPlan(null), 2000)
+                      }}
+                    >
+                      {addedPlan === plan.period ? 'Sepete Eklendi!' : 'Sepete Ekle'}
+                    </ButtonPrimary>
                   ) : (
-                    <ButtonSecondary href="/signup">
-                      <span className="font-medium">Abone Ol</span>
+                    <ButtonSecondary
+                      onClick={() => {
+                        const label = tab === 'bireysel'
+                          ? `Abonelik ${plan.period} — ${gramajOption.label} ${kahveTipi}`
+                          : `Kurumsal Abonelik ${plan.period}`
+                        addItem({
+                          productId: `sub-${tab}-${plan.months}-${gramaj}-${kahveTipi}`,
+                          name: label,
+                          handle: 'subscription',
+                          price: Math.round(totalPrice),
+                          quantity: 1,
+                          size: tab === 'bireysel' ? `${gramajOption.label} / ${kahveTipi}` : undefined,
+                        })
+                        setAddedPlan(plan.period)
+                        setTimeout(() => setAddedPlan(null), 2000)
+                      }}
+                    >
+                      <span className="font-medium">{addedPlan === plan.period ? 'Sepete Eklendi!' : 'Sepete Ekle'}</span>
                     </ButtonSecondary>
                   )}
                 </div>
