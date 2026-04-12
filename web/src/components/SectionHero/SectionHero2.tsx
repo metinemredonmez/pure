@@ -152,26 +152,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
           />
         </div>
 
-        {/* DOTS */}
-        <div className="absolute start-1/2 bottom-4 flex -translate-x-1/2 justify-center rtl:translate-x-1/2">
-          {data.map((_, index) => {
-            const isActive = indexActive === index
-            return (
-              <div
-                key={index}
-                onClick={() => {
-                  setIndexActive(index)
-                  handleAfterClick()
-                }}
-                className="relative cursor-pointer px-1 py-1.5"
-              >
-                <div className="relative h-1 w-20 rounded-md bg-white shadow-xs">
-                  {isActive && <div className={`absolute inset-0 rounded-md bg-neutral-900 fade--animation__dot`} />}
-                </div>
-              </div>
-            )
-          })}
-        </div>
+        {/* DOTS - removed */}
 
         <div className="relative flex max-w-5xl flex-1/2 flex-col items-start fade--animation__left">
           <span className="block text-base font-medium text-neutral-700 fade--animation__subheading md:text-xl">

@@ -336,16 +336,111 @@ Admin panelden cache temizleme ve izleme:
 
 ---
 
-## 🔜 Sprint 2: Content & Communication — PLANLI
-**Hedef:** İçerik yönetimi ve müşteri iletişimi
+## 🔜 Sprint 2: Tchibo2Go Benzeri Web Sitesi Altyapısı — PLANLI
+**Hedef:** coffee4office.tchibo2go.tr benzeri kurumsal site için backend API + admin panel
+**Referans:** coffee4office.tchibo2go.tr
+> ⚠️ Bu sprint: Backend API + Admin Panel UI. Web sitesi frontend'i ayrı sprint.
+> ✅ Zaten mevcut: Blog CRUD, FAQ CRUD, SEO metadata, B2B Lead formu (backend + admin)
 
-- [ ] Blog + SEO tam akış
-- [ ] FAQ yönetimi
-- [ ] Email template editörü (admin panelde)
+### Backend API — Yeni Eklenecekler
+
+**Hero / Banner Yönetimi:**
+- [ ] `HeroBanner` Prisma modeli (title, subtitle, image, mobileImage, ctaText, ctaUrl, order, isActive, startDate, endDate)
+- [ ] `GET /public/banners` — Aktif banner'ları getir (tarih filtreli)
+- [ ] `POST /admin/banners` — Banner oluştur
+- [ ] `PUT /admin/banners/:id` — Banner güncelle
+- [ ] `DELETE /admin/banners/:id` — Banner sil
+- [ ] `PATCH /admin/banners/reorder` — Sıralama güncelle
+
+**Makine / Ekipman Kataloğu (Tchibo2Go: Business Line, Coffea Enjoy, Coffea Professional, Coffea Dynamic):**
+- [ ] `Machine` Prisma modeli (name, slug, description, images[], capacity, dimensions, features[], dailyCupMin, dailyCupMax, drinkCount, isActive, order)
+- [ ] `MachineModule` Prisma modeli (name, width, height, depth, variant)
+- [ ] `GET /public/machines` — Aktif makine listesi
+- [ ] `GET /public/machines/:slug` — Makine detay
+- [ ] `GET /public/machines/compare` — Makine karşılaştırma
+- [ ] `POST /admin/machines` — Makine oluştur
+- [ ] `PUT /admin/machines/:id` — Makine güncelle
+- [ ] `DELETE /admin/machines/:id` — Makine sil
+- [ ] `PATCH /admin/machines/reorder` — Sıralama
+
+**Marka Portföyü (Tchibo2Go: Tchibo, PURE Fine Selection, DaVinci):**
+- [ ] `Brand` Prisma modeli (name, logo, description, order, isActive)
+- [ ] `GET /public/brands` — Marka listesi
+- [ ] `POST /admin/brands` — Marka oluştur
+- [ ] `PUT /admin/brands/:id` — Güncelle
+- [ ] `DELETE /admin/brands/:id` — Sil
+
+**Referans Müşteriler / Başarı Hikayeleri:**
+- [ ] `Reference` Prisma modeli (companyName, logo, testimonial, contactPerson, sector, isActive, order)
+- [ ] `GET /public/references` — Referans listesi
+- [ ] `POST /admin/references` — Referans oluştur
+- [ ] `PUT /admin/references/:id` — Güncelle
+- [ ] `DELETE /admin/references/:id` — Sil
+
+**Dinamik Sayfa Yönetimi:**
+- [ ] `Page` Prisma modeli (title, slug, sections JSON, isPublished, seoTitle, seoDescription)
+- [ ] `GET /public/pages/:slug` — Sayfa içeriği getir
+- [ ] `GET /admin/pages` — Tüm sayfalar
+- [ ] `POST /admin/pages` — Sayfa oluştur
+- [ ] `PUT /admin/pages/:id` — Sayfa güncelle
+- [ ] `DELETE /admin/pages/:id` — Sayfa sil
+
+**Site Genel Ayarları:**
+- [ ] `SiteSettings` Prisma modeli (JSON — logo, favicon, siteName, footer, socialLinks, contactInfo, workingHours, kvkkText, cookiePolicy)
+- [ ] `GET /public/site-settings` — Public ayarlar
+- [ ] `GET /admin/site-settings` — Tüm ayarlar
+- [ ] `PUT /admin/site-settings` — Ayarları güncelle
+
+**Lead Başvuru Formu Geliştirme (mevcut B2B Lead üzerine):**
+- [ ] SMS doğrulama entegrasyonu (NetGSM/Twilio)
+- [ ] Dinamik form alanları config (admin'den alan ekleme/çıkarma)
+- [ ] Form gönderimlerinde otomatik email bildirim
+- [ ] CSV export endpoint
+
+### Admin Panel UI — Yeni Sayfalar
+
+**Web Sitesi Menü Grubu (Sidebar'a eklenecek):**
+- [ ] `/website/banners` — Hero/Banner yönetimi (sürükle-bırak sıralama, görsel upload, tarih, önizleme)
+- [ ] `/website/machines` — Makine kataloğu (CRUD, çoklu görsel, kapasite/boyut bilgileri, karşılaştırma tablosu)
+- [ ] `/website/brands` — Marka portföyü (logo upload, sıralama)
+- [ ] `/website/references` — Referans müşteriler (logo, testimonial, sektör)
+- [ ] `/website/pages` — Sayfa yönetimi (dinamik bölüm editörü, SEO alanları)
+- [ ] `/website/site-settings` — Site ayarları (logo, favicon, iletişim, sosyal medya, KVKK metinleri, çalışma saatleri)
+- [ ] `/website/leads` — Başvuru/lead listesi (tablo, filtre, detay modal, CSV export, SMS doğrulama durumu)
+
+**Mevcut Sayfalarda İyileştirme:**
+- [ ] Blog editörüne zengin metin editörü (TipTap/Quill)
+- [ ] FAQ'a kategori bazlı gruplama
+
+**Email & Bildirim:**
+- [ ] Email template editörü (drag & drop)
 - [ ] Firebase push notification entegrasyonu
-- [ ] OneSignal web push entegrasyonu
 - [ ] WebSocket (Socket.IO) — anlık in-app bildirimler
-- [x] Kargo takip entegrasyonu (Yurtiçi/Aras/MNG API) ✅ Tamamlandı
+
+**Tamamlanan:**
+- [x] Kargo takip entegrasyonu (Yurtiçi/Aras/MNG API) ✅
+- [x] Blog CRUD (backend + admin) ✅
+- [x] FAQ CRUD (backend + admin) ✅
+- [x] SEO metadata (backend + admin) ✅
+- [x] B2B Lead form (backend + admin) ✅
+
+---
+
+## 🔜 Sprint 2.5: Web Sitesi Frontend — PLANLI
+**Hedef:** Sprint 2 API'lerini kullanan Tchibo2Go benzeri public web sitesi (Next.js SSR)
+> 🕐 Sprint 2 backend + admin tamamlandıktan sonra başlanacak
+
+- [ ] Next.js public site scaffold (SSR + SEO)
+- [ ] Landing page (hero slider, öne çıkan ürünler, makine modelleri, markalar, referanslar)
+- [ ] Makine detay + karşılaştırma sayfası
+- [ ] Ürün kataloğu sayfası
+- [ ] Fiyatlandırma planları sayfası
+- [ ] Blog listesi + detay
+- [ ] FAQ sayfası
+- [ ] İletişim / başvuru formu (SMS doğrulama)
+- [ ] Dinamik sayfalar (Hakkımızda, KVKK, Çerez)
+- [ ] Responsive tasarım (mobil uyumlu)
+- [ ] SEO optimizasyon (meta tags, sitemap, structured data)
 
 ---
 

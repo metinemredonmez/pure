@@ -6,10 +6,10 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
       name: 'Kahveler',
       type: 'dropdown',
       children: [
-        { id: '1-1', href: '/collections/turk-kahvesi', name: 'Türk Kahvesi' },
-        { id: '1-2', href: '/collections/filtre-kahve', name: 'Filtre Kahve' },
-        { id: '1-3', href: '/collections/espresso', name: 'Espresso' },
-        { id: '1-4', href: '/collections/kapsul-kahve', name: 'Kapsül Kahve' },
+        { id: '1-1', href: '/collections/turk-kahvesi', name: 'Türk Kahvesi', description: 'Geleneksel Türk kahvesi çeşitleri', icon: 'turk-kahvesi' },
+        { id: '1-2', href: '/collections/filtre-kahve', name: 'Filtre Kahve', description: 'Pour-over & filtre demleme', icon: 'filtre-kahve' },
+        { id: '1-3', href: '/collections/espresso', name: 'Espresso', description: 'Espresso makineleri için özel', icon: 'espresso' },
+        { id: '1-4', href: '/collections/kapsul-kahve', name: 'Kapsül Kahve', description: 'Kapsül sistemleri için uygun', icon: 'kapsul-kahve' },
       ],
     },
     {
@@ -98,6 +98,8 @@ export type TNavigationItem = Partial<{
   type?: 'dropdown' | 'mega-menu'
   isNew?: boolean
   children?: TNavigationItem[]
+  icon?: string
+  description?: string
 }>
 
 export const getLanguages = async () => {
