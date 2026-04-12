@@ -1,7 +1,4 @@
-import { Divider } from '@/components/Divider'
-import SectionPromo1 from '@/components/SectionPromo1'
 import { getSiteSettings } from '@/lib/site-settings'
-import SocialsList from '@/shared/SocialsList/SocialsList'
 import { Metadata } from 'next'
 import ContactForm from './ContactForm'
 
@@ -12,65 +9,148 @@ export const metadata: Metadata = {
 
 const PageContact = async () => {
   const settings = await getSiteSettings()
-  const info = [
-    { title: 'ADRES', desc: settings.address },
-    { title: 'E-POSTA', desc: settings.email },
-    { title: 'TELEFON', desc: settings.phone },
-    settings.workingHours && { title: 'ÇALIŞMA SAATLERİ', desc: settings.workingHours },
-  ].filter((x): x is { title: string; desc: string } => Boolean(x && (x as any).desc))
 
-  // Build Google Maps embed URL from lat/lng if available, else query by address
   const mapSrc =
     settings.mapLat && settings.mapLng
       ? `https://maps.google.com/maps?q=${settings.mapLat},${settings.mapLng}&z=15&output=embed`
       : `https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`
 
   return (
-    <div className="pt-12 pb-16 sm:py-16 lg:py-24">
-      <div className="container mx-auto flex max-w-6xl flex-col gap-y-16 lg:gap-y-28">
-        <div className="grid shrink-0 grid-cols-1 gap-12 md:grid-cols-2">
-          <div>
-            <h1 className="text-4xl leading-[1.15] font-semibold tracking-tight text-neutral-900 md:text-5xl dark:text-neutral-100">
-              İletişim
-            </h1>
-            <div className="mt-10 flex max-w-sm flex-col gap-y-8 sm:mt-14">
-              {info.map((item, index) => (
-                <div key={index}>
-                  <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">{item.title}</p>
-                  <span className="mt-4 block text-neutral-500 dark:text-neutral-400">{item.desc}</span>
+    <div className="pb-24 lg:pb-32">
+      {/* Hero */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
+        <div className="container py-20 text-center lg:py-24">
+          <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 uppercase backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
+            Bize Ulaşın
+          </span>
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 sm:text-5xl dark:text-white">
+            İletişim
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
+            Sorularınız, önerileriniz ve toplu sipariş talepleriniz için bize ulaşın.
+          </p>
+        </div>
+      </div>
+
+      {/* Contact info cards + form */}
+      <div className="container mt-16">
+        <div className="mx-auto max-w-6xl">
+          {/* Info cards row */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {settings.address && (
+              <div className="rounded-2xl bg-primary-50 p-6 dark:bg-primary-900/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-xl dark:bg-primary-900/40">
+                  📍
                 </div>
-              ))}
-              <div>
-                <p className="text-sm font-semibold tracking-wider uppercase dark:text-neutral-200">SOSYAL MEDYA</p>
-                <SocialsList className="mt-4" />
+                <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
+                  Adres
+                </h3>
+                <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{settings.address}</p>
+              </div>
+            )}
+            {settings.phone && (
+              <div className="rounded-2xl bg-amber-50 p-6 dark:bg-amber-900/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-xl dark:bg-amber-900/40">
+                  📞
+                </div>
+                <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
+                  Telefon
+                </h3>
+                <a href={`tel:${settings.phone.replace(/\s/g, '')}`} className="mt-2 block text-sm text-neutral-600 hover:text-primary-600 dark:text-neutral-400">
+                  {settings.phone}
+                </a>
+                {settings.workingHours && (
+                  <p className="mt-1 text-xs text-neutral-400">{settings.workingHours}</p>
+                )}
+              </div>
+            )}
+            {settings.email && (
+              <div className="rounded-2xl bg-emerald-50 p-6 dark:bg-emerald-900/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-xl dark:bg-emerald-900/40">
+                  ✉️
+                </div>
+                <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
+                  E-posta
+                </h3>
+                <a href={`mailto:${settings.email}`} className="mt-2 block text-sm text-neutral-600 hover:text-primary-600 dark:text-neutral-400">
+                  {settings.email}
+                </a>
+              </div>
+            )}
+            <div className="rounded-2xl bg-sky-50 p-6 dark:bg-sky-900/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-xl dark:bg-sky-900/40">
+                💬
+              </div>
+              <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
+                Sosyal Medya
+              </h3>
+              <div className="mt-2 flex gap-3">
+                {settings.instagram && (
+                  <a href={settings.instagram} target="_blank" className="text-neutral-500 transition hover:text-primary-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                  </a>
+                )}
+                {settings.facebook && (
+                  <a href={settings.facebook} target="_blank" className="text-neutral-500 transition hover:text-primary-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  </a>
+                )}
+                {settings.twitter && (
+                  <a href={settings.twitter} target="_blank" className="text-neutral-500 transition hover:text-primary-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                  </a>
+                )}
+                {settings.youtube && (
+                  <a href={settings.youtube} target="_blank" className="text-neutral-500 transition hover:text-primary-600">
+                    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  </a>
+                )}
               </div>
             </div>
           </div>
 
-          <div>
-            <ContactForm />
+          {/* Form section */}
+          <div className="mt-16 grid gap-12 lg:grid-cols-2">
+            {/* Left: Form */}
+            <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-700 dark:bg-neutral-900 lg:p-10">
+              <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Mesaj Gönderin</h2>
+              <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                Formu doldurun, 24 saat içinde size dönüş yapalım.
+              </p>
+              <div className="mt-8">
+                <ContactForm />
+              </div>
+            </div>
+
+            {/* Right: Map */}
+            <div className="flex flex-col gap-6">
+              <div className="flex-1 overflow-hidden rounded-3xl">
+                <iframe
+                  src={mapSrc}
+                  width="100%"
+                  height="100%"
+                  style={{ minHeight: 350, border: 0, filter: 'saturate(0.3) contrast(1.2) brightness(0.75)' }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="rounded-3xl"
+                />
+              </div>
+              {/* Quick CTA */}
+              <div className="rounded-2xl bg-gradient-to-r from-primary-700 to-primary-900 p-6 text-white">
+                <h3 className="text-lg font-semibold">Hızlı iletişim mi istiyorsunuz?</h3>
+                <p className="mt-1 text-sm text-white/70">WhatsApp üzerinden anında dönüş yaparız.</p>
+                <a
+                  href="https://wa.me/905524622954"
+                  target="_blank"
+                  className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-primary-800 transition hover:bg-white/90"
+                >
+                  💬 WhatsApp ile Yazın
+                </a>
+              </div>
+            </div>
           </div>
         </div>
-
-        <Divider />
-
-        {/* Harita */}
-        <div className="overflow-hidden rounded-2xl">
-          <iframe
-            src={mapSrc}
-            width="100%"
-            height="400"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="no-referrer-when-downgrade"
-            className="rounded-2xl"
-            style={{ border: 0, filter: 'saturate(0.3) contrast(1.2) brightness(0.75)' }}
-          />
-        </div>
-      </div>
-
-      <div className="container pt-16 lg:pt-28">
-        <SectionPromo1 />
       </div>
     </div>
   )
