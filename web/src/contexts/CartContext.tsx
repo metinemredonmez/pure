@@ -77,30 +77,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
     setItems((prev) => {
-      // Check if same product+variant already in cart
+      let updated: CartItem[]
       const existing = prev.find(
         (i) => i.productId === newItem.productId && i.variantId === newItem.variantId
       )
       if (existing) {
-        return prev.map((i) =>
+        updated = prev.map((i) =>
           i.id === existing.id ? { ...i, quantity: i.quantity + (newItem.quantity || 1) } : i
         )
+      } else {
+        const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+        updated = [...prev, { ...newItem, id, quantity: newItem.quantity || 1 }]
       }
-      const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-      return [...prev, { ...newItem, id, quantity: newItem.quantity || 1 }]
+      // Immediately persist to localStorage (don't wait for useEffect)
+      saveCart(updated)
+      return updated
     })
   }, [])
 
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id))
+    setItems((prev) => {
+      const updated = prev.filter((i) => i.id !== id)
+      saveCart(updated)
+      return updated
+    })
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    if (quantity < 1) {
-      setItems((prev) => prev.filter((i) => i.id !== id))
-      return
-    }
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)))
+    setItems((prev) => {
+      let updated: CartItem[]
+      if (quantity < 1) {
+        updated = prev.filter((i) => i.id !== id)
+      } else {
+        updated = prev.map((i) => (i.id === id ? { ...i, quantity } : i))
+      }
+      saveCart(updated)
+      return updated
+    })
   }, [])
 
   const clearCart = useCallback(() => {
