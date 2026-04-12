@@ -107,7 +107,7 @@ export function adaptProduct(product: any, index: number = 0) {
     featuredImage: productImages[0],
     images: productImages,
     reviewNumber: product.reviewCount || 0,
-    rating: product.avgRating || 4.5,
+    rating: product.avgRating || 0,
     status: product.isFeatured ? 'Yeni Mahsul' : product.compareAtPrice ? '%20 Indirim' : '',
     options: [
       { name: 'Kavurma', optionValues: kavurmaOptions },

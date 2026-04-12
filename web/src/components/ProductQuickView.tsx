@@ -159,29 +159,23 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
         <AccordionInfo
           data={[
             {
-              name: 'Description',
+              name: 'Açıklama',
               content:
-                'Fashion is a form of self-expression and autonomy at a particular period and place and in a specific context, of clothing, footwear, lifestyle, accessories, makeup, hairstyle, and body posture.',
+                'Özenle seçilmiş tek menşeili kahve çekirdeklerinden, taze kavrulmuş specialty kahve. Her paketin arkasında bir hikaye, her yudumda benzersiz bir lezzet deneyimi.',
             },
             {
-              name: 'Features',
+              name: 'Özellikler',
               content: `<ul class="list-disc list-inside leading-7">
-                  <li>Material: 43% Sorona Yarn + 57% Stretch Polyester</li>
-                  <li>
-                  Casual pants waist with elastic elastic inside
-                  </li>
-                  <li>
-                    The pants are a bit tight so you always feel comfortable
-                  </li>
-                  <li>
-                    Excool technology application 4-way stretch
-                  </li>
+                  <li>Taze kavrulmuş, sipariş üzerine hazırlanır</li>
+                  <li>Tek menşeili specialty sınıf çekirdekler</li>
+                  <li>SCA standartlarında kalite kontrolü</li>
+                  <li>Hava geçirmez ambalaj ile tazelik koruması</li>
                 </ul>`,
             },
             {
-              name: 'Shipping & Return',
+              name: 'Kargo & İade',
               content:
-                'We offer free shipping on all orders over $50. If you are not satisfied with your purchase, you can return it within 30 days for a full refund.',
+                '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.',
             },
             {
               name: 'Care Instructions',
