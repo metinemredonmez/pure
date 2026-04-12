@@ -42,7 +42,7 @@ const Information = () => {
           title="İletişim Bilgileri"
           icon={UserCircle02Icon}
           value=""
-          onClickDeğiştir={() => {
+          onClickChange={() => {
             setTabActive('ContactInfo')
             handleScrollToEl('ContactInfo')
           }}
@@ -62,7 +62,7 @@ const Information = () => {
           title="Teslimat Adresi"
           icon={Route02Icon}
           value=""
-          onClickDeğiştir={() => {
+          onClickChange={() => {
             setTabActive('ShippingAddress')
             handleScrollToEl('ShippingAddress')
           }}
@@ -82,7 +82,7 @@ const Information = () => {
           title="Ödeme Yöntemi"
           icon={CreditCardPosIcon}
           value=""
-          onClickDeğiştir={() => {
+          onClickChange={() => {
             setTabActive('PaymentMethod')
             handleScrollToEl('PaymentMethod')
           }}
@@ -104,12 +104,12 @@ const TabHeader = ({
   title,
   icon,
   value,
-  onClickDeğiştir,
+  onClickChange,
 }: {
   title: string
   icon: IconSvgElement
   value: string
-  onClickDeğiştir: () => void
+  onClickChange: () => void
 }) => {
   return (
     <div className="flex flex-col items-start gap-5 p-5 sm:flex-row sm:p-6">
@@ -123,7 +123,7 @@ const TabHeader = ({
       </div>
       <button
         className="rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
-        onClick={onClickDeğiştir}
+        onClick={onClickChange}
         type="button"
       >
         Değiştir
@@ -303,7 +303,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
         <RadioGroup
           name="payment-method"
           aria-label="Payment method"
-          onDeğiştir={(e) => setMethodActive(e as any)}
+          onChange={(e) => setMethodActive(e as any)}
           value={mothodActive}
         >
           <RadioField className="sm:gap-x-6">
@@ -353,7 +353,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
         <RadioGroup
           name="payment-method"
           aria-label="Payment method"
-          onDeğiştir={(e) => setMethodActive(e as any)}
+          onChange={(e) => setMethodActive(e as any)}
           value={mothodActive}
         >
           <RadioField className="sm:gap-x-6">
@@ -406,7 +406,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
           name="payment-method"
           aria-label="Payment method"
           value={mothodActive}
-          onDeğiştir={(e) => setMethodActive(e as any)}
+          onChange={(e) => setMethodActive(e as any)}
         >
           <RadioField className="sm:gap-x-6">
             <Radio className="pt-3" value="Wallet" defaultChecked={active} />
