@@ -36,6 +36,8 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { KargonomiModule } from './modules/kargonomi/kargonomi.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 
 // Guards, filters, interceptors
 import { JwtAuthGuard } from './modules/identity/guards/jwt-auth.guard';
@@ -95,6 +97,8 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     // Sprint 2 modules
     WebsiteModule,
     BlogModule,
+    KargonomiModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [
