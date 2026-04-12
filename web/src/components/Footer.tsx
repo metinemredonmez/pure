@@ -31,7 +31,6 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/toptan-satis', label: 'Toptan Satış' },
       { href: '/kurumsal-hediye', label: 'Kurumsal Hediye' },
       { href: '/franchise', label: 'Franchise' },
-      { href: '/kahve-okulu', label: 'Kahve Okulu' },
     ],
   },
   {
