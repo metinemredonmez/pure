@@ -19,6 +19,7 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/demleme-rehberi', label: 'Demleme Rehberi' },
       { href: '/kahve-sozlugu', label: 'Kahve Sözlüğü' },
       { href: '/ekipmanlar', label: 'Ekipmanlar' },
+      { href: '/sadakat', label: 'Sadakat Programı' },
     ],
   },
   {
