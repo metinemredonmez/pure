@@ -112,7 +112,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                 <div className="ms-1.5 flex">
                   <span>{rating}</span>
                   <span className="mx-2 block">·</span>
-                  <span className="text-neutral-600 underline dark:text-neutral-400">{reviewNumber} reviews</span>
+                  <span className="text-neutral-600 underline dark:text-neutral-400">{reviewNumber} değerlendirme</span>
                 </div>
               </Link>
               <span className="mx-2.5 hidden sm:block">·</span>
@@ -178,18 +178,18 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                 '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.',
             },
             {
-              name: 'Care Instructions',
+              name: 'Saklama Koşulları',
               content:
-                'Machine wash cold with like colors. Do not bleach. Tumble dry low. Iron low if needed. Do not dry clean.',
+                'Serin, kuru ve doğrudan güneş ışığı almayan bir yerde saklayın. Açıldıktan sonra hava geçirmez kapta muhafaza edin. Raf ömrü: 12 ay (açılmamış), 1 ay (açılmış).',
             },
           ]}
         />
 
         <div className="mt-6 flex text-sm text-neutral-500">
           <p className="text-xs">
-            or{' '}
+            veya{' '}
             <Link href={'/products/' + handle} className="text-xs font-medium text-neutral-900 uppercase">
-              Go to product detail page <span aria-hidden="true"> →</span>
+              Ürün detay sayfasına git <span aria-hidden="true"> →</span>
             </Link>
           </p>
         </div>
