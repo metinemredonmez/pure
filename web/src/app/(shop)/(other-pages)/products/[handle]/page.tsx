@@ -137,17 +137,21 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
               <Prices contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold" price={price || 0} />
               <div className="hidden h-7 border-l border-neutral-300 sm:block dark:border-neutral-700"></div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <a href="#reviews" className="flex items-center text-sm font-medium">
-                  <StarIcon className="size-5 pb-px text-yellow-400" />
-                  <div className="ms-1.5 flex">
-                    <span>{rating}</span>
-                    <span className="mx-2 block">·</span>
-                    <span className="text-neutral-600 underline dark:text-neutral-400">
-                      {reviewNumber} degerlendirme
-                    </span>
-                  </div>
-                </a>
-                <span>·</span>
+                {reviewNumber > 0 && (
+                  <>
+                    <a href="#reviews" className="flex items-center text-sm font-medium">
+                      <StarIcon className="size-5 pb-px text-yellow-400" />
+                      <div className="ms-1.5 flex">
+                        <span>{rating}</span>
+                        <span className="mx-2 block">·</span>
+                        <span className="text-neutral-600 underline dark:text-neutral-400">
+                          {reviewNumber} değerlendirme
+                        </span>
+                      </div>
+                    </a>
+                    <span>·</span>
+                  </>
+                )}
                 <ProductStatus status={status} />
               </div>
             </div>

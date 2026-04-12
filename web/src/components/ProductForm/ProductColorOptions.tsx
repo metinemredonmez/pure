@@ -5,6 +5,13 @@ import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import { useState } from 'react'
 
+const ROAST_LABELS: Record<string, string> = {
+  light: 'Açık Kavurma',
+  medium: 'Orta Kavurma',
+  'medium-dark': 'Orta-Koyu',
+  dark: 'Koyu Kavurma',
+}
+
 const ProductColorOptions = ({
   options,
   className,
@@ -14,39 +21,37 @@ const ProductColorOptions = ({
   className?: string
   defaultColor: string
 }) => {
-  const [colorSelected, setColorSelected] = useState(defaultColor)
+  const [selected, setSelected] = useState(defaultColor)
 
-  const colorOptionValues = options?.find((option) => option.name === 'Kavurma')?.optionValues
+  const optionValues = options?.find((option) => option.name === 'Kavurma')?.optionValues
 
-  if (!colorOptionValues?.length) {
+  if (!optionValues?.length) {
     return null
   }
 
   return (
     <Headless.Field className={clsx(className)}>
-      <Headless.RadioGroup value={colorSelected} name="color" onChange={setColorSelected} aria-label="Color">
-        <Headless.Label className="block text-sm font-medium rtl:text-right">Color</Headless.Label>
-        <div className="mt-2.5 flex gap-x-2.5">
-          {colorOptionValues.map((value) => {
-            const isActive = value.name === colorSelected
+      <Headless.RadioGroup value={selected} name="roast" onChange={setSelected} aria-label="Kavurma Profili">
+        <Headless.Label className="block text-sm font-medium rtl:text-right">Kavurma Profili</Headless.Label>
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {optionValues.map((value) => {
+            const isActive = value.name === selected
+            const label = ROAST_LABELS[value.name.toLowerCase()] || value.name
 
             return (
               <Headless.Radio
                 key={value.name}
                 value={value.name}
-                as="div"
+                as="button"
+                type="button"
                 className={clsx(
-                  'relative size-9 cursor-pointer rounded-full',
-                  isActive && 'ring-2 ring-neutral-900 dark:ring-neutral-300'
+                  'rounded-full border px-4 py-2 text-sm font-medium transition',
+                  isActive
+                    ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                    : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300'
                 )}
               >
-                <div
-                  className="absolute inset-0.5 z-0 overflow-hidden rounded-full bg-cover ring-1 ring-neutral-900/10 dark:ring-white/15"
-                  style={{
-                    backgroundColor: value.swatch?.color,
-                    backgroundImage: value.swatch?.image ? `url(${value.swatch.image})` : undefined,
-                  }}
-                />
+                {label}
               </Headless.Radio>
             )
           })}
