@@ -14,7 +14,9 @@ export default function CartPageContent() {
 
   const freeShippingThreshold = 300
   const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
-  const total = subtotal + shippingCost
+  const kdvRate = 0.10
+  const kdvAmount = subtotal * kdvRate
+  const total = subtotal + shippingCost + kdvAmount
 
   if (items.length === 0) {
     return (
@@ -145,6 +147,12 @@ export default function CartPageContent() {
                     ) : (
                       `₺${shippingCost.toLocaleString('tr-TR')}`
                     )}
+                  </span>
+                </div>
+                <div className="flex justify-between py-4">
+                  <span>KDV (%{(kdvRate * 100).toFixed(0)})</span>
+                  <span className="font-semibold text-neutral-900 dark:text-neutral-200">
+                    ₺{kdvAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
                 {subtotal < freeShippingThreshold && (

@@ -12,51 +12,64 @@ interface NotifyAddToCartProps extends AddToCardButtonProps {
   show: boolean
 }
 
-export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({ show, color, imageUrl, price, quantity, title, size }) => {
+export const NotifyAddToCart: FC<NotifyAddToCartProps & { totalItems?: number; cartTotal?: number }> = ({ show, color, imageUrl, price, quantity, title, size, totalItems, cartTotal }) => {
   return (
     <Transition
       appear
       as={'div'}
       show={show}
-      className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-4 text-neutral-900 shadow-lg ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10"
-      enter="transition-all duration-150"
-      enterFrom="opacity-0 translate-x-20"
-      enterTo="opacity-100 translate-x-0"
+      className="pointer-events-auto w-full max-w-md rounded-2xl bg-white p-5 text-neutral-900 shadow-2xl ring-1 ring-black/5 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-white/10"
+      enter="transition-all duration-200"
+      enterFrom="opacity-0 translate-x-20 scale-95"
+      enterTo="opacity-100 translate-x-0 scale-100"
       leave="transition-all duration-150"
       leaveFrom="opacity-100 translate-x-0"
       leaveTo="opacity-0 translate-x-20"
     >
-      <p className="mt-1 block text-base leading-none font-semibold">Sepete eklendi!</p>
+      <div className="flex items-center gap-2">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500">
+          <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <p className="text-sm font-semibold">Sepete eklendi!</p>
+      </div>
 
-      <div className="mt-6 flex">
-        <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-          <Image src={imageUrl} alt={title} fill sizes="100px" className="h-full w-full object-contain object-center" />
+      <div className="mt-4 flex gap-3">
+        <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+          <Image src={imageUrl} alt={title} fill sizes="80px" className="object-contain" />
         </div>
 
-        <div className="ml-4 flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col justify-between">
           <div>
-            <div className="flex justify-between">
-              <div>
-                <h3 className="text-base font-medium">{title}</h3>
-                <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                  {color && <span>{color}</span>}
-                  {color && size && <span className="mx-2 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>}
-                  {size && <span>{size}</span>}
-                </p>
-              </div>
-              <Prices price={price} className="mt-0.5" />
-            </div>
+            <h3 className="text-sm font-semibold leading-tight">{title}</h3>
+            <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">
+              {color && <span>{color}</span>}
+              {color && size && <span> · </span>}
+              {size && <span>{size}</span>}
+              {quantity > 1 && <span> · Adet: {quantity}</span>}
+            </p>
           </div>
-          <div className="flex flex-1 items-end justify-between text-sm">
-            <p className="text-gray-500 dark:text-neutral-400">{`Adet ${quantity}`}</p>
+          <Prices price={price} className="mt-1" contentClass="text-sm font-bold" />
+        </div>
+      </div>
 
-            <div className="flex">
-              <Link href={'/cart'} className="font-medium text-primary-600 dark:text-primary-500">
-                Sepeti Gör
-              </Link>
-            </div>
+      {(totalItems || cartTotal) && (
+        <div className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 dark:bg-neutral-700/50">
+          <div className="flex justify-between text-xs">
+            <span className="text-neutral-500">Sepetinizde {totalItems || 0} ürün</span>
+            <span className="font-bold text-neutral-900 dark:text-neutral-100">₺{(cartTotal || 0).toLocaleString('tr-TR')}</span>
           </div>
         </div>
+      )}
+
+      <div className="mt-3 grid grid-cols-2 gap-2">
+        <Link href="/cart" className="flex items-center justify-center rounded-full border border-neutral-200 px-4 py-2 text-xs font-medium hover:bg-neutral-50 dark:border-neutral-600 dark:hover:bg-neutral-700">
+          Sepeti Gör
+        </Link>
+        <Link href="/checkout" className="flex items-center justify-center rounded-full bg-primary-700 px-4 py-2 text-xs font-medium text-white hover:bg-primary-800">
+          Ödemeye Geç
+        </Link>
       </div>
     </Transition>
   )
@@ -93,7 +106,7 @@ const AddToCardButton = ({
   as,
   ...props
 }: AddToCardButtonProps) => {
-  const { addItem } = useCart()
+  const { addItem, totalQuantity, subtotal } = useCart()
 
   const notifyAddTocart = () => {
     // Add to cart context (persisted in localStorage)
@@ -109,6 +122,9 @@ const AddToCardButton = ({
       variantId,
     })
 
+    const newTotal = subtotal + price * (quantity || 1)
+    const newCount = totalQuantity + (quantity || 1)
+
     toast.custom(
       (t) => (
         <NotifyAddToCart
@@ -119,6 +135,8 @@ const AddToCardButton = ({
           color={color}
           title={title}
           price={price}
+          totalItems={newCount}
+          cartTotal={newTotal}
         />
       ),
       { position: 'top-right', id: 'nc-product-notify', duration: 4000 }
