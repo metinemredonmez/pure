@@ -55,16 +55,24 @@ function saveCart(items: CartItem[]) {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+  const [items, setItems] = useState<CartItem[]>(() => {
+    // SSR-safe: return empty on server, load from localStorage on client
+    if (typeof window === 'undefined') return []
+    return loadCart()
+  })
   const [mounted, setMounted] = useState(false)
 
+  // Mark as mounted after first render (client-side only)
   useEffect(() => {
-    setMounted(true)
+    // Re-load from localStorage in case SSR hydration reset state
     setItems(loadCart())
+    setMounted(true)
   }, [])
 
+  // Save cart to localStorage whenever items change (skip initial empty render)
   useEffect(() => {
-    if (mounted) saveCart(items)
+    if (!mounted) return
+    saveCart(items)
   }, [items, mounted])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
