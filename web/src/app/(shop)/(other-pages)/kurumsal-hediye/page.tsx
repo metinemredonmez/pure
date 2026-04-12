@@ -1,3 +1,5 @@
+import { DiscountTag01Icon, PackageIcon, DeliveryTruck01Icon, CoffeeIcon, Invoice01Icon, ColorsIcon, GiftCardIcon, GiftIcon, CallIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import Image from 'next/image'
 import { Metadata } from 'next'
@@ -12,14 +14,14 @@ const giftSets = [
     name: 'Klasik Set',
     desc: 'Türk Kahvesi 100gr + bakır cezve + porselen fincan takımı',
     price: '₺349',
-    icon: '☕',
+    icon: <HugeiconsIcon icon={CoffeeIcon} size={28} color="currentColor" strokeWidth={1.5} />,
     accent: 'from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20',
   },
   {
     name: 'Premium Set',
     desc: '3 farklı menşei kahve (250gr x 3) + demleme rehberi + özel kutu',
     price: '₺549',
-    icon: '🎁',
+    icon: <HugeiconsIcon icon={GiftIcon} size={28} color="currentColor" strokeWidth={1.5} />,
     accent: 'from-primary-50 to-amber-50 dark:from-primary-900/20 dark:to-amber-900/20',
     popular: true,
   },
@@ -27,25 +29,25 @@ const giftSets = [
     name: 'Gourmet Set',
     desc: 'Signature Blend 500gr + V60 starter kit + workshop davetiyesi',
     price: '₺899',
-    icon: '⭐',
+    icon: <HugeiconsIcon icon={GiftCardIcon} size={28} color="currentColor" strokeWidth={1.5} />,
     accent: 'from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20',
   },
   {
     name: 'Özel Tasarım',
     desc: 'Tamamen size özel: logo baskı, özel blend, kişiye özel not kartı',
     price: 'Teklif alın',
-    icon: '✨',
+    icon: <HugeiconsIcon icon={ColorsIcon} size={28} color="currentColor" strokeWidth={1.5} />,
     accent: 'from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20',
   },
 ]
 
 const benefits = [
-  { icon: '🏷️', title: 'Logonuzla Markalama', desc: 'Kutu, ambalaj ve not kartı üzerine şirket logonuz basılır.' },
-  { icon: '📦', title: 'Toplu Sipariş Avantajı', desc: '20+ adet siparişlerde özel toplu indirim.' },
-  { icon: '🚚', title: 'Türkiye Geneli Teslimat', desc: 'Tek adrese veya farklı adreslere çoklu gönderim.' },
-  { icon: '☕', title: 'Taze Kavurma Garantisi', desc: 'Hediye tarihinize göre sipariş üzerine taze kavrulur.' },
-  { icon: '📝', title: 'Kişiye Özel Not Kartı', desc: 'Her pakete el yazısı veya baskılı tebrik kartı eklenir.' },
-  { icon: '🎨', title: 'Özel Kutu Tasarımı', desc: 'Etkinlik temanıza veya markanıza uygun kutu tasarımı.' },
+  { icon: <HugeiconsIcon icon={DiscountTag01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Logonuzla Markalama', desc: 'Kutu, ambalaj ve not kartı üzerine şirket logonuz basılır.' },
+  { icon: <HugeiconsIcon icon={PackageIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Toplu Sipariş Avantajı', desc: '20+ adet siparişlerde özel toplu indirim.' },
+  { icon: <HugeiconsIcon icon={DeliveryTruck01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Türkiye Geneli Teslimat', desc: 'Tek adrese veya farklı adreslere çoklu gönderim.' },
+  { icon: <HugeiconsIcon icon={CoffeeIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Taze Kavurma Garantisi', desc: 'Hediye tarihinize göre sipariş üzerine taze kavrulur.' },
+  { icon: <HugeiconsIcon icon={Invoice01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Kişiye Özel Not Kartı', desc: 'Her pakete el yazısı veya baskılı tebrik kartı eklenir.' },
+  { icon: <HugeiconsIcon icon={ColorsIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Özel Kutu Tasarımı', desc: 'Etkinlik temanıza veya markanıza uygun kutu tasarımı.' },
 ]
 
 export default function KurumsalHediyePage() {
@@ -74,7 +76,7 @@ export default function KurumsalHediyePage() {
                 href="tel:+905524622954"
                 className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10"
               >
-                📞 0552 462 29 54
+                <HugeiconsIcon icon={CallIcon} size={16} color="currentColor" strokeWidth={1.5} /> 0552 462 29 54
               </a>
             </div>
           </div>
@@ -100,7 +102,7 @@ export default function KurumsalHediyePage() {
         </div>
 
         {/* Decorative */}
-        <div className="pointer-events-none absolute -top-20 -right-20 text-[200px] opacity-5 select-none">🎁</div>
+        <div className="pointer-events-none absolute -top-20 -right-20 opacity-5 select-none"><HugeiconsIcon icon={GiftIcon} size={180} color="currentColor" strokeWidth={1} /></div>
       </div>
 
       {/* Benefits grid */}

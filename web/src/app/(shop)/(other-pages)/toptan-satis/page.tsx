@@ -1,3 +1,5 @@
+import { CoffeeIcon, Hotel01Icon, Building02Icon, ShoppingCart01Icon, CallIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import Image from 'next/image'
 import { Metadata } from 'next'
@@ -9,25 +11,25 @@ export const metadata: Metadata = {
 
 const segments = [
   {
-    icon: '☕',
+    icon: <HugeiconsIcon icon={CoffeeIcon} size={28} color="currentColor" strokeWidth={1.5} />,
     title: 'Kafeler & Specialty Barlar',
     desc: 'Menünüze özel blend geliştirme, barista eğitimi ve ekipman danışmanlığı dahil.',
     minOrder: '10 kg/ay',
   },
   {
-    icon: '🏨',
+    icon: <HugeiconsIcon icon={Hotel01Icon} size={28} color="currentColor" strokeWidth={1.5} />,
     title: 'Oteller & Restoranlar',
     desc: 'Kahvaltı servisi, oda servisi ve lobi kahve istasyonları için düzenli tedarik.',
     minOrder: '25 kg/ay',
   },
   {
-    icon: '🏢',
+    icon: <HugeiconsIcon icon={Building02Icon} size={28} color="currentColor" strokeWidth={1.5} />,
     title: 'Ofisler & Co-working',
     desc: 'Çalışan memnuniyetini artıran premium kahve aboneliği. Otomatik teslimat.',
     minOrder: '5 kg/ay',
   },
   {
-    icon: '🛒',
+    icon: <HugeiconsIcon icon={ShoppingCart01Icon} size={28} color="currentColor" strokeWidth={1.5} />,
     title: 'Perakende & Market',
     desc: 'Raf ürünü olarak Pure Olentia kahveleri. Markalama ve fiyatlandırma desteği.',
     minOrder: '50 kg/sipariş',
@@ -66,7 +68,7 @@ export default function ToptanSatisPage() {
                 href="tel:+905524622954"
                 className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10"
               >
-                📞 0552 462 29 54
+                <HugeiconsIcon icon={CallIcon} size={16} color="currentColor" strokeWidth={1.5} /> 0552 462 29 54
               </a>
             </div>
           </div>
@@ -83,7 +85,7 @@ export default function ToptanSatisPage() {
             </div>
           </div>
         </div>
-        <div className="pointer-events-none absolute -bottom-20 -left-20 text-[200px] opacity-5 select-none">☕</div>
+        <div className="pointer-events-none absolute -bottom-20 -left-20 opacity-5 select-none"><HugeiconsIcon icon={CoffeeIcon} size={180} color="currentColor" strokeWidth={1} /></div>
       </div>
 
       {/* Advantage stats */}

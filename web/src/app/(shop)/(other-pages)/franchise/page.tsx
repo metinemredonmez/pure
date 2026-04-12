@@ -1,3 +1,5 @@
+import { KeyIcon, Award01Icon, CoffeeIcon, Megaphone01Icon, AnalyticsUpIcon, CallIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import { Metadata } from 'next'
 import FranchiseForm from './FranchiseForm'
@@ -15,12 +17,12 @@ const stats = [
 ]
 
 const benefits = [
-  { title: 'Anahtar Teslim Konsept', desc: 'Mekan tasarımından ekipman seçimine kadar komple çözüm.', icon: '🔑' },
-  { title: 'Barista Eğitimi', desc: 'SCA standartlarında profesyonel barista eğitimi ve sertifika.', icon: '🎓' },
-  { title: 'Taze Kavurma Tedarik', desc: 'Merkezi kavurma tesisimizden düzenli taze kahve tedariki.', icon: '☕' },
-  { title: 'Pazarlama Desteği', desc: 'Dijital pazarlama, sosyal medya ve yerel kampanya desteği.', icon: '📢' },
-  { title: 'Operasyon Danışmanlığı', desc: 'Menü mühendisliği, maliyet kontrolü ve iş süreçleri danışmanlığı.', icon: '📊' },
-  { title: 'Marka Gücü', desc: 'Pure Olentia marka bilinirliği ve sadık müşteri tabanı.', icon: '⭐' },
+  { title: 'Anahtar Teslim Konsept', desc: 'Mekan tasarımından ekipman seçimine kadar komple çözüm.', icon: <HugeiconsIcon icon={KeyIcon} size={24} color="currentColor" strokeWidth={1.5} /> },
+  { title: 'Barista Eğitimi', desc: 'SCA standartlarında profesyonel barista eğitimi ve sertifika.', icon: <HugeiconsIcon icon={Award01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
+  { title: 'Taze Kavurma Tedarik', desc: 'Merkezi kavurma tesisimizden düzenli taze kahve tedariki.', icon: <HugeiconsIcon icon={CoffeeIcon} size={24} color="currentColor" strokeWidth={1.5} /> },
+  { title: 'Pazarlama Desteği', desc: 'Dijital pazarlama, sosyal medya ve yerel kampanya desteği.', icon: <HugeiconsIcon icon={Megaphone01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
+  { title: 'Operasyon Danışmanlığı', desc: 'Menü mühendisliği, maliyet kontrolü ve iş süreçleri danışmanlığı.', icon: <HugeiconsIcon icon={AnalyticsUpIcon} size={24} color="currentColor" strokeWidth={1.5} /> },
+  { title: 'Marka Gücü', desc: 'Pure Olentia marka bilinirliği ve sadık müşteri tabanı.', icon: <HugeiconsIcon icon={Award01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
 ]
 
 export default function FranchisePage() {
@@ -44,11 +46,11 @@ export default function FranchisePage() {
               Başvuru Yap
             </a>
             <a href="tel:+905524622954" className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">
-              📞 0552 462 29 54
+              <HugeiconsIcon icon={CallIcon} size={16} color="currentColor" strokeWidth={1.5} /> 0552 462 29 54
             </a>
           </div>
         </div>
-        <div className="pointer-events-none absolute -bottom-10 -right-10 text-[180px] opacity-5 select-none">☕</div>
+        <div className="pointer-events-none absolute -bottom-10 -right-10 opacity-5 select-none"><HugeiconsIcon icon={CoffeeIcon} size={160} color="currentColor" strokeWidth={1} /></div>
       </div>
 
       {/* Stats */}

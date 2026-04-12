@@ -1,4 +1,6 @@
 import { getSiteSettings } from '@/lib/site-settings'
+import { Location01Icon, CallIcon, MailOpen01Icon, ChatQuestion01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 import ContactForm from './ContactForm'
 
@@ -40,7 +42,7 @@ const PageContact = async () => {
             {settings.address && (
               <div className="rounded-2xl bg-primary-50 p-6 dark:bg-primary-900/20">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-xl dark:bg-primary-900/40">
-                  📍
+                  <HugeiconsIcon icon={Location01Icon} size={24} color="currentColor" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
                   Adres
@@ -51,7 +53,7 @@ const PageContact = async () => {
             {settings.phone && (
               <div className="rounded-2xl bg-amber-50 p-6 dark:bg-amber-900/20">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-100 text-xl dark:bg-amber-900/40">
-                  📞
+                  <HugeiconsIcon icon={CallIcon} size={24} color="currentColor" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
                   Telefon
@@ -67,7 +69,7 @@ const PageContact = async () => {
             {settings.email && (
               <div className="rounded-2xl bg-emerald-50 p-6 dark:bg-emerald-900/20">
                 <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-xl dark:bg-emerald-900/40">
-                  ✉️
+                  <HugeiconsIcon icon={MailOpen01Icon} size={24} color="currentColor" strokeWidth={1.5} />
                 </div>
                 <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
                   E-posta
@@ -79,7 +81,7 @@ const PageContact = async () => {
             )}
             <div className="rounded-2xl bg-sky-50 p-6 dark:bg-sky-900/20">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-100 text-xl dark:bg-sky-900/40">
-                💬
+                <HugeiconsIcon icon={ChatQuestion01Icon} size={24} color="currentColor" strokeWidth={1.5} />
               </div>
               <h3 className="mt-4 text-sm font-semibold tracking-wider text-neutral-800 uppercase dark:text-neutral-200">
                 Sosyal Medya
@@ -145,7 +147,7 @@ const PageContact = async () => {
                   target="_blank"
                   className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-primary-800 transition hover:bg-white/90"
                 >
-                  💬 WhatsApp ile Yazın
+                  <HugeiconsIcon icon={ChatQuestion01Icon} size={18} color="currentColor" strokeWidth={1.5} /> WhatsApp ile Yazın
                 </a>
               </div>
             </div>

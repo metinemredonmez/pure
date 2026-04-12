@@ -1,5 +1,7 @@
 'use client'
 
+import { DeliveryTruck01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { CartItem, useCart } from '@/contexts/CartContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
@@ -42,7 +44,7 @@ const AsideSidebarCart = () => {
               </Link>
               <div className="mt-8 rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-800">
                 <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                  🚚 300 TL üzeri siparişlerde <span className="text-primary-700 dark:text-primary-400">ücretsiz kargo</span>
+                  <HugeiconsIcon icon={DeliveryTruck01Icon} size={14} color="currentColor" strokeWidth={1.5} className="inline-block" /> 300 TL üzeri siparişlerde <span className="text-primary-700 dark:text-primary-400">ücretsiz kargo</span>
                 </p>
               </div>
             </div>

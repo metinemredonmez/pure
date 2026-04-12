@@ -1,3 +1,5 @@
+import { CheckmarkCircleIcon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, Location01Icon, Invoice01Icon, MailOpen01Icon, SmartPhone01Icon, Globe02Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
@@ -9,11 +11,11 @@ export const metadata: Metadata = {
 }
 
 const journey = [
-  { step: '01', title: 'Sipariş Alındı', desc: 'Ödemeniz onaylandı, onay e-postası gönderildi.', icon: '✅', color: 'emerald' },
-  { step: '02', title: 'Taze Kavrulur', desc: '24 saat içinde siparişinize özel kavrulur.', icon: '🔥', color: 'orange' },
-  { step: '03', title: 'Paketleme', desc: 'Valf kontrollü özel pakette, kavurma tarihi yazılarak paketlenir.', icon: '📦', color: 'sky' },
-  { step: '04', title: 'Kargoya Teslim', desc: 'Anlaşmalı kargo firmamıza teslim edilir. Takip numarası e-posta ile iletilir.', icon: '🚚', color: 'violet' },
-  { step: '05', title: 'Kapınızda', desc: 'İstanbul içi 1 iş günü, Türkiye geneli 1-3 iş günü.', icon: '🏠', color: 'primary' },
+  { step: '01', title: 'Sipariş Alındı', desc: 'Ödemeniz onaylandı, onay e-postası gönderildi.', icon: <HugeiconsIcon icon={CheckmarkCircleIcon} size={28} color="currentColor" strokeWidth={1.5} />, color: 'emerald' },
+  { step: '02', title: 'Taze Kavrulur', desc: '24 saat içinde siparişinize özel kavrulur.', icon: <HugeiconsIcon icon={Coffee01Icon} size={28} color="currentColor" strokeWidth={1.5} />, color: 'orange' },
+  { step: '03', title: 'Paketleme', desc: 'Valf kontrollü özel pakette, kavurma tarihi yazılarak paketlenir.', icon: <HugeiconsIcon icon={PackageIcon} size={28} color="currentColor" strokeWidth={1.5} />, color: 'sky' },
+  { step: '04', title: 'Kargoya Teslim', desc: 'Anlaşmalı kargo firmamıza teslim edilir. Takip numarası e-posta ile iletilir.', icon: <HugeiconsIcon icon={DeliveryTruck01Icon} size={28} color="currentColor" strokeWidth={1.5} />, color: 'violet' },
+  { step: '05', title: 'Kapınızda', desc: 'İstanbul içi 1 iş günü, Türkiye geneli 1-3 iş günü.', icon: <HugeiconsIcon icon={Location01Icon} size={28} color="currentColor" strokeWidth={1.5} />, color: 'primary' },
 ]
 
 const accentBg: Record<string, string> = {
@@ -46,7 +48,7 @@ export default function SiparisTakibiPage() {
       <div className="container mt-16">
         <div className="mx-auto max-w-lg rounded-3xl border border-neutral-200 bg-white p-8 shadow-lg dark:border-neutral-700 dark:bg-neutral-900">
           <div className="mb-6 text-center">
-            <span className="text-4xl">📋</span>
+            <span className="text-4xl"><HugeiconsIcon icon={Invoice01Icon} size={36} color="currentColor" strokeWidth={1.5} /></span>
             <h2 className="mt-3 text-xl font-semibold text-neutral-900 dark:text-white">Sipariş Sorgula</h2>
           </div>
           <form>
@@ -108,17 +110,17 @@ export default function SiparisTakibiPage() {
       <div className="container mt-20">
         <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
           <div className="rounded-2xl bg-sky-50 p-6 text-center dark:bg-sky-900/20">
-            <span className="text-3xl">📧</span>
+            <span className="text-3xl"><HugeiconsIcon icon={MailOpen01Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
             <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">E-posta Bildirimi</h3>
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Her adımda e-posta ile bilgilendirilirsiniz.</p>
           </div>
           <div className="rounded-2xl bg-violet-50 p-6 text-center dark:bg-violet-900/20">
-            <span className="text-3xl">📱</span>
+            <span className="text-3xl"><HugeiconsIcon icon={SmartPhone01Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
             <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">SMS Takip</h3>
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Kargo firmasından SMS ile takip numarası gelir.</p>
           </div>
           <div className="rounded-2xl bg-emerald-50 p-6 text-center dark:bg-emerald-900/20">
-            <span className="text-3xl">🔗</span>
+            <span className="text-3xl"><HugeiconsIcon icon={Globe02Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
             <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">Canlı Takip</h3>
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Kargo takip linki ile paketinizi canlı izleyin.</p>
           </div>

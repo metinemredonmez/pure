@@ -1,3 +1,5 @@
+import { CoffeeIcon, BulbIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
 
@@ -189,7 +191,7 @@ export default function DemlemeRehberiPage() {
             potansiyelini ortaya çıkarın.
           </p>
         </div>
-        <div className="pointer-events-none absolute -top-10 -right-10 text-9xl opacity-10 select-none">☕</div>
+        <div className="pointer-events-none absolute -top-10 -right-10 opacity-10 select-none"><HugeiconsIcon icon={CoffeeIcon} size={120} color="currentColor" strokeWidth={1} /></div>
       </div>
 
       {/* Quick reference cards */}
@@ -277,7 +279,7 @@ export default function DemlemeRehberiPage() {
                 {/* Pro tip */}
                 <div className={`mt-8 rounded-2xl border-l-4 p-5 ${style.bg} ${style.border}`}>
                   <div className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200">
-                    💡 Pro İpucu
+                    <HugeiconsIcon icon={BulbIcon} size={16} color="currentColor" strokeWidth={1.5} /> Pro İpucu
                   </div>
                   <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{m.tip}</p>
                 </div>
@@ -290,7 +292,7 @@ export default function DemlemeRehberiPage() {
       {/* CTA */}
       <div className="container mt-24">
         <div className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 to-primary-900 p-12 text-center text-white lg:p-16">
-          <div className="pointer-events-none absolute -top-8 -right-8 text-[160px] opacity-10 select-none">☕</div>
+          <div className="pointer-events-none absolute -top-8 -right-8 opacity-10 select-none"><HugeiconsIcon icon={CoffeeIcon} size={140} color="currentColor" strokeWidth={1} /></div>
           <h2 className="text-3xl font-bold">Hangi demleme yöntemini denemeliyim?</h2>
           <p className="mx-auto mt-4 max-w-2xl text-white/80">
             İlk kez specialty kahve deniyorsanız V60 veya French Press ile başlamanızı öneriyoruz. Sorularınız için bize

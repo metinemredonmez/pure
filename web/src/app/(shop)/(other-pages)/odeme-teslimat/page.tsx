@@ -1,3 +1,5 @@
+import { CreditCardIcon, Invoice01Icon, SmartPhone01Icon, Shield01Icon, Building01Icon, Globe02Icon, Location01Icon, ShoppingCart01Icon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, BulbIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -6,15 +8,15 @@ export const metadata: Metadata = {
 }
 
 const paymentMethods = [
-  { icon: '💳', name: 'Kredi / Banka Kartı', desc: 'Visa, Mastercard, Troy ile güvenli ödeme. Taksit seçenekleri mevcut.' },
-  { icon: '🏦', name: 'Havale / EFT', desc: 'Sipariş onayından sonra 24 saat içinde ödemenizi yapın.' },
-  { icon: '📱', name: 'Mobil Ödeme', desc: 'Apple Pay ve Google Pay ile hızlı ödeme.' },
+  { icon: <HugeiconsIcon icon={CreditCardIcon} size={28} color="currentColor" strokeWidth={1.5} />, name: 'Kredi / Banka Kartı', desc: 'Visa, Mastercard, Troy ile güvenli ödeme. Taksit seçenekleri mevcut.' },
+  { icon: <HugeiconsIcon icon={Invoice01Icon} size={28} color="currentColor" strokeWidth={1.5} />, name: 'Havale / EFT', desc: 'Sipariş onayından sonra 24 saat içinde ödemenizi yapın.' },
+  { icon: <HugeiconsIcon icon={SmartPhone01Icon} size={28} color="currentColor" strokeWidth={1.5} />, name: 'Mobil Ödeme', desc: 'Apple Pay ve Google Pay ile hızlı ödeme.' },
 ]
 
 const shippingZones = [
-  { zone: 'İstanbul İçi', time: '1 iş günü', icon: '🏙️' },
-  { zone: 'Büyükşehirler', time: '1-2 iş günü', icon: '🌆' },
-  { zone: 'Diğer İller', time: '2-3 iş günü', icon: '🗺️' },
+  { zone: 'İstanbul İçi', time: '1 iş günü', icon: <HugeiconsIcon icon={Building01Icon} size={28} color="currentColor" strokeWidth={1.5} /> },
+  { zone: 'Büyükşehirler', time: '1-2 iş günü', icon: <HugeiconsIcon icon={Globe02Icon} size={28} color="currentColor" strokeWidth={1.5} /> },
+  { zone: 'Diğer İller', time: '2-3 iş günü', icon: <HugeiconsIcon icon={Location01Icon} size={28} color="currentColor" strokeWidth={1.5} /> },
 ]
 
 export default function OdemeTeslimatPage() {
@@ -51,7 +53,7 @@ export default function OdemeTeslimatPage() {
             </div>
             <div className="mt-8 rounded-2xl bg-emerald-50 p-6 dark:bg-emerald-900/20">
               <div className="flex items-center gap-3">
-                <span className="text-2xl">🔒</span>
+                <span className="text-2xl"><HugeiconsIcon icon={Shield01Icon} size={24} color="currentColor" strokeWidth={1.5} /></span>
                 <div>
                   <h3 className="font-semibold text-neutral-900 dark:text-white">Güvenli Ödeme</h3>
                   <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
@@ -91,7 +93,7 @@ export default function OdemeTeslimatPage() {
                 <div className="text-xl font-bold text-neutral-900 dark:text-white">Standart Kargo</div>
                 <p className="mt-2 text-neutral-500 dark:text-neutral-400">300 TL altı siparişlerde anlaşmalı kargo firmamızın güncel tarifesi uygulanır.</p>
                 <div className="mt-4 rounded-lg bg-neutral-100 p-3 text-sm dark:bg-neutral-800">
-                  💡 <strong>İpucu:</strong> 300 TL'ye tamamlayarak ücretsiz kargo kazanabilirsiniz.
+                  <HugeiconsIcon icon={BulbIcon} size={14} color="currentColor" strokeWidth={1.5} className="inline-block" /> <strong>İpucu:</strong> 300 TL'ye tamamlayarak ücretsiz kargo kazanabilirsiniz.
                 </div>
               </div>
             </div>
@@ -102,10 +104,10 @@ export default function OdemeTeslimatPage() {
             <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Sipariş Süreci</h2>
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { step: '01', title: 'Sipariş', desc: 'Ödemeniz anında onaylanır', icon: '🛒' },
-                { step: '02', title: 'Kavurma', desc: '24 saat içinde taze kavrulur', icon: '🔥' },
-                { step: '03', title: 'Paketleme', desc: 'Valf kontrollü özel ambalaj', icon: '📦' },
-                { step: '04', title: 'Teslimat', desc: 'Takip numarası ile kargoya verilir', icon: '🚚' },
+                { step: '01', title: 'Sipariş', desc: 'Ödemeniz anında onaylanır', icon: <HugeiconsIcon icon={ShoppingCart01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
+                { step: '02', title: 'Kavurma', desc: '24 saat içinde taze kavrulur', icon: <HugeiconsIcon icon={Coffee01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
+                { step: '03', title: 'Paketleme', desc: 'Valf kontrollü özel ambalaj', icon: <HugeiconsIcon icon={PackageIcon} size={24} color="currentColor" strokeWidth={1.5} /> },
+                { step: '04', title: 'Teslimat', desc: 'Takip numarası ile kargoya verilir', icon: <HugeiconsIcon icon={DeliveryTruck01Icon} size={24} color="currentColor" strokeWidth={1.5} /> },
               ].map((s, i) => (
                 <div key={i} className="rounded-2xl bg-neutral-50 p-6 text-center dark:bg-neutral-800">
                   <span className="text-3xl">{s.icon}</span>

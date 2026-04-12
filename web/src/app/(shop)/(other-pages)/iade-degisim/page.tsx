@@ -1,3 +1,5 @@
+import { Calendar01Icon, CoffeeIcon, Settings01Icon, ReturnRequestIcon, DeliveryTruck01Icon, CreditCardIcon, MailOpen01Icon, CheckmarkCircleIcon, PackageIcon, CreditCardPosIcon, AlertCircleIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
 
@@ -7,19 +9,19 @@ export const metadata: Metadata = {
 }
 
 const conditions = [
-  { icon: '📅', title: 'İade Süresi', desc: 'Ürünü teslim aldıktan sonra 14 gün içinde iade hakkınız vardır. Mesafeli Satış Sözleşmeleri Yönetmeliği ile güvence altındadır.', color: 'amber' },
-  { icon: '☕', title: 'Kahve Ürünleri', desc: 'Ambalajı açılmamış, mühürü bozulmamış kavrulmuş kahve ürünleri iade edilebilir. Açılan paketler hijyen nedeniyle iade edilemez.', color: 'primary' },
-  { icon: '⚙️', title: 'Ekipmanlar', desc: 'Orijinal ambalajında, kullanılmamış, tüm aksesuarları tam olan ekipmanlar 14 gün içinde iade edilebilir.', color: 'sky' },
-  { icon: '🔄', title: 'Abonelikler', desc: 'Abonelik planlarınızı istediğiniz zaman hesap panelinizden iptal edebilirsiniz. İptal sonrası gönderilen sipariş iade edilebilir.', color: 'emerald' },
-  { icon: '🚚', title: 'Kargo Ücreti', desc: 'Hatalı gönderim veya üründe kusur varsa kargo Pure Olentia tarafından karşılanır. Cayma hakkında iade kargo müşteriye aittir.', color: 'rose' },
-  { icon: '💰', title: 'Ücret İadesi', desc: 'Ürün tarafımıza ulaştıktan sonra 7 iş günü içinde ödeme yönteminize uygun şekilde ücret iadesi yapılır.', color: 'violet' },
+  { icon: <HugeiconsIcon icon={Calendar01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'İade Süresi', desc: 'Ürünü teslim aldıktan sonra 14 gün içinde iade hakkınız vardır. Mesafeli Satış Sözleşmeleri Yönetmeliği ile güvence altındadır.', color: 'amber' },
+  { icon: <HugeiconsIcon icon={CoffeeIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Kahve Ürünleri', desc: 'Ambalajı açılmamış, mühürü bozulmamış kavrulmuş kahve ürünleri iade edilebilir. Açılan paketler hijyen nedeniyle iade edilemez.', color: 'primary' },
+  { icon: <HugeiconsIcon icon={Settings01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Ekipmanlar', desc: 'Orijinal ambalajında, kullanılmamış, tüm aksesuarları tam olan ekipmanlar 14 gün içinde iade edilebilir.', color: 'sky' },
+  { icon: <HugeiconsIcon icon={ReturnRequestIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Abonelikler', desc: 'Abonelik planlarınızı istediğiniz zaman hesap panelinizden iptal edebilirsiniz. İptal sonrası gönderilen sipariş iade edilebilir.', color: 'emerald' },
+  { icon: <HugeiconsIcon icon={DeliveryTruck01Icon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Kargo Ücreti', desc: 'Hatalı gönderim veya üründe kusur varsa kargo Pure Olentia tarafından karşılanır. Cayma hakkında iade kargo müşteriye aittir.', color: 'rose' },
+  { icon: <HugeiconsIcon icon={CreditCardIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Ücret İadesi', desc: 'Ürün tarafımıza ulaştıktan sonra 7 iş günü içinde ödeme yönteminize uygun şekilde ücret iadesi yapılır.', color: 'violet' },
 ]
 
 const steps = [
-  { no: '1', title: 'Bize Ulaşın', desc: 'İade talebinizi info@pureolentia.com adresine sipariş numaranızla iletin.', icon: '📧' },
-  { no: '2', title: 'Onay Alın', desc: 'Ekibimiz 24 saat içinde size dönüş yaparak iade kodunuzu paylaşır.', icon: '✅' },
-  { no: '3', title: 'Kargoya Verin', desc: 'Ürünü orijinal ambalajında, iade kodu ile birlikte bize gönderin.', icon: '📦' },
-  { no: '4', title: 'İade Tamamlandı', desc: 'Ürün ulaştıktan sonra 7 iş günü içinde ücretiniz iade edilir.', icon: '💳' },
+  { no: '1', title: 'Bize Ulaşın', desc: 'İade talebinizi info@pureolentia.com adresine sipariş numaranızla iletin.', icon: <HugeiconsIcon icon={MailOpen01Icon} size={28} color="currentColor" strokeWidth={1.5} /> },
+  { no: '2', title: 'Onay Alın', desc: 'Ekibimiz 24 saat içinde size dönüş yaparak iade kodunuzu paylaşır.', icon: <HugeiconsIcon icon={CheckmarkCircleIcon} size={28} color="currentColor" strokeWidth={1.5} /> },
+  { no: '3', title: 'Kargoya Verin', desc: 'Ürünü orijinal ambalajında, iade kodu ile birlikte bize gönderin.', icon: <HugeiconsIcon icon={PackageIcon} size={28} color="currentColor" strokeWidth={1.5} /> },
+  { no: '4', title: 'İade Tamamlandı', desc: 'Ürün ulaştıktan sonra 7 iş günü içinde ücretiniz iade edilir.', icon: <HugeiconsIcon icon={CreditCardPosIcon} size={28} color="currentColor" strokeWidth={1.5} /> },
 ]
 
 const accentBg: Record<string, string> = {
@@ -90,7 +92,7 @@ export default function IadeDegisimPage() {
           {/* Important note */}
           <section>
             <div className="rounded-2xl border-l-4 border-rose-500 bg-rose-50 p-8 dark:border-rose-600 dark:bg-rose-900/20">
-              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">⚠️ Önemli Hatırlatma</h3>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-neutral-900 dark:text-white"><HugeiconsIcon icon={AlertCircleIcon} size={20} color="currentColor" strokeWidth={1.5} /> Önemli Hatırlatma</h3>
               <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
                 <li className="flex gap-2"><span className="shrink-0">•</span>Ambalajı açılmış kahve ürünleri hijyen nedeniyle iade edilemez.</li>
                 <li className="flex gap-2"><span className="shrink-0">•</span>İade edilecek ürünlerin orijinal ambalajında ve kullanılmamış olması gerekir.</li>
@@ -106,7 +108,7 @@ export default function IadeDegisimPage() {
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               <ButtonPrimary href="/contact">Bize Ulaşın</ButtonPrimary>
               <a href="mailto:info@pureolentia.com" className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300">
-                📧 info@pureolentia.com
+                <HugeiconsIcon icon={MailOpen01Icon} size={16} color="currentColor" strokeWidth={1.5} /> info@pureolentia.com
               </a>
             </div>
           </section>

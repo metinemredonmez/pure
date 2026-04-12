@@ -1,3 +1,5 @@
+import { PackageIcon, CoffeeIcon, ReturnRequestIcon, Building02Icon, Shield01Icon, HelpCircleIcon, CallIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
 import SssFaq from './SssFaq'
@@ -7,10 +9,17 @@ export const metadata: Metadata = {
   description: 'Pure Olentia kahveleri, abonelik, kargo ve daha fazlası hakkında sıkça sorulan sorular.',
 }
 
+const faqGroupIcons: Record<string, React.ReactNode> = {
+  'Sipariş & Kargo': <HugeiconsIcon icon={PackageIcon} size={24} color="currentColor" strokeWidth={1.5} />,
+  'Kahve & Tazelik': <HugeiconsIcon icon={CoffeeIcon} size={24} color="currentColor" strokeWidth={1.5} />,
+  'Abonelik': <HugeiconsIcon icon={ReturnRequestIcon} size={24} color="currentColor" strokeWidth={1.5} />,
+  'Kurumsal & Franchise': <HugeiconsIcon icon={Building02Icon} size={24} color="currentColor" strokeWidth={1.5} />,
+  'Ödeme & Güvenlik': <HugeiconsIcon icon={Shield01Icon} size={24} color="currentColor" strokeWidth={1.5} />,
+}
+
 const faqGroups = [
   {
     category: 'Sipariş & Kargo',
-    icon: '📦',
     accent: 'amber',
     questions: [
       { q: 'Siparişim ne zaman elime ulaşır?', a: 'Siparişiniz sonrası kahveniz 24 saat içinde taze kavrulup kargoya verilir. İstanbul içi ortalama 1 iş günü, Türkiye geneli 1-3 iş günü içinde teslim edilir.' },
@@ -21,7 +30,6 @@ const faqGroups = [
   },
   {
     category: 'Kahve & Tazelik',
-    icon: '☕',
     accent: 'primary',
     questions: [
       { q: 'Kahveleriniz ne kadar taze?', a: 'Tüm kahvelerimiz sipariş sonrası kavrulur. Ambalaj üzerinde kavurma tarihi yer alır. İdeal tüketim süresi kavurma tarihinden itibaren 4 hafta içindedir.' },
@@ -32,7 +40,6 @@ const faqGroups = [
   },
   {
     category: 'Abonelik',
-    icon: '🔄',
     accent: 'emerald',
     questions: [
       { q: 'Abonelik nasıl çalışır?', a: 'İstediğiniz planı seçin. Her ay seçtiğiniz gramajda taze kavrulmuş kahve kapınıza gelir. İstediğiniz zaman hesap panelinizden duraklatabilir veya iptal edebilirsiniz.' },
@@ -42,7 +49,6 @@ const faqGroups = [
   },
   {
     category: 'Kurumsal & Franchise',
-    icon: '🏢',
     accent: 'sky',
     questions: [
       { q: 'Kurumsal müşteriler için fiyat avantajı var mı?', a: 'Evet. Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlar sunuyoruz. Detaylı teklif için B2B sayfamızdan form doldurabilirsiniz.' },
@@ -52,7 +58,6 @@ const faqGroups = [
   },
   {
     category: 'Ödeme & Güvenlik',
-    icon: '🔒',
     accent: 'violet',
     questions: [
       { q: 'Hangi ödeme yöntemlerini kabul ediyorsunuz?', a: 'Kredi kartı, banka kartı, havale/EFT ve kapıda ödeme (bazı bölgelerde) yöntemlerini kabul ediyoruz. Tüm ödemeler SSL sertifikası ile güvence altındadır.' },
@@ -78,7 +83,7 @@ export default function SssPage() {
             Pure Olentia hakkında en çok merak edilen soruların yanıtları
           </p>
         </div>
-        <div className="pointer-events-none absolute -top-10 -right-10 text-9xl opacity-5 select-none">❓</div>
+        <div className="pointer-events-none absolute -top-10 -right-10 opacity-5 select-none"><HugeiconsIcon icon={HelpCircleIcon} size={120} color="currentColor" strokeWidth={1} /></div>
       </div>
 
       {/* Category quick links */}
@@ -90,7 +95,7 @@ export default function SssPage() {
               href={`#${g.category.toLowerCase().replace(/[^a-zçğıöşü0-9]/g, '-')}`}
               className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
             >
-              <span>{g.icon}</span>
+              <span>{faqGroupIcons[g.category]}</span>
               <span>{g.category}</span>
             </a>
           ))}
@@ -103,7 +108,7 @@ export default function SssPage() {
           {faqGroups.map((group) => (
             <section key={group.category} id={group.category.toLowerCase().replace(/[^a-zçğıöşü0-9]/g, '-')}>
               <div className="mb-6 flex items-center gap-3">
-                <span className="text-3xl">{group.icon}</span>
+                <span className="text-3xl">{faqGroupIcons[group.category]}</span>
                 <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{group.category}</h2>
               </div>
               <SssFaq questions={group.questions} />
@@ -124,7 +129,7 @@ export default function SssPage() {
               Bize Ulaşın
             </a>
             <a href="tel:+905524622954" className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium transition hover:bg-white/10">
-              📞 0552 462 29 54
+              <HugeiconsIcon icon={CallIcon} size={16} color="currentColor" strokeWidth={1.5} /> 0552 462 29 54
             </a>
           </div>
         </div>

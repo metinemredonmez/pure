@@ -5,11 +5,9 @@ import Link from 'next/link'
 import { FC } from 'react'
 import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
-import CategoriesDropdown from './CategoriesDropdown'
 import CurrencyDropdown from './CurrencyDropdown'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
 import SearchBtnPopover from './SearchBtnPopover'
-import { getHeaderDropdownCategories } from '@/data/navigation'
 
 export interface HeaderProps {
   hasBorderBottom?: boolean
@@ -17,7 +15,6 @@ export interface HeaderProps {
 
 const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
   const navigation = await getNavigation()
-  const dropdownCategories = await getHeaderDropdownCategories()
   const currencies = await getCurrencies()
 
   return (
@@ -32,7 +29,6 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
           <div className="flex items-center justify-center gap-x-3 sm:gap-x-6">
             <Logo />
             <div className="hidden h-9 border-l border-neutral-200 md:block dark:border-neutral-700"></div>
-            <CategoriesDropdown categories={dropdownCategories} className="hidden md:block" />
 
             {/* Direct nav links - no dropdowns */}
             <nav className="hidden items-center gap-x-5 lg:flex">
