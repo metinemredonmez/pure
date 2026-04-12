@@ -34,8 +34,10 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
       if (Array.isArray(prodData) && prodData.length) {
         products = prodData.map((p: any, i: number) => adaptProduct(p, i))
       }
-    } else {
-      // Not a backend category - maybe it's a collection or "all"
+    }
+
+    // If no products found (either no category or empty category), show all
+    if (!products.length) {
       const apiRes = (await getApiProducts({ limit: 20 })) as any
       const prodData = apiRes?.data?.data || apiRes?.data || []
       if (Array.isArray(prodData) && prodData.length) {
@@ -44,8 +46,8 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     }
   } catch (e) {}
 
-  // 2. Only fallback to static data if category NOT found in backend
-  if (!products.length && !categoryFoundInBackend) {
+  // Fallback to static data if API returned nothing
+  if (!products.length) {
     products = await getProducts()
   }
 

@@ -19,7 +19,6 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/blog', label: 'Blog' },
       { href: '/demleme-rehberi', label: 'Demleme Rehberi' },
       { href: '/kahve-sozlugu', label: 'Kahve Sözlüğü' },
-      { href: '/subscription', label: 'Abonelik' },
       { href: '/ekipmanlar', label: 'Ekipmanlar' },
     ],
   },
@@ -31,6 +30,7 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/toptan-satis', label: 'Toptan Satış' },
       { href: '/kurumsal-hediye', label: 'Kurumsal Hediye' },
       { href: '/franchise', label: 'Franchise' },
+      { href: '/subscription', label: 'Abonelik' },
     ],
   },
   {

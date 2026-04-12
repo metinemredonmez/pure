@@ -87,8 +87,8 @@ export default function ToptanSatisPage() {
       </div>
 
       {/* Advantage stats */}
-      <div className="container -mt-10">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="container mt-12 lg:-mt-10">
+        <div className="relative z-10 mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4">
           {advantages.map((a, i) => (
             <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
               <div className="text-2xl font-bold text-primary-700">{a.value}</div>
