@@ -120,9 +120,9 @@ export default function SssPage() {
             Ekibimiz size yardımcı olmaktan mutluluk duyar. Mesajınıza 24 saat içinde dönüş yaparız.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <ButtonPrimary href="/contact" className="!bg-white !text-primary-800 hover:!bg-white/90">
+            <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-primary-800 shadow-lg transition hover:bg-neutral-100">
               Bize Ulaşın
-            </ButtonPrimary>
+            </a>
             <a href="tel:+905524622954" className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium transition hover:bg-white/10">
               📞 0552 462 29 54
             </a>

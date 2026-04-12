@@ -297,12 +297,12 @@ export default function DemlemeRehberiPage() {
             ulaşın.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <ButtonPrimary href="/contact" className="!bg-white !text-primary-800 hover:!bg-white/90">
+            <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-primary-800 shadow-lg transition hover:bg-neutral-100">
               Bize Ulaşın
-            </ButtonPrimary>
-            <ButtonPrimary href="/ekipmanlar" className="!border !border-white/30 !bg-transparent hover:!bg-white/10">
+            </a>
+            <a href="/ekipmanlar" className="inline-flex items-center justify-center rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium text-white transition hover:bg-white/10">
               Ekipman Rehberi
-            </ButtonPrimary>
+            </a>
           </div>
         </div>
       </div>

@@ -59,9 +59,9 @@ export default function ToptanSatisPage() {
               Düzenli teslimat, barista desteği ve özel blend geliştirme.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
-              <ButtonPrimary href="/contact" className="!bg-white !text-neutral-900 hover:!bg-white/90">
+              <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-neutral-900 shadow-lg transition hover:bg-neutral-100">
                 Teklif Alın
-              </ButtonPrimary>
+              </a>
               <a
                 href="tel:+905524622954"
                 className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10"
@@ -160,12 +160,12 @@ export default function ToptanSatisPage() {
             Hacminize, sektörünüze ve ihtiyaçlarınıza göre özelleştirilmiş fiyat teklifi 24 saat içinde e-posta adresinize gönderilir.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <ButtonPrimary href="/contact" className="!bg-white !text-primary-800 hover:!bg-white/90">
+            <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-primary-800 shadow-lg transition hover:bg-neutral-100">
               Teklif Alın
-            </ButtonPrimary>
-            <ButtonPrimary href="/b2b" className="!border !border-white/30 !bg-transparent hover:!bg-white/10">
+            </a>
+            <a href="/b2b" className="inline-flex items-center justify-center rounded-full border border-white/30 px-8 py-3.5 text-sm font-medium text-white transition hover:bg-white/10">
               Kurumsal Çözümler
-            </ButtonPrimary>
+            </a>
           </div>
         </div>
       </div>

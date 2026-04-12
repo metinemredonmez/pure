@@ -67,9 +67,9 @@ export default function KurumsalHediyePage() {
               Taze kavrulmuş specialty kahve, özenle tasarlanmış kutularda.
             </p>
             <div className="mt-10 flex flex-wrap gap-4">
-              <ButtonPrimary href="/contact" className="!bg-white !text-red-900 hover:!bg-white/90">
+              <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-red-900 shadow-lg transition hover:bg-neutral-100">
                 Teklif Alın
-              </ButtonPrimary>
+              </a>
               <a
                 href="tel:+905524622954"
                 className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10"
@@ -183,9 +183,9 @@ export default function KurumsalHediyePage() {
             20+ adet siparişlerde toplu indirim. Hediye tarihinize göre taze kavurma garantisi.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <ButtonPrimary href="/contact" className="!bg-white !text-red-900 hover:!bg-white/90">
+            <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-red-900 shadow-lg transition hover:bg-neutral-100">
               Teklif Alın
-            </ButtonPrimary>
+            </a>
           </div>
         </div>
       </div>
