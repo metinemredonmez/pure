@@ -1,40 +1,13 @@
 export async function getNavigation(): Promise<TNavigationItem[]> {
   return [
-    {
-      id: '1',
-      href: '/',
-      name: 'Ana Sayfa',
-    },
-    {
-      id: '2',
-      href: '/collections/all',
-      name: 'Kahveler',
-    },
-    {
-      id: '3',
-      href: '/ekipmanlar',
-      name: 'Ekipmanlar',
-    },
-    {
-      id: '4',
-      href: '/about',
-      name: 'Hakkımızda',
-    },
-    {
-      id: '5',
-      href: '/blog',
-      name: 'Blog',
-    },
-    {
-      id: '6',
-      href: '/b2b',
-      name: 'Kurumsal',
-    },
-    {
-      id: '7',
-      href: '/contact',
-      name: 'İletişim',
-    },
+    { id: '1', href: '/collections/all', name: 'Kahveler' },
+    { id: '2', href: '/subscription', name: 'Abonelik' },
+    { id: '3', href: '/collections/all', name: 'Online Dükkan' },
+    { id: '4', href: '/ekipmanlar', name: 'Ekipmanlar' },
+    { id: '5', href: '/franchise', name: 'Franchise' },
+    { id: '6', href: '/b2b', name: 'Kurumsal' },
+    { id: '7', href: '/blog', name: 'Blog' },
+    { id: '8', href: '/contact', name: 'İletişim' },
   ]
 }
 
@@ -160,41 +133,21 @@ export const getCurrencies = async () => {
 export const getHeaderDropdownCategories = async () => {
   return [
     {
-      name: 'Single Origin',
-      handle: 'single-origin',
-      description: 'Tek menşei özel kahveler',
+      name: 'Türk Kahvesi',
+      handle: 'turk-kahvesi',
+      description: 'Geleneksel Türk kahvesi çeşitleri',
       icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     <path d="M3 8H21V8C21 13.5228 17.5228 17 12 17C6.47715 17 3 13.5228 3 8V8Z" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M21 8C22.1046 8 23 9.34315 23 11C23 12.6569 22.1046 14 21 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     <path d="M8 20H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     <path d="M12 17V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     <path d="M10 4C10 4 10.5 2 12 2C13.5 2 14 4 14 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
     </svg>`,
     },
     {
-      name: 'Blend',
-      handle: 'blend',
-      description: 'Özenle harmanlanmış',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="9" cy="9" r="5" stroke="currentColor" stroke-width="1.5"/>
-    <circle cx="15" cy="15" r="5" stroke="currentColor" stroke-width="1.5"/>
-    </svg>`,
-    },
-    {
-      name: 'Espresso',
-      handle: 'espresso',
-      description: 'Espresso için özel',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="5" y="8" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M19 11H20C21.1046 11 22 11.8954 22 13C22 14.1046 21.1046 15 20 15H19" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M9 5C9 5 9.5 3 12 3C14.5 3 15 5 15 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`,
-    },
-    {
       name: 'Filtre Kahve',
-      handle: 'filter',
-      description: 'Pour-over & filtre',
+      handle: 'filtre-kahve',
+      description: 'Pour-over & filtre demleme',
       icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M6 4L18 4L15 20H9L6 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
     <path d="M4 4H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
@@ -202,14 +155,22 @@ export const getHeaderDropdownCategories = async () => {
     </svg>`,
     },
     {
-      name: 'Ekipmanlar',
-      handle: 'equipment',
-      description: 'Öğütücü, demlik ve daha fazlası',
+      name: 'Espresso',
+      handle: 'espresso',
+      description: 'Espresso makineleri için özel',
       icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="7" y="2" width="10" height="20" rx="2" stroke="currentColor" stroke-width="1.5"/>
-    <circle cx="12" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M9 14H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M9 17H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    <rect x="5" y="8" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M19 11H20C21.1046 11 22 11.8954 22 13C22 14.1046 21.1046 15 20 15H19" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M9 5C9 5 9.5 3 12 3C14.5 3 15 5 15 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>`,
+    },
+    {
+      name: 'Kapsül Kahve',
+      handle: 'kapsul-kahve',
+      description: 'Kapsül sistemleri için uygun',
+      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="8" y="4" width="8" height="16" rx="4" stroke="currentColor" stroke-width="1.5"/>
+    <path d="M8 12H16" stroke="currentColor" stroke-width="1.5"/>
     </svg>`,
     },
   ]

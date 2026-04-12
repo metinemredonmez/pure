@@ -104,10 +104,8 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
         </div>
 
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
-          {renderColorOptions()}
           <div>
             <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">{title}</h2>
-            <p className={`mt-1 text-sm text-neutral-500 dark:text-neutral-400`}>{color}</p>
           </div>
 
           <div className="flex items-end justify-between">

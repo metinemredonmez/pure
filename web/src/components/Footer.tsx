@@ -91,11 +91,6 @@ const Footer: React.FC = async () => {
             <div className="col-span-2 flex items-center md:col-span-3">
               <SocialsList1 />
             </div>
-            {settings.footerText && (
-              <p className="col-span-4 text-xs text-neutral-500 dark:text-neutral-400 lg:max-w-xs">
-                {settings.footerText}
-              </p>
-            )}
           </div>
           {widgetMenus.map(renderWidgetMenuItem)}
         </div>

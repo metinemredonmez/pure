@@ -1,4 +1,5 @@
 import facebook from '@/images/socials/facebook.svg'
+import instagram from '@/images/socials/instagram.svg'
 import twitter from '@/images/socials/twitter.svg'
 import youtube from '@/images/socials/youtube.svg'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -14,7 +15,7 @@ const SocialsList1 = async ({ className }: SocialsList1Props) => {
   const settings = await getSiteSettings()
 
   const socials: { name: string; icon: any; href: string }[] = [
-    settings.instagram && { name: 'Instagram', icon: facebook, href: settings.instagram },
+    settings.instagram && { name: 'Instagram', icon: instagram, href: settings.instagram },
     settings.facebook && { name: 'Facebook', icon: facebook, href: settings.facebook },
     settings.youtube && { name: 'Youtube', icon: youtube, href: settings.youtube },
     settings.twitter && { name: 'Twitter', icon: twitter, href: settings.twitter },

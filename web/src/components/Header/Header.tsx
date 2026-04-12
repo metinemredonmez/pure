@@ -1,12 +1,11 @@
 import Logo from '@/components/Logo'
-import { getCurrencies, getLanguages, getNavigation } from '@/data/navigation'
+import { getNavigation } from '@/data/navigation'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { FC } from 'react'
 import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
 import CategoriesDropdown from './CategoriesDropdown'
-import CurrLangDropdown from './CurrLangDropdown'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
 import SearchBtnPopover from './SearchBtnPopover'
 import { getHeaderDropdownCategories } from '@/data/navigation'
@@ -18,8 +17,6 @@ export interface HeaderProps {
 const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
   const navigation = await getNavigation()
   const dropdownCategories = await getHeaderDropdownCategories()
-  const currencies = await getCurrencies()
-  const languages = await getLanguages()
 
   return (
     <div className="relative z-10">
@@ -53,7 +50,6 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
             <div className="block lg:hidden">
               <HamburgerBtnMenu />
             </div>
-            <CurrLangDropdown currencies={currencies} languages={languages} className="hidden md:block" />
             <SearchBtnPopover />
             <AvatarDropdown />
             <CartBtn />

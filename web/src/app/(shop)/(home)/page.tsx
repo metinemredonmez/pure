@@ -1,7 +1,6 @@
 import { Divider } from '@/components/Divider'
 import Heading from '@/components/Heading/Heading'
 import SectionCollectionSlider from '@/components/SectionCollectionSlider'
-import SectionGridFeatureItems from '@/components/SectionGridFeatureItems'
 import SectionHero2 from '@/components/SectionHero/SectionHero2'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo2 from '@/components/SectionPromo2'
@@ -151,7 +150,6 @@ async function PageHome() {
         />
         <SectionPromo2 />
         <SectionSliderLargeProduct products={carouselProducts3} />
-        <SectionGridFeatureItems data={products} />
       </div>
 
       {/* Newsletter — tight spacing, no extra top padding */}
