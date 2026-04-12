@@ -8,24 +8,20 @@ const pages: {
   link: string
 }[] = [
   {
-    name: 'Settings',
+    name: 'Hesap Bilgileri',
     link: '/account',
   },
   {
-    name: 'Favorilerims',
+    name: 'Favorilerim',
     link: '/account-wishlists',
   },
   {
-    name: 'Siparis Gecmisi',
+    name: 'Sipariş Geçmişi',
     link: '/orders',
   },
   {
-    name: 'Change password',
+    name: 'Şifre Değiştir',
     link: '/account-password',
-  },
-  {
-    name: 'Billing',
-    link: '/account-billing',
   },
 ]
 

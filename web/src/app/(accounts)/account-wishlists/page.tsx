@@ -1,36 +1,75 @@
+'use client'
+
 import ProductCard from '@/components/ProductCard'
-import { getProducts } from '@/data/data'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import { Metadata } from 'next'
+import { adaptProduct } from '@/lib/adapters'
+import { Heart01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
-export const metadata: Metadata = {
-  title: 'Saved Products',
-  description: 'Saved Products page',
-}
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
-const Page = async () => {
-  const products = (await getProducts()).slice(0, 6)
+export default function WishlistsPage() {
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
+
+    fetch(`${API_URL}/wishlists`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        const data = res?.data || res || []
+        if (Array.isArray(data) && data.length) {
+          const adapted = data
+            .filter((w: any) => w.product)
+            .map((w: any, i: number) => adaptProduct(w.product, i))
+          setProducts(adapted)
+        }
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
+
+  if (loading) {
+    return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+  }
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       <div>
-        <h1 className="text-2xl font-semibold">Favorilerims</h1>
+        <h1 className="text-2xl font-semibold">Favorilerim</h1>
         <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-          Check out your wishlists. You can add or remove items from your wishlists.
+          Beğendiğiniz ürünleri buradan takip edebilirsiniz.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 md:gap-x-8 lg:grid-cols-3">
-        {products.map((product) => (
-          <ProductCard key={product.id} data={product} />
-        ))}
-      </div>
-
-      <div className="flex items-center justify-center pt-10">
-        <ButtonPrimary>Daha Fazla Göster</ButtonPrimary>
-      </div>
+      {products.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
+            <HugeiconsIcon icon={Heart01Icon} size={36} color="currentColor" strokeWidth={1.5} className="text-red-300" />
+          </div>
+          <h3 className="mt-6 text-lg font-semibold">Henüz favoriniz yok</h3>
+          <p className="mt-2 max-w-sm text-sm text-neutral-500">
+            Ürün sayfalarında kalp ikonuna tıklayarak favorilerinize ekleyebilirsiniz.
+          </p>
+          <Link href="/collections/all" className="mt-6 rounded-full bg-primary-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-800">
+            Kahveleri Keşfet
+          </Link>
+        </div>
+      ) : (
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {products.map((product) => (
+            <ProductCard key={product.id} data={product} isLiked />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
-
-export default Page

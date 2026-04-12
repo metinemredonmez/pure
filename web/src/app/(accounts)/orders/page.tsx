@@ -1,99 +1,117 @@
-import { Link } from '@/components/Link'
+'use client'
+
 import Prices from '@/components/Prices'
-import { getOrders, type TOrder } from '@/data/data'
 import { Button } from '@/shared/Button/Button'
-import { Metadata } from 'next'
+import { PackageIcon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
-export const metadata: Metadata = {
-  title: 'Siparisler',
-  description: 'Orders History page',
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  PENDING: { label: 'Beklemede', color: 'bg-yellow-100 text-yellow-800' },
+  PROCESSING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800' },
+  SHIPPED: { label: 'Kargoya Verildi', color: 'bg-purple-100 text-purple-800' },
+  DELIVERED: { label: 'Teslim Edildi', color: 'bg-green-100 text-green-800' },
+  CANCELLED: { label: 'İptal Edildi', color: 'bg-red-100 text-red-800' },
+  REFUNDED: { label: 'İade Edildi', color: 'bg-neutral-100 text-neutral-800' },
 }
 
-const Order = ({ order }: { order: TOrder }) => {
-  return (
-    <div className="z-0 overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
-      <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-8 dark:bg-neutral-500/5">
-        <div>
-          <Link href={'/orders/' + order.number} className="text-lg font-semibold">
-            #{order.number}
-          </Link>
-          <p className="mt-1.5 text-sm text-neutral-500 sm:mt-2 dark:text-neutral-400">{order.status}</p>
-        </div>
-        <div className="mt-3 flex gap-x-1.5 sm:mt-0">
-          <Button color="light" size="smaller" href={'collections/all'}>
-            Buy again
-          </Button>
-          <Button color="light" size="smaller" href={'/orders/' + order.number}>
-            View order
-          </Button>
-        </div>
-      </div>
-      <div className="divide-y-neutral-200 divide-y border-t border-neutral-200 p-2 sm:p-8 dark:divide-neutral-700 dark:border-neutral-700">
-        {order?.products?.map(({ id, featuredImage, price, handle, title, color, size, status, quantity }) => (
-          <div key={id} className="flex py-4 first:pt-0 last:pb-0 sm:py-7">
-            <div className="relative h-24 w-16 shrink-0 overflow-hidden rounded-xl bg-neutral-100 sm:w-20">
-              <Image
-                fill
-                sizes="100px"
-                src={featuredImage}
-                alt={featuredImage.alt}
-                className="h-full w-full object-cover object-center"
-              />
-            </div>
+export default function OrdersPage() {
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
-            <div className="ml-4 flex flex-1 flex-col">
-              <div>
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="line-clamp-1 text-base font-medium">{title}</h3>
-                    <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                      <span>{color}</span>
-                      <span className="mx-2 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>
-                      <span>{size}</span>
-                    </p>
-                  </div>
-                  <Prices className="mt-0.5 ml-2" price={price || 0} />
-                </div>
-              </div>
-              <div className="flex flex-1 items-end justify-between text-sm">
-                <p className="flex items-center text-neutral-500 dark:text-neutral-400">
-                  <span className="hidden sm:inline-block">Qty</span>
-                  <span className="inline-block sm:hidden">x</span>
-                  <span className="ml-2">{quantity}</span>
-                </p>
+  useEffect(() => {
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) {
+      window.location.href = '/login'
+      return
+    }
 
-                <div className="flex">
-                  <Link href={'/products/' + handle} className="font-medium text-primary-600 dark:text-primary-500">
-                    Leave review
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
+    fetch(`${API_URL}/orders/my`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        const data = res?.data?.data || res?.data || res || []
+        if (Array.isArray(data)) setOrders(data)
+        setLoading(false)
+      })
+      .catch(() => setLoading(false))
+  }, [])
 
-const Page = async () => {
-  const orders = await getOrders()
+  if (loading) {
+    return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+  }
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
-      {/* HEADING */}
       <div>
-        <h1 className="text-2xl font-semibold">Siparis Gecmisi</h1>
+        <h1 className="text-2xl font-semibold">Sipariş Geçmişi</h1>
         <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-          Son siparislerinizin durumunu kontrol edin ve iade islemlerini yonetin.
+          Son siparişlerinizin durumunu kontrol edin ve iade işlemlerini yönetin.
         </p>
       </div>
-      {orders.map((order) => (
-        <Order key={order.number} order={order} />
-      ))}
+
+      {orders.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
+            <HugeiconsIcon icon={PackageIcon} size={36} color="currentColor" strokeWidth={1.5} className="text-neutral-400" />
+          </div>
+          <h3 className="mt-6 text-lg font-semibold">Henüz siparişiniz yok</h3>
+          <p className="mt-2 text-sm text-neutral-500">İlk siparişinizi verin!</p>
+          <Link href="/collections/all" className="mt-6 rounded-full bg-primary-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-800">
+            Alışverişe Başla
+          </Link>
+        </div>
+      ) : (
+        orders.map((order: any) => {
+          const status = STATUS_MAP[order.status] || { label: order.status, color: 'bg-neutral-100 text-neutral-800' }
+          const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''
+
+          return (
+            <div key={order.id} className="overflow-hidden rounded-lg border border-neutral-200 dark:border-neutral-700">
+              <div className="flex flex-col bg-neutral-50 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6 dark:bg-neutral-500/5">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg font-semibold">#{order.orderNumber}</span>
+                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>{status.label}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-neutral-500">{date}</p>
+                </div>
+                <div className="mt-3 flex items-center gap-3 sm:mt-0">
+                  <span className="text-lg font-bold text-primary-700">₺{Number(order.total || 0).toLocaleString('tr-TR')}</span>
+                  <Button color="light" size="smaller" href={`/orders/${order.orderNumber}`}>
+                    Detay
+                  </Button>
+                </div>
+              </div>
+              {order.items?.length > 0 && (
+                <div className="divide-y border-t border-neutral-200 p-4 sm:p-6 dark:divide-neutral-700 dark:border-neutral-700">
+                  {order.items.map((item: any, idx: number) => (
+                    <div key={idx} className="flex py-4 first:pt-0 last:pb-0">
+                      <div className="relative h-20 w-16 shrink-0 overflow-hidden rounded-lg bg-neutral-100">
+                        {item.image && (
+                          <Image fill sizes="80px" src={item.image} alt={item.productName || ''} className="object-cover" />
+                        )}
+                      </div>
+                      <div className="ml-4 flex flex-1 flex-col justify-between">
+                        <div className="flex justify-between">
+                          <h3 className="text-sm font-medium">{item.productName}</h3>
+                          <span className="text-sm font-semibold">₺{Number(item.unitPrice || 0).toLocaleString('tr-TR')}</span>
+                        </div>
+                        <p className="text-xs text-neutral-500">Adet: {item.quantity}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })
+      )}
     </div>
   )
 }
-
-export default Page
