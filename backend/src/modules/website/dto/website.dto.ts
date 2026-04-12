@@ -8,6 +8,7 @@ import {
   IsDateString,
   IsUrl,
   Min,
+  Allow,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -149,7 +150,7 @@ export class UpdatePageDto {
 
 export class UpdateSiteSettingsDto {
   @ApiProperty() @IsString() key: string;
-  @ApiProperty() value: any;
+  @ApiProperty() @Allow() value: any;
 }
 
 // ── Franchise Application ──
