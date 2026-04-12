@@ -1,4 +1,5 @@
 import Aside from '@/components/aside'
+import { CartProvider } from '@/contexts/CartContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
@@ -31,13 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${inter.variable} ${playfair.variable} ${inter.className}`}>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200">
-        <Aside.Provider>
-          {children}
-
-          {/* Client component: Toaster, ... */}
-          <GlobalClient />
-
-        </Aside.Provider>
+        <CartProvider>
+          <Aside.Provider>
+            {children}
+            <GlobalClient />
+          </Aside.Provider>
+        </CartProvider>
       </body>
     </html>
   )

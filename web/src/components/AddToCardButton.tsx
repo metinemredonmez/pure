@@ -1,6 +1,7 @@
 'use client'
 
 import Prices from '@/components/Prices'
+import { useCart } from '@/contexts/CartContext'
 import { Link } from '@/shared/link'
 import { Transition } from '@headlessui/react'
 import Image from 'next/image'
@@ -25,7 +26,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({ show, color, imageUr
       leaveFrom="opacity-100 translate-x-0"
       leaveTo="opacity-0 translate-x-20"
     >
-      <p className="mt-1 block text-base leading-none font-semibold">Added to cart!</p>
+      <p className="mt-1 block text-base leading-none font-semibold">Sepete eklendi!</p>
 
       <div className="mt-6 flex">
         <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
@@ -38,9 +39,9 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({ show, color, imageUr
               <div>
                 <h3 className="text-base font-medium">{title}</h3>
                 <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                  <span>{color}</span>
-                  <span className="mx-2 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>
-                  <span>{size}</span>
+                  {color && <span>{color}</span>}
+                  {color && size && <span className="mx-2 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>}
+                  {size && <span>{size}</span>}
                 </p>
               </div>
               <Prices price={price} className="mt-0.5" />
@@ -51,7 +52,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps> = ({ show, color, imageUr
 
             <div className="flex">
               <Link href={'/cart'} className="font-medium text-primary-600 dark:text-primary-500">
-                Sepeti Gor
+                Sepeti Gör
               </Link>
             </div>
           </div>
@@ -70,8 +71,11 @@ interface AddToCardButtonProps {
   size?: string
   color?: string
   price: number
+  handle?: string
+  productId?: string
+  variantId?: string
   as?: ElementType | ComponentType<any>
-  [key: string]: any // Cho phép bất kỳ props tùy chỉnh nào
+  [key: string]: any
 }
 
 const AddToCardButton = ({
@@ -83,16 +87,34 @@ const AddToCardButton = ({
   quantity,
   size,
   title,
+  handle,
+  productId,
+  variantId,
   as,
   ...props
 }: AddToCardButtonProps) => {
+  const { addItem } = useCart()
+
   const notifyAddTocart = () => {
+    // Add to cart context (persisted in localStorage)
+    addItem({
+      productId: productId || handle || title,
+      name: title,
+      handle: handle || '',
+      price,
+      quantity: quantity || 1,
+      image: imageUrl,
+      size,
+      color,
+      variantId,
+    })
+
     toast.custom(
       (t) => (
         <NotifyAddToCart
           show={t.visible}
           imageUrl={imageUrl}
-          quantity={quantity}
+          quantity={quantity || 1}
           size={size}
           color={color}
           title={title}
