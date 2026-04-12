@@ -28,8 +28,8 @@ const benefits = [
 export default function FranchisePage() {
   return (
     <div className="overflow-x-hidden pb-24 lg:pb-32">
-      {/* Hero — full width gradient */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900">
+      {/* Hero — full width gradient with stats overlay */}
+      <div className="relative bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900 pb-16">
         <div className="container py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
             Franchise Fırsatı
@@ -50,18 +50,17 @@ export default function FranchisePage() {
             </a>
           </div>
         </div>
-        <div className="pointer-events-none absolute -bottom-10 -right-10 opacity-5 select-none"><HugeiconsIcon icon={CoffeeIcon} size={160} color="currentColor" strokeWidth={1} /></div>
-      </div>
 
-      {/* Stats */}
-      <div className="container -mt-8">
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
-          {stats.map((s, i) => (
-            <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
-              <div className="text-2xl font-bold text-primary-700">{s.value}</div>
-              <div className="mt-1 text-xs text-neutral-500">{s.label}</div>
-            </div>
-          ))}
+        {/* Stats — inside hero so they don't get clipped */}
+        <div className="container">
+          <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+            {stats.map((s, i) => (
+              <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
+                <div className="text-2xl font-bold text-primary-700">{s.value}</div>
+                <div className="mt-1 text-xs text-neutral-500">{s.label}</div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
