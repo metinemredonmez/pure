@@ -65,28 +65,49 @@ export default function FranchisePage() {
         </div>
       </div>
 
-      {/* 3-Banner Gallery */}
+      {/* Visual banner */}
       <div className="container mt-20">
-        <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Pure Olentia Mağaza Konsepti</h2>
-        <p className="mx-auto mt-3 max-w-xl text-center text-neutral-500 dark:text-neutral-400">
-          Modern ve sıcak atmosferde specialty kahve deneyimi
-        </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
-          {[
-            { src: '/hero/turk-kahvesi-100gr.jpg', alt: 'Pure Olentia Mağaza — İç Mekan' },
-            { src: '/hero/brazil-santos.jpg', alt: 'Pure Olentia Mağaza — Ürünler' },
-            { src: '/hero/hediye-paketi.jpg', alt: 'Pure Olentia Mağaza — Hediye Paketleri' },
-          ].map((img, i) => (
-            <div key={i} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                sizes="(max-width: 640px) 100vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950 p-8 sm:p-12 lg:p-16">
+          <div className="absolute inset-0 opacity-10">
+            <svg className="h-full w-full" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="350" cy="30" r="120" fill="white" />
+              <circle cx="50" cy="170" r="80" fill="white" />
+            </svg>
+          </div>
+          <div className="relative grid items-center gap-8 lg:grid-cols-2">
+            <div>
+              <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider text-white/90 uppercase backdrop-blur-sm">
+                Mağaza Konsepti
+              </span>
+              <h2 className="mt-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
+                Modern ve Sıcak Atmosferde Specialty Kahve Deneyimi
+              </h2>
+              <p className="mt-4 max-w-lg text-white/70">
+                Anahtar teslim mekan tasarımı, premium ekipman ve eğitim desteği ile hayalinizdeki kahve dükkânını açın.
+              </p>
+              <a href="#form" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-white/90">
+                Hemen Başvurun
+              </a>
             </div>
-          ))}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
+                <div className="text-3xl font-bold text-white">150+</div>
+                <div className="mt-1 text-sm text-white/60">Başarılı Şube</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
+                <div className="text-3xl font-bold text-white">35+</div>
+                <div className="mt-1 text-sm text-white/60">İl Kapsamı</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
+                <div className="text-3xl font-bold text-white">%95</div>
+                <div className="mt-1 text-sm text-white/60">Memnuniyet</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
+                <div className="text-3xl font-bold text-white">12 Ay</div>
+                <div className="mt-1 text-sm text-white/60">Geri Dönüş</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

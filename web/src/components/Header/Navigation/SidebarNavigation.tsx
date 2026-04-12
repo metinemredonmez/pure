@@ -109,16 +109,6 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
       <div className="mt-5">{renderSearchForm()}</div>
       <ul className="flex flex-col gap-y-1 px-2 py-6">{data?.map(_renderItem)}</ul>
       <Divider className="mb-6" />
-
-      {/* FOR OUR DEMO */}
-      <ButtonPrimary
-        href="https://themeforest.net/item/ciseco-shop-ecommerce-nextjs-template/44210635"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="px-8!"
-      >
-        Buy this template
-      </ButtonPrimary>
     </div>
   )
 }

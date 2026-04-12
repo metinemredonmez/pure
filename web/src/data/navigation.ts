@@ -1,11 +1,32 @@
 export async function getNavigation(): Promise<TNavigationItem[]> {
   return [
-    { id: '1', href: '/collections/all', name: 'Kahveler' },
-    { id: '2', href: '/b2b', name: 'Kurumsal' },
-    { id: '3', href: '/subscription', name: 'Abonelik' },
+    {
+      id: '1',
+      href: '/collections/all',
+      name: 'Kahveler',
+      type: 'dropdown',
+      children: [
+        { id: '1-1', href: '/collections/turk-kahvesi', name: 'Türk Kahvesi' },
+        { id: '1-2', href: '/collections/filtre-kahve', name: 'Filtre Kahve' },
+        { id: '1-3', href: '/collections/espresso', name: 'Espresso' },
+        { id: '1-4', href: '/collections/kapsul-kahve', name: 'Kapsül Kahve' },
+      ],
+    },
+    {
+      id: '3',
+      href: '/subscription',
+      name: 'Abonelik',
+      type: 'dropdown',
+      children: [
+        { id: '3-1', href: '/subscription', name: 'Bireysel Abonelik' },
+        { id: '3-2', href: '/b2b', name: 'Kurumsal Abonelik' },
+      ],
+    },
     { id: '4', href: '/collections/all', name: 'Online Dükkan' },
     { id: '5', href: '/ekipmanlar', name: 'Ekipmanlar' },
     { id: '6', href: '/franchise', name: 'Franchise' },
+    { id: '2', href: '/b2b', name: 'Kurumsal' },
+    { id: '8', href: '/blog', name: 'Blog' },
     { id: '7', href: '/contact', name: 'İletişim' },
   ]
 }

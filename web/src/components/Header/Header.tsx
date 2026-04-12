@@ -7,6 +7,7 @@ import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
 import CurrencyDropdown from './CurrencyDropdown'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
+import NavDropdown from './NavDropdown'
 import SearchBtnPopover from './SearchBtnPopover'
 
 export interface HeaderProps {
@@ -30,17 +31,21 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
             <Logo />
             <div className="hidden h-9 border-l border-neutral-200 md:block dark:border-neutral-700"></div>
 
-            {/* Direct nav links - no dropdowns */}
+            {/* Nav links with dropdowns */}
             <nav className="hidden items-center gap-x-5 lg:flex">
-              {navigation.map((item) => (
-                <Link
-                  key={item.id}
-                  href={item.href || '/'}
-                  className="text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navigation.map((item) =>
+                item.type === 'dropdown' ? (
+                  <NavDropdown key={item.id} item={item} />
+                ) : (
+                  <Link
+                    key={item.id}
+                    href={item.href || '/'}
+                    className="text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
+                  >
+                    {item.name}
+                  </Link>
+                )
+              )}
             </nav>
           </div>
 
