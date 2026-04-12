@@ -21,7 +21,6 @@ const widgetMenus: WidgetFooterMenu[] = [
       { href: '/kahve-sozlugu', label: 'Kahve Sözlüğü' },
       { href: '/subscription', label: 'Abonelik' },
       { href: '/ekipmanlar', label: 'Ekipmanlar' },
-      { href: '/menseiler', label: 'Menşei Hikayeleri' },
     ],
   },
   {
