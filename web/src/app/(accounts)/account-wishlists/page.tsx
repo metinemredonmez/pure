@@ -2,7 +2,7 @@
 
 import ProductCard from '@/components/ProductCard'
 import { adaptProduct } from '@/lib/adapters'
-import { Heart01Icon } from '@hugeicons/core-free-icons'
+import { HeartAddIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -53,7 +53,7 @@ export default function WishlistsPage() {
       {products.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20">
-            <HugeiconsIcon icon={Heart01Icon} size={36} color="currentColor" strokeWidth={1.5} className="text-red-300" />
+            <HugeiconsIcon icon={HeartAddIcon} size={36} color="currentColor" strokeWidth={1.5} className="text-red-300" />
           </div>
           <h3 className="mt-6 text-lg font-semibold">Henüz favoriniz yok</h3>
           <p className="mt-2 max-w-sm text-sm text-neutral-500">
