@@ -110,7 +110,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
 
           <div className="flex items-end justify-between">
             <Prices price={price ?? 1} />
-            {reviewNumber > 0 && (
+            {(reviewNumber ?? 0) > 0 && (
               <div className="mb-0.5 flex items-center">
                 <StarIcon className="h-5 w-5 pb-px text-amber-400" />
                 <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
