@@ -35,6 +35,38 @@ export class CatalogService {
       where.categoryId = query.categoryId;
     }
 
+    // Resolve category slug to categoryId
+    if (query.category && !query.categoryId) {
+      const cat = await this.prisma.category.findUnique({
+        where: { slug: query.category },
+      });
+      if (cat) {
+        where.categoryId = cat.id;
+      }
+    }
+
+    // Roast level filter
+    if (query.roastLevel) {
+      where.roastLevel = query.roastLevel;
+    }
+
+    // Weight filter
+    if (query.weight) {
+      where.weight = query.weight;
+    }
+
+    // Price range filter
+    if (query.minPrice || query.maxPrice) {
+      where.price = {};
+      if (query.minPrice) where.price.gte = query.minPrice;
+      if (query.maxPrice) where.price.lte = query.maxPrice;
+    }
+
+    // Default: only show active products for non-admin queries
+    if (!query.status) {
+      where.isActive = true;
+    }
+
     const [data, total] = await Promise.all([
       this.prisma.product.findMany({
         where,

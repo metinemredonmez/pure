@@ -33,6 +33,31 @@ export class PaginationDto {
   @IsString()
   categoryId?: string;
 
+  @ApiPropertyOptional({ description: 'Category slug (resolves to categoryId)' })
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @ApiPropertyOptional({ enum: ['LIGHT', 'MEDIUM', 'MEDIUM_DARK', 'DARK'] })
+  @IsOptional()
+  @IsString()
+  roastLevel?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by weight in grams' })
+  @IsOptional()
+  @Type(() => Number)
+  weight?: number;
+
+  @ApiPropertyOptional({ description: 'Minimum price' })
+  @IsOptional()
+  @Type(() => Number)
+  minPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum price' })
+  @IsOptional()
+  @Type(() => Number)
+  maxPrice?: number;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

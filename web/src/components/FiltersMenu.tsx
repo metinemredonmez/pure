@@ -108,8 +108,23 @@ export const FiltersMenuTabs = ({
   className,
 }: Props) => {
   const handleFormSubmit = async (formData: FormData) => {
-    const formDataObject = Object.fromEntries(formData.entries())
-    console.log('Form submitted with data:', formDataObject)
+    const params = new URLSearchParams(window.location.search)
+    // Clear old filter params
+    params.delete('category')
+    params.delete('roastLevel')
+    params.delete('weight')
+    params.delete('minPrice')
+    params.delete('maxPrice')
+
+    for (const [key, value] of formData.entries()) {
+      if (value && typeof value === 'string' && value.trim()) {
+        params.set(key, value.trim())
+      }
+    }
+
+    const queryString = params.toString()
+    const newUrl = `${window.location.pathname}${queryString ? '?' + queryString : ''}`
+    window.location.href = newUrl
   }
 
   if (!filterOptions || filterOptions.length === 0) {

@@ -13,35 +13,50 @@ import {
   PaginationPrevious,
 } from '@/shared/Pagination/Pagination'
 
-export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
+export default async function Page({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ handle: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { handle } = await params
+  const filters = await searchParams
 
-  // 1. Try to fetch category filtered products from backend
+  // Build API query from URL search params + handle
+  const apiQuery: Record<string, any> = { limit: 40 }
+
+  // Handle = category slug (e.g. 'turk-kahvesi', 'filtre-kahve', 'all')
+  if (handle && handle !== 'all') {
+    apiQuery.category = handle
+  }
+
+  // Read filter params from URL
+  if (filters.roastLevel) apiQuery.roastLevel = String(filters.roastLevel)
+  if (filters.weight) apiQuery.weight = String(filters.weight)
+  if (filters.minPrice) apiQuery.minPrice = String(filters.minPrice)
+  if (filters.maxPrice) apiQuery.maxPrice = String(filters.maxPrice)
+  if (filters.sortBy) apiQuery.sortBy = String(filters.sortBy)
+  if (filters.sortOrder) apiQuery.sortOrder = String(filters.sortOrder)
+  if (filters.search) apiQuery.search = String(filters.search)
+
   let products: any[] = []
-  let categoryFoundInBackend = false
 
   try {
-    // Check if this category exists in backend
-    const apiCats = (await getApiCategories()) as any
-    const cats = apiCats?.data || []
-    const backendCategory = cats.find((c: any) => c.slug === handle)
-
-    if (backendCategory) {
-      categoryFoundInBackend = true
-      // Fetch products for this specific category
-      const apiRes = (await getApiProducts({ category: handle, limit: 20 })) as any
-      const prodData = apiRes?.data?.data || apiRes?.data || []
-      if (Array.isArray(prodData) && prodData.length) {
-        products = prodData.map((p: any, i: number) => adaptProduct(p, i))
-      }
+    // Fetch with filters
+    const apiRes = (await getApiProducts(apiQuery)) as any
+    const prodData = apiRes?.data?.data || apiRes?.data || []
+    if (Array.isArray(prodData) && prodData.length) {
+      products = prodData.map((p: any, i: number) => adaptProduct(p, i))
     }
 
-    // If no products found (either no category or empty category), show all
-    if (!products.length) {
-      const apiRes = (await getApiProducts({ limit: 20 })) as any
-      const prodData = apiRes?.data?.data || apiRes?.data || []
-      if (Array.isArray(prodData) && prodData.length) {
-        products = prodData.map((p: any, i: number) => adaptProduct(p, i))
+    // If category filter returned 0 results, try without category
+    if (!products.length && apiQuery.category) {
+      delete apiQuery.category
+      const fallbackRes = (await getApiProducts(apiQuery)) as any
+      const fallbackData = fallbackRes?.data?.data || fallbackRes?.data || []
+      if (Array.isArray(fallbackData) && fallbackData.length) {
+        products = fallbackData.map((p: any, i: number) => adaptProduct(p, i))
       }
     }
   } catch (e) {}
