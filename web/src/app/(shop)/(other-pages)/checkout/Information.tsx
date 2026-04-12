@@ -39,10 +39,10 @@ const Information = () => {
     <div className="space-y-6 sm:space-y-8">
       <div id="ContactInfo" className="scroll-mt-5 rounded-xl border">
         <TabHeader
-          title="Contact information"
+          title="İletişim Bilgileri"
           icon={UserCircle02Icon}
-          value="Enrico Smith / +855-666-7744"
-          onClickChange={() => {
+          value=""
+          onClickDeğiştir={() => {
             setTabActive('ContactInfo')
             handleScrollToEl('ContactInfo')
           }}
@@ -61,8 +61,8 @@ const Information = () => {
         <TabHeader
           title="Teslimat Adresi"
           icon={Route02Icon}
-          value="St. Paul's Road, Norris, SD 57560, Dakota, USA"
-          onClickChange={() => {
+          value=""
+          onClickDeğiştir={() => {
             setTabActive('ShippingAddress')
             handleScrollToEl('ShippingAddress')
           }}
@@ -81,8 +81,8 @@ const Information = () => {
         <TabHeader
           title="Ödeme Yöntemi"
           icon={CreditCardPosIcon}
-          value="Kredi Kartı / xxx-xxx-xx55"
-          onClickChange={() => {
+          value=""
+          onClickDeğiştir={() => {
             setTabActive('PaymentMethod')
             handleScrollToEl('PaymentMethod')
           }}
@@ -104,12 +104,12 @@ const TabHeader = ({
   title,
   icon,
   value,
-  onClickChange,
+  onClickDeğiştir,
 }: {
   title: string
   icon: IconSvgElement
   value: string
-  onClickChange: () => void
+  onClickDeğiştir: () => void
 }) => {
   return (
     <div className="flex flex-col items-start gap-5 p-5 sm:flex-row sm:p-6">
@@ -123,10 +123,10 @@ const TabHeader = ({
       </div>
       <button
         className="rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
-        onClick={onClickChange}
+        onClick={onClickDeğiştir}
         type="button"
       >
-        Change
+        Değiştir
       </button>
     </div>
   )
@@ -157,7 +157,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
           </div>
           <Field className="max-w-lg">
             <Label>Telefon Numarası</Label>
-            <Input defaultValue={'+808 xxx'} type="tel" name="phone" />
+            <Input placeholder="05XX XXX XX XX" type="tel" name="phone" />
           </Field>
           <Field className="max-w-lg">
             <Label>E-posta Adresi</Label>
@@ -174,7 +174,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
           <div className="flex flex-wrap gap-2.5 pt-4">
             <ButtonPrimary type="submit">Teslimat Adresine Geç</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              Cancel
+              İptal
             </ButtonThird>
           </div>
         </FieldGroup>
@@ -200,11 +200,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
               <Label>Ad</Label>
-              <Input defaultValue="Cole" name="first-name" />
+              <Input placeholder="Adınız" name="first-name" />
             </Field>
             <Field>
               <Label>Soyad</Label>
-              <Input defaultValue="Enrico" name="last-name" />
+              <Input placeholder="Soyadınız" name="last-name" />
             </Field>
           </div>
 
@@ -284,7 +284,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           <div className="flex flex-wrap gap-2.5 pt-6">
             <ButtonPrimary type="submit">Ödeme Yöntemine Geç</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              Cancel
+              İptal
             </ButtonThird>
           </div>
         </FieldGroup>
@@ -303,7 +303,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
         <RadioGroup
           name="payment-method"
           aria-label="Payment method"
-          onChange={(e) => setMethodActive(e as any)}
+          onDeğiştir={(e) => setMethodActive(e as any)}
           value={mothodActive}
         >
           <RadioField className="sm:gap-x-6">
@@ -353,7 +353,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
         <RadioGroup
           name="payment-method"
           aria-label="Payment method"
-          onChange={(e) => setMethodActive(e as any)}
+          onDeğiştir={(e) => setMethodActive(e as any)}
           value={mothodActive}
         >
           <RadioField className="sm:gap-x-6">
@@ -406,7 +406,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
           name="payment-method"
           aria-label="Payment method"
           value={mothodActive}
-          onChange={(e) => setMethodActive(e as any)}
+          onDeğiştir={(e) => setMethodActive(e as any)}
         >
           <RadioField className="sm:gap-x-6">
             <Radio className="pt-3" value="Wallet" defaultChecked={active} />
@@ -455,7 +455,7 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
               Siparisi onayla
             </ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              Back to shipping address
+              Teslimat Adresine Dön
             </ButtonThird>
           </div>
         </FieldGroup>
