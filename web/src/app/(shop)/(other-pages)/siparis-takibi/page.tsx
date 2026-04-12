@@ -108,7 +108,7 @@ export default function SiparisTakibiPage() {
 
       {/* Info cards */}
       <div className="container mt-20">
-        <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-3">
+        <div className="mx-auto grid max-w-2xl gap-6 sm:grid-cols-2">
           <div className="rounded-2xl bg-sky-50 p-6 text-center dark:bg-sky-900/20">
             <span className="text-3xl"><HugeiconsIcon icon={MailOpen01Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
             <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">E-posta Bildirimi</h3>
@@ -118,11 +118,6 @@ export default function SiparisTakibiPage() {
             <span className="text-3xl"><HugeiconsIcon icon={SmartPhone01Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
             <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">SMS Takip</h3>
             <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Kargo firmasından SMS ile takip numarası gelir.</p>
-          </div>
-          <div className="rounded-2xl bg-emerald-50 p-6 text-center dark:bg-emerald-900/20">
-            <span className="text-3xl"><HugeiconsIcon icon={Globe02Icon} size={28} color="currentColor" strokeWidth={1.5} /></span>
-            <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">Canlı Takip</h3>
-            <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Kargo takip linki ile paketinizi canlı izleyin.</p>
           </div>
         </div>
       </div>
