@@ -23,6 +23,7 @@ export default function SignupForm() {
       lastName: String(fd.get('lastName') || '').trim(),
       email: String(fd.get('email') || '').trim(),
       password: String(fd.get('password') || ''),
+      privacyAccepted: true,
     }
 
     if (!payload.firstName || !payload.email || !payload.password) {
@@ -84,6 +85,14 @@ export default function SignupForm() {
             <Label>Şifre</Label>
             <Input type="password" name="password" required autoComplete="new-password" />
           </Field>
+
+          <div className="flex items-start gap-3">
+            <input type="checkbox" name="privacy" required className="mt-1 h-4 w-4 rounded border-neutral-300" />
+            <label className="text-sm text-neutral-600 dark:text-neutral-400">
+              <a href="/kvkk" target="_blank" className="text-primary-600 underline">KVKK Aydınlatma Metni</a>'ni ve{' '}
+              <a href="/gizlilik-politikasi" target="_blank" className="text-primary-600 underline">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.
+            </label>
+          </div>
 
           {status === 'error' && errorMsg && (
             <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">

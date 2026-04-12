@@ -4,16 +4,25 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number }): Promise<T | null> {
   try {
     const { revalidate = 60, ...fetchOptions } = options || {}
-    const res = await fetch(`${API_URL}${endpoint}`, {
+    const fetchOpts: any = {
       ...fetchOptions,
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions?.headers,
       },
-      next: { revalidate },
-    })
-    if (!res.ok) return null
-    return res.json()
+    }
+    // Only add next.revalidate for GET requests (server-side caching)
+    // POST/PUT/DELETE requests from client components don't support this
+    if (!fetchOptions.method || fetchOptions.method === 'GET') {
+      fetchOpts.next = { revalidate }
+    }
+    const res = await fetch(`${API_URL}${endpoint}`, fetchOpts)
+    const json = await res.json()
+    if (!res.ok) {
+      // Return the error response so forms can show the message
+      return { success: false, ...json } as T
+    }
+    return json
   } catch (error) {
     return null
   }
