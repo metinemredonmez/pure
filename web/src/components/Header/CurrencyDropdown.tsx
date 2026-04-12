@@ -2,7 +2,7 @@
 
 import { getCurrencies } from '@/data/navigation'
 import { Popover, PopoverButton, PopoverPanel, type PopoverPanelProps } from '@headlessui/react'
-import { ChevronDownIcon, CurrencyDollarIcon } from '@heroicons/react/24/outline'
+import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 import { FC, useState } from 'react'
 
@@ -19,7 +19,7 @@ const CurrencyDropdown: FC<Props> = ({ className, currencies, panelAnchor = 'bot
     <div className={className}>
       <Popover>
         <PopoverButton className="-m-2.5 flex items-center p-2.5 text-sm font-medium text-gray-800 focus:outline-hidden dark:text-neutral-200">
-          <CurrencyDollarIcon className="size-[18px] opacity-80" />
+          <span className="text-base font-medium opacity-80">₺</span>
           <span className="ms-1.5">{selected}</span>
           <ChevronDownIcon className="ms-1 size-4" aria-hidden="true" />
         </PopoverButton>
