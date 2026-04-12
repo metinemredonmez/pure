@@ -170,7 +170,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         </div>
 
         <div className="relative -z-10 flex-1/2 lg:pr-10">
-          <div className="relative aspect-square w-full max-w-[40rem] overflow-hidden rounded-3xl fade--animation__image select-none">
+          <div className="relative aspect-square w-full max-w-[40rem] overflow-hidden fade--animation__image select-none">
             <Image
               sizes="(max-width: 768px) 100vw, 60vw"
               className="object-cover"

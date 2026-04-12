@@ -108,27 +108,6 @@ export default function FranchisePage() {
         </div>
       </div>
 
-      {/* Process */}
-      <div className="container mt-24">
-        <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Süreç Nasıl İşler?</h2>
-        <div className="mx-auto mt-12 grid max-w-4xl gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { step: '01', title: 'Başvuru', desc: 'Formu doldurun, ekibimiz sizi tanısın', color: 'bg-primary-50 text-primary-700' },
-            { step: '02', title: 'Görüşme', desc: 'Yüz yüze veya online detaylı görüşme', color: 'bg-amber-50 text-amber-700' },
-            { step: '03', title: 'Planlama', desc: 'Lokasyon, tasarım ve yatırım planı', color: 'bg-emerald-50 text-emerald-700' },
-            { step: '04', title: 'Açılış', desc: 'Eğitim + açılış kampanyası ile start', color: 'bg-sky-50 text-sky-700' },
-          ].map((s, i) => (
-            <div key={i} className="text-center">
-              <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-bold ${s.color}`}>
-                {s.step}
-              </div>
-              <h3 className="mt-4 font-semibold text-neutral-900 dark:text-white">{s.title}</h3>
-              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Form */}
       <div id="form" className="container mt-24 scroll-mt-20">
         <div className="mx-auto max-w-2xl">
