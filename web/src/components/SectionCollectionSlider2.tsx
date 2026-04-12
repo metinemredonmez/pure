@@ -73,7 +73,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
                       strokeWidth={1.5}
                     />
                   </div>
-                  <span className="mt-1 text-sm text-neutral-800">Show me more</span>
+                  <span className="mt-1 text-sm text-neutral-800">Daha Fazla Göster</span>
                 </div>
               </div>
               <Link

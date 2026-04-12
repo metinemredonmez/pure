@@ -1122,17 +1122,17 @@ export async function getCollectionByHandle(handle: string) {
   if (handle === 'all') {
     return {
       id: 'gid://all',
-      title: 'All products',
+      title: 'Tüm Ürünler',
       handle: 'all',
-      description: 'Explore our entire collection of products, from clothing to accessories.',
-      sortDescription: 'All products',
+      description: 'Pure Olentia kahve koleksiyonunu keşfedin. Taze kavrulmuş specialty kahveler.',
+      sortDescription: 'Tüm Ürünler',
       color: 'bg-indigo-50',
       count: 77,
       image: {
         src: collectionImage1.src,
         width: collectionImage1.width,
         height: collectionImage1.height,
-        alt: 'Explore new arrivals',
+        alt: 'Tüm kahveler',
       },
     }
   }

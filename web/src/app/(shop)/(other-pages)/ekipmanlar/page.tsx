@@ -304,5 +304,8 @@ function StaticEkipmanlarFallback() {
 }
 
 export default function EkipmanlarPage() {
-  return <CmsPage slug="ekipmanlar" kicker="Ekipman Rehberi" fallback={<StaticEkipmanlarFallback />} />
+  // Always render the rich static component — this page has a custom
+  // design with icons, category cards and a CTA. CmsPage wrapper
+  // would override it with plain HTML from the admin seed.
+  return <StaticEkipmanlarFallback />
 }

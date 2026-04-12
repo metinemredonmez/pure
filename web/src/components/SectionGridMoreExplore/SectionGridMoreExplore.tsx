@@ -86,7 +86,7 @@ const SectionGridMoreExplore: FC<SectionGridMoreExploreProps> = ({
       {/* Button */}
       <div className="mt-20 flex justify-center">
         <Button color="light" href="/collections/all" className="[--btn-border:white]/0">
-          Explore all collections
+          Tüm Koleksiyonları Keşfet
           <ArrowRightIcon className="h-4 w-4" />
         </Button>
       </div>

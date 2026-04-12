@@ -27,7 +27,7 @@ const Page = async () => {
       </div>
 
       <div className="flex items-center justify-center pt-10">
-        <ButtonPrimary>Show me more</ButtonPrimary>
+        <ButtonPrimary>Daha Fazla Göster</ButtonPrimary>
       </div>
     </div>
   )
