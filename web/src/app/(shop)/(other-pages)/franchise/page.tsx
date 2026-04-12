@@ -54,10 +54,10 @@ export default function FranchisePage() {
       </div>
 
       {/* Stats */}
-      <div className="container -mt-8 px-4 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+      <div className="container -mt-8">
+        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
           {stats.map((s, i) => (
-            <div key={i} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
+            <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
               <div className="text-2xl font-bold text-primary-700">{s.value}</div>
               <div className="mt-1 text-xs text-neutral-500">{s.label}</div>
             </div>
@@ -65,49 +65,27 @@ export default function FranchisePage() {
         </div>
       </div>
 
-      {/* Visual banner */}
+      {/* 3-Banner Gallery — görseller admin panelden eklenecek */}
       <div className="container mt-20">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950 p-8 sm:p-12 lg:p-16">
-          <div className="absolute inset-0 opacity-10">
-            <svg className="h-full w-full" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="350" cy="30" r="120" fill="white" />
-              <circle cx="50" cy="170" r="80" fill="white" />
-            </svg>
-          </div>
-          <div className="relative grid items-center gap-8 lg:grid-cols-2">
-            <div>
-              <span className="inline-block rounded-full bg-white/10 px-3 py-1 text-xs font-semibold tracking-wider text-white/90 uppercase backdrop-blur-sm">
-                Mağaza Konsepti
-              </span>
-              <h2 className="mt-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
-                Modern ve Sıcak Atmosferde Specialty Kahve Deneyimi
-              </h2>
-              <p className="mt-4 max-w-lg text-white/70">
-                Anahtar teslim mekan tasarımı, premium ekipman ve eğitim desteği ile hayalinizdeki kahve dükkânını açın.
-              </p>
-              <a href="#form" className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-white/90">
-                Hemen Başvurun
-              </a>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-white">150+</div>
-                <div className="mt-1 text-sm text-white/60">Başarılı Şube</div>
-              </div>
-              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-white">35+</div>
-                <div className="mt-1 text-sm text-white/60">İl Kapsamı</div>
-              </div>
-              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-white">%95</div>
-                <div className="mt-1 text-sm text-white/60">Memnuniyet</div>
-              </div>
-              <div className="rounded-2xl bg-white/10 p-5 backdrop-blur-sm">
-                <div className="text-3xl font-bold text-white">12 Ay</div>
-                <div className="mt-1 text-sm text-white/60">Geri Dönüş</div>
+        <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Pure Olentia Mağaza Konsepti</h2>
+        <p className="mx-auto mt-3 max-w-xl text-center text-neutral-500 dark:text-neutral-400">
+          Modern ve sıcak atmosferde specialty kahve deneyimi
+        </p>
+        <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          {[
+            { alt: 'Pure Olentia Mağaza — İç Mekan', label: 'İç Mekan' },
+            { alt: 'Pure Olentia Mağaza — Ürünler', label: 'Ürünler' },
+            { alt: 'Pure Olentia Mağaza — Atmosfer', label: 'Atmosfer' },
+          ].map((item, i) => (
+            <div key={i} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br from-primary-100 to-amber-50 dark:from-primary-900/30 dark:to-amber-900/20">
+              {/* Placeholder — admin panelden görsel eklenecek */}
+              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                <HugeiconsIcon icon={CoffeeIcon} size={48} color="currentColor" strokeWidth={1} className="text-primary-300 dark:text-primary-700" />
+                <p className="mt-4 text-sm font-medium text-primary-600 dark:text-primary-400">{item.label}</p>
+                <p className="mt-1 text-xs text-neutral-400">Görsel eklenecek</p>
               </div>
             </div>
-          </div>
+          ))}
         </div>
       </div>
 

@@ -101,7 +101,7 @@ const SidebarNavigation: React.FC<SidebarNavigationProps> = ({ data }) => {
 
   return (
     <div>
-      <span>Pure Olentia ile kahve dünyasını keşfedin. Çekirdekten fincana her aşamayı sizinle paylaşıyoruz.</span>
+      {/* Removed tagline */}
 
       <div className="mt-4 flex items-center justify-between">
         <SocialsList />
