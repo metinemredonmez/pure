@@ -54,10 +54,10 @@ export default function FranchisePage() {
       </div>
 
       {/* Stats */}
-      <div className="container -mt-8">
-        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="container -mt-8 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {stats.map((s, i) => (
-            <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
+            <div key={i} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
               <div className="text-2xl font-bold text-primary-700">{s.value}</div>
               <div className="mt-1 text-xs text-neutral-500">{s.label}</div>
             </div>
