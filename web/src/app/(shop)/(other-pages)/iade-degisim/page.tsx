@@ -1,128 +1,117 @@
-import CmsPage from '@/components/CmsPage'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'İade & Değişim',
-  description:
-    'Pure Olentia iade ve değişim koşulları. Tüketici haklarınız kapsamında 14 gün içinde iade hakkı.',
+  description: 'Pure Olentia iade ve değişim koşulları. Tüketici haklarınız kapsamında 14 gün içinde iade hakkı.',
 }
 
 const conditions = [
-  {
-    title: 'İade Süresi',
-    desc: 'Ürünü teslim aldıktan sonra 14 gün içinde iade hakkınız vardır. Bu süre Mesafeli Satış Sözleşmeleri Yönetmeliği ile güvence altındadır.',
-  },
-  {
-    title: 'Kahve Ürünleri',
-    desc: 'Ambalajı açılmamış, mühürü bozulmamış kavrulmuş kahve ürünleri iade edilebilir. Ambalajı açılan kahve ürünleri hijyen ve tazelik nedeniyle iade edilemez.',
-  },
-  {
-    title: 'Ekipmanlar',
-    desc: 'Orijinal ambalajında, kullanılmamış, tüm aksesuarları tam olan ekipmanlar 14 gün içinde iade edilebilir. Kullanım belirtisi olanlar değerlendirmeye tabidir.',
-  },
-  {
-    title: 'Abonelikler',
-    desc: 'Abonelik planlarınızı istediğiniz zaman hesap panelinizden iptal edebilirsiniz. İptal sonrası o ay gönderilen siparişler iade edilebilir.',
-  },
-  {
-    title: 'Kargo Ücreti',
-    desc: 'Hatalı gönderim veya üründe kusur durumunda kargo ücreti Pure Olentia tarafından karşılanır. Cayma hakkı kullanımında iade kargo ücreti müşteriye aittir.',
-  },
-  {
-    title: 'İade Süreci',
-    desc: 'İade talebinizi info@pureolentia.com adresine sipariş numaranızla birlikte iletin. 24 saat içinde iade bilgilerini size ileteceğiz. Ürün tarafımıza ulaştıktan sonra 7 iş günü içinde ücret iadesi yapılır.',
-  },
+  { icon: '📅', title: 'İade Süresi', desc: 'Ürünü teslim aldıktan sonra 14 gün içinde iade hakkınız vardır. Mesafeli Satış Sözleşmeleri Yönetmeliği ile güvence altındadır.', color: 'amber' },
+  { icon: '☕', title: 'Kahve Ürünleri', desc: 'Ambalajı açılmamış, mühürü bozulmamış kavrulmuş kahve ürünleri iade edilebilir. Açılan paketler hijyen nedeniyle iade edilemez.', color: 'primary' },
+  { icon: '⚙️', title: 'Ekipmanlar', desc: 'Orijinal ambalajında, kullanılmamış, tüm aksesuarları tam olan ekipmanlar 14 gün içinde iade edilebilir.', color: 'sky' },
+  { icon: '🔄', title: 'Abonelikler', desc: 'Abonelik planlarınızı istediğiniz zaman hesap panelinizden iptal edebilirsiniz. İptal sonrası gönderilen sipariş iade edilebilir.', color: 'emerald' },
+  { icon: '🚚', title: 'Kargo Ücreti', desc: 'Hatalı gönderim veya üründe kusur varsa kargo Pure Olentia tarafından karşılanır. Cayma hakkında iade kargo müşteriye aittir.', color: 'rose' },
+  { icon: '💰', title: 'Ücret İadesi', desc: 'Ürün tarafımıza ulaştıktan sonra 7 iş günü içinde ödeme yönteminize uygun şekilde ücret iadesi yapılır.', color: 'violet' },
 ]
 
 const steps = [
-  {
-    no: '1',
-    title: 'Bize Ulaşın',
-    desc: 'İade talebinizi info@pureolentia.com adresine iletin veya iletişim formunu kullanın.',
-  },
-  {
-    no: '2',
-    title: 'Onay Alın',
-    desc: 'Ekibimiz 24 saat içinde size dönüş yaparak iade kodunuzu paylaşır.',
-  },
-  {
-    no: '3',
-    title: 'Kargoya Verin',
-    desc: 'Ürünü orijinal ambalajında, iade kodu ile birlikte bize gönderin.',
-  },
-  {
-    no: '4',
-    title: 'İade Tamamlandı',
-    desc: 'Ürün ulaştıktan sonra 7 iş günü içinde ücretiniz iade edilir.',
-  },
+  { no: '1', title: 'Bize Ulaşın', desc: 'İade talebinizi info@pureolentia.com adresine sipariş numaranızla iletin.', icon: '📧' },
+  { no: '2', title: 'Onay Alın', desc: 'Ekibimiz 24 saat içinde size dönüş yaparak iade kodunuzu paylaşır.', icon: '✅' },
+  { no: '3', title: 'Kargoya Verin', desc: 'Ürünü orijinal ambalajında, iade kodu ile birlikte bize gönderin.', icon: '📦' },
+  { no: '4', title: 'İade Tamamlandı', desc: 'Ürün ulaştıktan sonra 7 iş günü içinde ücretiniz iade edilir.', icon: '💳' },
 ]
 
-function StaticIadeDegisimFallback() {
+const accentBg: Record<string, string> = {
+  amber: 'bg-amber-50 dark:bg-amber-900/20',
+  primary: 'bg-primary-50 dark:bg-primary-900/20',
+  sky: 'bg-sky-50 dark:bg-sky-900/20',
+  emerald: 'bg-emerald-50 dark:bg-emerald-900/20',
+  rose: 'bg-rose-50 dark:bg-rose-900/20',
+  violet: 'bg-violet-50 dark:bg-violet-900/20',
+}
+
+export default function IadeDegisimPage() {
   return (
-    <div className="container pb-24 lg:pb-32">
-      <div className="mx-auto my-16 max-w-3xl text-center lg:my-24">
-        <span className="text-sm font-medium tracking-wider text-primary-700 uppercase">Müşteri Hakları</span>
-        <h1 className="mt-4 text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl dark:text-white">
-          İade & Değişim
-        </h1>
-        <p className="mt-6 text-lg text-neutral-600 dark:text-neutral-400">
-          Memnuniyetiniz önceliğimizdir. Siparişinizden memnun kalmadıysanız iade koşullarımız aşağıdadır.
-        </p>
-      </div>
-
-      {/* Conditions */}
-      <div className="mx-auto max-w-4xl">
-        <div className="grid gap-6 md:grid-cols-2">
-          {conditions.map((c) => (
-            <div
-              key={c.title}
-              className="rounded-2xl border border-neutral-200 bg-white p-6 dark:border-neutral-800 dark:bg-neutral-900"
-            >
-              <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">{c.title}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{c.desc}</p>
-            </div>
-          ))}
+    <div className="pb-24 lg:pb-32">
+      {/* Hero */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50 dark:from-rose-900/20 dark:via-pink-900/10 dark:to-orange-900/10">
+        <div className="container py-20 text-center lg:py-24">
+          <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-rose-800 uppercase backdrop-blur-sm dark:bg-neutral-900/60 dark:text-rose-300">
+            Müşteri Hakları
+          </span>
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 sm:text-5xl dark:text-white">
+            İade & Değişim
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
+            Memnuniyetiniz önceliğimizdir. 14 gün içinde koşulsuz iade hakkınız vardır.
+          </p>
         </div>
       </div>
 
-      {/* Steps */}
-      <div className="mx-auto mt-20 max-w-5xl">
-        <h2 className="mb-12 text-center text-2xl font-semibold text-neutral-900 dark:text-white">
-          İade Adımları
-        </h2>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s) => (
-            <div
-              key={s.no}
-              className="rounded-2xl bg-primary-50 p-6 text-center dark:bg-primary-900/20"
-            >
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-700 text-lg font-bold text-white">
-                {s.no}
-              </div>
-              <h3 className="mt-4 font-semibold text-neutral-900 dark:text-white">{s.title}</h3>
-              <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">{s.desc}</p>
+      <div className="container mt-16">
+        <div className="mx-auto max-w-5xl space-y-20">
+          {/* Conditions */}
+          <section>
+            <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">İade Koşulları</h2>
+            <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {conditions.map((c, i) => (
+                <div key={i} className={`rounded-2xl p-6 ${accentBg[c.color] || accentBg.amber}`}>
+                  <span className="text-3xl">{c.icon}</span>
+                  <h3 className="mt-3 text-lg font-semibold text-neutral-900 dark:text-white">{c.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">{c.desc}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </section>
 
-      {/* CTA */}
-      <div className="mx-auto mt-16 max-w-2xl text-center">
-        <p className="text-neutral-600 dark:text-neutral-400">
-          İade veya değişim talebiniz için:
-        </p>
-        <div className="mt-6">
-          <ButtonPrimary href="/contact">Bize Ulaşın</ButtonPrimary>
+          {/* Steps */}
+          <section>
+            <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">İade Adımları</h2>
+            <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {steps.map((s, i) => (
+                <div key={i} className="relative text-center">
+                  {i < steps.length - 1 && (
+                    <div className="pointer-events-none absolute top-10 right-0 hidden h-0.5 w-[calc(100%-3rem)] translate-x-1/2 border-t-2 border-dashed border-neutral-200 lg:block dark:border-neutral-700" />
+                  )}
+                  <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-pink-100 text-3xl dark:from-rose-900/30 dark:to-pink-900/30">
+                    {s.icon}
+                  </div>
+                  <div className="mx-auto mt-2 flex h-7 w-7 items-center justify-center rounded-full bg-rose-600 text-xs font-bold text-white">
+                    {s.no}
+                  </div>
+                  <h3 className="mt-3 font-semibold text-neutral-900 dark:text-white">{s.title}</h3>
+                  <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Important note */}
+          <section>
+            <div className="rounded-2xl border-l-4 border-rose-500 bg-rose-50 p-8 dark:border-rose-600 dark:bg-rose-900/20">
+              <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">⚠️ Önemli Hatırlatma</h3>
+              <ul className="mt-4 space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
+                <li className="flex gap-2"><span className="shrink-0">•</span>Ambalajı açılmış kahve ürünleri hijyen nedeniyle iade edilemez.</li>
+                <li className="flex gap-2"><span className="shrink-0">•</span>İade edilecek ürünlerin orijinal ambalajında ve kullanılmamış olması gerekir.</li>
+                <li className="flex gap-2"><span className="shrink-0">•</span>Kusurlu ürün teslimatında fotoğraf çekilmesi ve 24 saat içinde bildirilmesi gerekmektedir.</li>
+                <li className="flex gap-2"><span className="shrink-0">•</span>Hediye paketlerinde iade talebi alıcı tarafından da yapılabilir.</li>
+              </ul>
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="text-center">
+            <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">İade veya değişim talebi için:</h2>
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              <ButtonPrimary href="/contact">Bize Ulaşın</ButtonPrimary>
+              <a href="mailto:info@pureolentia.com" className="flex items-center gap-2 rounded-full border border-neutral-300 px-6 py-3 text-sm font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300">
+                📧 info@pureolentia.com
+              </a>
+            </div>
+          </section>
         </div>
       </div>
     </div>
   )
 }
-
-export default function IadeDegisimPage() {
-  return (
-    <CmsPage slug="iade-degisim" kicker="Müşteri Hakları" fallback={<StaticIadeDegisimFallback />} />
-  )
-}
-
