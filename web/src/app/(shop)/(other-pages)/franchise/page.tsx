@@ -73,17 +73,18 @@ export default function FranchisePage() {
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-3">
           {[
-            { alt: 'Pure Olentia Mağaza — İç Mekan', label: 'İç Mekan' },
-            { alt: 'Pure Olentia Mağaza — Ürünler', label: 'Ürünler' },
-            { alt: 'Pure Olentia Mağaza — Atmosfer', label: 'Atmosfer' },
-          ].map((item, i) => (
-            <div key={i} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br from-primary-100 to-amber-50 dark:from-primary-900/30 dark:to-amber-900/20">
-              {/* Placeholder — admin panelden görsel eklenecek */}
-              <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-                <HugeiconsIcon icon={CoffeeIcon} size={48} color="currentColor" strokeWidth={1} className="text-primary-300 dark:text-primary-700" />
-                <p className="mt-4 text-sm font-medium text-primary-600 dark:text-primary-400">{item.label}</p>
-                <p className="mt-1 text-xs text-neutral-400">Görsel eklenecek</p>
-              </div>
+            { src: '/hero/turk-kahvesi-100gr.jpg', alt: 'Pure Olentia — Türk Kahvesi' },
+            { src: '/hero/brazil-santos.jpg', alt: 'Pure Olentia — Filtre Kahve' },
+            { src: '/hero/hediye-paketi.jpg', alt: 'Pure Olentia — Hediye Paketleri' },
+          ].map((img, i) => (
+            <div key={i} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                sizes="(max-width: 640px) 100vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
             </div>
           ))}
         </div>

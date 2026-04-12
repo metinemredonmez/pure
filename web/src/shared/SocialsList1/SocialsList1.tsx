@@ -1,3 +1,4 @@
+import React from 'react'
 import { getSiteSettings } from '@/lib/site-settings'
 import clsx from 'clsx'
 import { Link } from '../link'
@@ -30,7 +31,7 @@ const TwitterIcon = () => (
   </svg>
 )
 
-const ICONS: Record<string, () => JSX.Element> = {
+const ICONS: Record<string, () => React.ReactElement> = {
   Instagram: InstagramIcon,
   Facebook: FacebookIcon,
   Youtube: YoutubeIcon,
