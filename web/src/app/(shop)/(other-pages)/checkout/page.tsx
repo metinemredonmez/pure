@@ -126,7 +126,7 @@ const CheckoutPage = async () => {
         <div className="my-10 shrink-0 border-t lg:mx-10 lg:my-0 lg:border-t-0 lg:border-l xl:lg:mx-14 2xl:mx-16" />
 
         <div className="w-full lg:w-[36%]">
-          <h3 className="text-lg font-semibold">Order summary</h3>
+          <h3 className="text-lg font-semibold">Sipariş Özeti</h3>
           <div className="mt-8 divide-y divide-neutral-200/70 dark:divide-neutral-700">
             {cart.lines.map(renderProduct)}
           </div>
@@ -160,7 +160,7 @@ const CheckoutPage = async () => {
               </span>
             </div>
             <div className="flex justify-between py-2.5">
-              <span>Tax estimate</span>
+              <span>Tahmini vergi</span>
               <span className="font-semibold text-neutral-900 dark:text-neutral-200">${cart.cost.tax.toFixed(2)}</span>
             </div>
             <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">

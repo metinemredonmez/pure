@@ -12,7 +12,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'Sepet',
-  description: 'Alisveris sepetiniz',
+  description: 'Alışveriş sepetiniz',
 }
 
 const CartPage = async () => {
@@ -110,8 +110,8 @@ const CartPage = async () => {
     <div className="nc-CartPage">
       <main className="container py-16 lg:pt-20 lg:pb-28">
         <div className="mb-12 sm:mb-16">
-          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alisveris Sepeti</h2>
-          <Breadcrumb breadcrumbs={[{ id: 1, name: 'Home', href: '/' }]} currentPage="Alisveris Sepeti" className="mt-5" />
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alışveriş Sepeti</h2>
+          <Breadcrumb breadcrumbs={[{ id: 1, name: 'Ana Sayfa', href: '/' }]} currentPage="Alışveriş Sepeti" className="mt-5" />
         </div>
 
         <hr className="my-10 border-neutral-200 xl:my-12 dark:border-neutral-700" />
@@ -138,7 +138,7 @@ const CartPage = async () => {
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Tax estimate</span>
+                  <span>Tahmini vergi</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ${cart.cost.tax.toFixed(2)}
                   </span>

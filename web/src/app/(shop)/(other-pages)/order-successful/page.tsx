@@ -138,7 +138,7 @@ export default async function Page() {
 
             <div className="mt-16 border-t border-neutral-200 py-6 text-right dark:border-neutral-700">
               <Link href="/collections/all" className="text-sm font-medium uppercase">
-                Alisverise Devam Et
+                Alışverişe Devam Et
                 <span aria-hidden="true"> &rarr;</span>
               </Link>
             </div>

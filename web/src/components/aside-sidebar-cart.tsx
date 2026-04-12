@@ -16,7 +16,7 @@ const AsideSidebarCart = async ({ className = '' }: Props) => {
   const cart = await getCart('id://1')
 
   return (
-    <Aside openFrom="right" type="cart" heading="Alisveris Sepeti">
+    <Aside openFrom="right" type="cart" heading="Alışveriş Sepeti">
       <div className={clsx('flex h-full flex-col', className)}>
         {/* CONTENT */}
 
