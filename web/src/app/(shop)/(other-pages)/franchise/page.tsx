@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import FranchiseForm from './FranchiseForm'
 
 export const metadata: Metadata = {
@@ -6,11 +7,11 @@ export const metadata: Metadata = {
   description: 'Pure Olentia franchise başvurusu. Kendi kahve dükkânınızı açın.',
 }
 
-const steps = [
-  { step: '01', title: 'Başvuru Formu', desc: 'Aşağıdaki formu doldurun' },
-  { step: '02', title: 'Değerlendirme', desc: 'Ekibimiz başvurunuzu inceler' },
-  { step: '03', title: 'Görüşme', desc: 'Detayları konuşmak için buluşuruz' },
-  { step: '04', title: 'Açılış', desc: 'Pure Olentia ailesine katılırsınız' },
+// 3 banner images — admin can later manage these via /website/banners or a dedicated franchise gallery
+const FRANCHISE_BANNERS = [
+  { src: '/hero/turk-kahvesi-100gr.jpg', alt: 'Pure Olentia Franchise — Türk Kahvesi' },
+  { src: '/hero/brazil-santos.jpg', alt: 'Pure Olentia Franchise — Filtre Kahve' },
+  { src: '/hero/hediye-paketi.jpg', alt: 'Pure Olentia Franchise — Hediye Paketi' },
 ]
 
 export default function FranchisePage() {
@@ -27,19 +28,24 @@ export default function FranchisePage() {
         </p>
       </div>
 
-      {/* Steps */}
-      <div className="mx-auto max-w-4xl">
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((s, i) => (
-            <div key={i} className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary-100 text-lg font-bold text-primary-700">
-                {s.step}
-              </div>
-              <h3 className="mt-4 font-semibold">{s.title}</h3>
-              <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">{s.desc}</p>
+      {/* 3-Banner Area (images will be replaced by admin later) */}
+      <div className="mx-auto max-w-5xl">
+        <div className="grid gap-4 sm:grid-cols-3">
+          {FRANCHISE_BANNERS.map((banner, i) => (
+            <div key={i} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
+              <Image
+                src={banner.src}
+                alt={banner.alt}
+                fill
+                sizes="(max-width: 640px) 100vw, 33vw"
+                className="object-cover"
+              />
             </div>
           ))}
         </div>
+        <p className="mt-4 text-center text-xs text-neutral-400">
+          Görseller daha sonra tarafımızdan eklenecektir.
+        </p>
       </div>
 
       {/* Form */}

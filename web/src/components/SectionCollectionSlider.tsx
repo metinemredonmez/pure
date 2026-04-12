@@ -30,8 +30,9 @@ const SectionCollectionSlider = ({
   return (
     <div className={className}>
       <Heading
-        className="container mb-12 text-neutral-900 lg:mb-14 dark:text-neutral-50"
+        className="container mb-12 text-center text-neutral-900 lg:mb-14 dark:text-neutral-50"
         headingDim={headingDim}
+        isCenter
         hasNextPrev
         prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}

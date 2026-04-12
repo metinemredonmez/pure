@@ -136,16 +136,16 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     return (
       <div
         className={clsx(
-          'fade--animation relative flex flex-col gap-10 overflow-hidden py-14 pl-container sm:py-20 lg:flex-row lg:items-center',
+          'fade--animation relative flex flex-col gap-10 overflow-hidden py-14 px-6 sm:py-20 sm:px-12 lg:flex-row lg:items-center lg:px-20',
           isActive ? 'flex' : 'hidden'
         )}
         key={index}
       >
-        {/* BG */}
+        {/* BG — full width, edge to edge */}
         <div className="absolute inset-0 -z-10 bg-[#F5EDE4]">
           <Image
             fill
-            sizes="(max-width: 768px) 100vw, 50vw"
+            sizes="100vw"
             className="absolute h-full w-full object-contain"
             src={backgroundLineSvg}
             alt="hero"
