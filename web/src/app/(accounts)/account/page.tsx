@@ -29,6 +29,12 @@ export default function AccountPage() {
       if (data?.id) {
         setUser(data)
         localStorage.setItem('pureolentia_user', JSON.stringify(data))
+      } else {
+        // Fallback to localStorage user data if API fails (token expired etc.)
+        try {
+          const cached = localStorage.getItem('pureolentia_user')
+          if (cached) setUser(JSON.parse(cached))
+        } catch {}
       }
       setLoading(false)
     })
