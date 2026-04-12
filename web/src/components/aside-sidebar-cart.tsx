@@ -18,14 +18,33 @@ const AsideSidebarCart = () => {
         {/* CONTENT */}
         <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-neutral-500 dark:text-neutral-400">Sepetiniz boş</p>
+            <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+              {/* Empty cart illustration */}
+              <div className="flex h-28 w-28 items-center justify-center rounded-full bg-primary-50 dark:bg-primary-900/20">
+                <svg className="h-14 w-14 text-primary-300 dark:text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <h3 className="mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
+                Sepetiniz boş
+              </h3>
+              <p className="mt-2 max-w-xs text-sm text-neutral-500 dark:text-neutral-400">
+                Henüz sepetinize ürün eklemediniz. Taze kavrulmuş kahvelerimizi keşfedin!
+              </p>
               <Link
                 href="/collections/all"
-                className="mt-4 text-sm font-medium text-primary-600 hover:underline"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary-700 px-6 py-3 text-sm font-medium text-white transition hover:bg-primary-800"
               >
-                Alışverişe başla →
+                Kahveleri Keşfet
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
               </Link>
+              <div className="mt-8 rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-800">
+                <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
+                  🚚 300 TL üzeri siparişlerde <span className="text-primary-700 dark:text-primary-400">ücretsiz kargo</span>
+                </p>
+              </div>
             </div>
           ) : (
             <div className="flow-root">
