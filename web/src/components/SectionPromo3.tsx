@@ -1,13 +1,11 @@
 import backgroundLineSvg from '@/images/BackgroundLine.svg'
 import rightImgDemo from '@/images/promo3.png'
 import { getSiteSettings } from '@/lib/site-settings'
-import ButtonCircle from '@/shared/Button/ButtonCircle'
 import NcImage from '@/shared/NcImage/NcImage'
 import { Badge } from '@/shared/badge'
-import { Input } from '@/shared/input'
-import { ArrowRightIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import Image from 'next/image'
+import NewsletterForm from './NewsletterForm'
 
 export interface SectionPromo3Props {
   className?: string
@@ -48,19 +46,7 @@ const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
               <span className="font-medium text-neutral-700 dark:text-neutral-300">Abonelere özel indirimler</span>
             </li>
           </ul>
-          <form className="relative mt-10 max-w-sm">
-            <Input
-              required
-              aria-required
-              placeholder="E-posta adresiniz"
-              type="email"
-              name="email"
-              className="sm:before:shadow-none"
-            />
-            <ButtonCircle type="submit" className="absolute top-1/2 right-1 -translate-y-1/2 transform">
-              <ArrowRightIcon className="size-4" />
-            </ButtonCircle>
-          </form>
+          <NewsletterForm />
         </div>
 
         <NcImage
