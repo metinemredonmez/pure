@@ -9,11 +9,11 @@ import { FC, Fragment, useState } from 'react'
 
 const sortByOptions = [
   { name: 'En Yeni', value: 'newest' },
-  { name: 'Oldest', value: 'oldest' },
-  { name: 'Fiyat: Dusukten Yuksege', value: 'price-low-to-high' },
-  { name: 'Fiyat: Yuksekten Dusuge', value: 'price-high-to-low' },
-  { name: 'A to Z', value: 'a-to-z' },
-  { name: 'Z to A', value: 'z-to-a' },
+  { name: 'En Eski', value: 'oldest' },
+  { name: 'Fiyat: Düşükten Yükseğe', value: 'price-low-to-high' },
+  { name: 'Fiyat: Yüksekten Düşüğe', value: 'price-high-to-low' },
+  { name: 'A\'dan Z\'ye', value: 'a-to-z' },
+  { name: 'Z\'den A\'ya', value: 'z-to-a' },
 ]
 
 type Props = {

@@ -16,9 +16,12 @@ const widgetMenus: WidgetFooterMenu[] = [
     title: 'Keşfet',
     menus: [
       { href: '/about', label: 'Hakkımızda' },
-      { href: '/blog', label: 'Kahve Rehberi' },
+      { href: '/blog', label: 'Blog' },
+      { href: '/demleme-rehberi', label: 'Demleme Rehberi' },
+      { href: '/kahve-sozlugu', label: 'Kahve Sözlüğü' },
       { href: '/subscription', label: 'Abonelik' },
       { href: '/ekipmanlar', label: 'Ekipmanlar' },
+      { href: '/menseiler', label: 'Menşei Hikayeleri' },
     ],
   },
   {

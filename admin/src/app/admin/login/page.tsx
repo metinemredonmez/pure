@@ -215,10 +215,7 @@ function LoginForm() {
               Giriş Yap
             </Typography>
             <Typography variant="body1" sx={{ color: 'rgba(255,255,255,0.5)', mb: 4 }}>
-              Hesabınız yok mu?{' '}
-              <MuiLink component={Link} href="/admin/register" underline="hover" sx={{ color: brandColors.rust, fontWeight: 600 }}>
-                Üye Ol
-              </MuiLink>
+              Yönetim paneline giriş yapın.
             </Typography>
 
             {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>{error}</Alert>}

@@ -41,20 +41,19 @@ const AsideSidebarCart = async ({ className = '' }: Props) => {
           <div>
             <div className="flex justify-between text-base font-medium text-gray-900 dark:text-neutral-100">
               <p className="font-medium">Ara Toplam</p>
-              <p className="font-medium">${cart.cost.subtotal}</p>
+              <p className="font-medium">₺{cart.cost.subtotal}</p>
             </div>
             <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-              Shipping and taxes calculated at checkout.
+              Kargo ve vergiler ödeme sırasında hesaplanır.
             </p>
             <div className="mt-5 grid grid-cols-2 gap-2">
-              <ButtonSecondary href={'/cart'}>Sepeti Gor</ButtonSecondary>
-              <ButtonPrimary href={'/checkout'}>Check out</ButtonPrimary>
+              <ButtonSecondary href={'/cart'}>Sepeti Gör</ButtonSecondary>
+              <ButtonPrimary href={'/checkout'}>Ödemeye Geç</ButtonPrimary>
             </div>
             <div className="mt-6 flex justify-center text-center text-sm text-neutral-500 dark:text-neutral-400">
               <p className="text-xs">
-                or{' '}
                 <Link href={'/collections/all'} className="text-xs font-medium uppercase">
-                  Alisverise Devam Et<span aria-hidden="true"> →</span>
+                  Alışverişe Devam Et<span aria-hidden="true"> →</span>
                 </Link>
               </p>
             </div>
@@ -116,7 +115,7 @@ const CartProduct = ({ product }: { product: TCardProduct }) => {
 
           <div className="flex">
             <button type="button" className="font-medium text-primary-600 dark:text-primary-500">
-              Remove
+              Kaldır
             </button>
           </div>
         </div>

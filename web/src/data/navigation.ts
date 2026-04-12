@@ -1,13 +1,12 @@
 export async function getNavigation(): Promise<TNavigationItem[]> {
   return [
     { id: '1', href: '/collections/all', name: 'Kahveler' },
-    { id: '2', href: '/subscription', name: 'Abonelik' },
-    { id: '3', href: '/collections/all', name: 'Online Dükkan' },
-    { id: '4', href: '/ekipmanlar', name: 'Ekipmanlar' },
-    { id: '5', href: '/franchise', name: 'Franchise' },
-    { id: '6', href: '/b2b', name: 'Kurumsal' },
-    { id: '7', href: '/blog', name: 'Blog' },
-    { id: '8', href: '/contact', name: 'İletişim' },
+    { id: '2', href: '/b2b', name: 'Kurumsal' },
+    { id: '3', href: '/subscription', name: 'Abonelik' },
+    { id: '4', href: '/collections/all', name: 'Online Dükkan' },
+    { id: '5', href: '/ekipmanlar', name: 'Ekipmanlar' },
+    { id: '6', href: '/franchise', name: 'Franchise' },
+    { id: '7', href: '/contact', name: 'İletişim' },
   ]
 }
 
