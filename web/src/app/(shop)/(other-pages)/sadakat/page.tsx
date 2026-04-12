@@ -81,7 +81,7 @@ const howItWorks = [
 
 export default function SadakatPage() {
   return (
-    <div className="pb-24 lg:pb-32">
+    <div className="overflow-x-hidden pb-24 lg:pb-32">
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
         <div className="absolute inset-0 opacity-10">
@@ -113,10 +113,10 @@ export default function SadakatPage() {
       </div>
 
       {/* How it works */}
-      <div className="container -mt-8">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="container -mt-8 px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {howItWorks.map((item, i) => (
-            <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
+            <div key={i} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary-700 dark:bg-primary-900/30">
                 <HugeiconsIcon icon={item.icon} size={24} color="currentColor" strokeWidth={1.5} />
               </div>

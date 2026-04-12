@@ -27,7 +27,7 @@ const benefits = [
 
 export default function FranchisePage() {
   return (
-    <div className="pb-24 lg:pb-32">
+    <div className="overflow-x-hidden pb-24 lg:pb-32">
       {/* Hero — full width gradient */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900">
         <div className="container py-20 text-center text-white lg:py-28">
