@@ -1,14 +1,14 @@
 'use client'
 
+import React, { useState, useRef, useCallback } from 'react'
 import { TNavigationItem } from '@/data/navigation'
 import Link from 'next/link'
-import { useState, useRef, useCallback } from 'react'
 
 interface NavDropdownProps {
   item: TNavigationItem
 }
 
-const CATEGORY_ICONS: Record<string, JSX.Element> = {
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
   'turk-kahvesi': (
     <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
       <path d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8" />
