@@ -2,6 +2,7 @@
 
 import { useCart } from '@/contexts/CartContext'
 import Breadcrumb from '@/shared/Breadcrumb'
+import { useState, useEffect } from 'react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { CheckIcon } from '@heroicons/react/24/outline'
 import { Coffee01Icon, PackageIcon } from '@hugeicons/core-free-icons'
@@ -11,12 +12,29 @@ import Link from 'next/link'
 
 export default function CartPageContent() {
   const { items, subtotal, removeItem, updateQuantity } = useCart()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const freeShippingThreshold = 300
   const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
   const kdvRate = 0.10
   const kdvAmount = subtotal * kdvRate
   const total = subtotal + shippingCost + kdvAmount
+
+  // Wait for client-side hydration before showing empty state
+  if (!mounted) {
+    return (
+      <div className="nc-CartPage">
+        <main className="container py-16 lg:pt-20 lg:pb-28">
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alışveriş Sepeti</h2>
+          <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+        </main>
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     return (

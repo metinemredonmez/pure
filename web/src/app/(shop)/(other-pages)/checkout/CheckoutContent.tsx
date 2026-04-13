@@ -8,16 +8,23 @@ import { Coffee01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import Information from './Information'
 
 export default function CheckoutContent() {
   const { items, subtotal, removeItem, updateQuantity } = useCart()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => { setMounted(true) }, [])
 
   const freeShippingThreshold = 300
   const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
   const kdvRate = 0.10
   const kdvAmount = subtotal * kdvRate
   const total = subtotal + shippingCost + kdvAmount
+
+  if (!mounted) {
+    return <main className="container py-16 lg:pt-20 lg:pb-28"><div className="py-20 text-center text-neutral-400">Yükleniyor...</div></main>
+  }
 
   if (items.length === 0) {
     return (
