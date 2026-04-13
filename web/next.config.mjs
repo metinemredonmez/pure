@@ -52,9 +52,17 @@ const nextConfig = {
         ],
       },
       {
-        source: '/products/(.*)',
+        // Next.js hashed static assets — safe to cache forever
+        source: '/_next/static/(.*)',
         headers: [
           { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        // HTML pages — always revalidate
+        source: '/((?!_next|api).*)',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
         ],
       },
     ]
