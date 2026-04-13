@@ -16,7 +16,6 @@ import {
   Route02Icon,
   Tick02Icon,
   UserCircle02Icon,
-  Wallet03Icon,
 } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
@@ -294,144 +293,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
 }
 
 const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
-  const [mothodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking' | 'Wallet'>('Credit-Card')
-
-  const renderDebitCredit = () => {
-    const active = mothodActive === 'Credit-Card'
-    return (
-      <div>
-        <RadioGroup
-          name="payment-method"
-          aria-label="Payment method"
-          onChange={(e) => setMethodActive(e as any)}
-          value={mothodActive}
-        >
-          <RadioField className="sm:gap-x-6">
-            <Radio className="pt-3" value="Credit-Card" defaultChecked={active} />
-            <Label className="flex items-center gap-x-4 sm:gap-x-6">
-              <div
-                className={clsx(
-                  'rounded-xl border-2 border-neutral-600 p-2.5 dark:border-neutral-300',
-                  active ? 'opacity-100' : 'opacity-25'
-                )}
-              >
-                <HugeiconsIcon icon={CreditCardIcon} size={24} />
-              </div>
-              <p className="font-medium sm:text-base">Banka / Kredi Kartı</p>
-            </Label>
-          </RadioField>
-        </RadioGroup>
-
-        <div className={clsx('space-y-5 py-6 sm:pl-10', active ? 'block' : 'hidden')}>
-          <Field className="max-w-lg">
-            <Label>Kart Numarası</Label>
-            <Input autoComplete="off" name="card-number" />
-          </Field>
-          <Field className="max-w-lg">
-            <Label>Kart Üzerindeki İsim</Label>
-            <Input autoComplete="off" name="name-on-card" />
-          </Field>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Field className="flex-2/3">
-              <Label>Son Kullanma Tarihi (AA/YY)</Label>
-              <Input autoComplete="off" placeholder="MM/YY" name="expiration-date" />
-            </Field>
-            <Field className="flex-1/3">
-              <Label>CVC</Label>
-              <Input autoComplete="off" placeholder="CVC" name="cvc" />
-            </Field>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderInterNetBanking = () => {
-    const active = mothodActive === 'Internet-banking'
-    return (
-      <div>
-        <RadioGroup
-          name="payment-method"
-          aria-label="Payment method"
-          onChange={(e) => setMethodActive(e as any)}
-          value={mothodActive}
-        >
-          <RadioField className="sm:gap-x-6">
-            <Radio className="pt-3" value="Internet-banking" defaultChecked={active} />
-            <Label className="flex items-center gap-x-4 sm:gap-x-6">
-              <div
-                className={clsx(
-                  'rounded-xl border-2 border-neutral-600 p-2.5 dark:border-neutral-300',
-                  active ? 'opacity-100' : 'opacity-25'
-                )}
-              >
-                <HugeiconsIcon icon={InternetIcon} size={24} />
-              </div>
-              <p className="font-medium sm:text-base">İnternet Bankacılığı</p>
-            </Label>
-          </RadioField>
-        </RadioGroup>
-
-        <div className={clsx('py-6 sm:pl-10', active ? 'block' : 'hidden')}>
-          <Subheading>Havale yaptıktan sonra siparişiniz işleme alınacaktır.</Subheading>
-          <DescriptionList className="mt-3.5">
-            <DescriptionTerm>Müşteri</DescriptionTerm>
-            <DescriptionDetails>Pure Olentia</DescriptionDetails>
-
-            <DescriptionTerm>Banka Adı</DescriptionTerm>
-            <DescriptionDetails>İş Bankası</DescriptionDetails>
-
-            <DescriptionTerm>Hesap Numarası</DescriptionTerm>
-            <DescriptionDetails>555 888 777</DescriptionDetails>
-
-            <DescriptionTerm>Şube Kodu</DescriptionTerm>
-            <DescriptionDetails>999</DescriptionDetails>
-
-            <DescriptionTerm>IBAN</DescriptionTerm>
-            <DescriptionDetails>IBAN</DescriptionDetails>
-
-            <DescriptionTerm>BIC</DescriptionTerm>
-            <DescriptionDetails>BIC/Swift</DescriptionDetails>
-          </DescriptionList>
-        </div>
-      </div>
-    )
-  }
-
-  const renderWallet = () => {
-    const active = mothodActive === 'Wallet'
-    return (
-      <div>
-        <RadioGroup
-          name="payment-method"
-          aria-label="Payment method"
-          value={mothodActive}
-          onChange={(e) => setMethodActive(e as any)}
-        >
-          <RadioField className="sm:gap-x-6">
-            <Radio className="pt-3" value="Wallet" defaultChecked={active} />
-            <Label className="flex items-center gap-x-4 sm:gap-x-6">
-              <div
-                className={clsx(
-                  'rounded-xl border-2 border-neutral-600 p-2.5 dark:border-neutral-300',
-                  active ? 'opacity-100' : 'opacity-25'
-                )}
-              >
-                <HugeiconsIcon icon={Wallet03Icon} size={24} />
-              </div>
-              <p className="font-medium sm:text-base">Google / Apple Wallet</p>
-            </Label>
-          </RadioField>
-        </RadioGroup>
-
-        <div className={clsx('py-6 sm:pl-10', active ? 'block' : 'hidden')}>
-          <p className="leading-relaxed text-neutral-600 dark:text-neutral-400">
-            Mobil cüzdanınızla hızlı ve güvenli ödeme yapın.
-          </p>
-        </div>
-      </div>
-    )
-  }
+  const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
 
   return (
     <form
@@ -446,13 +308,131 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
     >
       <Fieldset>
         <FieldGroup className="mt-0!">
-          {renderDebitCredit()}
-          {renderInterNetBanking()}
-          {renderWallet()}
+          {/* Kredi / Banka Kartı */}
+          <div className="rounded-xl border border-neutral-200 p-4 transition hover:border-primary-300 dark:border-neutral-700">
+            <RadioGroup
+              name="payment-method"
+              aria-label="Ödeme yöntemi"
+              onChange={(e) => setMethodActive(e as any)}
+              value={methodActive}
+            >
+              <RadioField className="sm:gap-x-4">
+                <Radio className="mt-0.5" value="Credit-Card" />
+                <Label className="flex flex-1 items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 dark:bg-primary-900/30">
+                      <HugeiconsIcon icon={CreditCardIcon} size={20} className="text-primary-700" />
+                    </div>
+                    <div>
+                      <p className="font-semibold">Kredi / Banka Kartı</p>
+                      <p className="text-xs text-neutral-500">Visa, Mastercard, Troy — Taksit imkanı</p>
+                    </div>
+                  </div>
+                  <div className="hidden items-center gap-1.5 sm:flex">
+                    <div className="flex h-6 w-9 items-center justify-center rounded border bg-white text-[8px] font-bold text-blue-700">VISA</div>
+                    <div className="flex h-6 w-9 items-center justify-center rounded border bg-white"><div className="flex -space-x-1"><div className="h-3 w-3 rounded-full bg-red-500 opacity-80"></div><div className="h-3 w-3 rounded-full bg-yellow-500 opacity-80"></div></div></div>
+                    <div className="flex h-6 w-9 items-center justify-center rounded border bg-white text-[7px] font-bold text-blue-900">TROY</div>
+                  </div>
+                </Label>
+              </RadioField>
+            </RadioGroup>
+
+            <div className={clsx('mt-4 space-y-4 border-t pt-4', methodActive !== 'Credit-Card' && 'hidden')}>
+              <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
+                <div className="flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300">
+                  <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>256-bit SSL ile güvenli ödeme — PayTR altyapısı</span>
+                </div>
+              </div>
+              <Field className="max-w-lg">
+                <Label>Kart Numarası</Label>
+                <Input autoComplete="cc-number" name="card-number" placeholder="0000 0000 0000 0000" />
+              </Field>
+              <Field className="max-w-lg">
+                <Label>Kart Üzerindeki İsim</Label>
+                <Input autoComplete="cc-name" name="name-on-card" placeholder="AD SOYAD" />
+              </Field>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Field className="flex-2/3">
+                  <Label>Son Kullanma Tarihi</Label>
+                  <Input autoComplete="cc-exp" placeholder="AA/YY" name="expiration-date" />
+                </Field>
+                <Field className="flex-1/3">
+                  <Label>CVC</Label>
+                  <Input autoComplete="cc-csc" placeholder="•••" name="cvc" type="password" />
+                </Field>
+              </div>
+              <Field>
+                <CheckboxField>
+                  <Checkbox name="save-card" />
+                  <Label className="text-sm">Bu kartı sonraki alışverişlerim için kaydet</Label>
+                </CheckboxField>
+              </Field>
+            </div>
+          </div>
+
+          {/* Havale / EFT */}
+          <div className="rounded-xl border border-neutral-200 p-4 transition hover:border-primary-300 dark:border-neutral-700">
+            <RadioGroup
+              name="payment-method"
+              aria-label="Ödeme yöntemi"
+              onChange={(e) => setMethodActive(e as any)}
+              value={methodActive}
+            >
+              <RadioField className="sm:gap-x-4">
+                <Radio className="mt-0.5" value="Internet-banking" />
+                <Label className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                    <HugeiconsIcon icon={InternetIcon} size={20} className="text-emerald-700" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">Havale / EFT</p>
+                    <p className="text-xs text-neutral-500">Banka havalesi ile ödeme</p>
+                  </div>
+                </Label>
+              </RadioField>
+            </RadioGroup>
+
+            <div className={clsx('mt-4 border-t pt-4', methodActive !== 'Internet-banking' && 'hidden')}>
+              <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                <p className="mb-3 text-sm font-medium text-blue-800 dark:text-blue-300">Havale yaptıktan sonra siparişiniz işleme alınacaktır.</p>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-neutral-500">Banka</span><span className="font-medium">İş Bankası</span></div>
+                  <div className="flex justify-between"><span className="text-neutral-500">Hesap Sahibi</span><span className="font-medium">Pure Olentia Gıda Ltd. Şti.</span></div>
+                  <div className="flex justify-between"><span className="text-neutral-500">IBAN</span><span className="font-mono text-xs font-medium">TR00 0000 0000 0000 0000 0000 00</span></div>
+                </div>
+              </div>
+              <p className="mt-3 text-xs text-neutral-400">* IBAN bilgileri admin panelden yönetilir. Gerçek IBAN'ı admin'den girin.</p>
+            </div>
+          </div>
+
+          {/* Güvenlik rozetleri */}
+          <div className="flex flex-wrap items-center justify-center gap-4 rounded-lg bg-neutral-50 px-4 py-3 dark:bg-neutral-800">
+            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>Güvenli Ödeme</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <span>256-bit SSL</span>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+              <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>3D Secure</span>
+            </div>
+          </div>
 
           <div className="flex flex-wrap gap-2.5 pt-4">
             <ButtonPrimary className="min-w-56" type="submit">
-              Siparisi onayla
+              Siparişi Onayla
             </ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               Teslimat Adresine Dön
