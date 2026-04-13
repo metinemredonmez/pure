@@ -50,7 +50,7 @@ export const NotifyAddToCart: FC<NotifyAddToCartProps & { totalItems?: number; c
               {quantity > 1 && <span> · Adet: {quantity}</span>}
             </p>
           </div>
-          <Prices price={price} className="mt-1" contentClass="text-sm font-bold" />
+          <span className="mt-1 text-base font-bold text-primary-700">₺{price.toLocaleString('tr-TR')}</span>
         </div>
       </div>
 

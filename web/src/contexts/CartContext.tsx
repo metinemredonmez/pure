@@ -37,7 +37,7 @@ const CartContext = createContext<CartContextType>({
 
 const STORAGE_KEY = 'pureolentia_cart'
 
-function loadCart(): CartItem[] {
+function readStorage(): CartItem[] {
   if (typeof window === 'undefined') return []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -47,7 +47,7 @@ function loadCart(): CartItem[] {
   }
 }
 
-function saveCart(items: CartItem[]) {
+function writeStorage(items: CartItem[]) {
   if (typeof window === 'undefined') return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
@@ -55,32 +55,19 @@ function saveCart(items: CartItem[]) {
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    // SSR-safe: return empty on server, load from localStorage on client
-    if (typeof window === 'undefined') return []
-    return loadCart()
-  })
-  const [mounted, setMounted] = useState(false)
+  const [items, setItems] = useState<CartItem[]>([])
 
-  // Mark as mounted after first render (client-side only)
+  // Load from localStorage ONCE on mount — no save effect needed
   useEffect(() => {
-    // Re-load from localStorage in case SSR hydration reset state
-    setItems(loadCart())
-    setMounted(true)
+    setItems(readStorage())
   }, [])
-
-  // Save cart to localStorage whenever items change (skip initial empty render)
-  useEffect(() => {
-    if (!mounted) return
-    saveCart(items)
-  }, [items, mounted])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
     setItems((prev) => {
-      let updated: CartItem[]
       const existing = prev.find(
         (i) => i.productId === newItem.productId && i.variantId === newItem.variantId
       )
+      let updated: CartItem[]
       if (existing) {
         updated = prev.map((i) =>
           i.id === existing.id ? { ...i, quantity: i.quantity + (newItem.quantity || 1) } : i
@@ -89,8 +76,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
         updated = [...prev, { ...newItem, id, quantity: newItem.quantity || 1 }]
       }
-      // Immediately persist to localStorage (don't wait for useEffect)
-      saveCart(updated)
+      writeStorage(updated)
       return updated
     })
   }, [])
@@ -98,7 +84,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const removeItem = useCallback((id: string) => {
     setItems((prev) => {
       const updated = prev.filter((i) => i.id !== id)
-      saveCart(updated)
+      writeStorage(updated)
       return updated
     })
   }, [])
@@ -111,12 +97,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         updated = prev.map((i) => (i.id === id ? { ...i, quantity } : i))
       }
-      saveCart(updated)
+      writeStorage(updated)
       return updated
     })
   }, [])
 
   const clearCart = useCallback(() => {
+    writeStorage([])
     setItems([])
   }, [])
 
