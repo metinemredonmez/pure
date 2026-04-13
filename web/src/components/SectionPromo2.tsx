@@ -32,7 +32,7 @@ const SectionPromo2 = async ({ className }: SectionPromo2Props) => {
           </h2>
           <span className="mt-6 block text-neutral-500 dark:text-neutral-400">{subtitle}</span>
           <div className="mt-6 flex space-x-2 sm:mt-12 sm:space-x-5">
-            <ButtonPrimary href="/collections/gift-sets">{cta}</ButtonPrimary>
+            <ButtonPrimary href="/kurumsal-hediye">{cta}</ButtonPrimary>
           </div>
         </div>
 
