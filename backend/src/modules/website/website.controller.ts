@@ -376,4 +376,36 @@ export class WebsiteController {
   deleteFranchiseApplication(@Param('id') id: string) {
     return this.websiteService.deleteFranchiseApplication(id);
   }
+
+  // ── Contact Messages (Admin) ──
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN, UserRole.SALES)
+  @Get('admin/contact-messages')
+  @ApiOperation({ summary: 'List contact messages (admin)' })
+  getAllContactMessages(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.websiteService.findAllContactMessages({
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/contact-messages/:id')
+  @ApiOperation({ summary: 'Get contact message detail (admin)' })
+  getContactMessage(@Param('id') id: string) {
+    return this.websiteService.findContactMessage(id);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/contact-messages/:id')
+  @ApiOperation({ summary: 'Delete contact message (admin)' })
+  deleteContactMessage(@Param('id') id: string) {
+    return this.websiteService.deleteContactMessage(id);
+  }
 }

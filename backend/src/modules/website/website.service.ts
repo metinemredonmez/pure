@@ -47,7 +47,51 @@ export class WebsiteService {
       // log only — do not fail the request if SMTP is misconfigured
     }
 
+    // Save to DB
+    try {
+      await this.prisma.contactMessage.create({
+        data: {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          subject: data.subject,
+          message: data.message,
+        },
+      });
+    } catch {}
+
     return { success: true, message: 'Mesajınız iletildi.' };
+  }
+
+  async findAllContactMessages(params?: { page?: number; limit?: number }) {
+    const take = params?.limit || 20;
+    const skip = params?.page ? (params.page - 1) * take : 0;
+
+    const [data, total] = await Promise.all([
+      this.prisma.contactMessage.findMany({
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.contactMessage.count(),
+    ]);
+
+    return { data, total, page: params?.page || 1, limit: take };
+  }
+
+  async findContactMessage(id: string) {
+    const msg = await this.prisma.contactMessage.findUnique({ where: { id } });
+    if (!msg) throw new NotFoundException('Mesaj bulunamadı');
+    // Mark as read
+    if (!msg.isRead) {
+      await this.prisma.contactMessage.update({ where: { id }, data: { isRead: true } });
+    }
+    return msg;
+  }
+
+  async deleteContactMessage(id: string) {
+    await this.prisma.contactMessage.delete({ where: { id } });
+    return { success: true };
   }
 
   // ── Hero Banners ──
