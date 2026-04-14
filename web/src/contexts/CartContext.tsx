@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from 'react'
 
 export interface CartItem {
   id: string
@@ -37,74 +37,83 @@ const CartContext = createContext<CartContextType>({
 
 const STORAGE_KEY = 'pureolentia_cart'
 
-function readStorage(): CartItem[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : []
-  } catch {
-    return []
-  }
+// ── External store for cart (survives across components) ──
+let cartItems: CartItem[] = []
+let listeners: Set<() => void> = new Set()
+
+function emitChange() {
+  listeners.forEach((l) => l())
 }
 
-function writeStorage(items: CartItem[]) {
-  if (typeof window === 'undefined') return
+function getSnapshot(): CartItem[] {
+  return cartItems
+}
+
+function getServerSnapshot(): CartItem[] {
+  return []
+}
+
+function subscribe(listener: () => void): () => void {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
+// Load from localStorage on module init (client only)
+if (typeof window !== 'undefined') {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) cartItems = JSON.parse(raw)
   } catch {}
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([])
+function persist() {
+  if (typeof window === 'undefined') return
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems))
+  } catch {}
+}
 
-  // Load from localStorage ONCE on mount — no save effect needed
-  useEffect(() => {
-    setItems(readStorage())
-  }, [])
+// ── Provider ──
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
-    setItems((prev) => {
-      const existing = prev.find(
-        (i) => i.productId === newItem.productId && i.variantId === newItem.variantId
+    const existing = cartItems.find(
+      (i) => i.productId === newItem.productId && i.variantId === newItem.variantId
+    )
+    if (existing) {
+      cartItems = cartItems.map((i) =>
+        i.id === existing.id ? { ...i, quantity: i.quantity + (newItem.quantity || 1) } : i
       )
-      let updated: CartItem[]
-      if (existing) {
-        updated = prev.map((i) =>
-          i.id === existing.id ? { ...i, quantity: i.quantity + (newItem.quantity || 1) } : i
-        )
-      } else {
-        const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-        updated = [...prev, { ...newItem, id, quantity: newItem.quantity || 1 }]
-      }
-      writeStorage(updated)
-      return updated
-    })
+    } else {
+      const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      cartItems = [...cartItems, { ...newItem, id, quantity: newItem.quantity || 1 }]
+    }
+    persist()
+    emitChange()
   }, [])
 
   const removeItem = useCallback((id: string) => {
-    setItems((prev) => {
-      const updated = prev.filter((i) => i.id !== id)
-      writeStorage(updated)
-      return updated
-    })
+    cartItems = cartItems.filter((i) => i.id !== id)
+    persist()
+    emitChange()
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    setItems((prev) => {
-      let updated: CartItem[]
-      if (quantity < 1) {
-        updated = prev.filter((i) => i.id !== id)
-      } else {
-        updated = prev.map((i) => (i.id === id ? { ...i, quantity } : i))
-      }
-      writeStorage(updated)
-      return updated
-    })
+    if (quantity < 1) {
+      cartItems = cartItems.filter((i) => i.id !== id)
+    } else {
+      cartItems = cartItems.map((i) => (i.id === id ? { ...i, quantity } : i))
+    }
+    persist()
+    emitChange()
   }, [])
 
   const clearCart = useCallback(() => {
-    writeStorage([])
-    setItems([])
+    cartItems = []
+    persist()
+    emitChange()
   }, [])
 
   const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0)
