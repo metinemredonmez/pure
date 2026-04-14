@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react'
 
 export interface CartItem {
   id: string
@@ -58,11 +58,11 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
-// Load from localStorage on module init (client only)
-if (typeof window !== 'undefined') {
+function hydrateFromStorage() {
+  if (typeof window === 'undefined') return
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) cartItems = JSON.parse(raw)
+    cartItems = raw ? JSON.parse(raw) : []
   } catch {}
 }
 
@@ -77,6 +77,20 @@ function persist() {
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+
+  useEffect(() => {
+    hydrateFromStorage()
+    emitChange()
+
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key && event.key !== STORAGE_KEY) return
+      hydrateFromStorage()
+      emitChange()
+    }
+
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
     const existing = cartItems.find(
