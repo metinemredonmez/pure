@@ -1,13 +1,13 @@
-import { Metadata } from 'next'
-import dynamic from 'next/dynamic'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Sepet',
-  description: 'Alışveriş sepetiniz',
-}
+import { Suspense, lazy } from 'react'
 
-const CartPageContent = dynamic(() => import('./CartPageContent'), { ssr: false })
+const CartPageContent = lazy(() => import('./CartPageContent'))
 
 export default function CartPage() {
-  return <CartPageContent />
+  return (
+    <Suspense fallback={<div className="container py-20 text-center text-neutral-400">Yükleniyor...</div>}>
+      <CartPageContent />
+    </Suspense>
+  )
 }
