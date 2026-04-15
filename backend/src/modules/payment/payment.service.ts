@@ -48,10 +48,10 @@ export class PaymentService {
   // CHECKOUT SESSION
   // ══════════════════════════════════════════════
 
-  async createCheckoutSession(orderId: string, method: PaymentMethod) {
+  async createCheckoutSession(orderId: string, method: PaymentMethod, userIp?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { user: true, items: true },
+      include: { user: true, address: true, items: true },
     });
 
     if (!order) throw new BadRequestException('Sipariş bulunamadı');
@@ -73,11 +73,11 @@ export class PaymentService {
     switch (method) {
       case PaymentMethod.CREDIT_CARD:
       case PaymentMethod.DEBIT_CARD:
-        return this.initPayTR(payment, order);
+        return this.initPayTR(payment, order, userIp);
       case PaymentMethod.QR_CODE:
         return this.initQRPayment(payment, order);
       default:
-        return this.initPayTR(payment, order);
+        return this.initPayTR(payment, order, userIp);
     }
   }
 
@@ -86,7 +86,7 @@ export class PaymentService {
   // https://dev.paytr.com/iframe-api
   // ══════════════════════════════════════════════
 
-  private async initPayTR(payment: any, order: any) {
+  private async initPayTR(payment: any, order: any, requestIp?: string) {
     const merchantId = this.config.get<string>('paytr.merchantId');
     const merchantKey = this.config.get<string>('paytr.merchantKey');
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
@@ -103,7 +103,9 @@ export class PaymentService {
     const userName =
       `${order.user?.firstName || 'Guest'} ${order.user?.lastName || ''}`.trim();
     const userPhone = order.user?.phone || '05000000000';
-    const userAddress = 'Türkiye';
+    const userAddress = order.address
+      ? `${order.address.line1 || ''} ${order.address.district || ''} ${order.address.city || ''}`.trim() || 'Türkiye'
+      : 'Türkiye';
 
     // Sipariş bilgileri
     const merchantOid = payment.id;
@@ -116,7 +118,7 @@ export class PaymentService {
     // Sepet (base64 JSON)
     const basket = order.items.map((item: any) => [
       item.productName || 'Ürün',
-      (Number(item.unitPrice) * 100).toFixed(0), // Kuruş
+      Number(item.unitPrice).toFixed(2),
       String(item.quantity),
     ]);
     const userBasket = Buffer.from(JSON.stringify(basket)).toString('base64');
@@ -125,8 +127,7 @@ export class PaymentService {
     const merchantOkUrl = `${this.config.get('app.frontendUrl')}/odeme/basarili`;
     const merchantFailUrl = `${this.config.get('app.frontendUrl')}/odeme/basarisiz`;
 
-    // IP adresi (gerçek uygulamada request'ten alınır)
-    const userIp = '127.0.0.1';
+    const userIp = this.normalizePayTRIp(requestIp);
 
     // Debug mode
     const debugOn = testMode === '1' ? '1' : '0';
@@ -186,7 +187,19 @@ export class PaymentService {
         },
       );
 
-      const result = await response.json();
+      const rawBody = await response.text();
+      let result: any;
+      try {
+        result = rawBody ? JSON.parse(rawBody) : null;
+      } catch {
+        this.logger.error(`PayTR non-JSON response (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR returned non-JSON response with status ${response.status}`);
+      }
+
+      if (!response.ok || !result) {
+        this.logger.error(`PayTR HTTP error (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR HTTP ${response.status}`);
+      }
 
       if (result.status === 'success') {
         await this.logPayment(payment.id, 'paytr.token.success', {
@@ -220,9 +233,19 @@ export class PaymentService {
     merchantKey: string,
     merchantSalt: string,
   ): string {
-    const hmac = crypto.createHmac('sha256', merchantKey + merchantSalt);
-    hmac.update(hashStr);
-    return Buffer.from(hmac.digest('hex')).toString('base64');
+    const hmac = crypto.createHmac('sha256', merchantKey);
+    hmac.update(hashStr + merchantSalt);
+    return hmac.digest('base64');
+  }
+
+  private normalizePayTRIp(ip?: string): string {
+    const raw = String(ip || '').split(',')[0].trim().replace(/^::ffff:/, '');
+    if (/^(?:\d{1,3}\.){3}\d{1,3}$/.test(raw) && !raw.startsWith('127.') && raw !== '0.0.0.0') {
+      return raw;
+    }
+
+    // PayTR requires a real IPv4 address; this is only a fallback if proxy headers are absent.
+    return '213.159.6.225';
   }
 
   // ══════════════════════════════════════════════
@@ -326,7 +349,19 @@ export class PaymentService {
         },
       );
 
-      const result = await response.json();
+      const rawBody = await response.text();
+      let result: any;
+      try {
+        result = rawBody ? JSON.parse(rawBody) : null;
+      } catch {
+        this.logger.error(`PayTR non-JSON response (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR returned non-JSON response with status ${response.status}`);
+      }
+
+      if (!response.ok || !result) {
+        this.logger.error(`PayTR HTTP error (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR HTTP ${response.status}`);
+      }
 
       if (result.status === 'success') {
         await this.logPayment(payment.id, 'iyzico.init.success', {
@@ -463,9 +498,10 @@ export class PaymentService {
     orderId: string,
     method: PaymentMethod,
     userId: string,
+    userIp?: string,
   ) {
     await this.verifyOrderOwnership(orderId, userId);
-    return this.createCheckoutSession(orderId, method);
+    return this.createCheckoutSession(orderId, method, userIp);
   }
 
   async initGooglePaySecure(orderId: string, userId: string) {
@@ -662,7 +698,19 @@ export class PaymentService {
         },
       );
 
-      const result = await response.json();
+      const rawBody = await response.text();
+      let result: any;
+      try {
+        result = rawBody ? JSON.parse(rawBody) : null;
+      } catch {
+        this.logger.error(`PayTR non-JSON response (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR returned non-JSON response with status ${response.status}`);
+      }
+
+      if (!response.ok || !result) {
+        this.logger.error(`PayTR HTTP error (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR HTTP ${response.status}`);
+      }
 
       const payment = await this.prisma.payment.findUnique({
         where: { id: data.conversationId },
@@ -863,7 +911,19 @@ export class PaymentService {
           }).toString(),
         });
 
-        const result = await response.json();
+        const rawBody = await response.text();
+      let result: any;
+      try {
+        result = rawBody ? JSON.parse(rawBody) : null;
+      } catch {
+        this.logger.error(`PayTR non-JSON response (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR returned non-JSON response with status ${response.status}`);
+      }
+
+      if (!response.ok || !result) {
+        this.logger.error(`PayTR HTTP error (${response.status}): ${rawBody.slice(0, 300)}`);
+        throw new Error(`PayTR HTTP ${response.status}`);
+      }
 
         if (result.status === 'success') {
           await this.prisma.refund.update({
