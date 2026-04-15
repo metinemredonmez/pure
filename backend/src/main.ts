@@ -129,7 +129,10 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger
+  // Swagger — disabled in production unless SWAGGER_ENABLED=true
+  const enableSwagger =
+    process.env.NODE_ENV !== 'production' || process.env.SWAGGER_ENABLED === 'true';
+  if (enableSwagger) {
   const config = new DocumentBuilder()
     .setTitle('Olentia Pure API')
     .setDescription(
@@ -164,6 +167,7 @@ async function bootstrap() {
       .swagger-ui .topbar .link { color: #C8A27A; }
     `,
   });
+  }
 
   const port = process.env.PORT || 4000;
   await app.listen(port);

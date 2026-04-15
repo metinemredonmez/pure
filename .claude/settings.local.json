@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git check-ignore:*)",
+      "Bash(git rm:*)",
+      "Bash(sshpass -p 'y9Z7F2B843aH' ssh -o StrictHostKeyChecking=no -p 23422 root@213.159.6.225 \"cat /etc/nginx/sites-enabled/pureolentia.conf | head -60\")",
+      "Bash(sshpass -p 'y9Z7F2B843aH' ssh -o StrictHostKeyChecking=no -p 23422 root@213.159.6.225 \"cp /etc/nginx/sites-enabled/pureolentia.conf /etc/nginx/sites-enabled/pureolentia.conf.bak-\\\\$\\(date +%s\\)\")",
+      "Bash(sshpass -p 'y9Z7F2B843aH' ssh -o StrictHostKeyChecking=no -p 23422 root@213.159.6.225 \"ls /var/www/pureolentia/admin/src/middleware.ts /var/www/pureolentia/admin/middleware.ts 2>&1\")",
+      "Bash(sshpass -p:*)",
+      "Bash(rm -f /Users/emre/Desktop/pure/.git/index.lock)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)"
+    ]
+  }
+}

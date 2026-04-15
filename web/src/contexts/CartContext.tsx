@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
 export interface CartItem {
   id: string
@@ -19,6 +19,7 @@ interface CartContextType {
   items: CartItem[]
   totalQuantity: number
   subtotal: number
+  isHydrated: boolean
   addItem: (item: Omit<CartItem, 'id'>) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
@@ -29,6 +30,7 @@ const CartContext = createContext<CartContextType>({
   items: [],
   totalQuantity: 0,
   subtotal: 0,
+  isHydrated: false,
   addItem: () => {},
   removeItem: () => {},
   updateQuantity: () => {},
@@ -37,55 +39,37 @@ const CartContext = createContext<CartContextType>({
 
 const STORAGE_KEY = 'pureolentia_cart'
 
-// ── External store for cart (survives across components) ──
-let cartItems: CartItem[] = []
-let listeners: Set<() => void> = new Set()
+function readCartFromStorage(): CartItem[] {
+  if (typeof window === 'undefined') return []
 
-function emitChange() {
-  listeners.forEach((l) => l())
-}
-
-function getSnapshot(): CartItem[] {
-  return cartItems
-}
-
-function getServerSnapshot(): CartItem[] {
-  return []
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners.add(listener)
-  return () => listeners.delete(listener)
-}
-
-function hydrateFromStorage() {
-  if (typeof window === 'undefined') return
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    cartItems = raw ? JSON.parse(raw) : []
-  } catch {}
+    const parsed = raw ? JSON.parse(raw) : []
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
 }
 
-function persist() {
+function persistCart(items: CartItem[]) {
   if (typeof window === 'undefined') return
+
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cartItems))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   } catch {}
 }
-
-// ── Provider ──
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const items = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const [items, setItems] = useState<CartItem[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    hydrateFromStorage()
-    emitChange()
+    setItems(readCartFromStorage())
+    setIsHydrated(true)
 
     const handleStorage = (event: StorageEvent) => {
       if (event.key && event.key !== STORAGE_KEY) return
-      hydrateFromStorage()
-      emitChange()
+      setItems(readCartFromStorage())
     }
 
     window.addEventListener('storage', handleStorage)
@@ -93,49 +77,63 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {
-    const existing = cartItems.find(
-      (i) => i.productId === newItem.productId && i.variantId === newItem.variantId
-    )
-    if (existing) {
-      cartItems = cartItems.map((i) =>
-        i.id === existing.id ? { ...i, quantity: i.quantity + (newItem.quantity || 1) } : i
+    setItems((currentItems) => {
+      const existing = currentItems.find(
+        (item) => item.productId === newItem.productId && item.variantId === newItem.variantId
       )
-    } else {
-      const id = `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-      cartItems = [...cartItems, { ...newItem, id, quantity: newItem.quantity || 1 }]
-    }
-    persist()
-    emitChange()
+
+      const nextItems = existing
+        ? currentItems.map((item) =>
+            item.id === existing.id
+              ? { ...item, quantity: item.quantity + (newItem.quantity || 1) }
+              : item
+          )
+        : [
+            ...currentItems,
+            {
+              ...newItem,
+              id: `cart_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              quantity: newItem.quantity || 1,
+            },
+          ]
+
+      persistCart(nextItems)
+      return nextItems
+    })
   }, [])
 
   const removeItem = useCallback((id: string) => {
-    cartItems = cartItems.filter((i) => i.id !== id)
-    persist()
-    emitChange()
+    setItems((currentItems) => {
+      const nextItems = currentItems.filter((item) => item.id !== id)
+      persistCart(nextItems)
+      return nextItems
+    })
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {
-    if (quantity < 1) {
-      cartItems = cartItems.filter((i) => i.id !== id)
-    } else {
-      cartItems = cartItems.map((i) => (i.id === id ? { ...i, quantity } : i))
-    }
-    persist()
-    emitChange()
+    setItems((currentItems) => {
+      const nextItems = quantity < 1
+        ? currentItems.filter((item) => item.id !== id)
+        : currentItems.map((item) => (item.id === id ? { ...item, quantity } : item))
+
+      persistCart(nextItems)
+      return nextItems
+    })
   }, [])
 
   const clearCart = useCallback(() => {
-    cartItems = []
-    persist()
-    emitChange()
+    setItems(() => {
+      persistCart([])
+      return []
+    })
   }, [])
 
-  const totalQuantity = items.reduce((sum, i) => sum + i.quantity, 0)
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items])
+  const subtotal = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items])
 
   return (
     <CartContext.Provider
-      value={{ items, totalQuantity, subtotal, addItem, removeItem, updateQuantity, clearCart }}
+      value={{ items, totalQuantity, subtotal, isHydrated, addItem, removeItem, updateQuantity, clearCart }}
     >
       {children}
     </CartContext.Provider>

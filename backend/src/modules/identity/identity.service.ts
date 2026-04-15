@@ -222,8 +222,12 @@ export class IdentityService {
 
   // ── Refresh token ──
   async refreshToken(refreshToken: string) {
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshToken)
+      .digest('hex');
     const stored = await this.prisma.refreshToken.findUnique({
-      where: { token: refreshToken },
+      where: { token: tokenHash },
       include: { user: true },
     });
 
@@ -326,9 +330,15 @@ export class IdentityService {
       { expiresIn: this.configService.get('jwt.refreshExpiry') },
     );
 
+    // Store only hash of refresh token in DB (defense against DB leaks)
+    const tokenHash = crypto
+      .createHash('sha256')
+      .update(refreshTokenValue)
+      .digest('hex');
+
     await this.prisma.refreshToken.create({
       data: {
-        token: refreshTokenValue,
+        token: tokenHash,
         userId,
         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },

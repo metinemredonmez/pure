@@ -10,10 +10,14 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
+    const secret = configService.get<string>('jwt.secret');
+    if (!secret || secret.length < 32) {
+      throw new Error('JWT_SECRET environment variable must be set and at least 32 characters');
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret') || 'fallback-secret',
+      secretOrKey: secret,
     });
   }
 

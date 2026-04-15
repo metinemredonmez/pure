@@ -1,13 +1,20 @@
 // Required environment variables - will throw on startup if missing
 const requiredEnvVars = ['JWT_SECRET', 'COOKIE_SECRET', 'ENCRYPTION_SALT'];
 
-// Validate required env vars in production
-if (process.env.NODE_ENV === 'production') {
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
+// Validate required env vars (throw in prod, warn in dev)
+for (const envVar of requiredEnvVars) {
+  if (!process.env[envVar]) {
+    if (process.env.NODE_ENV === 'production') {
       throw new Error(`Missing required environment variable: ${envVar}`);
+    } else {
+      console.warn(`⚠️  Missing env: ${envVar} — using dev fallback (DO NOT use in production)`);
     }
   }
+}
+
+// Extra guard: JWT_SECRET must be at least 32 chars in production
+if (process.env.NODE_ENV === 'production' && (process.env.JWT_SECRET || '').length < 32) {
+  throw new Error('JWT_SECRET must be at least 32 characters in production');
 }
 
 export default () => ({
@@ -18,6 +25,8 @@ export default () => ({
       process.env.ENCRYPTION_SALT || 'olentia-default-salt-change-in-prod',
     cookieSecret: process.env.COOKIE_SECRET,
     webhookSecret: process.env.WEBHOOK_SECRET,
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    apiUrl: process.env.API_URL || 'http://localhost:4000',
   },
   database: {
     url: process.env.DATABASE_URL,

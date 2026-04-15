@@ -2,6 +2,7 @@
 
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
+import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder } from '@/lib/api'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
@@ -21,11 +22,13 @@ import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import Link from 'next/link'
 import { useState } from 'react'
+import toast from 'react-hot-toast'
 
 type Tab = 'ContactInfo' | 'ShippingAddress' | 'PaymentMethod'
 
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ShippingAddress')
+  const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
 
   const handleScrollToEl = (id: string) => {
     const element = document.getElementById(id)
@@ -48,6 +51,7 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ContactInfo' && 'invisible hidden')}>
           <ContactInfo
+            onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -68,6 +72,7 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ShippingAddress' && 'invisible hidden')}>
           <ShippingAddress
+            onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
             onClose={() => {
               setTabActive('PaymentMethod')
               handleScrollToEl('PaymentMethod')
@@ -88,6 +93,7 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'PaymentMethod' && 'invisible hidden')}>
           <PaymentMethod
+            checkoutData={checkoutData}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -131,7 +137,7 @@ const TabHeader = ({
   )
 }
 
-const ContactInfo = ({ onClose }: { onClose: () => void }) => {
+const ContactInfo = ({ onClose, onSave }: { onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
   return (
     <form
       action="#"
@@ -139,7 +145,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
       onSubmit={(e) => {
         e.preventDefault()
         const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
+        onSave(formValues)
         onClose()
       }}
     >
@@ -182,7 +188,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
+const ShippingAddress = ({ onClose, onSave }: { onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
   return (
     <form
       action="#"
@@ -190,7 +196,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
       onSubmit={(e) => {
         e.preventDefault()
         const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
+        onSave(formValues)
         onClose()
       }}
     >
@@ -292,18 +298,80 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
+const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkoutData: Record<string, any> }) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
+  const [submitting, setSubmitting] = useState(false)
 
   return (
     <form
       action="#"
       method="POST"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault()
-        const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
-        onClose()
+        const paymentValues = Object.fromEntries(new FormData(e.target as HTMLFormElement)) as Record<string, any>
+        const token = localStorage.getItem('pureolentia_token')
+
+        if (!token) {
+          toast.error('Odeme icin once giris yapmaniz gerekiyor.')
+          return
+        }
+
+        const firstName = String(checkoutData['first-name'] || '').trim()
+        const lastName = String(checkoutData['last-name'] || '').trim()
+        const phone = String(checkoutData.phone || '').trim()
+        const address = String(checkoutData.address || '').trim()
+        const city = String(checkoutData.city || '').trim()
+        const district = String(checkoutData['state-province'] || '').trim()
+        const postalCode = String(checkoutData['postal-code'] || '').trim()
+
+        if (!firstName || !lastName || !phone || !address || !city || !district || !postalCode) {
+          toast.error('Odeme oncesi iletisim ve adres bilgilerini eksiksiz doldurun.')
+          return
+        }
+
+        try {
+          setSubmitting(true)
+
+          const addressRes = await apiCreateAddress(token, {
+            title: checkoutData['address-type'] === 'at-office' ? 'Is Yeri' : 'Ev',
+            firstName,
+            lastName,
+            phone,
+            line1: address,
+            line2: String(checkoutData['apt-suite'] || '').trim() || undefined,
+            city,
+            district,
+            postalCode,
+            country: 'TR',
+            isDefault: true,
+          })
+
+          const addressId = addressRes?.data?.id || addressRes?.id
+          if (!addressId) throw new Error(addressRes?.message || 'Adres olusturulamadi')
+
+          const orderRes = await apiCreateOrder(token, { addressId })
+          const orderId = orderRes?.data?.id || orderRes?.id
+          if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
+
+          if (methodActive === 'Internet-banking') {
+            toast.success('Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.')
+            return
+          }
+
+          const checkoutRes = await apiCreateCheckoutSession(token, {
+            orderId,
+            method: 'CREDIT_CARD',
+          })
+
+          const iframeUrl = checkoutRes?.data?.iframeUrl || checkoutRes?.iframeUrl
+          if (!iframeUrl) throw new Error(checkoutRes?.message || 'Odeme oturumu baslatilamadi')
+
+          window.location.href = iframeUrl
+        } catch (error: any) {
+          toast.error(error?.message || 'Odeme baslatilamadi')
+        } finally {
+          setSubmitting(false)
+        }
       }}
     >
       <Fieldset>
@@ -431,8 +499,8 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
           </div>
 
           <div className="flex flex-wrap gap-2.5 pt-4">
-            <ButtonPrimary className="min-w-56" type="submit">
-              Siparişi Onayla
+            <ButtonPrimary className="min-w-56" type="submit" disabled={submitting}>
+              {submitting ? 'Yonlendiriliyor...' : 'Siparişi Onayla'}
             </ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               Teslimat Adresine Dön

@@ -28,3 +28,8 @@ npm-debug.log*
 *.docx
 *.jpeg
 *.jpg
+.env.production
+.env.development
+.env.staging
+*.env.production
+*.env.development

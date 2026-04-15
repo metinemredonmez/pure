@@ -48,7 +48,7 @@ export class PaymentService {
   // CHECKOUT SESSION
   // ══════════════════════════════════════════════
 
-  async createCheckoutSession(orderId: string, method: PaymentMethod) {
+  async createCheckoutSession(orderId: string, method: PaymentMethod, clientIp?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: { user: true, items: true },
@@ -73,11 +73,11 @@ export class PaymentService {
     switch (method) {
       case PaymentMethod.CREDIT_CARD:
       case PaymentMethod.DEBIT_CARD:
-        return this.initPayTR(payment, order);
+        return this.initPayTR(payment, order, clientIp);
       case PaymentMethod.QR_CODE:
         return this.initQRPayment(payment, order);
       default:
-        return this.initPayTR(payment, order);
+        return this.initPayTR(payment, order, clientIp);
     }
   }
 
@@ -86,7 +86,7 @@ export class PaymentService {
   // https://dev.paytr.com/iframe-api
   // ══════════════════════════════════════════════
 
-  private async initPayTR(payment: any, order: any) {
+  private async initPayTR(payment: any, order: any, clientIp?: string) {
     const merchantId = this.config.get<string>('paytr.merchantId');
     const merchantKey = this.config.get<string>('paytr.merchantKey');
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
@@ -125,8 +125,8 @@ export class PaymentService {
     const merchantOkUrl = `${this.config.get('app.frontendUrl')}/odeme/basarili`;
     const merchantFailUrl = `${this.config.get('app.frontendUrl')}/odeme/basarisiz`;
 
-    // IP adresi (gerçek uygulamada request'ten alınır)
-    const userIp = '127.0.0.1';
+    // IP adresi — controller'dan gelen gerçek client IP kullanılır
+    const userIp = (clientIp && /^[\d.]+$/.test(clientIp) ? clientIp : '127.0.0.1').slice(0, 39);
 
     // Debug mode
     const debugOn = testMode === '1' ? '1' : '0';
@@ -463,9 +463,10 @@ export class PaymentService {
     orderId: string,
     method: PaymentMethod,
     userId: string,
+    clientIp?: string,
   ) {
     await this.verifyOrderOwnership(orderId, userId);
-    return this.createCheckoutSession(orderId, method);
+    return this.createCheckoutSession(orderId, method, clientIp);
   }
 
   async initGooglePaySecure(orderId: string, userId: string) {
@@ -528,6 +529,22 @@ export class PaymentService {
 
     if (!payment) {
       this.logger.error(`Payment not found: ${data.merchant_oid}`);
+      return { status: 'FAIL' };
+    }
+
+    // CRITICAL: Verify that the amount PayTR confirmed matches the expected order amount.
+    // PayTR sends total_amount in kuruş (minor units); stored payment.amount is in TRY.
+    const expectedAmountKurus = Math.round(Number(payment.amount) * 100);
+    const receivedAmountKurus = Number(data.total_amount);
+    if (data.status === 'success' && expectedAmountKurus !== receivedAmountKurus) {
+      this.logger.error(
+        `PayTR amount mismatch! Expected ${expectedAmountKurus}, got ${receivedAmountKurus} for payment ${payment.id}`,
+      );
+      await this.logPayment(payment.id, 'paytr.webhook.amount_mismatch', {
+        expected: expectedAmountKurus,
+        received: receivedAmountKurus,
+        data,
+      });
       return { status: 'FAIL' };
     }
 

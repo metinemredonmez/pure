@@ -41,7 +41,7 @@ export class IdentityController {
   }
 
   @Public()
-  // @UseGuards(LoginThrottleGuard)
+  @UseGuards(LoginThrottleGuard)
   @Post('login')
   @ApiOperation({ summary: 'Login with email + password (+ optional MFA)' })
   login(@Body() dto: LoginDto, @Req() req) {

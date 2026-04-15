@@ -1,6 +1,7 @@
 'use client'
 
 import { NotifyAddToCart } from '@/components/AddToCardButton'
+import { useCart } from '@/contexts/CartContext'
 import { TProductDetail } from '@/data/data'
 import Form from 'next/form'
 import React from 'react'
@@ -15,9 +16,35 @@ const ProductForm = ({
   className?: string
   product: TProductDetail
 }) => {
-  const { featuredImage, title, price } = product
+  const { addItem, totalQuantity, subtotal } = useCart()
+  const { featuredImage, title, price, id, handle } = product as TProductDetail & {
+    id?: string
+    handle?: string
+  }
 
-  const notifyAddTocart = (quantity: number, size: string, color: string) => {
+  const onFormSubmit = async (formData: FormData) => {
+    const quantity = formData.get('quantity') ? Number(formData.get('quantity')) : 1
+    const size = formData.get('size') ? String(formData.get('size')) : ''
+    const color = formData.get('color') ? String(formData.get('color')) : ''
+    const productId = id || handle || title || 'product'
+    const productHandle = handle || ''
+    const variantId = [size, color].filter(Boolean).join('__') || undefined
+
+    addItem({
+      productId,
+      name: title || 'Ürün',
+      handle: productHandle,
+      price: price || 0,
+      quantity,
+      image: featuredImage?.src || '',
+      size,
+      color,
+      variantId,
+    })
+
+    const newTotal = subtotal + (price || 0) * quantity
+    const newCount = totalQuantity + quantity
+
     toast.custom(
       (t) => (
         <NotifyAddToCart
@@ -26,31 +53,14 @@ const ProductForm = ({
           quantity={quantity}
           size={size}
           color={color}
-          title={title!}
-          price={price!}
+          title={title || 'Ürün'}
+          price={price || 0}
+          totalItems={newCount}
+          cartTotal={newTotal}
         />
       ),
       { position: 'top-right', id: 'nc-product-notify', duration: 4000 }
     )
-  }
-
-  const onFormSubmit = async (formData: FormData) => {
-    const formObjectEntries = Object.fromEntries(formData.entries())
-    const quantity = formData.get('quantity') ? Number(formData.get('quantity')) : 1
-    const size = formData.get('size') ? String(formData.get('size')) : ''
-    const color = formData.get('color') ? String(formData.get('color')) : ''
-
-    notifyAddTocart(quantity, size, color)
-    // Here you can handle the form submission, such as adding the product to the cart
-    // For example, you might call an API endpoint to add the product to the cart
-
-    console.log('Form submitted with data:', {
-      productId: product.id,
-      quantity,
-      size,
-      color,
-      formObjectEntries,
-    })
   }
 
   return (

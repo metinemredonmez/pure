@@ -156,11 +156,11 @@ export const apiReturnOrder = (token: string, orderId: string, data: any) =>
 
 // ============ PAYMENT ============
 export const apiCreateCheckoutSession = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/session', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/session', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiGooglePayCheckout = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/google-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/google-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiApplePayCheckout = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/apple-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/apple-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 
 // ============ SHIPPING ============
 export const apiGetShippingZones = () => fetchAPI<any>('/shipping/zones')

@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Param, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, Query, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { PaymentService } from './payment.service';
 import { Public } from '../../common/decorators/public.decorator';
@@ -25,11 +25,20 @@ export class PaymentController {
   createSession(
     @CurrentUser('id') userId: string,
     @Body() dto: InitPaymentDto,
+    @Req() req: any,
   ) {
+    // Extract real client IP (respects X-Forwarded-For when trust proxy is set)
+    const forwarded = req?.headers?.['x-forwarded-for'];
+    const clientIp =
+      (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim()) ||
+      req?.ip ||
+      req?.socket?.remoteAddress ||
+      undefined;
     return this.paymentService.createCheckoutSessionSecure(
       dto.orderId,
       dto.method,
       userId,
+      clientIp,
     );
   }
 
