@@ -10,7 +10,14 @@
       "Bash(rm -f /Users/emre/Desktop/pure/.git/index.lock)",
       "Bash(git add:*)",
       "Bash(git commit -m ':*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git commit:*)",
+      "Bash(git rebase:*)",
+      "Bash(git merge:*)",
+      "Bash(python3)",
+      "Bash(git checkout:*)"
     ]
   }
 }

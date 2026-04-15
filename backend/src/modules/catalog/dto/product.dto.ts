@@ -59,6 +59,11 @@ export class CreateProductDto {
   @IsBoolean()
   isFeatured?: boolean;
 
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+
   @ApiPropertyOptional({ example: 'Ethiopia' })
   @IsOptional()
   @IsString()
@@ -99,6 +104,16 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   categoryId?: string;
+
+  @ApiPropertyOptional({ example: 100, default: 0 })
+  @IsOptional()
+  @IsInt()
+  stock?: number;
+
+  @ApiPropertyOptional({ type: 'array', description: 'Product images' })
+  @IsOptional()
+  @IsArray()
+  images?: any[];
 }
 
 export class UpdateProductDto extends PartialType(CreateProductDto) {}

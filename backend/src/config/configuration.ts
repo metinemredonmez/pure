@@ -79,6 +79,7 @@ export default () => ({
     merchantKey: process.env.PAYTR_MERCHANT_KEY,
     merchantSalt: process.env.PAYTR_MERCHANT_SALT,
     baseUrl: process.env.PAYTR_BASE_URL || 'https://www.paytr.com',
+    testMode: process.env.PAYTR_TEST_MODE || 'false',
   },
   iyzico: {
     apiKey: process.env.IYZICO_API_KEY,

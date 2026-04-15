@@ -38,6 +38,22 @@ const CartContext = createContext<CartContextType>({
 })
 
 const STORAGE_KEY = 'pureolentia_cart'
+const STORAGE_OWNER_KEY = 'pureolentia_cart_owner'
+
+function getCurrentCartOwner(): 'guest' | `user:${string}` {
+  if (typeof window === 'undefined') return 'guest'
+
+  try {
+    const rawUser = localStorage.getItem('pureolentia_user')
+    if (!rawUser) return 'guest'
+
+    const user = JSON.parse(rawUser)
+    const userId = user?.id || user?.userId
+    return userId ? `user:${userId}` : 'guest'
+  } catch {
+    return 'guest'
+  }
+}
 
 function readCartFromStorage(): CartItem[] {
   if (typeof window === 'undefined') return []
@@ -55,7 +71,18 @@ function persistCart(items: CartItem[]) {
   if (typeof window === 'undefined') return
 
   try {
+    const owner = getCurrentCartOwner()
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
+    localStorage.setItem(STORAGE_OWNER_KEY, owner)
+  } catch {}
+}
+
+function clearPersistedCart() {
+  if (typeof window === 'undefined') return
+
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+    localStorage.setItem(STORAGE_OWNER_KEY, getCurrentCartOwner())
   } catch {}
 }
 
@@ -64,16 +91,33 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    setItems(readCartFromStorage())
-    setIsHydrated(true)
+    const syncCart = () => {
+      const owner = getCurrentCartOwner()
+      const storedOwner = localStorage.getItem(STORAGE_OWNER_KEY) || 'guest'
+
+      if (storedOwner !== owner) {
+        clearPersistedCart()
+        setItems([])
+      } else {
+        setItems(readCartFromStorage())
+      }
+
+      setIsHydrated(true)
+    }
+
+    syncCart()
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key && event.key !== STORAGE_KEY) return
-      setItems(readCartFromStorage())
+      if (event.key && ![STORAGE_KEY, STORAGE_OWNER_KEY, 'pureolentia_user', 'pureolentia_token'].includes(event.key)) return
+      syncCart()
     }
 
     window.addEventListener('storage', handleStorage)
-    return () => window.removeEventListener('storage', handleStorage)
+    window.addEventListener('focus', syncCart)
+    return () => {
+      window.removeEventListener('storage', handleStorage)
+      window.removeEventListener('focus', syncCart)
+    }
   }, [])
 
   const addItem = useCallback((newItem: Omit<CartItem, 'id'>) => {

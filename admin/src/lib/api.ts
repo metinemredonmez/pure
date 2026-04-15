@@ -278,11 +278,11 @@ export const productsApi = {
     categoryId?: string;
     status?: string;
   }) => {
-    const { data } = await api.get('/products', { params });
+    const { data } = await api.get('/admin/products', { params });
     return data;
   },
   getProductBySlug: async (slug: string) => {
-    const { data } = await api.get(`/products/${slug}`);
+    const { data } = await api.get(`/admin/products/${slug}`);
     return data;
   },
   createProduct: async (product: Record<string, unknown>) => {
@@ -784,6 +784,11 @@ export const websiteApi = {
   getFranchiseApplication: async (id: string) => { const { data } = await api.get(`/admin/franchise-applications/${id}`); return data; },
   updateFranchiseStatus: async (id: string, payload: { status: string; adminNotes?: string }) => { const { data } = await api.patch(`/admin/franchise-applications/${id}/status`, payload); return data; },
   deleteFranchiseApplication: async (id: string) => { const { data } = await api.delete(`/admin/franchise-applications/${id}`); return data; },
+
+  // Contact Messages
+  getContactMessages: async (params?: { page?: number; limit?: number }) => { const { data } = await api.get("/admin/contact-messages", { params }); return data; },
+  getContactMessage: async (id: string) => { const { data } = await api.get(`/admin/contact-messages/${id}`); return data; },
+  deleteContactMessage: async (id: string) => { const { data } = await api.delete(`/admin/contact-messages/${id}`); return data; },
 
   // Site Settings
   getSettings: async () => { const { data } = await api.get('/admin/site-settings'); return data; },

@@ -120,9 +120,12 @@ export default function CheckoutContent() {
             </div>
           </div>
 
-          <ButtonPrimary className="mt-8 w-full">
-            Siparişi Onayla
+          <ButtonPrimary href="#PaymentMethod" className="mt-8 w-full">
+            Ödeme Adımına Geç
           </ButtonPrimary>
+          <p className="mt-3 text-center text-xs text-neutral-500">
+            Ödemeyi tamamlamak için soldaki "Ödeme Yöntemi" adımındaki butonu kullanın.
+          </p>
           <p className="mt-4 text-center text-xs text-neutral-400">
             ₺{freeShippingThreshold} üzeri siparişlerde ücretsiz kargo
           </p>

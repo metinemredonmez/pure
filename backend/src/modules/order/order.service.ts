@@ -24,20 +24,64 @@ export class OrderService {
       addressId: string;
       couponCode?: string;
       note?: string;
+      items?: { productId: string; variantId?: string; quantity?: number }[];
     },
   ) {
     // Use transaction for atomic order creation with stock management
     return this.prisma.$transaction(
       async (tx) => {
-        // Get user cart
-        const cart = await tx.cart.findFirst({
-          where: { userId },
-          include: {
-            items: { include: { product: true, variant: true } },
-          },
-        });
+        const requestedItems = (data.items || []).filter(
+          (item) => item.productId && (item.quantity || 1) > 0,
+        );
 
-        if (!cart || cart.items.length === 0) {
+        let cart: any = null;
+        let sourceItems: any[] = [];
+
+        if (requestedItems.length > 0) {
+          sourceItems = await Promise.all(
+            requestedItems.map(async (item) => {
+              const product = await tx.product.findUnique({
+                where: { id: item.productId },
+              });
+              if (!product || !product.isActive || product.status !== 'ACTIVE') {
+                throw new NotFoundException('Product not found');
+              }
+
+              const variant = item.variantId
+                ? await tx.productVariant.findFirst({
+                    where: {
+                      id: item.variantId,
+                      productId: item.productId,
+                      isActive: true,
+                    },
+                  })
+                : null;
+
+              if (item.variantId && !variant) {
+                throw new NotFoundException('Product variant not found');
+              }
+
+              return {
+                productId: item.productId,
+                variantId: item.variantId || null,
+                quantity: item.quantity || 1,
+                product,
+                variant,
+              };
+            }),
+          );
+        } else {
+          // Fallback for API clients that still use the server-side cart.
+          cart = await tx.cart.findFirst({
+            where: { userId },
+            include: {
+              items: { include: { product: true, variant: true } },
+            },
+          });
+          sourceItems = cart?.items || [];
+        }
+
+        if (sourceItems.length === 0) {
           throw new NotFoundException('Cart is empty');
         }
 
@@ -50,7 +94,7 @@ export class OrderService {
           quantity: number;
         }[] = [];
 
-        for (const item of cart.items) {
+        for (const item of sourceItems) {
           // Check stock - use variant stock if variant exists, otherwise product stock
           const availableStock = item.variant
             ? item.variant.stock
@@ -176,7 +220,9 @@ export class OrderService {
         });
 
         // Clear cart
-        await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+        if (cart) {
+          await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+        }
 
         return order;
       },

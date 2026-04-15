@@ -27,18 +27,13 @@ export class PaymentController {
     @Body() dto: InitPaymentDto,
     @Req() req: any,
   ) {
-    // Extract real client IP (respects X-Forwarded-For when trust proxy is set)
-    const forwarded = req?.headers?.['x-forwarded-for'];
-    const clientIp =
-      (Array.isArray(forwarded) ? forwarded[0] : forwarded?.split(',')[0]?.trim()) ||
-      req?.ip ||
-      req?.socket?.remoteAddress ||
-      undefined;
+    const forwardedFor = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+    const userIp = forwardedFor || req.ip || req.socket?.remoteAddress;
     return this.paymentService.createCheckoutSessionSecure(
       dto.orderId,
       dto.method,
       userId,
-      clientIp,
+      userIp,
     );
   }
 

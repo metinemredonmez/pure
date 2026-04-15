@@ -1,26 +1,105 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 // ============ FETCH HELPER ============
-async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number }): Promise<T | null> {
+export async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+
+  const refreshToken = localStorage.getItem('pureolentia_refresh_token')
+  if (!refreshToken) return null
+
   try {
-    const { revalidate = 60, ...fetchOptions } = options || {}
-    const fetchOpts: any = {
-      ...fetchOptions,
-      headers: {
-        'Content-Type': 'application/json',
-        ...fetchOptions?.headers,
-      },
+    const res = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
+    const json = await res.json().catch(() => null)
+
+    if (!res.ok || json?.success === false) {
+      localStorage.removeItem('pureolentia_token')
+      localStorage.removeItem('pureolentia_refresh_token')
+      return null
     }
-    // Only add next.revalidate for GET requests (server-side caching)
-    // POST/PUT/DELETE requests from client components don't support this
-    if (!fetchOptions.method || fetchOptions.method === 'GET') {
-      fetchOpts.next = { revalidate }
+
+    const data = json?.data || json
+    const accessToken = data?.accessToken || data?.token
+    const nextRefreshToken = data?.refreshToken
+
+    if (!accessToken) return null
+
+    localStorage.setItem('pureolentia_token', accessToken)
+    if (nextRefreshToken) localStorage.setItem('pureolentia_refresh_token', nextRefreshToken)
+    return accessToken
+  } catch {
+    return null
+  }
+}
+
+
+function getLegacyStoredToken(): string | null {
+  if (typeof window === 'undefined') return null
+
+  const keys = ['pureolentia_token', 'accessToken', 'access_token', 'token', 'authToken']
+  for (const key of keys) {
+    const value = localStorage.getItem(key)
+    if (value) {
+      if (key !== 'pureolentia_token') localStorage.setItem('pureolentia_token', value)
+      return value
     }
-    const res = await fetch(`${API_URL}${endpoint}`, fetchOpts)
-    const json = await res.json()
+  }
+
+  return null
+}
+
+export async function getStoredAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+
+  const token = getLegacyStoredToken()
+  if (token) return token
+
+  const refreshed = await refreshAccessToken()
+  if (refreshed) return refreshed
+
+  // A stored user without a token is a stale UI session; do not let checkout show as logged in.
+  localStorage.removeItem('pureolentia_user')
+  return null
+}
+
+async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number; skipAuthRefresh?: boolean }): Promise<T | null> {
+  try {
+    const { revalidate = 60, skipAuthRefresh = false, ...fetchOptions } = options || {}
+    const buildFetchOptions = (headers?: HeadersInit): any => {
+      const opts: any = {
+        ...fetchOptions,
+        headers: {
+          'Content-Type': 'application/json',
+          ...fetchOptions?.headers,
+          ...headers,
+        },
+      }
+
+      // Only add next.revalidate for GET requests (server-side caching)
+      // POST/PUT/DELETE requests from client components don't support this
+      if (!fetchOptions.method || fetchOptions.method === 'GET') {
+        opts.next = { revalidate }
+      }
+
+      return opts
+    }
+
+    let res = await fetch(`${API_URL}${endpoint}`, buildFetchOptions())
+
+    if (res.status === 401 && !skipAuthRefresh && endpoint !== '/auth/refresh') {
+      const newToken = await refreshAccessToken()
+      if (newToken) {
+        res = await fetch(`${API_URL}${endpoint}`, buildFetchOptions({ Authorization: `Bearer ${newToken}` }))
+      }
+    }
+
+    const json = await res.json().catch(() => null)
     if (!res.ok) {
       // Return the error response so forms can show the message
-      return { success: false, ...json } as T
+      return { success: false, ...(json || {}), statusCode: json?.statusCode || res.status } as T
     }
     return json
   } catch (error) {

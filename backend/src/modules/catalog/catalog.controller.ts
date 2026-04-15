@@ -60,6 +60,22 @@ export class CatalogController {
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)
+  @Get('admin/products')
+  @ApiOperation({ summary: 'List products (admin)' })
+  findAllAdmin(@Query() query: PaginationDto) {
+    return this.catalogService.findAll(query, true);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/products/:id')
+  @ApiOperation({ summary: 'Get product by id (admin)' })
+  findOneAdmin(@Param('id') id: string) {
+    return this.catalogService.findById(id);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
   @Post('admin/products')
   @ApiOperation({ summary: 'Create product (admin)' })
   create(@Body() dto: CreateProductDto) {
