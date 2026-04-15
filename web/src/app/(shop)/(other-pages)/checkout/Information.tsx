@@ -2,7 +2,7 @@
 
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
-import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder } from '@/lib/api'
+import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder, getStoredAccessToken } from '@/lib/api'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
@@ -329,10 +329,10 @@ const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkou
       onSubmit={async (e) => {
         e.preventDefault()
         const paymentValues = Object.fromEntries(new FormData(e.target as HTMLFormElement)) as Record<string, any>
-        const token = localStorage.getItem('pureolentia_token')
+        const token = await getStoredAccessToken()
 
         if (!token) {
-          toast.error('Odeme icin once giris yapmaniz gerekiyor.')
+          toast.error('Oturum suresi dolmus. Lutfen tekrar giris yapin.')
           return
         }
 

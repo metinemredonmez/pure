@@ -1,7 +1,7 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 // ============ FETCH HELPER ============
-async function refreshAccessToken(): Promise<string | null> {
+export async function refreshAccessToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null
 
   const refreshToken = localStorage.getItem('pureolentia_refresh_token')
@@ -33,6 +33,36 @@ async function refreshAccessToken(): Promise<string | null> {
   } catch {
     return null
   }
+}
+
+
+function getLegacyStoredToken(): string | null {
+  if (typeof window === 'undefined') return null
+
+  const keys = ['pureolentia_token', 'accessToken', 'access_token', 'token', 'authToken']
+  for (const key of keys) {
+    const value = localStorage.getItem(key)
+    if (value) {
+      if (key !== 'pureolentia_token') localStorage.setItem('pureolentia_token', value)
+      return value
+    }
+  }
+
+  return null
+}
+
+export async function getStoredAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+
+  const token = getLegacyStoredToken()
+  if (token) return token
+
+  const refreshed = await refreshAccessToken()
+  if (refreshed) return refreshed
+
+  // A stored user without a token is a stale UI session; do not let checkout show as logged in.
+  localStorage.removeItem('pureolentia_user')
+  return null
 }
 
 async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number; skipAuthRefresh?: boolean }): Promise<T | null> {

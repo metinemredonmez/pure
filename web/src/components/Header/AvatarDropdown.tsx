@@ -35,8 +35,20 @@ export default function AvatarDropdown({ className }: Props) {
   useEffect(() => {
     setMounted(true)
     try {
+      const legacyToken = localStorage.getItem('accessToken') || localStorage.getItem('access_token') || localStorage.getItem('token') || localStorage.getItem('authToken')
+      if (!localStorage.getItem('pureolentia_token') && legacyToken) {
+        localStorage.setItem('pureolentia_token', legacyToken)
+      }
+
+      const hasSession = !!localStorage.getItem('pureolentia_token') || !!localStorage.getItem('pureolentia_refresh_token')
       const raw = localStorage.getItem('pureolentia_user')
-      if (raw) setUser(JSON.parse(raw))
+
+      if (raw && hasSession) {
+        setUser(JSON.parse(raw))
+      } else if (raw && !hasSession) {
+        localStorage.removeItem('pureolentia_user')
+        setUser(null)
+      }
     } catch {}
   }, [])
 

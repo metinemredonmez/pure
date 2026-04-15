@@ -40,7 +40,8 @@ export default function SignupForm() {
     try {
       const res = (await apiRegister(payload)) as any
       const data = res?.data || res
-      const token = data?.accessToken || data?.token
+      const token = data?.accessToken || data?.token || data?.tokens?.accessToken
+      const refreshToken = data?.refreshToken || data?.tokens?.refreshToken
       const user = data?.user
 
       if (res?.success === false || !token) {
@@ -51,7 +52,7 @@ export default function SignupForm() {
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('pureolentia_token', token)
-        if (data?.refreshToken) localStorage.setItem('pureolentia_refresh_token', data.refreshToken)
+        if (refreshToken) localStorage.setItem('pureolentia_refresh_token', refreshToken)
         if (user) localStorage.setItem('pureolentia_user', JSON.stringify(user))
       }
 
