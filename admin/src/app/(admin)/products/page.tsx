@@ -23,12 +23,20 @@ interface Product {
   sku: string;
   price: number;
   compareAtPrice?: number;
+  costPrice?: number;
   status: string;
+  isActive?: boolean;
   isFeatured: boolean;
   stock?: number;
+  description?: string;
+  shortDescription?: string;
   origin?: string;
   roastLevel?: string;
   weight?: number;
+  aromaProfile?: string[];
+  brewGuide?: string;
+  altitude?: string;
+  process?: string;
   images?: { url: string }[];
   category?: { id: string; name: string };
   variants?: { id: string; name: string; stock: number; price: number }[];
@@ -56,6 +64,14 @@ function formatCurrency(amount: number | string | null | undefined) {
   const num = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
   if (isNaN(num)) return '₺0,00';
   return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(num);
+}
+
+
+const API_ORIGIN = (process.env.NEXT_PUBLIC_API_URL || 'https://api.pureolentia.com/api').replace(/\/api\/?$/, '');
+function imageUrl(url?: string) {
+  if (!url) return undefined;
+  if (url.startsWith('/')) return `${API_ORIGIN}${url}`;
+  return url;
 }
 
 export default function ProductsPage() {
@@ -86,7 +102,7 @@ export default function ProductsPage() {
   // Form state
   const [form, setForm] = useState({
     name: '', slug: '', sku: '', description: '', shortDescription: '',
-    price: 0, compareAtPrice: 0, costPrice: 0, status: 'DRAFT',
+    price: 0, compareAtPrice: 0, costPrice: 0, stock: 0, imageUrls: [] as string[], status: 'DRAFT',
     isFeatured: false, origin: '', roastLevel: '', weight: 0,
     aromaProfile: '', brewGuide: '', altitude: '', process: '', categoryId: '',
   });
@@ -126,18 +142,25 @@ export default function ProductsPage() {
       setEditingProduct(product);
       setForm({
         name: product.name, slug: product.slug, sku: product.sku,
-        description: '', shortDescription: '',
-        price: product.price, compareAtPrice: product.compareAtPrice || 0,
-        costPrice: 0, status: product.status, isFeatured: product.isFeatured,
+        description: product.description || '', shortDescription: product.shortDescription || '',
+        price: Number(product.price) || 0,
+        compareAtPrice: Number(product.compareAtPrice) || 0,
+        stock: product.stock || 0,
+        imageUrls: (product.images || []).map((img: any) => img.url),
+        costPrice: Number(product.costPrice) || 0,
+        status: product.status,
+        isFeatured: product.isFeatured,
         origin: product.origin || '', roastLevel: product.roastLevel || '',
-        weight: product.weight || 0, aromaProfile: '', brewGuide: '',
-        altitude: '', process: '', categoryId: product.category?.id || '',
+        weight: product.weight || 0,
+        aromaProfile: Array.isArray(product.aromaProfile) ? product.aromaProfile.join(', ') : '',
+        brewGuide: product.brewGuide || '',
+        altitude: product.altitude || '', process: product.process || '', categoryId: product.category?.id || '',
       });
     } else {
       setEditingProduct(null);
       setForm({
         name: '', slug: '', sku: '', description: '', shortDescription: '',
-        price: 0, compareAtPrice: 0, costPrice: 0, status: 'DRAFT',
+        price: 0, compareAtPrice: 0, costPrice: 0, stock: 0, imageUrls: [] as string[], status: 'DRAFT',
         isFeatured: false, origin: '', roastLevel: '', weight: 0,
         aromaProfile: '', brewGuide: '', altitude: '', process: '', categoryId: '',
       });
@@ -146,19 +169,44 @@ export default function ProductsPage() {
   };
 
   const generateSlug = (name: string) => {
-    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    return name
+      .toLocaleLowerCase('tr-TR')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/ı/g, 'i')
+      .replace(/ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/ş/g, 's')
+      .replace(/ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
   };
 
   const handleSave = async () => {
     setSaving(true);
     try {
       const payload: Record<string, unknown> = {
-        ...form,
-        aromaProfile: form.aromaProfile ? form.aromaProfile.split(',').map((s) => s.trim()) : undefined,
+        name: form.name,
+        slug: form.slug,
+        sku: form.sku,
+        description: form.description || undefined,
+        price: form.price,
         compareAtPrice: form.compareAtPrice || undefined,
         costPrice: form.costPrice || undefined,
         weight: form.weight || undefined,
+        stock: form.stock || 0,
         categoryId: form.categoryId || undefined,
+        status: form.status,
+        roastLevel: form.roastLevel || undefined,
+        origin: form.origin || undefined,
+        altitude: form.altitude || undefined,
+        process: form.process || undefined,
+        aromaProfile: form.aromaProfile ? form.aromaProfile.split(',').map((s: string) => s.trim()).filter(Boolean) : [],
+        brewGuide: form.brewGuide || undefined,
+        isActive: form.status === 'ACTIVE',
+        isFeatured: form.isFeatured,
+        images: form.imageUrls.map((url: string) => ({ url, alt: form.name })),
       };
       if (editingProduct) {
         await productsApi.updateProduct(editingProduct.id, payload);
@@ -307,7 +355,7 @@ export default function ProductsPage() {
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                           <Avatar
-                            src={product.images?.[0]?.url}
+                            src={imageUrl(product.images?.[0]?.url)}
                             variant="rounded"
                             sx={{ width: 40, height: 40, bgcolor: `${olentiaColors.primary.main}20`, color: olentiaColors.primary.main, fontWeight: 700, fontSize: 16 }}
                           >
@@ -402,16 +450,16 @@ export default function ProductsPage() {
               <TextField fullWidth multiline rows={3} label="Açıklama" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} sx={{ mb: 2 }} />
             </Grid>
             <Grid size={{ xs: 6, md: 3 }}>
-              <TextField fullWidth type="number" label="Fiyat (₺)" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+              <TextField fullWidth type="number" label="Fiyat (₺)" value={form.price || ""} onChange={(e) => setForm({ ...form, price: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0, step: "0.01" }} />
             </Grid>
             <Grid size={{ xs: 6, md: 3 }}>
-              <TextField fullWidth type="number" label="Karşılaştırma Fiyatı" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: Number(e.target.value) })} />
+              <TextField fullWidth type="number" label="Karşılaştırma Fiyatı" value={form.compareAtPrice || ""} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0, step: "0.01" }} />
             </Grid>
             <Grid size={{ xs: 6, md: 3 }}>
-              <TextField fullWidth type="number" label="Maliyet" value={form.costPrice} onChange={(e) => setForm({ ...form, costPrice: Number(e.target.value) })} />
+              <TextField fullWidth type="number" label="Maliyet" value={form.costPrice || ""} onChange={(e) => setForm({ ...form, costPrice: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0, step: "0.01" }} />
             </Grid>
             <Grid size={{ xs: 6, md: 3 }}>
-              <TextField fullWidth type="number" label="Ağırlık (g)" value={form.weight} onChange={(e) => setForm({ ...form, weight: Number(e.target.value) })} />
+              <TextField fullWidth type="number" label="Ağırlık (g)" value={form.weight || ""} onChange={(e) => setForm({ ...form, weight: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0 }} />
             </Grid>
             <Grid size={{ xs: 6, md: 4 }}>
               <FormControl fullWidth>
@@ -455,6 +503,46 @@ export default function ProductsPage() {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Aroma Profili" value={form.aromaProfile} onChange={(e) => setForm({ ...form, aromaProfile: e.target.value })} placeholder="çikolata, fındık, karamel (virgülle ayırın)" />
+            </Grid>
+            <Grid size={{ xs: 6, md: 4 }}>
+              <TextField fullWidth type="number" label="Stok" value={form.stock || ""} onChange={(e) => setForm({ ...form, stock: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0 }} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>Ürün Görselleri</Typography>
+                {/* Preview */}
+                {form.imageUrls && form.imageUrls.length > 0 && (
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                    {form.imageUrls.map((url: string, idx: number) => (
+                      <Box key={idx} sx={{ position: 'relative', width: 100, height: 100, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                        <img src={imageUrl(url)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <IconButton size="small" sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' }, width: 20, height: 20 }}
+                          onClick={() => setForm({ ...form, imageUrls: form.imageUrls.filter((_: string, i: number) => i !== idx) })}>
+                          <CloseIcon sx={{ fontSize: 14 }} />
+                        </IconButton>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+                {/* Upload button */}
+                <Button variant="outlined" component="label" fullWidth sx={{ py: 3, borderStyle: 'dashed' }}>
+                  📷 Görsel Yükle (Birden fazla seçebilirsiniz)
+                  <input type="file" hidden multiple accept="image/*"
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (!files || files.length === 0) return;
+                      try {
+                        const { uploadApi } = await import('@/lib/api');
+                        const res = await uploadApi.uploadMultiple(Array.from(files));
+                        const urls = Array.isArray(res?.data) ? res.data.map((f: any) => f.url) : (res?.data?.urls || res?.urls || []);
+                        setForm((prev: any) => ({ ...prev, imageUrls: [...(prev.imageUrls || []), ...urls] }));
+                      } catch (err) { console.error('Upload error:', err); }
+                      e.target.value = '';
+                    }}
+                  />
+                </Button>
+                <Typography variant="caption" color="text.secondary">Max 10MB, JPG/PNG/WebP. Önerilen: 800x800px</Typography>
+              </Box>
             </Grid>
             <Grid size={{ xs: 12 }}>
               <FormControlLabel

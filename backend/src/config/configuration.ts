@@ -18,6 +18,8 @@ export default () => ({
       process.env.ENCRYPTION_SALT || 'olentia-default-salt-change-in-prod',
     cookieSecret: process.env.COOKIE_SECRET,
     webhookSecret: process.env.WEBHOOK_SECRET,
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    apiUrl: process.env.API_URL || 'http://localhost:4000',
   },
   database: {
     url: process.env.DATABASE_URL,

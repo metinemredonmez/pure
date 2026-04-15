@@ -150,6 +150,10 @@ const Footer: React.FC = async () => {
               <div className="flex h-7 w-11 items-center justify-center rounded border border-neutral-200 bg-white text-[8px] font-bold text-green-700 dark:border-neutral-600 dark:bg-neutral-800">
                 TROY
               </div>
+              {/* PayTR */}
+              <div className="flex h-7 items-center justify-center rounded border border-sky-200 bg-sky-50 px-2 text-[9px] font-bold tracking-[0.18em] text-sky-700 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-300">
+                PAYTR
+              </div>
               {/* SSL */}
               <div className="flex h-7 items-center gap-x-1 rounded border border-neutral-200 bg-white px-1.5 text-[8px] font-semibold text-green-600 dark:border-neutral-600 dark:bg-neutral-800">
                 <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">

@@ -2,6 +2,7 @@
 
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
+import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder } from '@/lib/api'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
@@ -20,12 +21,32 @@ import {
 import { HugeiconsIcon, IconSvgElement } from '@hugeicons/react'
 import clsx from 'clsx'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 type Tab = 'ContactInfo' | 'ShippingAddress' | 'PaymentMethod'
 
 const Information = () => {
-  const [tabActive, setTabActive] = useState<Tab>('ShippingAddress')
+  const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
+  const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    try {
+      const rawUser = localStorage.getItem('pureolentia_user')
+      if (!rawUser) return
+
+      const user = JSON.parse(rawUser)
+      setCheckoutData((current) => ({
+        email: current.email || user?.email || '',
+        phone: current.phone || user?.phone || '',
+        'first-name': current['first-name'] || user?.firstName || '',
+        'last-name': current['last-name'] || user?.lastName || '',
+        ...current,
+      }))
+    } catch {}
+  }, [])
 
   const handleScrollToEl = (id: string) => {
     const element = document.getElementById(id)
@@ -48,6 +69,8 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ContactInfo' && 'invisible hidden')}>
           <ContactInfo
+            initialValues={checkoutData}
+            onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -68,6 +91,8 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ShippingAddress' && 'invisible hidden')}>
           <ShippingAddress
+            initialValues={checkoutData}
+            onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
             onClose={() => {
               setTabActive('PaymentMethod')
               handleScrollToEl('PaymentMethod')
@@ -88,6 +113,7 @@ const Information = () => {
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'PaymentMethod' && 'invisible hidden')}>
           <PaymentMethod
+            checkoutData={checkoutData}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -131,7 +157,7 @@ const TabHeader = ({
   )
 }
 
-const ContactInfo = ({ onClose }: { onClose: () => void }) => {
+const ContactInfo = ({ initialValues, onClose, onSave }: { initialValues: Record<string, any>; onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
   return (
     <form
       action="#"
@@ -139,7 +165,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
       onSubmit={(e) => {
         e.preventDefault()
         const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
+        onSave(formValues)
         onClose()
       }}
     >
@@ -156,11 +182,11 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
           </div>
           <Field className="max-w-lg">
             <Label>Telefon Numarası</Label>
-            <Input placeholder="05XX XXX XX XX" type="tel" name="phone" />
+            <Input placeholder="05XX XXX XX XX" type="tel" name="phone" defaultValue={String(initialValues.phone || '')} />
           </Field>
           <Field className="max-w-lg">
             <Label>E-posta Adresi</Label>
-            <Input type="email" name="email" />
+            <Input type="email" name="email" defaultValue={String(initialValues.email || '')} />
           </Field>
           <Field>
             <CheckboxField>
@@ -182,7 +208,7 @@ const ContactInfo = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
+const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Record<string, any>; onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
   return (
     <form
       action="#"
@@ -190,7 +216,7 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
       onSubmit={(e) => {
         e.preventDefault()
         const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
+        onSave(formValues)
         onClose()
       }}
     >
@@ -199,11 +225,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
               <Label>Ad</Label>
-              <Input placeholder="Adınız" name="first-name" />
+              <Input placeholder="Adınız" name="first-name" defaultValue={String(initialValues['first-name'] || '')} />
             </Field>
             <Field>
               <Label>Soyad</Label>
-              <Input placeholder="Soyadınız" name="last-name" />
+              <Input placeholder="Soyadınız" name="last-name" defaultValue={String(initialValues['last-name'] || '')} />
             </Field>
           </div>
 
@@ -211,11 +237,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-4">
             <Field className="sm:col-span-2">
               <Label>Adres</Label>
-              <Input placeholder="Sokak, mahalle, no" defaultValue={''} type={'text'} name="address" />
+              <Input placeholder="Sokak, mahalle, no" defaultValue={String(initialValues.address || '')} type={'text'} name="address" />
             </Field>
             <Field>
               <Label>Daire / Kat</Label>
-              <Input defaultValue="" name="apt-suite" />
+              <Input defaultValue={String(initialValues['apt-suite'] || '')} name="apt-suite" />
             </Field>
           </div>
 
@@ -223,11 +249,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
               <Label>İl</Label>
-              <Input defaultValue="" name="city" />
+              <Input defaultValue={String(initialValues.city || '')} name="city" />
             </Field>
             <Field>
               <Label>Ülke</Label>
-              <Select defaultValue="Türkiye" name="country">
+              <Select defaultValue={String(initialValues.country || 'Turkey')} name="country">
                 <option value="Turkey">Türkiye</option>
                 
                 
@@ -240,11 +266,11 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
             </Field>
             <Field>
               <Label>İlçe</Label>
-              <Input defaultValue="" name="state-province" />
+              <Input defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
             </Field>
             <Field>
               <Label>Posta Kodu</Label>
-              <Input defaultValue="" name="postal-code" />
+              <Input defaultValue={String(initialValues['postal-code'] || '')} name="postal-code" />
             </Field>
           </div>
 
@@ -292,18 +318,97 @@ const ShippingAddress = ({ onClose }: { onClose: () => void }) => {
   )
 }
 
-const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
+const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkoutData: Record<string, any> }) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
+  const [submitting, setSubmitting] = useState(false)
 
   return (
     <form
       action="#"
       method="POST"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault()
-        const formValues = Object.fromEntries(new FormData(e.target as HTMLFormElement))
-        console.log(formValues)
-        onClose()
+        const paymentValues = Object.fromEntries(new FormData(e.target as HTMLFormElement)) as Record<string, any>
+        const token = localStorage.getItem('pureolentia_token')
+
+        if (!token) {
+          toast.error('Odeme icin once giris yapmaniz gerekiyor.')
+          return
+        }
+
+        const firstName = String(checkoutData['first-name'] || '').trim()
+        const lastName = String(checkoutData['last-name'] || '').trim()
+        const phone = String(checkoutData.phone || '').trim()
+        const email = String(checkoutData.email || '').trim()
+        const address = String(checkoutData.address || '').trim()
+        const city = String(checkoutData.city || '').trim()
+        const district = String(checkoutData['state-province'] || '').trim()
+        const postalCode = String(checkoutData['postal-code'] || '').trim()
+
+        const missingFields = [
+          !firstName && 'ad',
+          !lastName && 'soyad',
+          !phone && 'telefon',
+          !email && 'e-posta',
+          !address && 'adres',
+          !city && 'il',
+          !district && 'ilce',
+          !postalCode && 'posta kodu',
+        ].filter(Boolean) as string[]
+
+        if (missingFields.length > 0) {
+          toast.error(`Eksik alanlar: ${missingFields.join(', ')}`)
+          return
+        }
+
+        if (!paymentValues.termsAccepted) {
+          toast.error('Odeme oncesi mesafeli satis ve kullanim kosullarini onaylayin.')
+          return
+        }
+
+        try {
+          setSubmitting(true)
+
+          const addressRes = await apiCreateAddress(token, {
+            title: checkoutData['address-type'] === 'at-office' ? 'Is Yeri' : 'Ev',
+            firstName,
+            lastName,
+            phone,
+            line1: address,
+            line2: String(checkoutData['apt-suite'] || '').trim() || undefined,
+            city,
+            district,
+            postalCode,
+            country: 'TR',
+            isDefault: true,
+          })
+
+          const addressId = addressRes?.data?.id || addressRes?.id
+          if (!addressId) throw new Error(addressRes?.message || 'Adres olusturulamadi')
+
+          const orderRes = await apiCreateOrder(token, { addressId })
+          const orderId = orderRes?.data?.id || orderRes?.id
+          if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
+
+          if (methodActive === 'Internet-banking') {
+            toast.success('Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.')
+            return
+          }
+
+          const checkoutRes = await apiCreateCheckoutSession(token, {
+            orderId,
+            method: 'CREDIT_CARD',
+          })
+
+          const iframeUrl = checkoutRes?.data?.iframeUrl || checkoutRes?.iframeUrl
+          if (!iframeUrl) throw new Error(checkoutRes?.message || 'Odeme oturumu baslatilamadi')
+
+          window.location.href = iframeUrl
+        } catch (error: any) {
+          toast.error(error?.message || 'Odeme baslatilamadi')
+        } finally {
+          setSubmitting(false)
+        }
       }}
     >
       <Fieldset>
@@ -408,6 +513,19 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
             </div>
           </div>
 
+          <Field>
+            <CheckboxField>
+              <Checkbox name="termsAccepted" />
+              <Label className="text-sm leading-6">
+                <span>
+                  <Link href="/mesafeli-satis" className="font-medium underline">Mesafeli Satis Sozlesmesi</Link>,{' '}
+                  <Link href="/kullanim-kosullari" className="font-medium underline">Kullanim Kosullari</Link> ve{' '}
+                  <Link href="/gizlilik-politikasi" className="font-medium underline">Gizlilik Politikasi</Link>'ni okudum ve kabul ediyorum.
+                </span>
+              </Label>
+            </CheckboxField>
+          </Field>
+
           {/* Güvenlik rozetleri */}
           <div className="flex flex-wrap items-center justify-center gap-4 rounded-lg bg-neutral-50 px-4 py-3 dark:bg-neutral-800">
             <div className="flex items-center gap-1.5 text-xs text-neutral-500">
@@ -431,8 +549,8 @@ const PaymentMethod = ({ onClose }: { onClose: () => void }) => {
           </div>
 
           <div className="flex flex-wrap gap-2.5 pt-4">
-            <ButtonPrimary className="min-w-56" type="submit">
-              Siparişi Onayla
+            <ButtonPrimary className="min-w-56" type="submit" disabled={submitting}>
+              {submitting ? 'Yonlendiriliyor...' : 'Siparişi Onayla'}
             </ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               Teslimat Adresine Dön

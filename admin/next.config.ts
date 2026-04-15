@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: 'http', hostname: 'localhost' },
       { protocol: 'https', hostname: '*.unsplash.com' },
+      { protocol: 'https', hostname: 'api.pureolentia.com' },
+      { protocol: 'https', hostname: 'admin.pureolentia.com' },
+      { protocol: 'https', hostname: 'pureolentia.com' },
     ],
   },
   experimental: {

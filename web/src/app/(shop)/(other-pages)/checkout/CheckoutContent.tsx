@@ -8,13 +8,10 @@ import { Coffee01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import Information from './Information'
 
 export default function CheckoutContent() {
-  const { items, subtotal, removeItem, updateQuantity } = useCart()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => { setMounted(true) }, [])
+  const { items, subtotal, removeItem, updateQuantity, isHydrated } = useCart()
 
   const freeShippingThreshold = 300
   const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
@@ -22,7 +19,7 @@ export default function CheckoutContent() {
   const kdvAmount = subtotal * kdvRate
   const total = subtotal + shippingCost + kdvAmount
 
-  if (!mounted) {
+  if (!isHydrated) {
     return <main className="container py-16 lg:pt-20 lg:pb-28"><div className="py-20 text-center text-neutral-400">Yükleniyor...</div></main>
   }
 
@@ -123,9 +120,12 @@ export default function CheckoutContent() {
             </div>
           </div>
 
-          <ButtonPrimary className="mt-8 w-full">
-            Siparişi Onayla
+          <ButtonPrimary href="#PaymentMethod" className="mt-8 w-full">
+            Ödeme Adımına Geç
           </ButtonPrimary>
+          <p className="mt-3 text-center text-xs text-neutral-500">
+            Ödemeyi tamamlamak için soldaki "Ödeme Yöntemi" adımındaki butonu kullanın.
+          </p>
           <p className="mt-4 text-center text-xs text-neutral-400">
             ₺{freeShippingThreshold} üzeri siparişlerde ücretsiz kargo
           </p>

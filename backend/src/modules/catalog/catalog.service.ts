@@ -16,7 +16,7 @@ export class CatalogService {
 
   // ── Products ──
 
-  async findAll(query: PaginationDto): Promise<PaginatedResult<any>> {
+  async findAll(query: PaginationDto, admin = false): Promise<PaginatedResult<any>> {
     const where: any = {};
 
     if (query.search) {
@@ -62,9 +62,10 @@ export class CatalogService {
       if (query.maxPrice) where.price.lte = query.maxPrice;
     }
 
-    // Default: only show active products for non-admin queries
-    if (!query.status) {
+    // Public storefront should only expose active products. Admin lists everything unless filtered.
+    if (!admin) {
       where.isActive = true;
+      where.status = query.status || 'ACTIVE';
     }
 
     const [data, total] = await Promise.all([
@@ -103,17 +104,57 @@ export class CatalogService {
         collections: { include: { collection: true } },
       },
     });
+    if (!product || !product.isActive || product.status !== 'ACTIVE') {
+      throw new NotFoundException('Product not found');
+    }
+    return product;
+  }
+
+  async findById(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { sortOrder: 'asc' } },
+        collections: { include: { collection: true } },
+      },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+    return product;
+  }
+
+  async findBySlugAdmin(slug: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { slug },
+      include: {
+        category: true,
+        variants: true,
+        images: { orderBy: { sortOrder: 'asc' } },
+        collections: { include: { collection: true } },
+      },
+    });
     if (!product) throw new NotFoundException('Product not found');
     return product;
   }
 
   async create(dto: CreateProductDto) {
+    const { images, ...productData } = dto as any;
     return this.prisma.product.create({
       data: {
-        ...dto,
+        ...productData,
         price: dto.price,
         compareAtPrice: dto.compareAtPrice,
         costPrice: dto.costPrice,
+        ...(images?.length ? {
+          images: {
+            create: images.map((img: any, i: number) => ({
+              url: img.url,
+              alt: img.alt || productData.name || '',
+              sortOrder: i,
+            })),
+          },
+        } : {}),
       },
       include: { category: true, variants: true, images: true },
     });
@@ -121,9 +162,30 @@ export class CatalogService {
 
   async update(id: string, dto: UpdateProductDto) {
     await this.findById(id);
+    const { images, ...updateData } = dto as any;
+
+    const shouldUpdateImages = Array.isArray(images);
+
+    if (shouldUpdateImages) {
+      await this.prisma.productImage.deleteMany({ where: { productId: id } });
+    }
+
     return this.prisma.product.update({
       where: { id },
-      data: dto as any,
+      data: {
+        ...updateData,
+        ...(shouldUpdateImages && images.length > 0
+          ? {
+              images: {
+                create: images.map((img: any, i: number) => ({
+                  url: img.url,
+                  alt: img.alt || '',
+                  sortOrder: i,
+                })),
+              },
+            }
+          : {}),
+      },
       include: { category: true, variants: true, images: true },
     });
   }
@@ -239,9 +301,4 @@ export class CatalogService {
 
   // ── Helper ──
 
-  private async findById(id: string) {
-    const product = await this.prisma.product.findUnique({ where: { id } });
-    if (!product) throw new NotFoundException('Product not found');
-    return product;
-  }
 }

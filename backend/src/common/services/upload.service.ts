@@ -4,13 +4,16 @@ import * as Minio from 'minio';
 import sharp from 'sharp';
 import * as crypto from 'crypto';
 import * as net from 'net';
+import * as fs from 'fs/promises';
+import * as pathModule from 'path';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
-  private minioClient: Minio.Client;
+  private minioClient?: Minio.Client;
   private bucket: string;
+  private useLocalStorage = false;
 
   // Allowed MIME types
   private readonly ALLOWED_IMAGE_TYPES = [
@@ -32,24 +35,36 @@ export class UploadService {
   ) {
     const accessKey = this.config.get('minio.accessKey');
     const secretKey = this.config.get('minio.secretKey');
+    const storageDriver = (this.config.get<string>('STORAGE_DRIVER') || '').toLowerCase();
+
+    this.bucket = this.config.get('minio.bucket') || 'olentia-media';
+
+    if (storageDriver !== 'minio' && storageDriver !== 's3') {
+      this.useLocalStorage = true;
+      this.logger.warn('UploadService will use local disk storage. Set STORAGE_DRIVER=minio to enable MinIO/S3.');
+      return;
+    }
 
     if (!accessKey || !secretKey) {
-      this.logger.warn('MinIO credentials not configured — file uploads will use local disk storage');
+      this.useLocalStorage = true;
+      this.logger.warn('MinIO credentials not configured — UploadService will use local disk storage');
+      return;
     }
 
     this.minioClient = new Minio.Client({
       endPoint: this.config.get('minio.endpoint') || 'localhost',
       port: parseInt(this.config.get('minio.port') || '9002'),
       useSSL: this.config.get('minio.useSSL') === 'true',
-      accessKey: accessKey || 'dev_minio_access',
-      secretKey: secretKey || 'dev_minio_secret',
+      accessKey,
+      secretKey,
     });
 
-    this.bucket = this.config.get('minio.bucket') || 'olentia-media';
     void this.ensureBucket();
   }
 
   private async ensureBucket() {
+    if (this.useLocalStorage || !this.minioClient) return;
+
     try {
       const exists = await this.minioClient.bucketExists(this.bucket);
       if (!exists) {
@@ -75,6 +90,24 @@ export class UploadService {
     } catch (error) {
       this.logger.error('Failed to ensure bucket', error);
     }
+  }
+
+  private async writeLocalFile(folder: string, filename: string, buffer: Buffer) {
+    const uploadRoot = pathModule.join(process.cwd(), 'uploads');
+    const targetDir = pathModule.join(uploadRoot, folder);
+    await fs.mkdir(targetDir, { recursive: true });
+    await fs.writeFile(pathModule.join(targetDir, filename), buffer);
+    return `/uploads/${folder}/${filename}`;
+  }
+
+  private async deleteLocalFile(filePath: string) {
+    if (!filePath) return;
+    const uploadRoot = pathModule.join(process.cwd(), 'uploads');
+    const relativePath = filePath.replace(/^\/?uploads\//, '');
+    const target = pathModule.join(uploadRoot, relativePath);
+    try {
+      await fs.unlink(target);
+    } catch {}
   }
 
   /**
@@ -120,17 +153,20 @@ export class UploadService {
     const folder = options.entityType || 'images';
     const path = `${folder}/${filename}`;
 
-    // Upload to MinIO
-    await this.minioClient.putObject(
-      this.bucket,
-      path,
-      processedBuffer,
-      processedBuffer.length,
-      { 'Content-Type': 'image/webp' },
-    );
+    let url: string;
 
-    // Generate URL
-    const url = `http://${this.config.get('minio.endpoint')}:${this.config.get('minio.port')}/${this.bucket}/${path}`;
+    if (this.useLocalStorage || !this.minioClient) {
+      url = await this.writeLocalFile(folder, filename, processedBuffer);
+    } else {
+      await this.minioClient.putObject(
+        this.bucket,
+        path,
+        processedBuffer,
+        processedBuffer.length,
+        { 'Content-Type': 'image/webp' },
+      );
+      url = `http://${this.config.get('minio.endpoint')}:${this.config.get('minio.port')}/${this.bucket}/${path}`;
+    }
 
     // Save to database
     const uploadedFile = await this.prisma.uploadedFile.create({
@@ -188,20 +224,24 @@ export class UploadService {
     const folder = options.entityType || 'documents';
     const path = `${folder}/${filename}`;
 
-    // Upload to MinIO
-    await this.minioClient.putObject(
-      this.bucket,
-      path,
-      file.buffer,
-      file.size,
-      { 'Content-Type': file.mimetype },
-    );
+    let url: string | null = null;
 
-    // Generate URL
-    const url =
-      options.isPublic !== false
-        ? `http://${this.config.get('minio.endpoint')}:${this.config.get('minio.port')}/${this.bucket}/${path}`
-        : null;
+    if (this.useLocalStorage || !this.minioClient) {
+      const localUrl = await this.writeLocalFile(folder, filename, file.buffer);
+      url = options.isPublic !== false ? localUrl : null;
+    } else {
+      await this.minioClient.putObject(
+        this.bucket,
+        path,
+        file.buffer,
+        file.size,
+        { 'Content-Type': file.mimetype },
+      );
+      url =
+        options.isPublic !== false
+          ? `http://${this.config.get('minio.endpoint')}:${this.config.get('minio.port')}/${this.bucket}/${path}`
+          : null;
+    }
 
     // Save to database
     const uploadedFile = await this.prisma.uploadedFile.create({
@@ -234,7 +274,11 @@ export class UploadService {
     if (!file) return;
 
     try {
-      await this.minioClient.removeObject(file.bucket, file.path);
+      if (this.useLocalStorage || !this.minioClient) {
+        await this.deleteLocalFile(file.url || file.path);
+      } else {
+        await this.minioClient.removeObject(file.bucket, file.path);
+      }
       await this.prisma.uploadedFile.delete({ where: { id: fileId } });
     } catch (error) {
       this.logger.error(`Failed to delete file ${fileId}`, error);
@@ -250,6 +294,11 @@ export class UploadService {
     });
 
     if (!file) throw new BadRequestException('Dosya bulunamadı');
+
+    if (this.useLocalStorage || !this.minioClient) {
+      if (!file.url) throw new BadRequestException('Dosya herkese acik degil');
+      return file.url;
+    }
 
     return this.minioClient.presignedGetObject(
       file.bucket,

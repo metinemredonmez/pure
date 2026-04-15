@@ -1,26 +1,75 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 // ============ FETCH HELPER ============
-async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number }): Promise<T | null> {
+async function refreshAccessToken(): Promise<string | null> {
+  if (typeof window === 'undefined') return null
+
+  const refreshToken = localStorage.getItem('pureolentia_refresh_token')
+  if (!refreshToken) return null
+
   try {
-    const { revalidate = 60, ...fetchOptions } = options || {}
-    const fetchOpts: any = {
-      ...fetchOptions,
-      headers: {
-        'Content-Type': 'application/json',
-        ...fetchOptions?.headers,
-      },
+    const res = await fetch(`${API_URL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken }),
+    })
+    const json = await res.json().catch(() => null)
+
+    if (!res.ok || json?.success === false) {
+      localStorage.removeItem('pureolentia_token')
+      localStorage.removeItem('pureolentia_refresh_token')
+      return null
     }
-    // Only add next.revalidate for GET requests (server-side caching)
-    // POST/PUT/DELETE requests from client components don't support this
-    if (!fetchOptions.method || fetchOptions.method === 'GET') {
-      fetchOpts.next = { revalidate }
+
+    const data = json?.data || json
+    const accessToken = data?.accessToken || data?.token
+    const nextRefreshToken = data?.refreshToken
+
+    if (!accessToken) return null
+
+    localStorage.setItem('pureolentia_token', accessToken)
+    if (nextRefreshToken) localStorage.setItem('pureolentia_refresh_token', nextRefreshToken)
+    return accessToken
+  } catch {
+    return null
+  }
+}
+
+async function fetchAPI<T>(endpoint: string, options?: RequestInit & { revalidate?: number; skipAuthRefresh?: boolean }): Promise<T | null> {
+  try {
+    const { revalidate = 60, skipAuthRefresh = false, ...fetchOptions } = options || {}
+    const buildFetchOptions = (headers?: HeadersInit): any => {
+      const opts: any = {
+        ...fetchOptions,
+        headers: {
+          'Content-Type': 'application/json',
+          ...fetchOptions?.headers,
+          ...headers,
+        },
+      }
+
+      // Only add next.revalidate for GET requests (server-side caching)
+      // POST/PUT/DELETE requests from client components don't support this
+      if (!fetchOptions.method || fetchOptions.method === 'GET') {
+        opts.next = { revalidate }
+      }
+
+      return opts
     }
-    const res = await fetch(`${API_URL}${endpoint}`, fetchOpts)
-    const json = await res.json()
+
+    let res = await fetch(`${API_URL}${endpoint}`, buildFetchOptions())
+
+    if (res.status === 401 && !skipAuthRefresh && endpoint !== '/auth/refresh') {
+      const newToken = await refreshAccessToken()
+      if (newToken) {
+        res = await fetch(`${API_URL}${endpoint}`, buildFetchOptions({ Authorization: `Bearer ${newToken}` }))
+      }
+    }
+
+    const json = await res.json().catch(() => null)
     if (!res.ok) {
       // Return the error response so forms can show the message
-      return { success: false, ...json } as T
+      return { success: false, ...(json || {}), statusCode: json?.statusCode || res.status } as T
     }
     return json
   } catch (error) {
@@ -156,11 +205,11 @@ export const apiReturnOrder = (token: string, orderId: string, data: any) =>
 
 // ============ PAYMENT ============
 export const apiCreateCheckoutSession = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/session', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/session', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiGooglePayCheckout = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/google-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/google-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiApplePayCheckout = (token: string, data: any) =>
-  fetchAPI<any>('/payments/checkout/apple-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+  fetchAPI<any>('/checkout/apple-pay', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 
 // ============ SHIPPING ============
 export const apiGetShippingZones = () => fetchAPI<any>('/shipping/zones')
