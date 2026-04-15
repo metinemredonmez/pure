@@ -3,6 +3,7 @@
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
 import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder, getStoredAccessToken } from '@/lib/api'
+import { useCart, type CartItem } from '@/contexts/CartContext'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
@@ -29,6 +30,7 @@ type Tab = 'ContactInfo' | 'ShippingAddress' | 'PaymentMethod'
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
+  const { items, clearCart } = useCart()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -114,6 +116,8 @@ const Information = () => {
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'PaymentMethod' && 'invisible hidden')}>
           <PaymentMethod
             checkoutData={checkoutData}
+            cartItems={items}
+            clearCart={clearCart}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -318,7 +322,17 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
   )
 }
 
-const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkoutData: Record<string, any> }) => {
+const PaymentMethod = ({
+  onClose,
+  checkoutData,
+  cartItems,
+  clearCart,
+}: {
+  onClose: () => void
+  checkoutData: Record<string, any>
+  cartItems: CartItem[]
+  clearCart: () => void
+}) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
   const [submitting, setSubmitting] = useState(false)
 
@@ -367,6 +381,11 @@ const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkou
         }
 
         try {
+          if (cartItems.length === 0) {
+            toast.error('Sepetiniz bos. Odeme icin once urun ekleyin.')
+            return
+          }
+
           setSubmitting(true)
 
           const addressRes = await apiCreateAddress(token, {
@@ -386,11 +405,19 @@ const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkou
           const addressId = addressRes?.data?.id || addressRes?.id
           if (!addressId) throw new Error(addressRes?.message || 'Adres olusturulamadi')
 
-          const orderRes = await apiCreateOrder(token, { addressId })
+          const orderRes = await apiCreateOrder(token, {
+            addressId,
+            items: cartItems.map((item) => ({
+              productId: item.productId,
+              variantId: item.variantId || undefined,
+              quantity: item.quantity,
+            })),
+          })
           const orderId = orderRes?.data?.id || orderRes?.id
           if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
 
           if (methodActive === 'Internet-banking') {
+            clearCart()
             toast.success('Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.')
             return
           }
@@ -403,6 +430,7 @@ const PaymentMethod = ({ onClose, checkoutData }: { onClose: () => void; checkou
           const iframeUrl = checkoutRes?.data?.iframeUrl || checkoutRes?.iframeUrl
           if (!iframeUrl) throw new Error(checkoutRes?.message || 'Odeme oturumu baslatilamadi')
 
+          clearCart()
           window.location.href = iframeUrl
         } catch (error: any) {
           toast.error(error?.message || 'Odeme baslatilamadi')
