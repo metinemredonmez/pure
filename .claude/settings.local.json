@@ -17,7 +17,19 @@
       "Bash(git rebase:*)",
       "Bash(git merge:*)",
       "Bash(python3)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(curl -s 'https://api.pureolentia.com/api/public/products?limit=5')",
+      "Bash(python3 -c 'import sys,json; d=json.loads\\(sys.stdin.read\\(\\)\\); items=d.get\\(\"data\",{}\\).get\\(\"data\",[]\\); print\\(f\"Count: {len\\(items\\)}\"\\); [print\\(p.get\\(\"name\"\\),\"|\",\\(p.get\\(\"images\"\\) or [{}]\\)[0].get\\(\"url\",\"NONE\"\\) if p.get\\(\"images\"\\) else \"NO IMAGES\"\\) for p in items[:5]]')",
+      "Bash(curl -s 'https://api.pureolentia.com/api/public/products')",
+      "Bash(python3 -c \"import sys,json; d=json.loads\\(sys.stdin.read\\(\\)\\); print\\(json.dumps\\(d,indent=2\\)[:500]\\)\")",
+      "Bash(curl -s 'https://api.pureolentia.com/api/catalog/products?limit=5')",
+      "Bash(python3 -c \"import sys,json; d=json.loads\\(sys.stdin.read\\(\\)\\); data=d.get\\('data',{}\\); items=data.get\\('data'\\) or data; print\\('Total:', data.get\\('total',len\\(items\\) if isinstance\\(items,list\\) else 0\\)\\); items = items if isinstance\\(items,list\\) else []; [print\\(p.get\\('name'\\),'|',\\(p.get\\('images'\\) or [{}]\\)[0].get\\('url','NO-URL'\\) if p.get\\('images'\\) else 'NO-IMG'\\) for p in items[:5]]\")",
+      "Bash(curl -s 'https://api.pureolentia.com/api/products?limit=3')",
+      "Bash(python3 -c \"import sys,json; d=json.loads\\(sys.stdin.read\\(\\)\\); items=d.get\\('data',{}\\).get\\('data',[]\\); [print\\(p.get\\('name'\\),'->',\\(p.get\\('images'\\) or [{}]\\)[0].get\\('url','NONE'\\)\\) for p in items]\")",
+      "Bash(curl -s 'https://api.pureolentia.com/api/products?limit=20')",
+      "Bash(python3 -c ':*)",
+      "Bash(curl -s 'https://api.pureolentia.com/api/products?slug=brazil-santos')",
+      "Bash(curl -s 'https://api.pureolentia.com/api/products/brazil-santos')"
     ]
   }
 }

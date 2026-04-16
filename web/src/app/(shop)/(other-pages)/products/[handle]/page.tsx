@@ -105,9 +105,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     }
   } catch {}
 
-  if (!reviews.length) {
-    reviews = await getProductReviews(handle)
-  }
+  // Do not fall back to mock reviews — show empty state instead
 
   if (!product.id) {
     return notFound()
