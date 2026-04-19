@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsEnum, IsIn, MaxLength } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsIn, MaxLength, IsObject } from 'class-validator';
 import { GrindType, PaymentMethod } from '@prisma/client';
 
 export class SubscribeDto {
@@ -15,6 +15,11 @@ export class SubscribeDto {
   @ApiProperty({ enum: ['CREDIT_CARD', 'DEBIT_CARD'], example: 'CREDIT_CARD' })
   @IsEnum(PaymentMethod)
   paymentMethod: PaymentMethod;
+
+  @ApiPropertyOptional({ description: 'Frontend configurator metadata (category, duration, grams, etc.)' })
+  @IsOptional()
+  @IsObject()
+  config?: Record<string, any>;
 }
 
 export class ChangePlanDto {

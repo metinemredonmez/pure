@@ -16,6 +16,10 @@ const pages: {
     link: '/account-wishlists',
   },
   {
+    name: 'Aboneliklerim',
+    link: '/account-subscriptions',
+  },
+  {
     name: 'Sipariş Geçmişi',
     link: '/orders',
   },

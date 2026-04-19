@@ -1,10 +1,10 @@
 'use client'
 
-import { useCart } from '@/contexts/CartContext'
 import { Coffee01Icon, DeliveryTruck01Icon, GiftIcon, PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -110,7 +110,7 @@ function formatPrice(v: number | string) {
 /* ---------------- Page ---------------- */
 
 export default function SubscriptionPage() {
-  const { addItem } = useCart()
+  const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
@@ -242,37 +242,93 @@ export default function SubscriptionPage() {
     setSelectedCoffees((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   }
 
-  const addToCart = () => {
+  const startSubscription = async () => {
     if (!cat) return
-    const chosenNames =
-      selectedCoffees.length > 0
-        ? categoryProducts
-            .filter((p) => selectedCoffees.includes(p.id))
-            .map((p) => p.name)
-            .join(', ')
-        : 'Sürpriz (bariston seçimi)'
 
-    const durLabel = DURATIONS.find((d) => d.months === duration)?.label
-    const perLabel = PERIODS.find((p) => p.weeks === period)?.label
+    // Auth kontrolü
+    const token =
+      typeof window !== 'undefined'
+        ? localStorage.getItem('pureolentia_token') ||
+          localStorage.getItem('accessToken') ||
+          localStorage.getItem('token')
+        : null
+
+    if (!token) {
+      toast.error('Abone olmak için giriş yapmalısınız')
+      setTimeout(() => router.push('/login?redirect=/subscription'), 600)
+      return
+    }
+
+    // Kategori → plan eşle (admin'de oluşturulmuş planlardan)
+    const plan =
+      plans.find((p) => p.name.toLowerCase().includes(cat.name.toLowerCase())) ||
+      plans.find((p) => (p as any).category?.slug === cat.id) ||
+      plans[0]
+
+    if (!plan) {
+      toast.error('Uygun abonelik planı bulunamadı. Admin paneli üzerinden plan oluşturulmalı.')
+      return
+    }
 
     setAdding(true)
-    const totalShipments = duration * periodsPerMonth
-    const shortCoffees = selectedCoffees.length > 0 ? ` · ${chosenNames.length > 60 ? chosenNames.slice(0, 57) + '...' : chosenNames}` : ''
-    addItem({
-      productId: `sub-${cat.id}-${duration}m-${period}w-${gramsOpt}-${grind}`,
-      name: `${cat.title} — ${cat.name} · ${durLabel} · ${perLabel} · ${gramsInfo.label} · ${grind}${shortCoffees} · otomatik ${totalShipments} teslimat`,
-      handle: 'subscription',
-      price: totalPrice,
-      quantity: 1,
-      size: gramsInfo.label,
-    })
+    try {
+      const grindMap: Record<string, string> = {
+        Türk: 'TURKISH',
+        Espresso: 'ESPRESSO',
+        Filtre: 'MEDIUM',
+        'Moka Pot': 'MEDIUM_FINE',
+        'French Press': 'COARSE',
+        Chemex: 'MEDIUM',
+        AeroPress: 'MEDIUM_FINE',
+      }
+      const grindPreference = grindMap[grind] || 'MEDIUM'
 
-    toast.success('Abonelik sepete eklendi!', { duration: 2500 })
-    setTimeout(() => {
+      const res = await fetch(`${API_URL}/subscriptions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          planId: plan.id,
+          grindPreference,
+          paymentMethod: 'CREDIT_CARD',
+          // Konfigüratör metadata (backend isterse saklar)
+          config: {
+            category: cat.id,
+            durationMonths: duration,
+            periodWeeks: period,
+            gramsOption: gramsOpt,
+            selectedCoffees,
+            totalPrice,
+          },
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.message || data?.error || 'Abonelik oluşturulamadı')
+      }
+
+      // PayTR iframe'e yönlendir
+      const checkout = data?.data?.checkout || data?.checkout
+      const iframeToken = checkout?.iframeToken || checkout?.token
+      const checkoutUrl = checkout?.url || (iframeToken ? `https://www.paytr.com/odeme/guvenli/${iframeToken}` : null)
+
+      if (checkoutUrl) {
+        toast.success('Ödeme sayfasına yönlendiriliyorsunuz...', { duration: 2000 })
+        setTimeout(() => {
+          window.location.href = checkoutUrl
+        }, 800)
+      } else {
+        // Checkout URL yoksa hesap sayfasına yönlendir (backend farklı akış seçmiş olabilir)
+        toast.success('Aboneliğiniz oluşturuldu')
+        setTimeout(() => router.push('/account/subscriptions'), 800)
+      }
+    } catch (err: any) {
+      toast.error(err?.message || 'Bir hata oluştu')
       setAdding(false)
-      setSelectedCategory(null)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 700)
+    }
   }
 
   /* ---------------- Render ---------------- */
@@ -480,14 +536,30 @@ export default function SubscriptionPage() {
             </div>
 
             {/* CTA */}
+            <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-200 p-4 dark:bg-amber-900/20 dark:border-amber-700/40">
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40">
+                  ↻
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Otomatik Abonelik</p>
+                  <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
+                    İlk ödeme alındıktan sonra her {period === 4 ? 'ay' : `${period} haftada bir`} kartınızdan{' '}
+                    <strong>{formatPrice(pricePerShipment)}</strong> otomatik çekilir ve taze kahveniz kargolanır.
+                    Toplam {duration * periodsPerMonth} teslimat. Dilediğinizde iptal edebilirsiniz.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <button
-              onClick={addToCart}
+              onClick={startSubscription}
               disabled={adding}
-              className={`mt-10 w-full rounded-2xl py-4 text-sm font-semibold uppercase tracking-widest text-white shadow-md transition hover:shadow-xl ${
-                adding ? 'bg-green-600' : 'bg-neutral-900 hover:bg-primary-700 dark:bg-white dark:text-neutral-900'
+              className={`mt-6 w-full rounded-2xl py-4 text-sm font-semibold uppercase tracking-widest text-white shadow-md transition hover:shadow-xl ${
+                adding ? 'bg-green-600' : 'bg-primary-700 hover:bg-primary-800'
               }`}
             >
-              {adding ? '✓ Sepete Eklendi' : 'Sepete Ekle'}
+              {adding ? 'Yönlendiriliyor...' : 'Abone Ol · Ödemeye Geç'}
             </button>
 
             <button
