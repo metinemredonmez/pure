@@ -470,39 +470,27 @@ const PaymentMethod = ({
               </RadioField>
             </RadioGroup>
 
-            <div className={clsx('mt-4 space-y-4 border-t pt-4', methodActive !== 'Credit-Card' && 'hidden')}>
-              <div className="rounded-lg bg-amber-50 p-3 dark:bg-amber-900/20">
-                <div className="flex items-center gap-2 text-xs text-amber-800 dark:text-amber-300">
-                  <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <div className={clsx('mt-4 border-t pt-4', methodActive !== 'Credit-Card' && 'hidden')}>
+              <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
+                <div className="flex items-start gap-3">
+                  <svg className="h-5 w-5 shrink-0 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
-                  <span>256-bit SSL ile güvenli ödeme — PayTR altyapısı</span>
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">Güvenli Ödeme — PayTR</p>
+                    <p className="mt-1 text-xs text-blue-800 dark:text-blue-300">
+                      "Siparişi Onayla"ya tıkladığınızda, kart bilgilerinizi <strong>PayTR</strong>'nin güvenli 256-bit SSL ödeme sayfasında gireceksiniz. Kart bilgileriniz sitemizde saklanmaz.
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <div className="flex h-7 w-11 items-center justify-center rounded border bg-white text-[9px] font-bold text-blue-700">VISA</div>
+                      <div className="flex h-7 w-11 items-center justify-center rounded border bg-white"><div className="flex -space-x-1"><div className="h-4 w-4 rounded-full bg-red-500 opacity-80"></div><div className="h-4 w-4 rounded-full bg-yellow-500 opacity-80"></div></div></div>
+                      <div className="flex h-7 w-11 items-center justify-center rounded border bg-white text-[8px] font-bold text-blue-900">TROY</div>
+                      <div className="flex h-7 items-center rounded border bg-white px-2 text-[9px] font-semibold text-green-700">3D SECURE</div>
+                      <div className="flex h-7 items-center rounded border bg-white px-2 text-[9px] font-semibold text-neutral-600">TAKSİT</div>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <Field className="max-w-lg">
-                <Label>Kart Numarası</Label>
-                <Input autoComplete="cc-number" name="card-number" placeholder="0000 0000 0000 0000" />
-              </Field>
-              <Field className="max-w-lg">
-                <Label>Kart Üzerindeki İsim</Label>
-                <Input autoComplete="cc-name" name="name-on-card" placeholder="AD SOYAD" />
-              </Field>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Field className="flex-2/3">
-                  <Label>Son Kullanma Tarihi</Label>
-                  <Input autoComplete="cc-exp" placeholder="AA/YY" name="expiration-date" />
-                </Field>
-                <Field className="flex-1/3">
-                  <Label>CVC</Label>
-                  <Input autoComplete="cc-csc" placeholder="•••" name="cvc" type="password" />
-                </Field>
-              </div>
-              <Field>
-                <CheckboxField>
-                  <Checkbox name="save-card" />
-                  <Label className="text-sm">Bu kartı sonraki alışverişlerim için kaydet</Label>
-                </CheckboxField>
-              </Field>
             </div>
           </div>
 
