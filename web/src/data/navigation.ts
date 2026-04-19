@@ -26,7 +26,6 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
     { id: '5', href: '/ekipmanlar', name: 'Ekipmanlar' },
     { id: '6', href: '/franchise', name: 'Franchise' },
     { id: '2', href: '/b2b', name: 'Kurumsal' },
-    { id: '8', href: '/blog', name: 'Blog' },
     { id: '7', href: '/contact', name: 'İletişim' },
   ]
 }
