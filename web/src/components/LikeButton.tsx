@@ -71,6 +71,12 @@ const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId 
         toast.error(err?.message || 'İşlem başarısız', { duration: 2500 })
       } else {
         toast.success(nextLiked ? 'Favorilere eklendi ♥' : 'Favorilerden kaldırıldı', { duration: 2000 })
+        // Notify wishlist page (or anyone listening) to update its list
+        window.dispatchEvent(
+          new CustomEvent('wishlist:changed', {
+            detail: { productId, liked: nextLiked },
+          })
+        )
       }
     } catch {
       setIsLiked(!nextLiked) // revert

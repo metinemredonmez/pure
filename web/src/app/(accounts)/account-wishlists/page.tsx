@@ -20,23 +20,41 @@ export default function WishlistsPage() {
       return
     }
 
-    fetch(`${API_URL}/users/me/wishlist`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
-      .then((res) => {
-        // Backend returns { items: [...] } or { data: { items: [...] } }
-        const payload = res?.data || res || {}
-        const items = payload.items || payload.data || (Array.isArray(payload) ? payload : [])
-        if (Array.isArray(items) && items.length) {
-          const adapted = items
-            .filter((w: any) => w.product || w)
-            .map((w: any, i: number) => adaptProduct(w.product || w, i))
-          setProducts(adapted)
-        }
-        setLoading(false)
+    const loadWishlist = () => {
+      fetch(`${API_URL}/users/me/wishlist`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(() => setLoading(false))
+        .then((r) => r.json())
+        .then((res) => {
+          // Backend returns { items: [...] } or { data: { items: [...] } }
+          const payload = res?.data || res || {}
+          const items = payload.items || payload.data || (Array.isArray(payload) ? payload : [])
+          if (Array.isArray(items)) {
+            const adapted = items
+              .filter((w: any) => w.product || w)
+              .map((w: any, i: number) => adaptProduct(w.product || w, i))
+            setProducts(adapted)
+          }
+          setLoading(false)
+        })
+        .catch(() => setLoading(false))
+    }
+
+    loadWishlist()
+
+    // Listen for wishlist changes from LikeButton — remove item instantly on unlike
+    const handleChange = (e: Event) => {
+      const { productId, liked } = (e as CustomEvent).detail || {}
+      if (liked === false && productId) {
+        // Optimistic remove from list — no re-fetch needed
+        setProducts((prev) => prev.filter((p) => p.id !== productId))
+      } else {
+        // Added — re-fetch to pull fresh data
+        loadWishlist()
+      }
+    }
+    window.addEventListener('wishlist:changed', handleChange)
+    return () => window.removeEventListener('wishlist:changed', handleChange)
   }, [])
 
   if (loading) {
