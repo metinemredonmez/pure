@@ -223,20 +223,19 @@ export default function ChatbotWidget() {
             )}
           </div>
 
-          {/* Suggestions (only on first open) */}
-          {messages.length <= 1 && (
-            <div className="flex flex-wrap gap-1.5 border-t border-neutral-100 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
-              {SUGGESTIONS.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => send(s.replace(/^[^\s]+\s/, ''))}
-                  className="rounded-full border border-neutral-200 px-3 py-1 text-xs text-neutral-700 hover:border-primary-400 hover:bg-primary-50 dark:border-neutral-700 dark:text-neutral-300"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Quick suggestions — always visible so user can keep asking */}
+          <div className="hidden-scrollbar flex gap-1.5 overflow-x-auto border-t border-neutral-100 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
+            {SUGGESTIONS.map((s) => (
+              <button
+                key={s}
+                onClick={() => send(s.replace(/^[^\s]+\s/, ''))}
+                disabled={sending}
+                className="whitespace-nowrap rounded-full border border-neutral-200 px-3 py-1 text-xs text-neutral-700 transition hover:border-primary-400 hover:bg-primary-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
 
           {/* Input */}
           <form
