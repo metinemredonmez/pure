@@ -60,12 +60,18 @@ const PERIODS = [
   { weeks: 4, label: 'Ayda 1' },
 ]
 
-const GRAMS = [
+const DEFAULT_GRAMS = [
   { id: '1x250', label: '1 x 250 g', bags: 1, grams: 250 },
   { id: '2x250', label: '2 x 250 g', bags: 2, grams: 500 },
   { id: '3x250', label: '3 x 250 g', bags: 3, grams: 750 },
   { id: '1x1000', label: '1 x 1 kg', bags: 1, grams: 1000 },
 ]
+
+const DEFAULT_BASE_PRICES: Record<string, number> = {
+  'turk-kahvesi': 180,
+  espresso: 180,
+  'filtre-kahve': 200,
+}
 
 const GRINDS_BY_CAT: Record<string, string[]> = {
   'turk-kahvesi': ['Türk'],
@@ -109,6 +115,10 @@ export default function SubscriptionPage() {
   const [plans, setPlans] = useState<Plan[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [adding, setAdding] = useState(false)
+
+  // Admin-configurable
+  const [gramsList, setGramsList] = useState(DEFAULT_GRAMS)
+  const [basePrices, setBasePrices] = useState<Record<string, number>>(DEFAULT_BASE_PRICES)
 
   // Per-category configurator state (map id → state)
   const [duration, setDuration] = useState<number>(3)
