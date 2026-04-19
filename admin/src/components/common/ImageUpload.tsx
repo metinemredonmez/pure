@@ -6,6 +6,18 @@ import { CloudUploadOutlined, DeleteOutlined, AddPhotoAlternateOutlined } from '
 import { olentiaColors } from '@/lib/theme';
 import { api } from '@/lib/api';
 
+/** Resolve preview URL for any stored image path (uploads / legacy hero / full URLs) */
+function resolveImagePreviewUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
+  if (url.startsWith('/uploads/')) {
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
+    return apiBase.replace('/api', '') + url;
+  }
+  const webBase = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pureolentia.com';
+  return url.startsWith('/') ? webBase + url : url;
+}
+
 interface ImageUploadProps {
   value?: string | string[];
   onChange: (urls: string | string[]) => void;
@@ -92,7 +104,7 @@ export default function ImageUpload({ value, onChange, multiple = false, maxFile
         <Stack direction="row" spacing={1} sx={{ mb: 1.5, flexWrap: 'wrap' }} useFlexGap>
           {images.map((url, i) => (
             <Box key={i} sx={{ position: 'relative', width: 80, height: 80 }}>
-              <Avatar src={url} variant="rounded" sx={{ width: 80, height: 80, border: '1px solid rgba(255,255,255,0.1)' }} />
+              <Avatar src={resolveImagePreviewUrl(url)} variant="rounded" sx={{ width: 80, height: 80, border: '1px solid rgba(255,255,255,0.1)' }} />
               <IconButton
                 size="small"
                 onClick={() => handleRemove(i)}

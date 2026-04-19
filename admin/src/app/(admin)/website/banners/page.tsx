@@ -35,6 +35,24 @@ function formatDate(date: string) {
   return new Date(date).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+/**
+ * Resolve image URL for preview. Handles:
+ * - Full URL (http/https) → use as-is
+ * - /uploads/... → backend API domain (where uploads are served)
+ * - /hero/, /images/, or other relative paths → public web domain
+ */
+function resolveImagePreviewUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (url.startsWith('/uploads/')) {
+    const api = process.env.NEXT_PUBLIC_API_URL || '';
+    return api.replace('/api', '') + url;
+  }
+  // Legacy paths (/hero/...) were stored relative to the public website
+  const web = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pureolentia.com';
+  return url.startsWith('/') ? web + url : url;
+}
+
 const emptyForm = {
   title: '', subtitle: '', image: '', mobileImage: '', ctaText: '', ctaUrl: '',
   sortOrder: 0, isActive: true, startDate: '', endDate: '',
@@ -154,7 +172,7 @@ export default function BannersPage() {
                     </TableCell>
                     <TableCell>
                       <Box
-                        component="img" src={banner.image} alt={banner.title}
+                        component="img" src={resolveImagePreviewUrl(banner.image)} alt={banner.title}
                         sx={{ width: 80, height: 40, objectFit: 'cover', borderRadius: 1 }}
                         onError={(e: any) => { e.target.style.display = 'none'; }}
                       />
@@ -229,7 +247,7 @@ export default function BannersPage() {
               </Typography>
               {form.image && (
                 <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                  <img src={form.image.startsWith('/') ? (process.env.NEXT_PUBLIC_API_URL || '').replace('/api','') + form.image : form.image}
+                  <img src={resolveImagePreviewUrl(form.image)}
                     alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <IconButton size="small" sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
                     onClick={() => setForm({ ...form, image: '' })}>
@@ -252,7 +270,7 @@ export default function BannersPage() {
               </Typography>
               {form.mobileImage && (
                 <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
-                  <img src={form.mobileImage.startsWith('/') ? (process.env.NEXT_PUBLIC_API_URL || '').replace('/api','') + form.mobileImage : form.mobileImage}
+                  <img src={resolveImagePreviewUrl(form.mobileImage)}
                     alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   <IconButton size="small" sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
                     onClick={() => setForm({ ...form, mobileImage: '' })}>
