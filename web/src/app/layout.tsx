@@ -1,4 +1,5 @@
 import Aside from '@/components/aside'
+import ChatbotWidget from '@/components/ChatbotWidget'
 import { CartProvider } from '@/contexts/CartContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Aside.Provider>
             {children}
             <GlobalClient />
+            <ChatbotWidget />
           </Aside.Provider>
         </CartProvider>
       </body>

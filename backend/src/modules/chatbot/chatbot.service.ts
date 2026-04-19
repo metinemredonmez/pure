@@ -92,63 +92,122 @@ export class ChatbotService {
     response: string;
   } {
     const lower = content.toLowerCase();
+    const has = (...keywords: string[]) =>
+      keywords.some((k) => lower.includes(k));
 
-    if (
-      lower.includes('sipariş') ||
-      lower.includes('kargo') ||
-      lower.includes('order')
-    ) {
+    // Selamlaşma
+    if (has('merhaba', 'selam', 'iyi günler', 'günaydın', 'hello', 'hi')) {
+      return {
+        intent: 'greeting',
+        response:
+          'Merhaba! ☕ Pure Olentia asistanıyım. Size nasıl yardımcı olabilirim?\n\n• Kahve önerisi\n• Sipariş/kargo durumu\n• Abonelik planları\n• Kurumsal çözümler\n• Franchise bilgisi',
+      };
+    }
+
+    // Sipariş / Kargo
+    if (has('sipariş', 'kargo', 'order', 'teslimat', 'nezaman', 'ne zaman gelir')) {
       return {
         intent: 'order_status',
         response:
-          'Sipariş durumunuzu kontrol etmek için hesabınıza giriş yapın ve "Siparişlerim" sayfasını ziyaret edin.',
+          '📦 Siparişleriniz taze kavrulmuş olarak gönderilir, 1-3 iş günü içinde kargoya verilir.\n\n• Kargo firması: Yurtiçi / Aras\n• ₺300 üzeri siparişlerde ÜCRETSİZ kargo\n• Takip için: /siparis-takibi\n• Hesabınızdan da kontrol edebilirsiniz.',
       };
     }
 
-    if (lower.includes('abonelik') || lower.includes('subscription')) {
+    // Abonelik
+    if (has('abonelik', 'subscription', 'üyelik', 'düzenli')) {
       return {
         intent: 'subscription',
         response:
-          'Abonelik planlarımızı /subscription sayfasında görebilirsiniz. Starter (500g), Coffee Lover (1kg) ve Office Mini (3kg) seçeneklerimiz var.',
+          '☕ Kahve Aboneliği — her ay taze kavrulmuş kahve kapınızda!\n\n• 3/6/12 ay seçenekleri (%10-20 indirim)\n• Türk Kahvesi, Filtre, Espresso\n• 250g, 500g, 1kg gramaj\n• Öğütme tercihiniz\n\nDetay: /subscription',
       };
     }
 
-    if (lower.includes('iade') || lower.includes('return')) {
+    // İade
+    if (has('iade', 'return', 'geri', 'değişim', 'değiştir')) {
       return {
         intent: 'return',
         response:
-          'İade işlemi için sipariş detay sayfasından iade talebi oluşturabilirsiniz. 14 gün içinde iade kabul edilmektedir.',
+          '↩️ İade politikamız:\n\n• Açılmamış ürünlerde 14 gün içinde iade\n• Kavrulmuş kahveler hijyen sebebiyle açılmışsa iade edilemez\n• Hasar/eksik ürün durumunda ücretsiz değişim\n\nDetay: /iade-degisim',
       };
     }
 
-    if (
-      lower.includes('kahve') ||
-      lower.includes('öneri') ||
-      lower.includes('recommend')
-    ) {
+    // Kahve önerisi
+    if (has('öneri', 'tavsiye', 'hangi', 'recommend', 'önerir')) {
       return {
         intent: 'recommend',
         response:
-          'Size özel kahve önerisi için "Kahveni Bul" quizimizi deneyin! Damak tadınıza göre en uygun kahveyi bulalım.',
+          '☕ Size hangi kahve uygun, damak tadınıza bakalım:\n\n• Yumuşak/tatlı seviyorsanız → **Brezilya Santos** (fındıksı, çikolata)\n• Meyvemsi/canlı → **Ethiopia Yirgacheffe** (çiçeksi, limon)\n• Dengeli → **Colombia Supremo** (karamel, ceviz)\n• Koyu/yoğun → **Kenya AA** (karadut, şarap)\n\nTümü: /collections/all',
       };
     }
 
-    if (
-      lower.includes('b2b') ||
-      lower.includes('kurumsal') ||
-      lower.includes('ofis')
-    ) {
+    // Demleme
+    if (has('demle', 'brew', 'nasıl yapılır', 'v60', 'french press', 'espresso')) {
+      return {
+        intent: 'brewing',
+        response:
+          '☕ Demleme rehberimiz:\n\n**Temel Oran:** 1:16 (1g kahve : 16ml su)\n**Su Sıcaklığı:** 92-96°C\n**Öğütme:** Filtre için orta-ince, Espresso için ince\n\nTüm tarifler: /demleme-rehberi',
+      };
+    }
+
+    // B2B / Kurumsal
+    if (has('b2b', 'kurumsal', 'ofis', 'şirket', 'toplu', 'firma')) {
       return {
         intent: 'b2b',
         response:
-          'Kurumsal çözümlerimiz için /b2b sayfamızı ziyaret edin veya formu doldurun, ekibimiz sizinle iletişime geçecektir.',
+          '🏢 Kurumsal çözümlerimiz:\n\n• Ofisler, restoranlar, oteller için özel fiyat\n• Aylık 10kg+ siparişlerde %15-25 indirim\n• Fatura + düzenli teslimat\n• Barista eğitimi\n\nTeklif al: /b2b',
       };
     }
 
+    // Franchise
+    if (has('franchise', 'bayilik', 'mağaza', 'iş ortağı')) {
+      return {
+        intent: 'franchise',
+        response:
+          '🚀 Pure Olentia Franchise:\n\n• Anahtar teslim konsept\n• Barista eğitimi ve sürekli destek\n• Yatırım: ₺500K+\n• 3-6 ay açılış süreci\n\nBaşvuru: /franchise',
+      };
+    }
+
+    // Ödeme
+    if (has('ödeme', 'payment', 'kart', 'taksit', 'havale')) {
+      return {
+        intent: 'payment',
+        response:
+          '💳 Ödeme seçenekleri:\n\n• Kredi/banka kartı (PayTR altyapısı — 256-bit SSL)\n• 2-12 ay taksit imkanı\n• Havale/EFT\n• 3D Secure güvenlik\n\nBilgi: /odeme-teslimat',
+      };
+    }
+
+    // Menşei / Origin
+    if (has('menşe', 'origin', 'nereden', 'ülke', 'farm')) {
+      return {
+        intent: 'origin',
+        response:
+          '🌍 Kahvelerimizin menşei:\n\n• **Etiyopya** — Yirgacheffe, Sidamo\n• **Kolombiya** — Huila, Supremo\n• **Brezilya** — Cerrado, Santos\n• **Kenya** — AA Nyeri\n• **Guatemala** — Antigua\n\nTümü izlenebilir, specialty grade (80+).',
+      };
+    }
+
+    // İletişim
+    if (has('iletişim', 'telefon', 'contact', 'ulaş', 'çağrı')) {
+      return {
+        intent: 'contact',
+        response:
+          '📞 Bize ulaşın:\n\n• E-posta: info@pureolentia.com\n• Telefon: 0552 462 29 54\n• Form: /contact\n• Adres: Maltepe, İstanbul\n\nÇalışma saatleri: 09:00-18:00 (Hafta içi)',
+      };
+    }
+
+    // SSS
+    if (has('sss', 'faq', 'soru', 'yardım', 'help')) {
+      return {
+        intent: 'faq',
+        response:
+          '❓ Sıkça sorulan sorular için: /sss\n\nVeya daha spesifik bir konu sorun:\n• Sipariş takibi\n• Abonelik\n• İade/değişim\n• Kahve önerisi\n• Ödeme',
+      };
+    }
+
+    // Default
     return {
       intent: 'general',
       response:
-        "Merhaba! Olentia Pure'a hoş geldiniz. Size nasıl yardımcı olabilirim? Sipariş, abonelik, iade veya kahve önerisi konularında yardımcı olabilirim.",
+        "☕ Sorunuzu tam anlayamadım. Size şu konularda yardımcı olabilirim:\n\n• Kahve önerisi (damak tadınıza göre)\n• Sipariş/kargo durumu\n• Abonelik planları\n• Kurumsal/Franchise\n• Ödeme ve iade\n• Demleme rehberi\n\nKonu seçin veya sorunuzu yazın, size yönlendireyim.",
     };
   }
 }
