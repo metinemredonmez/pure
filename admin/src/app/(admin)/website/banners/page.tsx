@@ -12,7 +12,7 @@ import {
   ViewCarousel as BannerIcon, Close as CloseIcon,
   DragIndicator as DragIcon,
 } from '@mui/icons-material';
-import { websiteApi } from '@/lib/api';
+import { websiteApi, uploadApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 
@@ -224,12 +224,50 @@ export default function BannersPage() {
                 onChange={(e) => setForm({ ...form, subtitle: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="Gorsel URL" size="small" value={form.image}
-                onChange={(e) => setForm({ ...form, image: e.target.value })} />
+              <Typography variant="caption" color="text.secondary" gutterBottom component="div">
+                Masaustu Gorsel <strong>(1920x800px onerilen, max 10MB)</strong>
+              </Typography>
+              {form.image && (
+                <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                  <img src={form.image.startsWith('/') ? (process.env.NEXT_PUBLIC_API_URL || '').replace('/api','') + form.image : form.image}
+                    alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <IconButton size="small" sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
+                    onClick={() => setForm({ ...form, image: '' })}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
+              <Button variant="outlined" component="label" fullWidth size="small" sx={{ borderStyle: 'dashed' }}>
+                {form.image ? 'Gorseli Degistir' : 'Gorsel Yukle'}
+                <input type="file" hidden accept="image/*" onChange={async (e) => {
+                  const file = e.target.files?.[0]; if (!file) return;
+                  try { const res = await uploadApi.uploadSingle(file); const url = (res?.data || res)?.url; if (url) setForm((p) => ({ ...p, image: url })); } catch (err) { console.error(err); }
+                  e.target.value = '';
+                }} />
+              </Button>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="Mobil Gorsel URL" size="small" value={form.mobileImage}
-                onChange={(e) => setForm({ ...form, mobileImage: e.target.value })} />
+              <Typography variant="caption" color="text.secondary" gutterBottom component="div">
+                Mobil Gorsel <strong>(800x1000px onerilen, opsiyonel)</strong>
+              </Typography>
+              {form.mobileImage && (
+                <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
+                  <img src={form.mobileImage.startsWith('/') ? (process.env.NEXT_PUBLIC_API_URL || '').replace('/api','') + form.mobileImage : form.mobileImage}
+                    alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <IconButton size="small" sx={{ position: 'absolute', top: 4, right: 4, bgcolor: 'error.main', color: 'white', '&:hover': { bgcolor: 'error.dark' } }}
+                    onClick={() => setForm({ ...form, mobileImage: '' })}>
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
+              <Button variant="outlined" component="label" fullWidth size="small" sx={{ borderStyle: 'dashed' }}>
+                {form.mobileImage ? 'Gorseli Degistir' : 'Mobil Gorsel Yukle'}
+                <input type="file" hidden accept="image/*" onChange={async (e) => {
+                  const file = e.target.files?.[0]; if (!file) return;
+                  try { const res = await uploadApi.uploadSingle(file); const url = (res?.data || res)?.url; if (url) setForm((p) => ({ ...p, mobileImage: url })); } catch (err) { console.error(err); }
+                  e.target.value = '';
+                }} />
+              </Button>
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField fullWidth label="CTA Metni" size="small" value={form.ctaText}
