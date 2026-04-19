@@ -99,7 +99,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
             )}
           </Link>
           <ProductStatus status={status} />
-          <LikeButton liked={isLiked} className="absolute end-3 top-3 z-10" />
+          <LikeButton liked={isLiked} productId={data.id} className="absolute end-3 top-3 z-10" />
           {renderGroupButtons()}
         </div>
 

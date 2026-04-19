@@ -1,24 +1,92 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 interface Props {
   className?: string
   liked?: boolean
+  productId?: string
 }
 
-const LikeButton: React.FC<Props> = ({ className = '', liked = false }) => {
+const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId }) => {
   const [isLiked, setIsLiked] = useState(liked)
+  const [loading, setLoading] = useState(false)
 
-  // make random for demo
+  // On mount, check actual wishlist state if we have a token
   useEffect(() => {
-    setIsLiked(Math.random() > 0.5)
-  }, [])
+    if (!productId || typeof window === 'undefined') return
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) return
+
+    fetch(`${API_URL}/users/me/wishlist/${productId}/check`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((r) => r.json())
+      .then((res) => {
+        const inWishlist = res?.data?.inWishlist ?? res?.inWishlist ?? res?.data ?? false
+        if (typeof inWishlist === 'boolean') setIsLiked(inWishlist)
+      })
+      .catch(() => {})
+  }, [productId])
+
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (loading) return
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('pureolentia_token') : null
+    if (!token) {
+      toast.error('Favorilere eklemek için giriş yapın', { duration: 3000 })
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 1000)
+      return
+    }
+
+    if (!productId) {
+      // No product id yet, just toggle locally (home card placeholders etc.)
+      setIsLiked(!isLiked)
+      return
+    }
+
+    setLoading(true)
+    const nextLiked = !isLiked
+    setIsLiked(nextLiked) // optimistic update
+
+    try {
+      const res = await fetch(`${API_URL}/users/me/wishlist/${productId}`, {
+        method: nextLiked ? 'POST' : 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!res.ok) {
+        setIsLiked(!nextLiked) // revert
+        const err = await res.json().catch(() => null)
+        toast.error(err?.message || 'İşlem başarısız', { duration: 2500 })
+      } else {
+        toast.success(nextLiked ? 'Favorilere eklendi ♥' : 'Favorilerden kaldırıldı', { duration: 2000 })
+      }
+    } catch {
+      setIsLiked(!nextLiked) // revert
+      toast.error('Bağlantı hatası', { duration: 2500 })
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <button
-      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
-      onClick={() => setIsLiked(!isLiked)}
+      type="button"
+      aria-label={isLiked ? 'Favorilerden kaldır' : 'Favorilere ekle'}
+      className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg disabled:opacity-60 dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
+      onClick={handleClick}
+      disabled={loading}
     >
       <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
         <path

@@ -20,16 +20,18 @@ export default function WishlistsPage() {
       return
     }
 
-    fetch(`${API_URL}/wishlists`, {
+    fetch(`${API_URL}/users/me/wishlist`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then((res) => {
-        const data = res?.data || res || []
-        if (Array.isArray(data) && data.length) {
-          const adapted = data
-            .filter((w: any) => w.product)
-            .map((w: any, i: number) => adaptProduct(w.product, i))
+        // Backend returns { items: [...] } or { data: { items: [...] } }
+        const payload = res?.data || res || {}
+        const items = payload.items || payload.data || (Array.isArray(payload) ? payload : [])
+        if (Array.isArray(items) && items.length) {
+          const adapted = items
+            .filter((w: any) => w.product || w)
+            .map((w: any, i: number) => adaptProduct(w.product || w, i))
           setProducts(adapted)
         }
         setLoading(false)
