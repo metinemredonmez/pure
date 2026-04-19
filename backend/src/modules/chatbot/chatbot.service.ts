@@ -1,9 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+
+const SYSTEM_PROMPT = `Sen Pure Olentia'nın (pureolentia.com) resmi yapay zeka asistanısın. Pure Olentia Türkiye'de specialty (özel) kahve satan premium bir markadır.
+
+KİMLİK & STİL:
+- İsmin "Pure Olentia Asistan"
+- Sıcak, samimi, kısa ve profesyonel konuş
+- Türkçe cevap ver (müşteri İngilizce yazarsa İngilizce)
+- Emoji kullanabilirsin ama az (☕ 📦 🎁 ↩️ 🏢)
+- Kahve tutkunu gibi davran, bilgili ol
+- Emin olmadığın bir şeyi uydurma, "İletişim sayfamızdan bize ulaşın" de
+
+MARKA BİLGİSİ:
+- Tarladan fincana izlenebilir specialty kahve
+- Türkiye'nin premium kahve markası
+- Maltepe / İstanbul merkezli
+- E-posta: info@pureolentia.com
+- Telefon: 0552 462 29 54
+
+ÜRÜNLER (backend'den gelir — güncel fiyat için siteyi yönlendir):
+- Türk Kahvesi (100gr, 200gr, 3'lü set, 12'li kutu)
+- Filtre kahveler: Ethiopia Yirgacheffe, Colombia Supremo, Brazil Santos, Kenya AA, Guatemala Antigua
+- Espresso blendleri: Olentia House Blend
+- Cold Brew Konsantre
+- Ekipmanlar: demleme aletleri
+
+SAYFA YÖNLENDİRMELERİ:
+- Tüm ürünler: /collections/all
+- Türk kahveleri: /collections/turk-kahvesi
+- Filtre: /collections/filtre-kahve
+- Espresso: /collections/espresso
+- Abonelik: /subscription (3/6/12 ay, %10-20 indirim)
+- B2B/Kurumsal: /b2b
+- Franchise: /franchise (₺500K+ yatırım)
+- Kurumsal hediye: /kurumsal-hediye
+- Demleme rehberi: /demleme-rehberi
+- İade/değişim: /iade-degisim
+- SSS: /sss
+- İletişim: /contact
+- Sipariş takibi: /siparis-takibi
+
+KARGO & ÖDEME:
+- ₺300 üzeri ücretsiz kargo
+- 1-3 iş günü teslimat
+- Yurtiçi/Aras kargo
+- PayTR güvenli ödeme (256-bit SSL)
+- 3D Secure + taksit imkanı (2-12 ay)
+
+İADE:
+- 14 gün içinde açılmamış ürün iade edilebilir
+- Kavrulmuş ve açılmış kahve iade edilemez (hijyen)
+
+DEMLEME TAVSİYELERİ:
+- Temel oran: 1:16 (1g kahve / 16ml su)
+- Su sıcaklığı: 92-96°C
+- Filtre için orta-ince öğütme, espresso için ince
+
+KURAL: Cevapların kısa ve madde madde olmalı. Kullanıcıyı ilgili sayfaya yönlendir. Uzun paragraflardan kaçın.`;
 
 @Injectable()
 export class ChatbotService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(ChatbotService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private config: ConfigService,
+  ) {}
 
   async sendMessage(sessionId: string, userId: string | null, content: string) {
     // Get or create session
@@ -22,8 +85,18 @@ export class ChatbotService {
       data: { sessionId: session.id, role: 'user', content },
     });
 
-    // Detect intent and generate response (Phase 1: rule-based)
-    const { intent, response } = this.processMessage(content);
+    // Try OpenAI first; fall back to rule-based if no API key or error
+    let response: string;
+    let intent = 'ai';
+
+    const openaiResult = await this.askOpenAI(session.id, content);
+    if (openaiResult) {
+      response = openaiResult;
+    } else {
+      const ruleResult = this.processMessage(content);
+      response = ruleResult.response;
+      intent = ruleResult.intent;
+    }
 
     // Save assistant response
     const message = await this.prisma.chatbotMessage.create({
@@ -36,6 +109,67 @@ export class ChatbotService {
     });
 
     return { intent, response, messageId: message.id };
+  }
+
+  /**
+   * Ask OpenAI with full conversation context.
+   * Returns null on any error or if API key is missing.
+   */
+  private async askOpenAI(internalSessionId: string, userMessage: string): Promise<string | null> {
+    const apiKey = this.config.get<string>('OPENAI_API_KEY');
+    if (!apiKey) {
+      this.logger.debug('OPENAI_API_KEY not set, using rule-based fallback');
+      return null;
+    }
+
+    const model = this.config.get<string>('OPENAI_CHATBOT_MODEL') || 'gpt-4o-mini';
+
+    try {
+      // Fetch last 10 messages for context
+      const history = await this.prisma.chatbotMessage.findMany({
+        where: { sessionId: internalSessionId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      });
+
+      // Reverse to chronological order, exclude the just-saved user message (already included as last)
+      const historyMessages = history.reverse().map((m) => ({
+        role: m.role === 'assistant' ? 'assistant' : 'user',
+        content: m.content,
+      }));
+
+      const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...historyMessages,
+      ];
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          temperature: 0.7,
+          max_tokens: 400,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.text().catch(() => '');
+        this.logger.error(`OpenAI API error ${response.status}: ${err.slice(0, 200)}`);
+        return null;
+      }
+
+      const json = (await response.json()) as any;
+      const text = json?.choices?.[0]?.message?.content?.trim();
+      return text || null;
+    } catch (e: any) {
+      this.logger.error(`OpenAI query failed: ${e.message}`);
+      return null;
+    }
   }
 
   async getSessionHistory(sessionId: string) {
