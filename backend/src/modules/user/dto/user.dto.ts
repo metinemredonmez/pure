@@ -227,6 +227,12 @@ export class UpdateProfileDto {
   @MaxLength(20)
   phone?: string;
 
+  @ApiPropertyOptional({ example: 'Feyzullah Mah. Ulusu Apt. No:9-4 Maltepe' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  address?: string;
+
   @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
   @IsOptional()
   @IsString()
