@@ -143,7 +143,39 @@ export default function SubscriptionPage() {
         setPlans(Array.isArray(data) ? data.filter((p: any) => p.isActive !== false) : [])
       })
       .catch(() => {})
+
+    // Admin-configurable gramaj + base prices
+    fetch(`${API_URL}/public/site-settings`)
+      .then((r) => r.json())
+      .then((res) => {
+        const s = res?.data || res || {}
+        if (Array.isArray(s.subscriptionGrams) && s.subscriptionGrams.length) {
+          const normalized = s.subscriptionGrams
+            .map((g: any) => {
+              const grams = Number(g.grams)
+              const bags = Number(g.bags) || 1
+              if (!grams || grams <= 0) return null
+              const label =
+                g.label || (grams >= 1000 ? `${bags} x ${grams / 1000} kg` : `${bags} x ${grams} g`)
+              const id = g.id || `${bags}x${grams}`
+              return { id, label, grams, bags }
+            })
+            .filter(Boolean)
+          if (normalized.length) setGramsList(normalized)
+        }
+        if (s.subscriptionBasePrices && typeof s.subscriptionBasePrices === 'object') {
+          setBasePrices({ ...DEFAULT_BASE_PRICES, ...s.subscriptionBasePrices })
+        }
+      })
+      .catch(() => {})
   }, [])
+
+  // Reset gramsOpt when gramsList changes (admin values loaded)
+  useEffect(() => {
+    if (gramsList.length && !gramsList.find((g) => g.id === gramsOpt)) {
+      setGramsOpt(gramsList[0].id)
+    }
+  }, [gramsList, gramsOpt])
 
   const scrollToPlans = () => {
     document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -160,23 +192,28 @@ export default function SubscriptionPage() {
     })
   }, [cat, products])
 
-  // Base monthly price: prefer matching plan, else derive from products
+  // Base price per 250g bag — admin'de ayarlanabilir (Site Ayarları → Abonelik)
   const basePricePerBag = useMemo(() => {
     if (!cat) return 0
-    // Try matching plan by name
+    // 1) Admin setting
+    const admin = basePrices[cat.id]
+    if (admin && admin > 0) return admin
+    // 2) Matching plan by category name
     const match = plans.find((p) => p.name.toLowerCase().includes(cat.name.toLowerCase()))
     if (match) return Number(match.priceMonthly) || 0
+    // 3) Min product price in category
     if (categoryProducts.length > 0) {
       const prices = categoryProducts.map((p) => Number(p.price)).filter((n) => n > 0)
       if (prices.length) return Math.min(...prices)
     }
-    return plans.length ? Number(plans[0].priceMonthly) : 250
-  }, [cat, plans, categoryProducts])
+    // 4) Last resort
+    return DEFAULT_BASE_PRICES[cat.id] || 200
+  }, [cat, plans, categoryProducts, basePrices])
 
   // Periods per month
   const periodsPerMonth = useMemo(() => (period === 4 ? 1 : period === 2 ? 2 : 4), [period])
 
-  const gramsInfo = GRAMS.find((g) => g.id === gramsOpt) || GRAMS[0]
+  const gramsInfo = gramsList.find((g) => g.id === gramsOpt) || gramsList[0]
 
   const totalPrice = useMemo(() => {
     // bags per shipment * shipments per month * months * price per bag
@@ -418,7 +455,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setGramsOpt(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {GRAMS.map((g) => (
+                  {gramsList.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.label}
                     </option>

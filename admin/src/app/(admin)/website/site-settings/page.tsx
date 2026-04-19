@@ -12,6 +12,9 @@ import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 
+interface GramOption { id: string; label: string; grams: number; bags: number }
+interface SubscriptionBasePrices { 'turk-kahvesi': number; 'espresso': number; 'filtre-kahve': number }
+
 interface SiteSettingsState {
   siteName: string;
   logo: string;
@@ -31,7 +34,16 @@ interface SiteSettingsState {
   kvkkText: string;
   cookiePolicy: string;
   franchiseBanners: string[];
+  subscriptionGrams: GramOption[];
+  subscriptionBasePrices: SubscriptionBasePrices;
 }
+
+const DEFAULT_GRAMS: GramOption[] = [
+  { id: '1x250', label: '1 x 250 g', grams: 250, bags: 1 },
+  { id: '2x250', label: '2 x 250 g', grams: 500, bags: 2 },
+  { id: '3x250', label: '3 x 250 g', grams: 750, bags: 3 },
+  { id: '1x1000', label: '1 x 1 kg', grams: 1000, bags: 1 },
+];
 
 const defaultSettings: SiteSettingsState = {
   siteName: '', logo: '', favicon: '', footerText: '',
@@ -39,6 +51,8 @@ const defaultSettings: SiteSettingsState = {
   facebook: '', instagram: '', twitter: '', linkedin: '', youtube: '',
   kvkkText: '', cookiePolicy: '',
   franchiseBanners: [],
+  subscriptionGrams: DEFAULT_GRAMS,
+  subscriptionBasePrices: { 'turk-kahvesi': 180, 'espresso': 180, 'filtre-kahve': 200 },
 };
 
 export default function SiteSettingsPage() {
@@ -70,6 +84,12 @@ export default function SiteSettingsPage() {
         kvkkText: data.kvkkText || '',
         cookiePolicy: data.cookiePolicy || '',
         franchiseBanners: Array.isArray(data.franchiseBanners) ? data.franchiseBanners : [],
+        subscriptionGrams: Array.isArray(data.subscriptionGrams) && data.subscriptionGrams.length
+          ? data.subscriptionGrams
+          : DEFAULT_GRAMS,
+        subscriptionBasePrices: data.subscriptionBasePrices && typeof data.subscriptionBasePrices === 'object'
+          ? { ...defaultSettings.subscriptionBasePrices, ...data.subscriptionBasePrices }
+          : defaultSettings.subscriptionBasePrices,
       });
     } catch { /* fallback */ }
     finally { setLoading(false); }
@@ -225,6 +245,116 @@ export default function SiteSettingsPage() {
                 multiple
                 maxFiles={5}
               />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Abonelik Ayarlari */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Abonelik Ayarlari"
+              subheader="Abonelik sayfasinda (/subscription) gosterilen gramaj secenekleri ve kategori bazli 250g basina baslangic fiyatlari. Toplam fiyat: baz_fiyat x paket_sayisi x (gramaj/250) x ayda_teslimat x toplam_ay"
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Typography variant="body2" sx={{ mb: 2, fontWeight: 600 }}>Kategori Baz Fiyatlari (₺ / 250g)</Typography>
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth size="small" type="number" label="Turk Kahvesi"
+                    value={settings.subscriptionBasePrices['turk-kahvesi']}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'turk-kahvesi': Number(e.target.value) || 0 }
+                    })}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth size="small" type="number" label="Espresso"
+                    value={settings.subscriptionBasePrices['espresso']}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'espresso': Number(e.target.value) || 0 }
+                    })}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
+                  <TextField
+                    fullWidth size="small" type="number" label="Filtre Kahve"
+                    value={settings.subscriptionBasePrices['filtre-kahve']}
+                    onChange={(e) => setSettings({
+                      ...settings,
+                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'filtre-kahve': Number(e.target.value) || 0 }
+                    })}
+                  />
+                </Grid>
+              </Grid>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Gramaj Secenekleri</Typography>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    const newOpt: GramOption = { id: `opt-${Date.now()}`, label: 'Yeni Secenek', grams: 250, bags: 1 };
+                    setSettings({ ...settings, subscriptionGrams: [...settings.subscriptionGrams, newOpt] });
+                  }}
+                >
+                  + Ekle
+                </Button>
+              </Box>
+
+              {settings.subscriptionGrams.map((g, idx) => (
+                <Grid container spacing={1} key={g.id || idx} sx={{ mb: 1, alignItems: 'center' }}>
+                  <Grid size={{ xs: 12, sm: 5 }}>
+                    <TextField
+                      fullWidth size="small" label="Etiket (ornek: 2 x 250 g)"
+                      value={g.label}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionGrams];
+                        arr[idx] = { ...arr[idx], label: e.target.value };
+                        setSettings({ ...settings, subscriptionGrams: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <TextField
+                      fullWidth size="small" type="number" label="Gram (tek paket)"
+                      value={g.grams}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionGrams];
+                        arr[idx] = { ...arr[idx], grams: Number(e.target.value) || 0 };
+                        setSettings({ ...settings, subscriptionGrams: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <TextField
+                      fullWidth size="small" type="number" label="Paket"
+                      value={g.bags}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionGrams];
+                        arr[idx] = { ...arr[idx], bags: Number(e.target.value) || 1 };
+                        setSettings({ ...settings, subscriptionGrams: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 2 }}>
+                    <Button
+                      fullWidth color="error" size="small"
+                      onClick={() => {
+                        const arr = settings.subscriptionGrams.filter((_, i) => i !== idx);
+                        setSettings({ ...settings, subscriptionGrams: arr });
+                      }}
+                    >
+                      Sil
+                    </Button>
+                  </Grid>
+                </Grid>
+              ))}
             </CardContent>
           </Card>
         </Grid>
