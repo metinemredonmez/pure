@@ -30,13 +30,15 @@ export default function OrdersPage() {
       return
     }
 
-    fetch(`${API_URL}/orders/my`, {
+    fetch(`${API_URL}/orders`, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((r) => r.json())
       .then((res) => {
-        const data = res?.data?.data || res?.data || res || []
-        if (Array.isArray(data)) setOrders(data)
+        // Paginated response: { data: { data: [...], meta: {...} } }
+        const payload = res?.data || res || {}
+        const items = payload?.data || payload?.items || (Array.isArray(payload) ? payload : [])
+        if (Array.isArray(items)) setOrders(items)
         setLoading(false)
       })
       .catch(() => setLoading(false))
