@@ -256,10 +256,11 @@ export default function SubscriptionPage() {
     const perLabel = PERIODS.find((p) => p.weeks === period)?.label
 
     setAdding(true)
-    const shortCoffees = selectedCoffees.length > 0 ? ` [${chosenNames.length > 60 ? chosenNames.slice(0, 57) + '...' : chosenNames}]` : ''
+    const totalShipments = duration * periodsPerMonth
+    const shortCoffees = selectedCoffees.length > 0 ? ` · ${chosenNames.length > 60 ? chosenNames.slice(0, 57) + '...' : chosenNames}` : ''
     addItem({
       productId: `sub-${cat.id}-${duration}m-${period}w-${gramsOpt}-${grind}`,
-      name: `Abonelik — ${cat.name} (${durLabel}, ${perLabel}, ${gramsInfo.label}, ${grind})${shortCoffees}`,
+      name: `${cat.title} — ${cat.name} · ${durLabel} · ${perLabel} · ${gramsInfo.label} · ${grind}${shortCoffees} · otomatik ${totalShipments} teslimat`,
       handle: 'subscription',
       price: totalPrice,
       quantity: 1,
