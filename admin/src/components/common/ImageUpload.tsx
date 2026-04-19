@@ -41,6 +41,18 @@ export default function ImageUpload({ value, onChange, multiple = false, maxFile
       const maxCount = multiple ? Math.min(files.length, maxFiles - images.length) : 1;
       let urls: string[] = [];
 
+      // Response shape can be double-wrapped: { success, data: { success, data: { url } } }
+      const unwrap = (d: any): any => {
+        let cur = d;
+        // Drill through nested {success, data} wrappers up to 3 levels
+        for (let i = 0; i < 3; i++) {
+          if (cur && typeof cur === 'object' && 'data' in cur && (cur.success !== undefined || !cur.url)) {
+            cur = cur.data;
+          } else break;
+        }
+        return cur;
+      };
+
       if (maxCount === 1) {
         // Single file upload
         const formData = new FormData();
@@ -48,8 +60,8 @@ export default function ImageUpload({ value, onChange, multiple = false, maxFile
         const { data } = await api.post('/upload', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const result = data.data || data;
-        urls = [result.url];
+        const result = unwrap(data);
+        if (result?.url) urls = [result.url];
       } else {
         // Multiple file upload
         const formData = new FormData();
@@ -59,8 +71,8 @@ export default function ImageUpload({ value, onChange, multiple = false, maxFile
         const { data } = await api.post('/upload/multiple', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
-        const result = data.data || data;
-        urls = result.urls || (Array.isArray(result) ? result.map((r: any) => r.url) : []);
+        const result = unwrap(data);
+        urls = result?.urls || (Array.isArray(result) ? result.map((r: any) => r.url).filter(Boolean) : []);
       }
 
       if (multiple) {
