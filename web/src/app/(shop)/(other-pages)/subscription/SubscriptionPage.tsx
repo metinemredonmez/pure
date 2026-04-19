@@ -246,7 +246,7 @@ export default function SubscriptionPage() {
           </p>
           <button
             onClick={scrollToPlans}
-            className="mt-10 inline-flex items-center justify-center rounded-none bg-white px-12 py-4 text-sm font-semibold uppercase tracking-widest text-neutral-900 transition hover:bg-neutral-100"
+            className="mt-10 inline-flex items-center justify-center rounded-full bg-white px-12 py-4 text-sm font-semibold uppercase tracking-widest text-neutral-900 shadow-lg transition hover:bg-neutral-100 hover:shadow-xl"
           >
             Abone Ol
           </button>
@@ -435,7 +435,7 @@ export default function SubscriptionPage() {
             <button
               onClick={addToCart}
               disabled={adding}
-              className={`mt-10 w-full py-4 text-sm font-semibold uppercase tracking-widest text-white transition ${
+              className={`mt-10 w-full rounded-2xl py-4 text-sm font-semibold uppercase tracking-widest text-white shadow-md transition hover:shadow-xl ${
                 adding ? 'bg-green-600' : 'bg-neutral-900 hover:bg-primary-700 dark:bg-white dark:text-neutral-900'
               }`}
             >
