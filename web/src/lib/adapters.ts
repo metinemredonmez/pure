@@ -72,30 +72,37 @@ export function adaptProduct(product: any, index: number = 0) {
     productImages.push(productImages[0])
   }
 
-  // Roast level
-  const roastLevel = product.roastLevel || 'MEDIUM'
-  const kavurmaOptions = [
-    { name: 'Acik Kavurma', swatch: { color: roastColorMap.LIGHT, image: null } },
-    { name: 'Orta Kavurma', swatch: { color: roastColorMap.MEDIUM, image: null } },
-    { name: 'Koyu Kavurma', swatch: { color: roastColorMap.DARK, image: null } },
-  ]
-
-  // Variants → Gramaj options
-  const gramajOptions = product.variants?.length
-    ? product.variants.map((v: any) => ({
-        name: v.weight ? `${v.weight}g` : v.name,
-        swatch: null,
-      }))
-    : [
-        { name: '250g', swatch: null },
-        { name: '500g', swatch: null },
-        { name: '1kg', swatch: null },
+  // Roast level — only show kavurma options if product actually has roastLevel set
+  const roastLevel = product.roastLevel || null
+  const kavurmaOptions = roastLevel
+    ? [
+        { name: 'Acik Kavurma', swatch: { color: roastColorMap.LIGHT, image: null } },
+        { name: 'Orta Kavurma', swatch: { color: roastColorMap.MEDIUM, image: null } },
+        { name: 'Koyu Kavurma', swatch: { color: roastColorMap.DARK, image: null } },
       ]
+    : []
+
+  // Variants → Gramaj options (unique weights, ascending)
+  // Only show gramaj selector if product actually has variants with different weights.
+  // Bundle products (e.g. "12'li Kutu") have no weight variants and shouldn't show selector.
+  const gramajOptions = (() => {
+    const variants = product.variants as any[] | undefined
+    if (!variants?.length) return []
+    const weights = [...new Set(variants.map((v) => v.weight).filter(Boolean))].sort(
+      (a: any, b: any) => Number(a) - Number(b)
+    )
+    if (weights.length === 0) return []
+    if (weights.length === 1 && variants.length === 1) return [] // single variant = no choice
+    return weights.map((w: any) => ({
+      name: Number(w) >= 1000 ? `${Number(w) / 1000}kg` : `${w}g`,
+      swatch: null,
+    }))
+  })()
 
   const roastName =
     roastLevel === 'LIGHT' ? 'Acik Kavurma' :
     roastLevel === 'DARK' ? 'Koyu Kavurma' :
-    'Orta Kavurma'
+    roastLevel ? 'Orta Kavurma' : ''
 
   return {
     id: product.id,
@@ -109,13 +116,15 @@ export function adaptProduct(product: any, index: number = 0) {
     reviewNumber: product.reviewCount || 0,
     rating: product.avgRating || 0,
     status: product.isFeatured ? 'Yeni Mahsul' : product.compareAtPrice ? '%20 Indirim' : '',
+    // Only include option groups that actually have values —
+    // bundle products (e.g. "12'li Kutu") won't show a gramaj selector.
     options: [
-      { name: 'Kavurma', optionValues: kavurmaOptions },
-      { name: 'Gramaj', optionValues: gramajOptions },
+      ...(kavurmaOptions.length ? [{ name: 'Kavurma', optionValues: kavurmaOptions }] : []),
+      ...(gramajOptions.length ? [{ name: 'Gramaj', optionValues: gramajOptions }] : []),
     ],
     selectedOptions: [
-      { name: 'Kavurma', value: roastName },
-      { name: 'Gramaj', value: gramajOptions[0]?.name || '250g' },
+      ...(kavurmaOptions.length ? [{ name: 'Kavurma', value: roastName }] : []),
+      ...(gramajOptions.length ? [{ name: 'Gramaj', value: gramajOptions[0].name }] : []),
     ],
     // Extra coffee fields
     origin: product.origin,
