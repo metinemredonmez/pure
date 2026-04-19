@@ -99,8 +99,10 @@ export default function ChatbotWidget() {
       const json = await res.json().catch(() => null)
 
       const reply =
+        json?.data?.response ||
         json?.data?.reply ||
         json?.data?.message ||
+        json?.response ||
         json?.reply ||
         json?.message ||
         'Üzgünüm, şu anda yanıt veremiyorum. Lütfen iletişim sayfamızdan bize ulaşın.'

@@ -29,7 +29,8 @@
       "Bash(curl -s 'https://api.pureolentia.com/api/products?limit=20')",
       "Bash(python3 -c ':*)",
       "Bash(curl -s 'https://api.pureolentia.com/api/products?slug=brazil-santos')",
-      "Bash(curl -s 'https://api.pureolentia.com/api/products/brazil-santos')"
+      "Bash(curl -s 'https://api.pureolentia.com/api/products/brazil-santos')",
+      "Bash(curl -s -X POST https://api.pureolentia.com/api/chatbot/message -H 'Content-Type: application/json' -H 'x-session-id: test_123' -d '{\"message\":\"merhaba\"}')"
     ]
   }
 }
