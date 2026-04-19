@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import { websiteApi, uploadApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 
 interface SitePage {
   id: string;
@@ -883,8 +884,11 @@ export default function PagesPage() {
                 onChange={(e) => setForm({ ...form, seoTitle: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="SEO Image URL" size="small" value={form.seoImage}
-                onChange={(e) => setForm({ ...form, seoImage: e.target.value })} />
+              <ImageUpload
+                label="SEO Paylasim Gorseli (onerilen: 1200x630px, sosyal medya icin)"
+                value={form.seoImage}
+                onChange={(url) => setForm({ ...form, seoImage: url as string })}
+              />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="SEO Description" size="small" multiline rows={2} value={form.seoDescription}
