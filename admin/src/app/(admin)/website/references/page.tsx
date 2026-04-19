@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 
 interface Reference {
   id: string;
@@ -166,8 +167,11 @@ export default function ReferencesPage() {
                 onChange={(e) => setForm({ ...form, sector: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Logo URL" size="small" value={form.logo}
-                onChange={(e) => setForm({ ...form, logo: e.target.value })} />
+              <ImageUpload
+                label="Firma Logosu (onerilen: 400x200px, seffaf PNG)"
+                value={form.logo}
+                onChange={(url) => setForm({ ...form, logo: url as string })}
+              />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Iletisim Kisisi" size="small" value={form.contactPerson}

@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 
 interface Brand {
   id: string;
@@ -155,8 +156,11 @@ export default function BrandsPage() {
                 onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Logo URL" size="small" value={form.logo}
-                onChange={(e) => setForm({ ...form, logo: e.target.value })} />
+              <ImageUpload
+                label="Marka Logosu (onerilen: 400x200px, seffaf PNG)"
+                value={form.logo}
+                onChange={(url) => setForm({ ...form, logo: url as string })}
+              />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Aciklama" size="small" multiline rows={3} value={form.description}

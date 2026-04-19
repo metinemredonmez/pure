@@ -10,6 +10,7 @@ import {
 } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 
 interface SiteSettingsState {
   siteName: string;
@@ -116,12 +117,18 @@ export default function SiteSettingsPage() {
                     onChange={(e) => setSettings({ ...settings, siteName: e.target.value })} />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
-                  <TextField fullWidth label="Logo URL" size="small" value={settings.logo}
-                    onChange={(e) => setSettings({ ...settings, logo: e.target.value })} />
+                  <ImageUpload
+                    label="Logo (onerilen: 400x120px, seffaf PNG)"
+                    value={settings.logo}
+                    onChange={(url) => setSettings({ ...settings, logo: url as string })}
+                  />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
-                  <TextField fullWidth label="Favicon URL" size="small" value={settings.favicon}
-                    onChange={(e) => setSettings({ ...settings, favicon: e.target.value })} />
+                  <ImageUpload
+                    label="Favicon (onerilen: 64x64px, PNG/ICO)"
+                    value={settings.favicon}
+                    onChange={(url) => setSettings({ ...settings, favicon: url as string })}
+                  />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <TextField fullWidth label="Footer Metni" size="small" value={settings.footerText}

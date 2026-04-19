@@ -13,6 +13,7 @@ import {
 } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 
 interface MachineModule {
   id?: string;
@@ -231,8 +232,13 @@ export default function MachinesPage() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Gorseller (virgullu URL listesi)" size="small" value={form.images}
-                onChange={(e) => setForm({ ...form, images: e.target.value })} />
+              <ImageUpload
+                label="Makine Gorselleri (onerilen: 1200x800px, birden fazla secilebilir)"
+                value={form.images ? String(form.images).split(',').map((s: string) => s.trim()).filter(Boolean) : []}
+                onChange={(urls) => setForm({ ...form, images: Array.isArray(urls) ? urls.join(',') : urls })}
+                multiple
+                maxFiles={8}
+              />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
               <TextField fullWidth label="Kapasite" size="small" value={form.capacity}

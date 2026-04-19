@@ -11,7 +11,7 @@ import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
   Description as PageIcon, Close as CloseIcon,
 } from '@mui/icons-material';
-import { websiteApi } from '@/lib/api';
+import { websiteApi, uploadApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
 
 interface SitePage {
@@ -815,15 +815,62 @@ export default function PagesPage() {
                 helperText="Örnek: hakkimizda, kvkk, iletisim, sss, ekipmanlar" />
             </Grid>
             <Grid size={{ xs: 12 }}>
+              <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Typography variant="body2" fontWeight={600} sx={{ mr: 'auto' }}>
+                  Icerik (HTML)
+                </Typography>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  component="label"
+                  startIcon={<span>📷</span>}
+                  sx={{ borderStyle: 'dashed' }}
+                >
+                  Resim Ekle
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const res = await uploadApi.uploadSingle(file);
+                        const url = (res?.data || res)?.url;
+                        if (url) {
+                          const imgTag = `\n<img src="${url}" alt="${file.name.replace(/\.[^.]+$/, '')}" style="max-width:100%;height:auto;border-radius:8px;margin:1em 0;" />\n`;
+                          setForm((prev) => ({ ...prev, content: prev.content + imgTag }));
+                        }
+                      } catch (err) {
+                        console.error('Upload error:', err);
+                      }
+                      e.target.value = '';
+                    }}
+                  />
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => {
+                    const tag = prompt('Hangi HTML etiketi? (h2, h3, p, ul, li, strong, a)', 'h2');
+                    if (!tag) return;
+                    const text = prompt(`${tag} icerigi:`, '');
+                    if (text !== null) {
+                      setForm((prev) => ({ ...prev, content: prev.content + `\n<${tag}>${text}</${tag}>\n` }));
+                    }
+                  }}
+                >
+                  HTML Ekle
+                </Button>
+              </Box>
               <TextField
                 fullWidth
-                label="İçerik (HTML)"
                 size="small"
                 multiline
                 rows={14}
                 value={form.content}
                 onChange={(e) => setForm({ ...form, content: e.target.value })}
-                helperText="HTML etiketleri kullanabilirsiniz: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <a> gibi. Web sitesinde olduğu gibi render edilir."
+                helperText="HTML etiketleri kullanabilirsiniz. 'Resim Ekle' butonu ile yuklenen gorseller otomatik olarak icerige <img> tagi olarak eklenir."
                 slotProps={{ htmlInput: { style: { fontFamily: 'ui-monospace, Menlo, Monaco, monospace', fontSize: 13 } } }}
               />
             </Grid>
