@@ -30,6 +30,7 @@ interface SiteSettingsState {
   youtube: string;
   kvkkText: string;
   cookiePolicy: string;
+  franchiseBanners: string[];
 }
 
 const defaultSettings: SiteSettingsState = {
@@ -37,6 +38,7 @@ const defaultSettings: SiteSettingsState = {
   phone: '', email: '', address: '', mapLat: '', mapLng: '', workingHours: '',
   facebook: '', instagram: '', twitter: '', linkedin: '', youtube: '',
   kvkkText: '', cookiePolicy: '',
+  franchiseBanners: [],
 };
 
 export default function SiteSettingsPage() {
@@ -67,6 +69,7 @@ export default function SiteSettingsPage() {
         youtube: data.youtube || '',
         kvkkText: data.kvkkText || '',
         cookiePolicy: data.cookiePolicy || '',
+        franchiseBanners: Array.isArray(data.franchiseBanners) ? data.franchiseBanners : [],
       });
     } catch { /* fallback */ }
     finally { setLoading(false); }
@@ -202,6 +205,26 @@ export default function SiteSettingsPage() {
                     onChange={(e) => setSettings({ ...settings, youtube: e.target.value })} />
                 </Grid>
               </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Franchise Banner */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Franchise Sayfasi Banner"
+              subheader="Franchise sayfasindaki 'Pure Olentia Magaza Konsepti' bolumunde gosterilen gorseller. Birden fazla eklerseniz otomatik slideshow olur (5 sn gecis). Onerilen: 1920x820px (21:9 oran)."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <ImageUpload
+                label="Franchise Banner Gorselleri"
+                value={settings.franchiseBanners}
+                onChange={(urls) => setSettings({ ...settings, franchiseBanners: Array.isArray(urls) ? urls : urls ? [urls] : [] })}
+                multiple
+                maxFiles={5}
+              />
             </CardContent>
           </Card>
         </Grid>

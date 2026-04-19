@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import { Metadata } from 'next'
 import FranchiseForm from './FranchiseForm'
+import FranchiseBanner from './FranchiseBanner'
 
 export const metadata: Metadata = {
   title: 'Franchise Başvurusu',
@@ -64,29 +65,13 @@ export default function FranchisePage() {
         </div>
       </div>
 
-      {/* 3-Banner Gallery — görseller admin panelden eklenecek */}
+      {/* Single wide banner — görsel admin panelden değiştirilebilir */}
       <div className="container mt-20">
         <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Pure Olentia Mağaza Konsepti</h2>
         <p className="mx-auto mt-3 max-w-xl text-center text-neutral-500 dark:text-neutral-400">
           Modern ve sıcak atmosferde specialty kahve deneyimi
         </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-3">
-          {[
-            { src: '/hero/turk-kahvesi-100gr.jpg', alt: 'Pure Olentia — Türk Kahvesi' },
-            { src: '/hero/brazil-santos.jpg', alt: 'Pure Olentia — Filtre Kahve' },
-            { src: '/hero/hediye-paketi.jpg', alt: 'Pure Olentia — Hediye Paketleri' },
-          ].map((img, i) => (
-            <div key={i} className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-neutral-100 dark:bg-neutral-800">
-              <Image
-                src={img.src}
-                alt={img.alt}
-                fill
-                sizes="(max-width: 640px) 100vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            </div>
-          ))}
-        </div>
+        <FranchiseBanner />
       </div>
 
       {/* Benefits */}
