@@ -280,7 +280,7 @@ export default function SubscriptionPage() {
             const active = selectedCategory === c.id
             return (
               <div key={c.id} className="group">
-                <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-shadow group-hover:shadow-xl dark:bg-neutral-800">
                   <Image
                     src={c.fallbackImage}
                     alt={c.name}
