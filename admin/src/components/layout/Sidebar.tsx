@@ -66,6 +66,7 @@ const menuItems: MenuItem[] = [
   { title: 'B2B', path: '/b2b', icon: <B2BIcon sx={{ fontSize: 20 }} /> },
   { title: 'Partnerler', path: '/partners', icon: <PartnerIcon sx={{ fontSize: 20 }} /> },
   { title: 'Bildirimler', path: '/notifications', icon: <NotifIcon sx={{ fontSize: 20 }} /> },
+  { title: 'Toplu Mesaj', path: '/broadcasts', icon: <NotifIcon sx={{ fontSize: 20 }} /> },
   {
     title: 'Raporlar', icon: <ReportsIcon sx={{ fontSize: 20 }} />,
     children: [
