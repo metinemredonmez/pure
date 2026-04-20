@@ -11,6 +11,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { OrderService } from './order.service';
 import { PaginationDto } from '../../common/pipes/pagination.pipe';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
@@ -20,6 +21,18 @@ import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
 @Controller()
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
+
+  // ── Public tracking (no auth) ──
+
+  @Public()
+  @Get('orders/track')
+  @ApiOperation({ summary: 'Public order tracking by orderNumber + email' })
+  trackOrder(
+    @Query('orderNumber') orderNumber: string,
+    @Query('email') email: string,
+  ) {
+    return this.orderService.trackPublic(orderNumber, email);
+  }
 
   // ── Customer endpoints ──
 

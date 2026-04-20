@@ -279,6 +279,42 @@ export class OrderService {
   /**
    * Find order by ID with ownership check
    */
+  /** Public tracking — match order by orderNumber + (user.email OR shipping address email) */
+  async trackPublic(orderNumber?: string, email?: string) {
+    if (!orderNumber || !email) {
+      throw new NotFoundException('Sipariş numarası ve e-posta zorunlu');
+    }
+    const order = await this.prisma.order.findFirst({
+      where: {
+        orderNumber: orderNumber.trim(),
+        user: { email: { equals: email.trim().toLowerCase(), mode: 'insensitive' } },
+      },
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        total: true,
+        trackingNumber: true,
+        trackingUrl: true,
+        createdAt: true,
+        updatedAt: true,
+        statusHistory: {
+          select: { status: true, note: true, createdAt: true },
+          orderBy: { createdAt: 'asc' },
+        },
+        items: {
+          select: {
+            quantity: true,
+            unitPrice: true,
+            product: { select: { name: true, slug: true } },
+          },
+        },
+      },
+    });
+    if (!order) throw new NotFoundException('Sipariş bulunamadı. Lütfen bilgileri kontrol edin.');
+    return order;
+  }
+
   async findByIdForUser(id: string, userId: string) {
     const order = await this.prisma.order.findUnique({
       where: { id },

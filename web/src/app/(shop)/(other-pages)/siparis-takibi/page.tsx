@@ -1,9 +1,7 @@
-import { CheckmarkCircleIcon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, Location01Icon, Invoice01Icon, MailOpen01Icon, SmartPhone01Icon, Globe02Icon } from '@hugeicons/core-free-icons'
+import { CheckmarkCircleIcon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, Location01Icon, Invoice01Icon, MailOpen01Icon, SmartPhone01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
-import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
-import { Input } from '@/shared/input'
 import { Metadata } from 'next'
+import TrackingForm from './TrackingForm'
 
 export const metadata: Metadata = {
   title: 'Sipariş Takibi',
@@ -51,23 +49,7 @@ export default function SiparisTakibiPage() {
             <span className="text-4xl"><HugeiconsIcon icon={Invoice01Icon} size={36} color="currentColor" strokeWidth={1.5} /></span>
             <h2 className="mt-3 text-xl font-semibold text-neutral-900 dark:text-white">Sipariş Sorgula</h2>
           </div>
-          <form>
-            <Fieldset>
-              <FieldGroup>
-                <Field>
-                  <Label>Sipariş Numarası</Label>
-                  <Input name="orderNumber" placeholder="OL-2026-0000" />
-                </Field>
-                <Field>
-                  <Label>E-posta Adresi</Label>
-                  <Input name="email" type="email" placeholder="ornek@email.com" />
-                </Field>
-                <ButtonPrimary type="submit" className="w-full">
-                  Sipariş Durumunu Sorgula
-                </ButtonPrimary>
-              </FieldGroup>
-            </Fieldset>
-          </form>
+          <TrackingForm />
           <p className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
             Sipariş numaranızı bulamıyor musunuz?{' '}
             <a href="/contact" className="font-medium text-primary-700 hover:underline">
