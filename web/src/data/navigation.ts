@@ -9,7 +9,6 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
         { id: '1-1', href: '/collections/turk-kahvesi', name: 'Türk Kahvesi', description: 'Geleneksel Türk kahvesi çeşitleri', icon: 'turk-kahvesi' },
         { id: '1-2', href: '/collections/filtre-kahve', name: 'Filtre Kahve', description: 'Pour-over & filtre demleme', icon: 'filtre-kahve' },
         { id: '1-3', href: '/collections/espresso', name: 'Espresso', description: 'Espresso makineleri için özel', icon: 'espresso' },
-        { id: '1-4', href: '/collections/kapsul-kahve', name: 'Kapsül Kahve', description: 'Kapsül sistemleri için uygun', icon: 'kapsul-kahve' },
       ],
     },
     {
@@ -206,15 +205,6 @@ export const getHeaderDropdownCategories = async () => {
     <rect x="5" y="8" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
     <path d="M19 11H20C21.1046 11 22 11.8954 22 13C22 14.1046 21.1046 15 20 15H19" stroke="currentColor" stroke-width="1.5"/>
     <path d="M9 5C9 5 9.5 3 12 3C14.5 3 15 5 15 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`,
-    },
-    {
-      name: 'Kapsül Kahve',
-      handle: 'kapsul-kahve',
-      description: 'Kapsül sistemleri için uygun',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="8" y="4" width="8" height="16" rx="4" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M8 12H16" stroke="currentColor" stroke-width="1.5"/>
     </svg>`,
     },
   ]
