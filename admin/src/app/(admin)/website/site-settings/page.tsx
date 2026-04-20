@@ -59,10 +59,12 @@ export default function SiteSettingsPage() {
   const [settings, setSettings] = useState<SiteSettingsState>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const res = await websiteApi.getSettings();
       const data = res?.data || res || {};
       setSettings({
@@ -91,7 +93,9 @@ export default function SiteSettingsPage() {
           ? { ...defaultSettings.subscriptionBasePrices, ...data.subscriptionBasePrices }
           : defaultSettings.subscriptionBasePrices,
       });
-    } catch { /* fallback */ }
+    } catch (e: any) {
+      setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
+    }
     finally { setLoading(false); }
   }, []);
 
