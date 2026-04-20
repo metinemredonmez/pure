@@ -84,24 +84,24 @@ export default function SadakatPage() {
     <div className="overflow-x-hidden pb-24 lg:pb-32">
       {/* Hero */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
-        <div className="absolute inset-0 opacity-10">
-          <svg className="h-full w-full" viewBox="0 0 400 200" fill="none">
+        <div className="pointer-events-none absolute inset-0 opacity-10">
+          <svg className="h-full w-full" viewBox="0 0 400 200" fill="none" preserveAspectRatio="xMidYMid slice">
             <circle cx="350" cy="30" r="120" fill="white" />
             <circle cx="50" cy="170" r="80" fill="white" />
           </svg>
         </div>
-        <div className="container relative py-20 text-center text-white lg:py-28">
+        <div className="container relative px-4 sm:px-6 lg:px-8 py-20 pb-24 text-center text-white lg:py-28 lg:pb-32">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
             Sadakat Programı
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mx-auto mt-6 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl lg:text-6xl">
             Her Yudumda <br /> Kazanın
           </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70">
+          <p className="mx-auto mt-6 max-w-2xl text-base text-white/70 sm:text-lg">
             Pure Olentia sadakat programı ile her alışverişinizde puan kazanın, özel indirimlerden
             ve ayrıcalıklı fırsatlardan yararlanın.
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link href="/signup" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-primary-800 shadow-lg transition hover:bg-neutral-100">
               Hemen Katıl
             </Link>
@@ -113,7 +113,7 @@ export default function SadakatPage() {
       </div>
 
       {/* How it works */}
-      <div className="container -mt-8 px-4 sm:px-6 lg:px-8">
+      <div className="container relative -mt-10 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
           {howItWorks.map((item, i) => (
             <div key={i} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
