@@ -33,7 +33,19 @@ interface TopProduct { productId?: string; name: string; totalSold: number; reve
 interface LowStockItem { id: string; name: string; sku: string; stock: number }
 interface CustomerInsights { total: number; verified: number; withOrders: number; conversionRate: number; repeatCustomers: number; repeatRate: number; avgOrderValue: number; topCustomers: { email: string; firstName?: string; lastName?: string; totalSpent: number; orderCount: number }[] }
 
-const statusLabels: Record<string, string> = { PENDING: 'Beklemede', CONFIRMED: 'Onaylandı', PROCESSING: 'Hazırlanıyor', SHIPPED: 'Kargoda', DELIVERED: 'Teslim Edildi', CANCELLED: 'İptal' };
+const statusLabels: Record<string, string> = {
+  PENDING: 'Beklemede',
+  CONFIRMED: 'Onaylandı',
+  PROCESSING: 'Hazırlanıyor',
+  PREPARING: 'Hazırlanıyor',
+  SHIPPED: 'Kargoda',
+  IN_TRANSIT: 'Yolda',
+  DELIVERED: 'Teslim Edildi',
+  CANCELLED: 'İptal Edildi',
+  RETURNED: 'İade Edildi',
+  REFUNDED: 'Ücret İadesi',
+  FAILED: 'Başarısız',
+};
 const CHART_COLORS = [olentiaColors.primary.main, '#4CAF50', '#42A5F5', '#FF9800', '#E91E63', '#9C27B0'];
 
 function formatCurrency(n: number) { return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(n); }
