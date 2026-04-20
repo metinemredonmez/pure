@@ -20,34 +20,22 @@ type CategoryDef = {
   name: string
   fallbackImage: string
   grind: string
+  planId?: string
+  basePrice?: number
+  monthlyWeight?: number
+  discountPercent?: number
 }
 
-const CATEGORIES: CategoryDef[] = [
-  {
-    id: 'turk-kahvesi',
-    slugs: ['turk-kahvesi', 'turk', 'turkish'],
-    title: 'Abonelik No.01',
-    name: 'Türk Kahvesi',
-    fallbackImage: '/hero/turk-kahvesi-100gr.jpg',
-    grind: 'Türk',
-  },
-  {
-    id: 'espresso',
-    slugs: ['espresso'],
-    title: 'Abonelik No.02',
-    name: 'Espresso',
-    fallbackImage: '/hero/brazil-santos.jpg',
-    grind: 'Espresso',
-  },
-  {
-    id: 'filtre-kahve',
-    slugs: ['filtre-kahve', 'filtre', 'filter'],
-    title: 'Abonelik No.03',
-    name: 'Filtre Kahve',
-    fallbackImage: '/hero/hediye-paketi.jpg',
-    grind: 'Filtre',
-  },
-]
+const FALLBACK_IMAGES = ['/hero/turk-kahvesi-100gr.jpg', '/hero/brazil-santos.jpg', '/hero/hediye-paketi.jpg']
+
+/** Derive category metadata from plan name */
+function inferCategoryFromName(name: string): { slugs: string[]; grind: string } {
+  const n = name.toLowerCase()
+  if (n.includes('türk') || n.includes('turk')) return { slugs: ['turk-kahvesi', 'turk'], grind: 'Türk' }
+  if (n.includes('espresso')) return { slugs: ['espresso'], grind: 'Espresso' }
+  if (n.includes('filtre') || n.includes('filter')) return { slugs: ['filtre-kahve', 'filtre'], grind: 'Filtre' }
+  return { slugs: [], grind: 'Filtre' }
+}
 
 const DURATIONS = [
   { months: 3, label: '3 ay boyunca' },
@@ -74,10 +62,10 @@ const DEFAULT_BASE_PRICES: Record<string, number> = {
   'filtre-kahve': 200,
 }
 
-const GRINDS_BY_CAT: Record<string, string[]> = {
-  'turk-kahvesi': ['Türk'],
-  espresso: ['Espresso', 'Moka Pot'],
-  'filtre-kahve': ['Filtre', 'French Press', 'Chemex', 'AeroPress'],
+const GRINDS_BY_KIND: Record<string, string[]> = {
+  Türk: ['Türk'],
+  Espresso: ['Espresso', 'Moka Pot'],
+  Filtre: ['Filtre', 'French Press', 'Chemex', 'AeroPress'],
 }
 
 /* ---------------- Types ---------------- */
@@ -183,7 +171,28 @@ export default function SubscriptionPage() {
     document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const cat = CATEGORIES.find((c) => c.id === selectedCategory) || null
+  // Categories derived from admin plans (fully admin-managed)
+  const categories: CategoryDef[] = useMemo(() => {
+    if (!plans.length) return []
+    const sorted = [...plans].sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+    return sorted.map((p: any, i: number) => {
+      const inferred = inferCategoryFromName(p.name || '')
+      return {
+        id: p.slug || p.id,
+        slugs: inferred.slugs.length ? inferred.slugs : [p.slug].filter(Boolean),
+        title: `Abonelik No.0${i + 1}`,
+        name: p.name,
+        fallbackImage: (p as any).image || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
+        grind: inferred.grind,
+        planId: p.id,
+        basePrice: Number(p.priceMonthly) || 0,
+        monthlyWeight: Number(p.monthlyWeight ?? p.weightGrams ?? 250) || 250,
+        discountPercent: Number((p as any).discountPercent) || 0,
+      }
+    })
+  }, [plans])
+
+  const cat = categories.find((c) => c.id === selectedCategory) || null
 
   // Products of selected category
   const categoryProducts = useMemo(() => {
@@ -194,23 +203,19 @@ export default function SubscriptionPage() {
     })
   }, [cat, products])
 
-  // Base price per 250g bag — admin'de ayarlanabilir (Site Ayarları → Abonelik)
+  // Base price per 250g bag — admin plan fiyatı/gramajı normalize edilir
   const basePricePerBag = useMemo(() => {
     if (!cat) return 0
-    // 1) Admin setting
+    // Plan'ın aylık fiyatını, aylık gramaj/250'ye bölerek 250g başı birim fiyat bul
+    if (cat.basePrice && cat.monthlyWeight) {
+      const unitScale = cat.monthlyWeight / 250
+      if (unitScale > 0) return cat.basePrice / unitScale
+    }
+    // Fallback: admin site-settings baz fiyat
     const admin = basePrices[cat.id]
     if (admin && admin > 0) return admin
-    // 2) Matching plan by category name
-    const match = plans.find((p) => p.name.toLowerCase().includes(cat.name.toLowerCase()))
-    if (match) return Number(match.priceMonthly) || 0
-    // 3) Min product price in category
-    if (categoryProducts.length > 0) {
-      const prices = categoryProducts.map((p) => Number(p.price)).filter((n) => n > 0)
-      if (prices.length) return Math.min(...prices)
-    }
-    // 4) Last resort
     return DEFAULT_BASE_PRICES[cat.id] || 200
-  }, [cat, plans, categoryProducts, basePrices])
+  }, [cat, basePrices])
 
   // Periods per month
   const periodsPerMonth = useMemo(() => (period === 4 ? 1 : period === 2 ? 2 : 4), [period])
@@ -230,10 +235,10 @@ export default function SubscriptionPage() {
   }, [basePricePerBag, gramsInfo])
 
   const chooseCategory = (id: string) => {
-    const c = CATEGORIES.find((x) => x.id === id)
+    const c = categories.find((x) => x.id === id)
     if (!c) return
     setSelectedCategory(id)
-    setGrind(GRINDS_BY_CAT[id]?.[0] || c.grind)
+    setGrind(GRINDS_BY_KIND[c.grind]?.[0] || c.grind)
     setSelectedCoffees([])
     setTimeout(() => {
       document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -323,10 +328,15 @@ export default function SubscriptionPage() {
         </div>
       </div>
 
-      {/* 3 Category Cards */}
+      {/* Category Cards — admin plans'tan dinamik */}
       <div id="abonelik-planlari" className="container mt-20 scroll-mt-10">
-        <div className="grid gap-6 md:grid-cols-3">
-          {CATEGORIES.map((c) => {
+        {categories.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-neutral-300 p-12 text-center text-neutral-500">
+            Henüz aktif abonelik planı yok. Admin panelden ekleyin.
+          </div>
+        ) : (
+        <div className={`grid gap-6 ${categories.length >= 3 ? 'md:grid-cols-3' : categories.length === 2 ? 'md:grid-cols-2' : 'md:grid-cols-1 max-w-md mx-auto'}`}>
+          {categories.map((c) => {
             const active = selectedCategory === c.id
             return (
               <div key={c.id} className="group">
@@ -358,6 +368,7 @@ export default function SubscriptionPage() {
             )
           })}
         </div>
+        )}
       </div>
 
       {/* Configurator */}
@@ -472,7 +483,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setGrind(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {(GRINDS_BY_CAT[cat.id] || ['Filtre']).map((g) => (
+                  {(GRINDS_BY_KIND[cat.grind] || ['Filtre']).map((g) => (
                     <option key={g} value={g}>
                       {g}
                     </option>
