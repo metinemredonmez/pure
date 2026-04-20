@@ -796,6 +796,17 @@ export const websiteApi = {
   updateMultipleSettings: async (settings: { key: string; value: unknown }[]) => { const { data } = await api.put('/admin/site-settings/bulk', { settings }); return data; },
 };
 
+/** Unwrap nested { success, data: {...} } envelopes (backend can double-wrap) */
+function unwrapUploadResponse(raw: any): any {
+  let cur = raw;
+  for (let i = 0; i < 3; i++) {
+    if (cur && typeof cur === 'object' && 'data' in cur && (cur.success !== undefined || !cur.url)) {
+      cur = cur.data;
+    } else break;
+  }
+  return cur;
+}
+
 export const uploadApi = {
   uploadSingle: async (file: File, folder?: string) => {
     const formData = new FormData();
@@ -804,7 +815,9 @@ export const uploadApi = {
     const { data } = await api.post('/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data;
+    const unwrapped = unwrapUploadResponse(data);
+    // Return a stable shape: { url, filename, ... } directly AND keep .data for legacy callers
+    return { ...unwrapped, data: unwrapped };
   },
   uploadMultiple: async (files: File[]) => {
     const formData = new FormData();
@@ -812,7 +825,8 @@ export const uploadApi = {
     const { data } = await api.post('/upload/multiple', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
-    return data;
+    const unwrapped = unwrapUploadResponse(data);
+    return { ...unwrapped, data: unwrapped };
   },
 };
 
