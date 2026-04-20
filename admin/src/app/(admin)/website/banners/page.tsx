@@ -233,13 +233,9 @@ export default function BannersPage() {
         <Divider />
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
-            <Grid size={{ xs: 12, md: 6 }}>
+            <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Baslik" size="small" value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="Alt Baslik" size="small" value={form.subtitle}
-                onChange={(e) => setForm({ ...form, subtitle: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="caption" color="text.secondary" gutterBottom component="div">
@@ -287,26 +283,8 @@ export default function BannersPage() {
                 }} />
               </Button>
             </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="CTA Metni" size="small" value={form.ctaText}
-                onChange={(e) => setForm({ ...form, ctaText: e.target.value })} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="CTA Link" size="small" value={form.ctaUrl}
-                onChange={(e) => setForm({ ...form, ctaUrl: e.target.value })} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField fullWidth label="Baslangic Tarihi" type="date" size="small" value={form.startDate}
-                onChange={(e) => setForm({ ...form, startDate: e.target.value })}
-                slotProps={{ inputLabel: { shrink: true } }} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField fullWidth label="Bitis Tarihi" type="date" size="small" value={form.endDate}
-                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-                slotProps={{ inputLabel: { shrink: true } }} />
-            </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <TextField fullWidth label="Siralama" type="number" size="small" value={form.sortOrder}
+            <Grid size={{ xs: 12 }}>
+              <TextField fullWidth label="Siralama (kucuk numara once gosterilir)" type="number" size="small" value={form.sortOrder}
                 onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
