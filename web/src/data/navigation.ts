@@ -23,9 +23,32 @@ export async function getNavigation(): Promise<TNavigationItem[]> {
       ],
     },
     { id: '4', href: '/collections/all', name: 'Online Dükkan' },
-    { id: '5', href: '/ekipmanlar', name: 'Ekipmanlar' },
-    { id: '6', href: '/franchise', name: 'Franchise' },
-    { id: '2', href: '/b2b', name: 'Kurumsal' },
+    {
+      id: '9',
+      href: '#',
+      name: 'Keşfet',
+      type: 'dropdown',
+      children: [
+        { id: '9-1', href: '/blog', name: 'Blog' },
+        { id: '9-2', href: '/demleme-rehberi', name: 'Demleme Rehberi' },
+        { id: '9-3', href: '/kahve-sozlugu', name: 'Kahve Sözlüğü' },
+        { id: '9-4', href: '/ekipmanlar', name: 'Ekipmanlar' },
+        { id: '9-5', href: '/sadakat', name: 'Sadakat Programı' },
+      ],
+    },
+    {
+      id: '2',
+      href: '/b2b',
+      name: 'Kurumsal',
+      type: 'dropdown',
+      children: [
+        { id: '2-1', href: '/b2b', name: 'Kurumsal Satış' },
+        { id: '2-2', href: '/toptan-satis', name: 'Toptan Satış' },
+        { id: '2-3', href: '/kurumsal-hediye', name: 'Kurumsal Hediye' },
+        { id: '2-4', href: '/franchise', name: 'Franchise' },
+        { id: '2-5', href: '/subscription', name: 'Abonelik' },
+      ],
+    },
     { id: '7', href: '/contact', name: 'İletişim' },
   ]
 }
