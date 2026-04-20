@@ -1,4 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from './notification.service';
 
@@ -20,7 +21,41 @@ export class BroadcastService {
   constructor(
     private prisma: PrismaService,
     private notification: NotificationService,
+    private config: ConfigService,
   ) {}
+
+  /** Send a single push via OneSignal REST API to all subscribed users */
+  private async sendOneSignalBroadcast(subject: string, body: string): Promise<{ id?: string; error?: string }> {
+    const appId = this.config.get<string>('onesignal.appId') || process.env.ONESIGNAL_APP_ID;
+    const apiKey = this.config.get<string>('onesignal.apiKey') || process.env.ONESIGNAL_API_KEY;
+
+    if (!appId || !apiKey) {
+      return { error: 'OneSignal credentials not configured (ONESIGNAL_APP_ID / ONESIGNAL_API_KEY)' };
+    }
+
+    try {
+      const res = await fetch('https://onesignal.com/api/v1/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Key ${apiKey}`,
+        },
+        body: JSON.stringify({
+          app_id: appId,
+          included_segments: ['Total Subscriptions'],
+          headings: { en: subject, tr: subject },
+          contents: { en: body, tr: body },
+        }),
+      });
+      const data: any = await res.json();
+      if (!res.ok || data?.errors) {
+        return { error: data?.errors?.[0] || data?.error || 'OneSignal API error' };
+      }
+      return { id: data?.id };
+    } catch (e: any) {
+      return { error: e?.message || 'OneSignal fetch failed' };
+    }
+  }
 
   /** Resolve target email list based on audience selection */
   private async resolveRecipients(payload: BroadcastPayload): Promise<{ email: string; id?: string }[]> {
@@ -86,24 +121,29 @@ export class BroadcastService {
     let failed = 0;
     const errors: { email: string; error: string }[] = [];
 
+    // PUSH: OneSignal sends one request to all subscribed users at once (no per-user loop)
+    if (payload.channel === 'PUSH') {
+      const result = await this.sendOneSignalBroadcast(payload.subject, payload.body);
+      if (result.error) {
+        failed = recipients.length;
+        errors.push({ email: 'onesignal-broadcast', error: result.error });
+        await this.prisma.sentNotification.create({
+          data: { channel: 'push', recipient: 'all-subscribers', subject: payload.subject, body: payload.body, status: 'failed' },
+        });
+      } else {
+        sent = recipients.length;
+        await this.prisma.sentNotification.create({
+          data: { channel: 'push', recipient: 'all-subscribers', subject: payload.subject, body: payload.body, status: 'sent' },
+        });
+      }
+      return { audience: payload.audience, channel: payload.channel, totalRecipients: recipients.length, sent, failed, errors };
+    }
+
+    // EMAIL: per-recipient send
     for (const r of recipients) {
       try {
-        if (payload.channel === 'EMAIL') {
-          await this.notification.sendEmail(r.email, payload.subject, payload.body);
-          sent++;
-        } else if (payload.channel === 'PUSH') {
-          // Push channel placeholder — uses SentNotification log, actual OneSignal/FCM hook TBD
-          await this.prisma.sentNotification.create({
-            data: {
-              channel: 'push',
-              recipient: r.email,
-              subject: payload.subject,
-              body: payload.body,
-              status: 'queued',
-            },
-          });
-          sent++;
-        }
+        await this.notification.sendEmail(r.email, payload.subject, payload.body);
+        sent++;
       } catch (e: any) {
         failed++;
         errors.push({ email: r.email, error: e?.message || 'unknown' });

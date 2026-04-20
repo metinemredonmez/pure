@@ -4,7 +4,10 @@ import { CartProvider } from '@/contexts/CartContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
+import Script from 'next/script'
 import GlobalClient from './GlobalClient'
+
+const ONESIGNAL_APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID || '5283e063-ecb8-4fba-8a70-d85c3b8faf8f'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -40,6 +43,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ChatbotWidget />
           </Aside.Provider>
         </CartProvider>
+
+        {/* OneSignal Web Push */}
+        <Script
+          src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"
+          strategy="afterInteractive"
+        />
+        <Script id="onesignal-init" strategy="afterInteractive">
+          {`
+            window.OneSignalDeferred = window.OneSignalDeferred || [];
+            OneSignalDeferred.push(async function(OneSignal) {
+              await OneSignal.init({
+                appId: "${ONESIGNAL_APP_ID}",
+                safari_web_id: undefined,
+                notifyButton: { enable: false },
+                allowLocalhostAsSecureOrigin: true,
+              });
+            });
+          `}
+        </Script>
       </body>
     </html>
   )
