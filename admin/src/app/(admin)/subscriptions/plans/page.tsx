@@ -15,6 +15,10 @@ import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import { useToast } from '@/contexts/ToastContext';
 
+interface DurationOption { months: number; label: string }
+interface PeriodOption { weeks: number; label: string }
+interface GrindGroup { kind: string; options: string[] }
+
 interface SubPlan {
   id: string;
   name: string;
@@ -26,8 +30,29 @@ interface SubPlan {
   freeShipping: boolean;
   isActive: boolean;
   sortOrder: number;
+  availableDurations?: DurationOption[] | null;
+  availablePeriods?: PeriodOption[] | null;
+  availableGrinds?: GrindGroup[] | null;
   _count?: { subscriptions: number };
 }
+
+const DEFAULT_DURATIONS: DurationOption[] = [
+  { months: 3, label: '3 ay boyunca' },
+  { months: 6, label: '6 ay boyunca' },
+  { months: 12, label: '12 ay boyunca' },
+];
+
+const DEFAULT_PERIODS: PeriodOption[] = [
+  { weeks: 1, label: 'Haftada 1' },
+  { weeks: 2, label: '2 haftada 1' },
+  { weeks: 4, label: 'Ayda 1' },
+];
+
+const DEFAULT_GRINDS: GrindGroup[] = [
+  { kind: 'Türk', options: ['Türk'] },
+  { kind: 'Espresso', options: ['Espresso', 'Moka Pot'] },
+  { kind: 'Filtre', options: ['Filtre', 'French Press', 'Chemex', 'AeroPress'] },
+];
 
 const PLAN_COLORS = ['#D4793F', '#4CAF50', '#42A5F5', '#AB47BC'];
 const formatCurrency = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(n);
@@ -40,6 +65,9 @@ export default function SubscriptionPlansPage() {
   const [form, setForm] = useState({
     name: '', slug: '', description: '', monthlyWeight: 250,
     priceMonthly: 0, discountPercent: 0, freeShipping: true, isActive: true, sortOrder: 0,
+    availableDurations: DEFAULT_DURATIONS as DurationOption[],
+    availablePeriods: DEFAULT_PERIODS as PeriodOption[],
+    availableGrinds: DEFAULT_GRINDS as GrindGroup[],
   });
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SubPlan | null>(null);
@@ -65,10 +93,17 @@ export default function SubscriptionPlansPage() {
         monthlyWeight: plan.monthlyWeight, priceMonthly: Number(plan.priceMonthly),
         discountPercent: plan.discountPercent, freeShipping: plan.freeShipping,
         isActive: plan.isActive, sortOrder: plan.sortOrder,
+        availableDurations: Array.isArray(plan.availableDurations) && plan.availableDurations.length ? plan.availableDurations : DEFAULT_DURATIONS,
+        availablePeriods: Array.isArray(plan.availablePeriods) && plan.availablePeriods.length ? plan.availablePeriods : DEFAULT_PERIODS,
+        availableGrinds: Array.isArray(plan.availableGrinds) && plan.availableGrinds.length ? plan.availableGrinds : DEFAULT_GRINDS,
       });
     } else {
       setEditingPlan(null);
-      setForm({ name: '', slug: '', description: '', monthlyWeight: 250, priceMonthly: 0, discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1 });
+      setForm({
+        name: '', slug: '', description: '', monthlyWeight: 250, priceMonthly: 0,
+        discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1,
+        availableDurations: DEFAULT_DURATIONS, availablePeriods: DEFAULT_PERIODS, availableGrinds: DEFAULT_GRINDS,
+      });
     }
     setDialogOpen(true);
   };
@@ -195,6 +230,60 @@ export default function SubscriptionPlansPage() {
               <FormControlLabel control={<Switch checked={form.freeShipping} onChange={(e) => setForm({ ...form, freeShipping: e.target.checked })} size="small" />} label="Ucretsiz Kargo" />
               <FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} size="small" />} label="Aktif" />
             </Stack>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Süre Seçenekleri */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography variant="body2" fontWeight={600}>Süre Seçenekleri</Typography>
+              <Button size="small" onClick={() => setForm({ ...form, availableDurations: [...form.availableDurations, { months: 1, label: 'Yeni Süre' }] })}>+ Ekle</Button>
+            </Stack>
+            {form.availableDurations.map((d, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField sx={{ flex: 1 }} size="small" label="Etiket" value={d.label}
+                  onChange={(e) => { const arr = [...form.availableDurations]; arr[idx] = { ...arr[idx], label: e.target.value }; setForm({ ...form, availableDurations: arr }); }} />
+                <TextField sx={{ width: 80 }} size="small" type="number" label="Ay" value={d.months}
+                  onChange={(e) => { const arr = [...form.availableDurations]; arr[idx] = { ...arr[idx], months: Number(e.target.value) || 1 }; setForm({ ...form, availableDurations: arr }); }} />
+                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availableDurations: form.availableDurations.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
+              </Stack>
+            ))}
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Peryot Seçenekleri */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography variant="body2" fontWeight={600}>Peryot Seçenekleri</Typography>
+              <Button size="small" onClick={() => setForm({ ...form, availablePeriods: [...form.availablePeriods, { weeks: 1, label: 'Yeni Peryot' }] })}>+ Ekle</Button>
+            </Stack>
+            {form.availablePeriods.map((p, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField sx={{ flex: 1 }} size="small" label="Etiket" value={p.label}
+                  onChange={(e) => { const arr = [...form.availablePeriods]; arr[idx] = { ...arr[idx], label: e.target.value }; setForm({ ...form, availablePeriods: arr }); }} />
+                <TextField sx={{ width: 80 }} size="small" type="number" label="Hafta" value={p.weeks}
+                  onChange={(e) => { const arr = [...form.availablePeriods]; arr[idx] = { ...arr[idx], weeks: Number(e.target.value) || 1 }; setForm({ ...form, availablePeriods: arr }); }} />
+                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availablePeriods: form.availablePeriods.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
+              </Stack>
+            ))}
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Çekme Derecesi */}
+            <Stack direction="row" alignItems="center" justifyContent="space-between">
+              <Typography variant="body2" fontWeight={600}>Çekme Derecesi</Typography>
+              <Button size="small" onClick={() => setForm({ ...form, availableGrinds: [...form.availableGrinds, { kind: 'Yeni', options: [''] }] })}>+ Grup</Button>
+            </Stack>
+            <Typography variant="caption" color="text.secondary">
+              Grup adı plandan otomatik çıkarılan kategoriyle eşleşmeli (Türk/Espresso/Filtre).
+            </Typography>
+            {form.availableGrinds.map((g, idx) => (
+              <Stack key={idx} direction="row" spacing={1} alignItems="center">
+                <TextField sx={{ width: 130 }} size="small" label="Grup" value={g.kind}
+                  onChange={(e) => { const arr = [...form.availableGrinds]; arr[idx] = { ...arr[idx], kind: e.target.value }; setForm({ ...form, availableGrinds: arr }); }} />
+                <TextField sx={{ flex: 1 }} size="small" label="Seçenekler (virgülle ayır)" value={(g.options || []).join(', ')}
+                  onChange={(e) => { const arr = [...form.availableGrinds]; arr[idx] = { ...arr[idx], options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }; setForm({ ...form, availableGrinds: arr }); }} />
+                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availableGrinds: form.availableGrinds.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
+              </Stack>
+            ))}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

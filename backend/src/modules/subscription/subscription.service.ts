@@ -67,6 +67,9 @@ export class SubscriptionService implements OnModuleInit {
     freeShipping?: boolean;
     isActive?: boolean;
     sortOrder?: number;
+    availableDurations?: any;
+    availablePeriods?: any;
+    availableGrinds?: any;
   }) {
     return this.prisma.subPlan.create({
       data: {
@@ -79,6 +82,9 @@ export class SubscriptionService implements OnModuleInit {
         freeShipping: data.freeShipping ?? true,
         isActive: data.isActive ?? true,
         sortOrder: data.sortOrder || 0,
+        availableDurations: data.availableDurations ?? undefined,
+        availablePeriods: data.availablePeriods ?? undefined,
+        availableGrinds: data.availableGrinds ?? undefined,
       },
     });
   }
@@ -93,6 +99,9 @@ export class SubscriptionService implements OnModuleInit {
     freeShipping: boolean;
     isActive: boolean;
     sortOrder: number;
+    availableDurations: any;
+    availablePeriods: any;
+    availableGrinds: any;
   }>) {
     return this.prisma.subPlan.update({
       where: { id },

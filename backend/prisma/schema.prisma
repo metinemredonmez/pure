@@ -962,6 +962,9 @@ model SubPlan {
   freeShipping    Boolean        @default(true)
   isActive        Boolean        @default(true)
   sortOrder       Int            @default(0)
+  availableDurations Json?
+  availablePeriods   Json?
+  availableGrinds    Json?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime @updatedAt
   subscriptions        Subscription[] @relation("activeSubscriptions")

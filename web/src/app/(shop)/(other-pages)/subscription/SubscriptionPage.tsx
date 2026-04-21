@@ -87,6 +87,9 @@ interface Plan {
   frequencyWeeks?: number
   discountPercent?: number
   isActive?: boolean
+  availableDurations?: { months: number; label: string }[] | null
+  availablePeriods?: { weeks: number; label: string }[] | null
+  availableGrinds?: { kind: string; options: string[] }[] | null
 }
 
 /* ---------------- Helpers ---------------- */
@@ -199,18 +202,6 @@ export default function SubscriptionPage() {
     }
   }, [gramsList, gramsOpt])
 
-  // Reset duration/period if admin list changes and current value isn't available
-  useEffect(() => {
-    if (durationsList.length && !durationsList.find((d) => d.months === duration)) {
-      setDuration(durationsList[0].months)
-    }
-  }, [durationsList, duration])
-
-  useEffect(() => {
-    if (periodsList.length && !periodsList.find((p) => p.weeks === period)) {
-      setPeriod(periodsList[0].weeks)
-    }
-  }, [periodsList, period])
 
   const scrollToPlans = () => {
     document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -238,6 +229,48 @@ export default function SubscriptionPage() {
   }, [plans])
 
   const cat = categories.find((c) => c.id === selectedCategory) || null
+  const activePlan = cat ? plans.find((p) => p.id === cat.planId) : null
+
+  // Plan-specific lists override global admin lists
+  const effectiveDurations = useMemo(() => {
+    if (activePlan && Array.isArray(activePlan.availableDurations) && activePlan.availableDurations.length) {
+      return activePlan.availableDurations
+    }
+    return durationsList
+  }, [activePlan, durationsList])
+
+  const effectivePeriods = useMemo(() => {
+    if (activePlan && Array.isArray(activePlan.availablePeriods) && activePlan.availablePeriods.length) {
+      return activePlan.availablePeriods
+    }
+    return periodsList
+  }, [activePlan, periodsList])
+
+  const effectiveGrindsMap = useMemo(() => {
+    if (activePlan && Array.isArray(activePlan.availableGrinds) && activePlan.availableGrinds.length) {
+      const map: Record<string, string[]> = {}
+      activePlan.availableGrinds.forEach((g) => {
+        if (g && typeof g.kind === 'string' && Array.isArray(g.options) && g.options.length) {
+          map[g.kind] = g.options
+        }
+      })
+      if (Object.keys(map).length) return map
+    }
+    return grindsMap
+  }, [activePlan, grindsMap])
+
+  // Reset duration/period if effective list changes and current value isn't available
+  useEffect(() => {
+    if (effectiveDurations.length && !effectiveDurations.find((d) => d.months === duration)) {
+      setDuration(effectiveDurations[0].months)
+    }
+  }, [effectiveDurations, duration])
+
+  useEffect(() => {
+    if (effectivePeriods.length && !effectivePeriods.find((p) => p.weeks === period)) {
+      setPeriod(effectivePeriods[0].weeks)
+    }
+  }, [effectivePeriods, period])
 
   // Products of selected category
   const categoryProducts = useMemo(() => {
@@ -283,7 +316,11 @@ export default function SubscriptionPage() {
     const c = categories.find((x) => x.id === id)
     if (!c) return
     setSelectedCategory(id)
-    setGrind(grindsMap[c.grind]?.[0] || c.grind)
+    const plan = plans.find((p) => p.id === c.planId)
+    const planGrinds = plan && Array.isArray(plan.availableGrinds) && plan.availableGrinds.length
+      ? plan.availableGrinds.find((g) => g.kind === c.grind)?.options
+      : null
+    setGrind(planGrinds?.[0] || grindsMap[c.grind]?.[0] || c.grind)
     setSelectedCoffees([])
     setTimeout(() => {
       document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -304,8 +341,8 @@ export default function SubscriptionPage() {
             .join(', ')
         : 'Sürpriz (bariston seçimi)'
 
-    const durLabel = durationsList.find((d) => d.months === duration)?.label
-    const perLabel = periodsList.find((p) => p.weeks === period)?.label
+    const durLabel = effectiveDurations.find((d) => d.months === duration)?.label
+    const perLabel = effectivePeriods.find((p) => p.weeks === period)?.label
     const totalShipments = duration * periodsPerMonth
 
     setAdding(true)
@@ -430,7 +467,7 @@ export default function SubscriptionPage() {
               {formatPrice(totalPrice)}
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              {durationsList.find((d) => d.months === duration)?.label} · sevkiyat başı {formatPrice(pricePerShipment)}
+              {effectiveDurations.find((d) => d.months === duration)?.label} · sevkiyat başı {formatPrice(pricePerShipment)}
             </p>
 
             {/* Süre + Peryot */}
@@ -442,7 +479,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setDuration(Number(e.target.value))}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {durationsList.map((d) => (
+                  {effectiveDurations.map((d) => (
                     <option key={d.months} value={d.months}>
                       {d.label}
                     </option>
@@ -456,7 +493,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setPeriod(Number(e.target.value))}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {periodsList.map((p) => (
+                  {effectivePeriods.map((p) => (
                     <option key={p.weeks} value={p.weeks}>
                       {p.label}
                     </option>
@@ -528,7 +565,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setGrind(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {(grindsMap[cat.grind] || ['Filtre']).map((g) => (
+                  {(effectiveGrindsMap[cat.grind] || ['Filtre']).map((g) => (
                     <option key={g} value={g}>
                       {g}
                     </option>
