@@ -151,7 +151,7 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
         </div>
 
         {/* Scooter with coffee — rides to house, delivers, returns */}
-        <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" aria-hidden>
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
           <div className="scooter-trip absolute top-1/2">
             {/* Speed lines behind scooter */}
             <div className="speed-lines absolute -left-10 top-1/2 flex -translate-y-1/2 flex-col gap-1">
