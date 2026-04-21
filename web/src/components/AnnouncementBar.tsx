@@ -159,18 +159,18 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
           </svg>
         </div>
 
-        {/* Scooter with coffee — rides across the entire bar */}
-        <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden>
-          <div className="scooter-trip absolute top-1/2 -translate-y-[55%]">
+        {/* Scooter with coffee — rides to house, delivers, returns */}
+        <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden" aria-hidden>
+          <div className="scooter-trip absolute top-1/2">
             {/* Speed lines behind scooter */}
-            <div className="speed-lines absolute -left-8 top-1/2 flex -translate-y-1/2 flex-col gap-0.5">
-              <span className="block h-px w-6 bg-amber-200/40" />
-              <span className="block h-px w-4 bg-amber-200/30" />
-              <span className="block h-px w-5 bg-amber-200/35" />
+            <div className="speed-lines absolute -left-10 top-1/2 flex -translate-y-1/2 flex-col gap-1">
+              <span className="block h-0.5 w-8 rounded-full bg-amber-300/60" />
+              <span className="block h-0.5 w-6 rounded-full bg-amber-300/45" />
+              <span className="block h-0.5 w-7 rounded-full bg-amber-300/55" />
             </div>
 
-            {/* Scooter SVG */}
-            <svg className="h-7 w-12" viewBox="0 0 48 28" fill="none">
+            {/* Scooter SVG — bigger & more visible */}
+            <svg className="h-11 w-[72px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]" viewBox="0 0 48 28" fill="none">
               {/* Coffee box (with steam) */}
               <g>
                 <rect x="2" y="6" width="7" height="10" rx="1.2" fill="#C28A52" opacity="0.95" />
@@ -248,30 +248,35 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
       </div>
 
       <style jsx>{`
-        /* Scooter trip: enter left, cruise, arrive right, pause, disappear, restart */
+        /* Round-trip: enter left → cruise right → deliver at house → turn around → return left → restart */
         @keyframes scooterTrip {
-          0%   { left: -60px; opacity: 0; }
-          4%   { opacity: 1; }
-          55%  { left: calc(100% - 110px); opacity: 1; }
-          /* Pause at the house for "delivery" */
-          65%  { left: calc(100% - 110px); opacity: 1; }
-          75%  { left: calc(100% - 110px); opacity: 1; }
-          90%  { left: calc(100% + 60px); opacity: 1; }
-          100% { left: calc(100% + 60px); opacity: 0; }
+          0%   { left: -90px; opacity: 0; transform: translateY(-50%) scaleX(1); }
+          4%   { left: -60px; opacity: 1; transform: translateY(-50%) scaleX(1); }
+          /* Cruising right */
+          40%  { left: calc(100% - 130px); opacity: 1; transform: translateY(-50%) scaleX(1); }
+          /* Arrived — delivering (pause, facing house) */
+          48%  { left: calc(100% - 130px); opacity: 1; transform: translateY(-50%) scaleX(1); }
+          52%  { left: calc(100% - 130px); opacity: 1; transform: translateY(-50%) scaleX(1); }
+          /* Turn around */
+          56%  { left: calc(100% - 130px); opacity: 1; transform: translateY(-50%) scaleX(-1); }
+          /* Returning */
+          92%  { left: -40px; opacity: 1; transform: translateY(-50%) scaleX(-1); }
+          96%  { left: -80px; opacity: 1; transform: translateY(-50%) scaleX(-1); }
+          100% { left: -100px; opacity: 0; transform: translateY(-50%) scaleX(-1); }
         }
-        .scooter-trip { animation: scooterTrip 9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        .scooter-trip { animation: scooterTrip 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
 
         /* Wheels spin continuously */
         @keyframes wheelSpin { to { transform: rotate(360deg); } }
         .wheel-spin { animation: wheelSpin 0.4s linear infinite; }
 
-        /* Delivered bubble pops in at the right time */
+        /* Delivered bubble pops in while scooter is paused at house (40-52%) */
         @keyframes deliveredPop {
-          0%, 60%   { opacity: 0; transform: translateY(4px) scale(0.8); }
-          65%, 78%  { opacity: 1; transform: translateY(0) scale(1); }
-          85%, 100% { opacity: 0; transform: translateY(-4px) scale(0.9); }
+          0%, 40%   { opacity: 0; transform: translateY(4px) scale(0.7); }
+          44%, 52%  { opacity: 1; transform: translateY(0) scale(1); }
+          56%, 100% { opacity: 0; transform: translateY(-4px) scale(0.9); }
         }
-        .delivered-bubble { animation: deliveredPop 9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        .delivered-bubble { animation: deliveredPop 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
 
         /* Road moving backward */
         @keyframes roadDash {
@@ -314,12 +319,12 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
         }
         .speed-lines { animation: speedPulse 0.4s ease-in-out infinite; transform-origin: right; }
 
-        /* Door ring pulse during delivery */
+        /* Door ring pulse during delivery (matches scooter pause 40-52%) */
         @keyframes doorRing {
-          0%, 55%, 85%, 100% { opacity: 0; }
-          60%, 80%           { opacity: 0.9; }
+          0%, 38%, 56%, 100% { opacity: 0; }
+          42%, 52%           { opacity: 0.9; }
         }
-        :global(.door-ring) { animation: doorRing 9s ease-in-out infinite; transform-origin: left center; }
+        :global(.door-ring) { animation: doorRing 12s ease-in-out infinite; transform-origin: left center; }
 
         /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
