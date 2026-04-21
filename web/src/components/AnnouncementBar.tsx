@@ -160,8 +160,8 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
               <span className="block h-0.5 w-7 rounded-full bg-amber-300/55" />
             </div>
 
-            {/* Scooter SVG — bigger & more visible */}
-            <svg className="h-11 w-[72px] drop-shadow-[0_2px_6px_rgba(0,0,0,0.4)]" viewBox="0 0 48 28" fill="none">
+            {/* Scooter SVG */}
+            <svg className="h-7 w-12 drop-shadow-[0_2px_4px_rgba(0,0,0,0.35)]" viewBox="0 0 48 28" fill="none">
               {/* Coffee box (with steam) */}
               <g>
                 <rect x="2" y="6" width="7" height="10" rx="1.2" fill="#C28A52" opacity="0.95" />
