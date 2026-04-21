@@ -2,7 +2,7 @@
 
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import { FC, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 
 export interface AnnouncementItem {
   text: string
@@ -21,82 +21,226 @@ const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
   { text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
 ]
 
-// Ornamental divider used between messages in the marquee
-const Ornament: FC = () => (
-  <span className="mx-8 flex items-center gap-2 text-white/30" aria-hidden>
-    <span className="h-px w-6 bg-white/25" />
-    <svg className="h-2.5 w-2.5" viewBox="0 0 10 10" fill="currentColor">
-      <circle cx="5" cy="5" r="1.2" />
-    </svg>
-    <span className="h-px w-6 bg-white/25" />
-  </span>
-)
-
 const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnouncements }) => {
   const announcements =
     propAnnouncements && propAnnouncements.length > 0 ? propAnnouncements : DEFAULT_ANNOUNCEMENTS
 
   const [visible, setVisible] = useState(true)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIsAnimating(true)
+      setTimeout(() => {
+        setCurrentIndex((i) => (i === announcements.length - 1 ? 0 : i + 1))
+        setIsAnimating(false)
+      }, 350)
+    }, 4500)
+    return () => clearInterval(timer)
+  }, [announcements.length])
+
   if (!visible) return null
 
-  // Duplicate the list so the marquee loops seamlessly with CSS translateX(-50%)
-  const loop = [...announcements, ...announcements]
+  const current = announcements[currentIndex]
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-r from-[#4A2F1A] via-[#6B4423] to-[#4A2F1A] text-white">
-      {/* Subtle top/bottom highlight lines */}
+    <div className="relative overflow-hidden bg-gradient-to-r from-[#3D2817] via-[#5A3A1E] to-[#3D2817] text-white">
+      {/* Top hairline */}
       <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/10" aria-hidden />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/20" aria-hidden />
+      {/* Bottom hairline */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/25" aria-hidden />
 
-      <div className="relative flex h-14 items-center">
-        {/* Edge fade — left */}
-        <div
-          className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 bg-gradient-to-r from-[#4A2F1A] to-transparent sm:w-24"
-          aria-hidden
-        />
-        {/* Edge fade — right */}
-        <div
-          className="pointer-events-none absolute right-0 top-0 z-10 h-full w-20 bg-gradient-to-l from-[#4A2F1A] to-transparent sm:w-28"
-          aria-hidden
-        />
+      {/* Road (dashed line moving leftward) */}
+      <div
+        className="pointer-events-none absolute inset-x-0 z-0"
+        style={{ top: 'calc(50% + 14px)' }}
+        aria-hidden
+      >
+        <div className="road-dash h-px w-full" />
+      </div>
 
-        {/* Marquee track */}
-        <div className="marquee-track flex min-w-max items-center whitespace-nowrap will-change-transform">
-          {loop.map((item, i) => (
-            <span key={`${item.text}-${i}`} className="flex items-center">
-              <Link
-                href={item.href}
-                className="group flex items-center gap-3 py-4 transition-opacity hover:opacity-90"
-              >
-                {/* tiny bean glyph before each item */}
-                <svg className="h-3.5 w-3.5 text-white/50" viewBox="0 0 24 24" fill="none" aria-hidden>
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="1.3" />
-                  <path
-                    d="M9 6.5c1.6 1.2 1.6 4 0 5.2-1.6 1.2-1.6 4 0 5.2M15 6.5c-1.6 1.2-1.6 4 0 5.2 1.6 1.2 1.6 4 0 5.2"
-                    stroke="currentColor"
-                    strokeWidth="1.3"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                <span className="text-[13.5px] font-medium tracking-wide sm:text-sm">
-                  {item.text}
-                </span>
-                <span className="flex items-center gap-1 rounded-full border border-white/30 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest transition-colors group-hover:border-white group-hover:bg-white group-hover:text-[#4A2F1A]">
-                  {item.cta}
-                  <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </Link>
-              <Ornament />
-            </span>
+      <div className="container relative flex h-[60px] items-center">
+        {/* LEFT: Coffee shop */}
+        <div className="relative z-10 hidden shrink-0 items-center gap-x-2 pr-3 sm:flex">
+          {/* Coffee cup with animated steam */}
+          <svg className="h-8 w-8 text-amber-200/80" viewBox="0 0 32 32" fill="none">
+            {/* Steam puffs (animated) */}
+            <path
+              d="M11 9 Q12 6 13 9"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              className="steam-puff-1"
+            />
+            <path
+              d="M15 8 Q16 4 17 8"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              className="steam-puff-2"
+            />
+            <path
+              d="M19 9 Q20 5 21 9"
+              stroke="currentColor"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+              className="steam-puff-3"
+            />
+
+            {/* Cup */}
+            <rect x="6" y="13" width="16" height="13" rx="2.5" stroke="currentColor" strokeWidth="1.5" />
+            {/* Handle */}
+            <path
+              d="M22 16 Q27 16 27 19.5 Q27 23 22 23"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              fill="none"
+            />
+            {/* Saucer */}
+            <ellipse cx="14" cy="27.5" rx="12" ry="1.8" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+          </svg>
+          <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-white/50 lg:inline">
+            Pure Olentia
+          </span>
+        </div>
+
+        {/* CENTER: Rotating text */}
+        <div className="relative z-10 flex flex-1 items-center justify-center">
+          <div
+            className={`flex items-center gap-x-3 transition-all duration-350 ease-out ${
+              isAnimating ? '-translate-y-3 opacity-0 blur-[2px]' : 'translate-y-0 opacity-100 blur-0'
+            }`}
+          >
+            <span className="text-[13px] font-medium tracking-wide sm:text-sm">{current.text}</span>
+            <Link
+              href={current.href}
+              className="group inline-flex shrink-0 items-center gap-1 rounded-full border border-white/30 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest backdrop-blur-sm transition hover:border-white hover:bg-white hover:text-[#3D2817]"
+            >
+              {current.cta}
+              <svg className="h-3 w-3 transition group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+
+        {/* RIGHT: Home (destination) */}
+        <div className="relative z-10 hidden shrink-0 items-center gap-x-2 pl-3 sm:flex">
+          <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-white/50 lg:inline">
+            Kapınızda
+          </span>
+          <svg className="h-8 w-8 text-amber-200/80" viewBox="0 0 32 32" fill="none">
+            {/* Roof */}
+            <path
+              d="M4 16 L16 6 L28 16"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {/* Chimney */}
+            <rect x="22" y="8" width="2.5" height="4" stroke="currentColor" strokeWidth="1.2" />
+            {/* House body */}
+            <rect x="7" y="16" width="18" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.5" />
+            {/* Door */}
+            <rect x="13" y="20" width="6" height="9" rx="0.8" stroke="currentColor" strokeWidth="1.2" />
+            <circle cx="17.5" cy="25" r="0.6" fill="currentColor" />
+            {/* Window */}
+            <rect x="9.5" y="19" width="2.5" height="2.5" stroke="currentColor" strokeWidth="1" />
+            <rect x="20" y="19" width="2.5" height="2.5" stroke="currentColor" strokeWidth="1" />
+
+            {/* Doorbell ring animation (small rays) */}
+            <g className="door-ring">
+              <path d="M28 13 L30 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              <path d="M29 16 L31 16" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+              <path d="M28 19 L30 20" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </g>
+          </svg>
+        </div>
+
+        {/* Scooter with coffee — rides across the entire bar */}
+        <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden" aria-hidden>
+          <div className="scooter-trip absolute top-1/2 -translate-y-[55%]">
+            {/* Speed lines behind scooter */}
+            <div className="speed-lines absolute -left-8 top-1/2 flex -translate-y-1/2 flex-col gap-0.5">
+              <span className="block h-px w-6 bg-amber-200/40" />
+              <span className="block h-px w-4 bg-amber-200/30" />
+              <span className="block h-px w-5 bg-amber-200/35" />
+            </div>
+
+            {/* Scooter SVG */}
+            <svg className="h-7 w-12" viewBox="0 0 48 28" fill="none">
+              {/* Coffee box (with steam) */}
+              <g>
+                <rect x="2" y="6" width="7" height="10" rx="1.2" fill="#C28A52" opacity="0.95" />
+                <rect x="2.5" y="6.5" width="6" height="2" fill="#8B5E3C" opacity="0.6" />
+                <text x="5.5" y="13" fontSize="3.5" fill="#3D2817" fontWeight="700" textAnchor="middle">☕</text>
+                {/* Box handle */}
+                <path d="M3.5 4 Q5.5 3 7.5 4" stroke="#C28A52" strokeWidth="0.8" fill="none" />
+                {/* Tiny steam from box */}
+                <path d="M5.5 3 Q6 1 6.5 3" stroke="#fff" strokeWidth="0.6" strokeLinecap="round" opacity="0.7" className="box-steam" />
+              </g>
+
+              {/* Scooter body */}
+              <rect x="10" y="10" width="18" height="7" rx="2" fill="#E8D4B8" opacity="0.95" />
+              <rect x="13" y="8" width="11" height="3" rx="1" fill="#8B5E3C" opacity="0.9" />
+
+              {/* Head + helmet */}
+              <circle cx="24" cy="5.5" r="3" fill="#E8D4B8" />
+              <path d="M21 4.5 Q24 1 27 4.5 L27 6 L21 6 Z" fill="#3D2817" />
+              <circle cx="24" cy="6" r="0.5" fill="#fff" opacity="0.8" />
+
+              {/* Arm holding handle */}
+              <path d="M26 10 L32 5" stroke="#E8D4B8" strokeWidth="1.8" strokeLinecap="round" />
+              {/* Handlebar */}
+              <path d="M31 4 L34 2" stroke="#2A1810" strokeWidth="1.5" strokeLinecap="round" />
+              <circle cx="34" cy="2" r="0.8" fill="#2A1810" />
+
+              {/* Front mudguard */}
+              <path d="M32 12 Q36 12 37 17" stroke="#2A1810" strokeWidth="1.2" fill="none" />
+
+              {/* Wheels (spinning) */}
+              <g className="wheel-spin" style={{ transformOrigin: '14px 21px' }}>
+                <circle cx="14" cy="21" r="4" fill="#1A0F0A" />
+                <circle cx="14" cy="21" r="2.2" fill="#3D2817" />
+                <circle cx="14" cy="21" r="0.6" fill="#C28A52" />
+                <path d="M14 17 L14 25 M10 21 L18 21" stroke="#C28A52" strokeWidth="0.4" opacity="0.6" />
+              </g>
+              <g className="wheel-spin" style={{ transformOrigin: '35px 21px' }}>
+                <circle cx="35" cy="21" r="4" fill="#1A0F0A" />
+                <circle cx="35" cy="21" r="2.2" fill="#3D2817" />
+                <circle cx="35" cy="21" r="0.6" fill="#C28A52" />
+                <path d="M35 17 L35 25 M31 21 L39 21" stroke="#C28A52" strokeWidth="0.4" opacity="0.6" />
+              </g>
+
+              {/* Exhaust puff */}
+              <circle cx="6" cy="19" r="1.2" fill="#fff" opacity="0.3" className="exhaust-puff" />
+            </svg>
+
+            {/* Delivered! bubble on arrival */}
+            <div className="delivered-bubble absolute -top-7 right-0 whitespace-nowrap rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white opacity-0 shadow-lg">
+              ✓ Teslim edildi
+            </div>
+          </div>
+        </div>
+
+        {/* Dots indicator */}
+        <div className="absolute bottom-1.5 left-1/2 z-10 hidden -translate-x-1/2 gap-x-1 sm:flex">
+          {announcements.map((_, i) => (
+            <div
+              key={i}
+              className={`h-[3px] rounded-full transition-all duration-300 ${
+                i === currentIndex ? 'w-4 bg-amber-200' : 'w-1.5 bg-white/25'
+              }`}
+            />
           ))}
         </div>
 
         {/* Close */}
         <button
           onClick={() => setVisible(false)}
-          className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full p-1.5 text-white/50 transition hover:bg-white/10 hover:text-white"
+          className="relative z-10 ml-3 shrink-0 rounded-full p-1 text-white/40 transition hover:bg-white/10 hover:text-white"
           aria-label="Kapat"
         >
           <XMarkIcon className="h-3.5 w-3.5" />
@@ -104,20 +248,90 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
       </div>
 
       <style jsx>{`
-        @keyframes marquee {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
+        /* Scooter trip: enter left, cruise, arrive right, pause, disappear, restart */
+        @keyframes scooterTrip {
+          0%   { left: -60px; opacity: 0; }
+          4%   { opacity: 1; }
+          55%  { left: calc(100% - 110px); opacity: 1; }
+          /* Pause at the house for "delivery" */
+          65%  { left: calc(100% - 110px); opacity: 1; }
+          75%  { left: calc(100% - 110px); opacity: 1; }
+          90%  { left: calc(100% + 60px); opacity: 1; }
+          100% { left: calc(100% + 60px); opacity: 0; }
         }
-        .marquee-track {
-          animation: marquee 38s linear infinite;
+        .scooter-trip { animation: scooterTrip 9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+        /* Wheels spin continuously */
+        @keyframes wheelSpin { to { transform: rotate(360deg); } }
+        .wheel-spin { animation: wheelSpin 0.4s linear infinite; }
+
+        /* Delivered bubble pops in at the right time */
+        @keyframes deliveredPop {
+          0%, 60%   { opacity: 0; transform: translateY(4px) scale(0.8); }
+          65%, 78%  { opacity: 1; transform: translateY(0) scale(1); }
+          85%, 100% { opacity: 0; transform: translateY(-4px) scale(0.9); }
         }
-        /* Pause on hover — allows user to read & click */
-        .marquee-track:hover {
-          animation-play-state: paused;
+        .delivered-bubble { animation: deliveredPop 9s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+
+        /* Road moving backward */
+        @keyframes roadDash {
+          from { background-position: 0 0; }
+          to   { background-position: -40px 0; }
         }
-        /* Respect reduced-motion preference */
+        .road-dash {
+          background-image: linear-gradient(to right, rgba(255, 220, 160, 0.25) 50%, transparent 50%);
+          background-size: 20px 1px;
+          animation: roadDash 0.6s linear infinite;
+        }
+
+        /* Steam puffs rising at different rates */
+        @keyframes steamRise {
+          0%, 100% { transform: translateY(0) scaleY(0.8); opacity: 0.4; }
+          50%      { transform: translateY(-3px) scaleY(1.25); opacity: 1; }
+        }
+        .steam-puff-1 { animation: steamRise 1.9s ease-in-out infinite 0s; transform-origin: bottom; }
+        .steam-puff-2 { animation: steamRise 2.3s ease-in-out infinite 0.3s; transform-origin: bottom; }
+        .steam-puff-3 { animation: steamRise 2.1s ease-in-out infinite 0.6s; transform-origin: bottom; }
+
+        /* Box steam — subtle rise from coffee box */
+        @keyframes boxSteamRise {
+          0%   { transform: translateY(0); opacity: 0.7; }
+          100% { transform: translateY(-4px); opacity: 0; }
+        }
+        .box-steam { animation: boxSteamRise 1.2s ease-out infinite; transform-origin: bottom; }
+
+        /* Exhaust puff */
+        @keyframes exhaustPuff {
+          0%   { opacity: 0.35; transform: scale(1); }
+          100% { opacity: 0; transform: scale(2.2) translateX(-3px); }
+        }
+        .exhaust-puff { animation: exhaustPuff 1s ease-out infinite; transform-origin: center; }
+
+        /* Speed lines pulse */
+        @keyframes speedPulse {
+          0%, 100% { opacity: 0.6; transform: translateY(-50%) scaleX(1); }
+          50%      { opacity: 1; transform: translateY(-50%) scaleX(0.5); }
+        }
+        .speed-lines { animation: speedPulse 0.4s ease-in-out infinite; transform-origin: right; }
+
+        /* Door ring pulse during delivery */
+        @keyframes doorRing {
+          0%, 55%, 85%, 100% { opacity: 0; }
+          60%, 80%           { opacity: 0.9; }
+        }
+        :global(.door-ring) { animation: doorRing 9s ease-in-out infinite; transform-origin: left center; }
+
+        /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
-          .marquee-track { animation: none; }
+          .scooter-trip,
+          .wheel-spin,
+          .delivered-bubble,
+          .road-dash,
+          .steam-puff-1, .steam-puff-2, .steam-puff-3,
+          .box-steam, .exhaust-puff, .speed-lines,
+          :global(.door-ring) {
+            animation: none !important;
+          }
         }
       `}</style>
     </div>
