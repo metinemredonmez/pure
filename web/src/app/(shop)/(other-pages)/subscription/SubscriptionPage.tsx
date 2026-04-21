@@ -109,6 +109,9 @@ export default function SubscriptionPage() {
   // Admin-configurable
   const [gramsList, setGramsList] = useState(DEFAULT_GRAMS)
   const [basePrices, setBasePrices] = useState<Record<string, number>>(DEFAULT_BASE_PRICES)
+  const [durationsList, setDurationsList] = useState(DURATIONS)
+  const [periodsList, setPeriodsList] = useState(PERIODS)
+  const [grindsMap, setGrindsMap] = useState<Record<string, string[]>>(GRINDS_BY_KIND)
 
   // Per-category configurator state (map id → state)
   const [duration, setDuration] = useState<number>(3)
@@ -156,6 +159,35 @@ export default function SubscriptionPage() {
         if (s.subscriptionBasePrices && typeof s.subscriptionBasePrices === 'object') {
           setBasePrices({ ...DEFAULT_BASE_PRICES, ...s.subscriptionBasePrices })
         }
+        if (Array.isArray(s.subscriptionDurations) && s.subscriptionDurations.length) {
+          const normalized = s.subscriptionDurations
+            .map((d: any) => {
+              const months = Number(d.months)
+              if (!months || months <= 0) return null
+              return { months, label: d.label || `${months} ay boyunca` }
+            })
+            .filter(Boolean) as typeof DURATIONS
+          if (normalized.length) setDurationsList(normalized)
+        }
+        if (Array.isArray(s.subscriptionPeriods) && s.subscriptionPeriods.length) {
+          const normalized = s.subscriptionPeriods
+            .map((p: any) => {
+              const weeks = Number(p.weeks)
+              if (!weeks || weeks <= 0) return null
+              return { weeks, label: p.label || `${weeks} haftada 1` }
+            })
+            .filter(Boolean) as typeof PERIODS
+          if (normalized.length) setPeriodsList(normalized)
+        }
+        if (Array.isArray(s.subscriptionGrinds) && s.subscriptionGrinds.length) {
+          const map: Record<string, string[]> = {}
+          s.subscriptionGrinds.forEach((g: any) => {
+            if (g && typeof g.kind === 'string' && Array.isArray(g.options) && g.options.length) {
+              map[g.kind] = g.options.filter((o: any) => typeof o === 'string' && o.trim())
+            }
+          })
+          if (Object.keys(map).length) setGrindsMap(map)
+        }
       })
       .catch(() => {})
   }, [])
@@ -166,6 +198,19 @@ export default function SubscriptionPage() {
       setGramsOpt(gramsList[0].id)
     }
   }, [gramsList, gramsOpt])
+
+  // Reset duration/period if admin list changes and current value isn't available
+  useEffect(() => {
+    if (durationsList.length && !durationsList.find((d) => d.months === duration)) {
+      setDuration(durationsList[0].months)
+    }
+  }, [durationsList, duration])
+
+  useEffect(() => {
+    if (periodsList.length && !periodsList.find((p) => p.weeks === period)) {
+      setPeriod(periodsList[0].weeks)
+    }
+  }, [periodsList, period])
 
   const scrollToPlans = () => {
     document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -238,7 +283,7 @@ export default function SubscriptionPage() {
     const c = categories.find((x) => x.id === id)
     if (!c) return
     setSelectedCategory(id)
-    setGrind(GRINDS_BY_KIND[c.grind]?.[0] || c.grind)
+    setGrind(grindsMap[c.grind]?.[0] || c.grind)
     setSelectedCoffees([])
     setTimeout(() => {
       document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -259,8 +304,8 @@ export default function SubscriptionPage() {
             .join(', ')
         : 'Sürpriz (bariston seçimi)'
 
-    const durLabel = DURATIONS.find((d) => d.months === duration)?.label
-    const perLabel = PERIODS.find((p) => p.weeks === period)?.label
+    const durLabel = durationsList.find((d) => d.months === duration)?.label
+    const perLabel = periodsList.find((p) => p.weeks === period)?.label
     const totalShipments = duration * periodsPerMonth
 
     setAdding(true)
@@ -385,7 +430,7 @@ export default function SubscriptionPage() {
               {formatPrice(totalPrice)}
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              {DURATIONS.find((d) => d.months === duration)?.label} · sevkiyat başı {formatPrice(pricePerShipment)}
+              {durationsList.find((d) => d.months === duration)?.label} · sevkiyat başı {formatPrice(pricePerShipment)}
             </p>
 
             {/* Süre + Peryot */}
@@ -397,7 +442,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setDuration(Number(e.target.value))}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {DURATIONS.map((d) => (
+                  {durationsList.map((d) => (
                     <option key={d.months} value={d.months}>
                       {d.label}
                     </option>
@@ -411,7 +456,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setPeriod(Number(e.target.value))}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {PERIODS.map((p) => (
+                  {periodsList.map((p) => (
                     <option key={p.weeks} value={p.weeks}>
                       {p.label}
                     </option>
@@ -483,7 +528,7 @@ export default function SubscriptionPage() {
                   onChange={(e) => setGrind(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {(GRINDS_BY_KIND[cat.grind] || ['Filtre']).map((g) => (
+                  {(grindsMap[cat.grind] || ['Filtre']).map((g) => (
                     <option key={g} value={g}>
                       {g}
                     </option>

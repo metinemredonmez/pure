@@ -13,6 +13,9 @@ import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 
 interface GramOption { id: string; label: string; grams: number; bags: number }
+interface DurationOption { months: number; label: string }
+interface PeriodOption { weeks: number; label: string }
+interface GrindGroup { kind: string; options: string[] }
 interface SubscriptionBasePrices { 'turk-kahvesi': number; 'espresso': number; 'filtre-kahve': number }
 
 interface SiteSettingsState {
@@ -36,6 +39,9 @@ interface SiteSettingsState {
   franchiseBanners: string[];
   subscriptionGrams: GramOption[];
   subscriptionBasePrices: SubscriptionBasePrices;
+  subscriptionDurations: DurationOption[];
+  subscriptionPeriods: PeriodOption[];
+  subscriptionGrinds: GrindGroup[];
 }
 
 const DEFAULT_GRAMS: GramOption[] = [
@@ -43,6 +49,24 @@ const DEFAULT_GRAMS: GramOption[] = [
   { id: '2x250', label: '2 x 250 g', grams: 500, bags: 2 },
   { id: '3x250', label: '3 x 250 g', grams: 750, bags: 3 },
   { id: '1x1000', label: '1 x 1 kg', grams: 1000, bags: 1 },
+];
+
+const DEFAULT_DURATIONS: DurationOption[] = [
+  { months: 3, label: '3 ay boyunca' },
+  { months: 6, label: '6 ay boyunca' },
+  { months: 12, label: '12 ay boyunca' },
+];
+
+const DEFAULT_PERIODS: PeriodOption[] = [
+  { weeks: 1, label: 'Haftada 1' },
+  { weeks: 2, label: '2 haftada 1' },
+  { weeks: 4, label: 'Ayda 1' },
+];
+
+const DEFAULT_GRINDS: GrindGroup[] = [
+  { kind: 'Türk', options: ['Türk'] },
+  { kind: 'Espresso', options: ['Espresso', 'Moka Pot'] },
+  { kind: 'Filtre', options: ['Filtre', 'French Press', 'Chemex', 'AeroPress'] },
 ];
 
 const defaultSettings: SiteSettingsState = {
@@ -53,6 +77,9 @@ const defaultSettings: SiteSettingsState = {
   franchiseBanners: [],
   subscriptionGrams: DEFAULT_GRAMS,
   subscriptionBasePrices: { 'turk-kahvesi': 180, 'espresso': 180, 'filtre-kahve': 200 },
+  subscriptionDurations: DEFAULT_DURATIONS,
+  subscriptionPeriods: DEFAULT_PERIODS,
+  subscriptionGrinds: DEFAULT_GRINDS,
 };
 
 export default function SiteSettingsPage() {
@@ -92,6 +119,15 @@ export default function SiteSettingsPage() {
         subscriptionBasePrices: data.subscriptionBasePrices && typeof data.subscriptionBasePrices === 'object'
           ? { ...defaultSettings.subscriptionBasePrices, ...data.subscriptionBasePrices }
           : defaultSettings.subscriptionBasePrices,
+        subscriptionDurations: Array.isArray(data.subscriptionDurations) && data.subscriptionDurations.length
+          ? data.subscriptionDurations
+          : DEFAULT_DURATIONS,
+        subscriptionPeriods: Array.isArray(data.subscriptionPeriods) && data.subscriptionPeriods.length
+          ? data.subscriptionPeriods
+          : DEFAULT_PERIODS,
+        subscriptionGrinds: Array.isArray(data.subscriptionGrinds) && data.subscriptionGrinds.length
+          ? data.subscriptionGrinds
+          : DEFAULT_GRINDS,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -353,6 +389,165 @@ export default function SiteSettingsPage() {
                         const arr = settings.subscriptionGrams.filter((_, i) => i !== idx);
                         setSettings({ ...settings, subscriptionGrams: arr });
                       }}
+                    >
+                      Sil
+                    </Button>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Süre Secenekleri</Typography>
+                <Button
+                  size="small"
+                  onClick={() => setSettings({
+                    ...settings,
+                    subscriptionDurations: [...settings.subscriptionDurations, { months: 1, label: 'Yeni Süre' }]
+                  })}
+                >
+                  + Ekle
+                </Button>
+              </Box>
+              {settings.subscriptionDurations.map((d, idx) => (
+                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
+                  <Grid size={{ xs: 12, sm: 7 }}>
+                    <TextField
+                      fullWidth size="small" label="Etiket (ornek: 3 ay boyunca)"
+                      value={d.label}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionDurations];
+                        arr[idx] = { ...arr[idx], label: e.target.value };
+                        setSettings({ ...settings, subscriptionDurations: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <TextField
+                      fullWidth size="small" type="number" label="Ay"
+                      value={d.months}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionDurations];
+                        arr[idx] = { ...arr[idx], months: Number(e.target.value) || 1 };
+                        setSettings({ ...settings, subscriptionDurations: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <Button
+                      fullWidth color="error" size="small"
+                      onClick={() => setSettings({
+                        ...settings,
+                        subscriptionDurations: settings.subscriptionDurations.filter((_, i) => i !== idx)
+                      })}
+                    >
+                      Sil
+                    </Button>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Peryot Secenekleri</Typography>
+                <Button
+                  size="small"
+                  onClick={() => setSettings({
+                    ...settings,
+                    subscriptionPeriods: [...settings.subscriptionPeriods, { weeks: 1, label: 'Yeni Peryot' }]
+                  })}
+                >
+                  + Ekle
+                </Button>
+              </Box>
+              {settings.subscriptionPeriods.map((p, idx) => (
+                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
+                  <Grid size={{ xs: 12, sm: 7 }}>
+                    <TextField
+                      fullWidth size="small" label="Etiket (ornek: 2 haftada 1)"
+                      value={p.label}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionPeriods];
+                        arr[idx] = { ...arr[idx], label: e.target.value };
+                        setSettings({ ...settings, subscriptionPeriods: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <TextField
+                      fullWidth size="small" type="number" label="Hafta"
+                      value={p.weeks}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionPeriods];
+                        arr[idx] = { ...arr[idx], weeks: Number(e.target.value) || 1 };
+                        setSettings({ ...settings, subscriptionPeriods: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 2 }}>
+                    <Button
+                      fullWidth color="error" size="small"
+                      onClick={() => setSettings({
+                        ...settings,
+                        subscriptionPeriods: settings.subscriptionPeriods.filter((_, i) => i !== idx)
+                      })}
+                    >
+                      Sil
+                    </Button>
+                  </Grid>
+                </Grid>
+              ))}
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600 }}>Cekme Derecesi Secenekleri</Typography>
+                <Button
+                  size="small"
+                  onClick={() => setSettings({
+                    ...settings,
+                    subscriptionGrinds: [...settings.subscriptionGrinds, { kind: 'Yeni', options: [''] }]
+                  })}
+                >
+                  + Yeni Grup
+                </Button>
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
+                Her grup, plan adından cikarilan kategori (Türk/Espresso/Filtre). Ornek: Espresso grubunda "Espresso, Moka Pot" gibi.
+              </Typography>
+              {settings.subscriptionGrinds.map((g, idx) => (
+                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
+                  <Grid size={{ xs: 12, sm: 3 }}>
+                    <TextField
+                      fullWidth size="small" label="Grup (Türk/Espresso/Filtre)"
+                      value={g.kind}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionGrinds];
+                        arr[idx] = { ...arr[idx], kind: e.target.value };
+                        setSettings({ ...settings, subscriptionGrinds: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 7 }}>
+                    <TextField
+                      fullWidth size="small" label="Secenekler (virgül ile ayir)"
+                      value={(g.options || []).join(', ')}
+                      onChange={(e) => {
+                        const arr = [...settings.subscriptionGrinds];
+                        arr[idx] = { ...arr[idx], options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) };
+                        setSettings({ ...settings, subscriptionGrinds: arr });
+                      }}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 2 }}>
+                    <Button
+                      fullWidth color="error" size="small"
+                      onClick={() => setSettings({
+                        ...settings,
+                        subscriptionGrinds: settings.subscriptionGrinds.filter((_, i) => i !== idx)
+                      })}
                     >
                       Sil
                     </Button>
