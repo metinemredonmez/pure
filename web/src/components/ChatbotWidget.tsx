@@ -17,10 +17,10 @@ function nowTime() {
 }
 
 const SUGGESTIONS = [
-  '☕ En çok satan kahveler?',
-  '📦 Kargo ne zaman gelir?',
-  '🎁 Kurumsal hediye paketleri',
-  '💳 Nasıl ödeme yapabilirim?',
+  { emoji: '☕', text: 'En çok satan kahveler?' },
+  { emoji: '📦', text: 'Kargo ne zaman gelir?' },
+  { emoji: '🎁', text: 'Kurumsal hediye paketleri' },
+  { emoji: '💳', text: 'Nasıl ödeme yapabilirim?' },
 ]
 
 export default function ChatbotWidget() {
@@ -31,6 +31,7 @@ export default function ChatbotWidget() {
   const [sessionId, setSessionId] = useState<string>('')
   const [hasUnread, setHasUnread] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   // Initialize session
   useEffect(() => {
@@ -41,12 +42,11 @@ export default function ChatbotWidget() {
     }
     setSessionId(sid)
 
-    // Welcome message
     setMessages([
       {
         id: 'welcome',
         role: 'bot',
-        text: 'Merhaba! Pure Olentia asistanıyım ☕ Size nasıl yardımcı olabilirim? Kahve önerisi, sipariş durumu, abonelik veya herhangi bir konuda sorabilirsiniz.',
+        text: 'Merhaba! Pure Olentia asistanıyım. Size nasıl yardımcı olabilirim? Kahve önerisi, sipariş durumu, abonelik veya herhangi bir konuda sorabilirsiniz.',
         time: nowTime(),
       },
     ])
@@ -57,7 +57,12 @@ export default function ChatbotWidget() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, open])
+  }, [messages, open, sending])
+
+  // Focus input when opened
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 150)
+  }, [open])
 
   // Flash unread badge every 30s when closed
   useEffect(() => {
@@ -125,22 +130,40 @@ export default function ChatbotWidget() {
     setSending(false)
   }
 
+  // Logo avatar — stylized coffee bean mark, subtle and premium
+  const BrandAvatar = ({ size = 20, className = '' }: { size?: number; className?: string }) => (
+    <svg viewBox="0 0 24 24" width={size} height={size} className={className} fill="none">
+      <circle cx="12" cy="12" r="11" stroke="currentColor" strokeWidth="1.2" strokeOpacity="0.9" />
+      <path
+        d="M8.5 5.5c2 1.6 2 4.8 0 6.4-2 1.6-2 4.8 0 6.4M15.5 5.5c-2 1.6-2 4.8 0 6.4 2 1.6 2 4.8 0 6.4"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    </svg>
+  )
+
   return (
     <>
       {/* Floating bubble */}
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        aria-label="Sohbet"
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-amber-700 to-primary-800 text-white shadow-2xl transition hover:scale-110 sm:h-16 sm:w-16"
-        style={{ boxShadow: '0 10px 30px rgba(139, 69, 19, 0.4)' }}
+        aria-label={open ? 'Sohbeti kapat' : 'Sohbeti aç'}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#8B5E3C] via-[#6B4423] to-[#3D2817] text-white transition-all duration-300 hover:scale-110 active:scale-95 sm:h-16 sm:w-16"
+        style={{ boxShadow: '0 12px 36px -6px rgba(61, 40, 23, 0.55), 0 4px 12px rgba(0, 0, 0, 0.15)' }}
       >
-        {/* Steam animation — only when closed */}
+        {/* Soft glow ring when closed */}
         {!open && (
-          <div className="pointer-events-none absolute -top-2 left-1/2 flex -translate-x-1/2 gap-0.5">
-            <span className="block h-3 w-0.5 rounded-full bg-white/40 animate-steam-1" />
-            <span className="block h-4 w-0.5 rounded-full bg-white/50 animate-steam-2" />
-            <span className="block h-3 w-0.5 rounded-full bg-white/40 animate-steam-3" />
+          <span className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-300/20 to-transparent" aria-hidden />
+        )}
+
+        {/* Steam (only when closed) */}
+        {!open && (
+          <div className="pointer-events-none absolute -top-2.5 left-1/2 flex -translate-x-1/2 gap-0.5" aria-hidden>
+            <span className="block h-3 w-0.5 rounded-full bg-white/50 animate-steam-1" />
+            <span className="block h-4 w-0.5 rounded-full bg-white/60 animate-steam-2" />
+            <span className="block h-3 w-0.5 rounded-full bg-white/50 animate-steam-3" />
           </div>
         )}
 
@@ -150,89 +173,147 @@ export default function ChatbotWidget() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          <svg className="h-7 w-7 animate-cup-wobble" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.7}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h13v6a4 4 0 01-4 4H7a4 4 0 01-4-4V8zM16 10h1a3 3 0 010 6h-1" />
-            <path strokeLinecap="round" d="M7 3.5c0 1 1 1 1 2M10 3.5c0 1 1 1 1 2M13 3.5c0 1 1 1 1 2" className="animate-pulse" />
           </svg>
         )}
 
         {/* Unread dot */}
         {!open && hasUnread && (
-          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5" aria-hidden>
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-red-500" />
+            <span className="relative inline-flex h-3.5 w-3.5 rounded-full border-2 border-white bg-red-500" />
           </span>
         )}
       </button>
 
       {/* Chat panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 z-50 flex h-[550px] max-h-[80vh] w-[calc(100vw-3rem)] max-w-sm flex-col overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-2xl dark:border-neutral-700 dark:bg-neutral-900">
-          {/* Header */}
-          <div className="flex items-center gap-3 bg-gradient-to-r from-primary-800 to-amber-800 px-4 py-3 text-white">
-            <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8h13v6a4 4 0 01-4 4H7a4 4 0 01-4-4V8zM16 10h1a3 3 0 010 6h-1" />
-              </svg>
-              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-400" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold">Pure Olentia Asistan</p>
-              <p className="text-xs text-white/70">Çevrimiçi • Genelde dakikalar içinde cevaplar</p>
-            </div>
-            <button
-              onClick={() => setOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-white/10"
-            >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+        <div
+          className="fixed bottom-24 right-6 z-50 flex h-[580px] max-h-[82vh] w-[calc(100vw-3rem)] max-w-[380px] flex-col overflow-hidden rounded-3xl border border-neutral-200/80 bg-white backdrop-blur-xl animate-chat-in dark:border-neutral-800 dark:bg-neutral-900"
+          style={{ boxShadow: '0 25px 60px -12px rgba(61, 40, 23, 0.35), 0 8px 24px -8px rgba(0, 0, 0, 0.12)' }}
+        >
+          {/* Header — premium with pattern */}
+          <div className="relative overflow-hidden">
+            {/* Gradient layer */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#6B4423] via-[#5A3A1E] to-[#3D2817]" aria-hidden />
+            {/* Subtle pattern */}
+            <div
+              className="absolute inset-0 opacity-[0.08]"
+              aria-hidden
+              style={{
+                backgroundImage:
+                  'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4) 1px, transparent 1px), radial-gradient(circle at 70% 70%, rgba(255,255,255,0.3) 1px, transparent 1px)',
+                backgroundSize: '24px 24px',
+              }}
+            />
 
-          {/* Messages */}
-          <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto bg-neutral-50 p-4 dark:bg-neutral-800/50">
-            {messages.map((m) => (
-              <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm ${
-                    m.role === 'user'
-                      ? 'rounded-br-sm bg-primary-700 text-white'
-                      : 'rounded-bl-sm bg-white text-neutral-900 shadow-sm dark:bg-neutral-700 dark:text-neutral-100'
-                  }`}
-                >
-                  <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
-                  <p
-                    className={`mt-1 text-[10px] ${
-                      m.role === 'user' ? 'text-white/60' : 'text-neutral-400'
-                    }`}
-                  >
-                    {m.time}
-                  </p>
+            <div className="relative flex items-center gap-3 px-4 py-3.5 text-white">
+              {/* Avatar */}
+              <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-white/25 to-white/5 ring-1 ring-white/25 backdrop-blur-sm">
+                <BrandAvatar size={22} className="text-white" />
+                {/* Online indicator */}
+                <span className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-[#5A3A1E]">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-400" />
+                </span>
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[14px] font-semibold leading-tight tracking-tight">
+                  Pure Olentia Asistan
+                </p>
+                <div className="mt-0.5 flex items-center gap-1.5">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-400/20 px-1.5 py-px text-[10px] font-medium text-emerald-100 ring-1 ring-inset ring-emerald-300/30">
+                    <span className="h-1 w-1 rounded-full bg-emerald-300" />
+                    Çevrimiçi
+                  </span>
+                  <span className="truncate text-[11px] text-white/60">Genelde dakikalar içinde</span>
                 </div>
               </div>
-            ))}
+
+              <button
+                onClick={() => setOpen(false)}
+                aria-label="Kapat"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white/80 transition hover:bg-white/15 hover:text-white"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Messages area */}
+          <div
+            ref={scrollRef}
+            className="flex-1 space-y-3 overflow-y-auto px-4 py-4"
+            style={{
+              background:
+                'linear-gradient(180deg, #FAF6F1 0%, #F5EFE7 100%)',
+            }}
+          >
+            {messages.map((m, i) => {
+              const prev = messages[i - 1]
+              const isFirstInGroup = !prev || prev.role !== m.role
+              return (
+                <div key={m.id} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  {/* Bot avatar appears only for first message in group */}
+                  {m.role === 'bot' && (
+                    <div className="mr-2 flex h-7 w-7 shrink-0 items-end">
+                      {isFirstInGroup && (
+                        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#8B5E3C] to-[#5A3A1E] text-white shadow-sm">
+                          <BrandAvatar size={14} className="text-white" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div
+                    className={`max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13.5px] leading-relaxed shadow-sm ${
+                      m.role === 'user'
+                        ? 'rounded-br-md bg-gradient-to-br from-[#6B4423] to-[#4A2F1A] text-white'
+                        : 'rounded-bl-md bg-white text-neutral-900 ring-1 ring-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{m.text}</p>
+                    <p
+                      className={`mt-1 text-[10px] tracking-wide ${
+                        m.role === 'user' ? 'text-white/55' : 'text-neutral-400'
+                      }`}
+                    >
+                      {m.time}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+
             {sending && (
               <div className="flex justify-start">
-                <div className="flex gap-1 rounded-2xl rounded-bl-sm bg-white px-4 py-3 shadow-sm dark:bg-neutral-700">
-                  <span className="block h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.3s]" />
-                  <span className="block h-2 w-2 animate-bounce rounded-full bg-neutral-400 [animation-delay:-0.15s]" />
-                  <span className="block h-2 w-2 animate-bounce rounded-full bg-neutral-400" />
+                <div className="mr-2 flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#8B5E3C] to-[#5A3A1E] text-white shadow-sm">
+                  <BrandAvatar size={14} className="text-white" />
+                </div>
+                <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white px-4 py-3 shadow-sm ring-1 ring-neutral-100 dark:bg-neutral-800 dark:ring-neutral-700">
+                  <span className="block h-1.5 w-1.5 animate-typing-dot rounded-full bg-[#8B5E3C]" style={{ animationDelay: '0s' }} />
+                  <span className="block h-1.5 w-1.5 animate-typing-dot rounded-full bg-[#8B5E3C]" style={{ animationDelay: '0.15s' }} />
+                  <span className="block h-1.5 w-1.5 animate-typing-dot rounded-full bg-[#8B5E3C]" style={{ animationDelay: '0.3s' }} />
                 </div>
               </div>
             )}
           </div>
 
-          {/* Quick suggestions — always visible so user can keep asking */}
-          <div className="hidden-scrollbar flex gap-1.5 overflow-x-auto border-t border-neutral-100 bg-white px-3 py-2 dark:border-neutral-700 dark:bg-neutral-900">
+          {/* Suggestions */}
+          <div className="hidden-scrollbar flex gap-1.5 overflow-x-auto border-t border-neutral-100 bg-white/80 px-3 py-2 backdrop-blur dark:border-neutral-800 dark:bg-neutral-900/80">
             {SUGGESTIONS.map((s) => (
               <button
-                key={s}
-                onClick={() => send(s.replace(/^[^\s]+\s/, ''))}
+                key={s.text}
+                onClick={() => send(s.text)}
                 disabled={sending}
-                className="whitespace-nowrap rounded-full border border-neutral-200 px-3 py-1 text-xs text-neutral-700 transition hover:border-primary-400 hover:bg-primary-50 disabled:opacity-50 dark:border-neutral-700 dark:text-neutral-300"
+                className="group flex shrink-0 items-center gap-1.5 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-[11.5px] font-medium text-neutral-700 shadow-sm transition hover:border-[#8B5E3C] hover:bg-[#FAF6F1] hover:text-[#5A3A1E] disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
               >
-                {s}
+                <span className="text-sm">{s.emoji}</span>
+                <span className="whitespace-nowrap">{s.text}</span>
               </button>
             ))}
           </div>
@@ -243,30 +324,31 @@ export default function ChatbotWidget() {
               e.preventDefault()
               send()
             }}
-            className="flex items-center gap-2 border-t border-neutral-200 bg-white p-3 dark:border-neutral-700 dark:bg-neutral-900"
+            className="flex items-center gap-2 border-t border-neutral-100 bg-white p-3 dark:border-neutral-800 dark:bg-neutral-900"
           >
             <input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Mesajınızı yazın..."
               disabled={sending}
-              className="flex-1 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-200 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
+              className="flex-1 rounded-full border border-neutral-200 bg-neutral-50 px-4 py-2.5 text-sm transition focus:border-[#8B5E3C] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#8B5E3C]/20 disabled:opacity-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white dark:focus:bg-neutral-800"
             />
             <button
               type="submit"
               disabled={!input.trim() || sending}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-700 text-white transition hover:bg-primary-800 disabled:opacity-50"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#6B4423] to-[#3D2817] text-white shadow-md transition hover:shadow-lg active:scale-95 disabled:opacity-40 disabled:shadow-none"
               aria-label="Gönder"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              <svg className="h-4 w-4 -translate-x-px translate-y-px" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3.4 20.4l17.45-7.48a1 1 0 000-1.84L3.4 3.6a1 1 0 00-1.4 1.05L4 12l-2 7.35a1 1 0 001.4 1.05z" />
               </svg>
             </button>
           </form>
         </div>
       )}
 
-      {/* Inline styles for custom animations */}
+      {/* Animations */}
       <style jsx global>{`
         @keyframes steam-1 {
           0%, 100% { transform: translateY(0) scaleY(0.8); opacity: 0.3; }
@@ -280,14 +362,21 @@ export default function ChatbotWidget() {
           0%, 100% { transform: translateY(0) scaleY(0.9); opacity: 0.4; }
           50% { transform: translateY(-5px) scaleY(1.1); opacity: 0.8; }
         }
-        @keyframes cup-wobble {
-          0%, 100% { transform: rotate(-3deg); }
-          50% { transform: rotate(3deg); }
+        @keyframes typing-dot {
+          0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+          30% { transform: translateY(-4px); opacity: 1; }
+        }
+        @keyframes chat-in {
+          from { opacity: 0; transform: translateY(12px) scale(0.96); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         .animate-steam-1 { animation: steam-1 1.8s ease-in-out infinite; }
         .animate-steam-2 { animation: steam-2 2.2s ease-in-out infinite 0.3s; }
         .animate-steam-3 { animation: steam-3 2s ease-in-out infinite 0.6s; }
-        .animate-cup-wobble { animation: cup-wobble 3s ease-in-out infinite; transform-origin: bottom center; }
+        .animate-typing-dot { animation: typing-dot 1.2s ease-in-out infinite; }
+        .animate-chat-in { animation: chat-in 220ms cubic-bezier(0.22, 1, 0.36, 1); transform-origin: bottom right; }
+        .hidden-scrollbar::-webkit-scrollbar { display: none; }
+        .hidden-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </>
   )
