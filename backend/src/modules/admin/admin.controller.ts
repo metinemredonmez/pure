@@ -112,6 +112,8 @@ export class AdminController {
       minOrderAmount: dto.minOrderAmount,
       maxDiscount: dto.maxDiscount,
       maxUses: dto.maxUses,
+      isActive: dto.isActive,
+      startsAt: dto.startsAt ? new Date(dto.startsAt) : undefined,
       expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : undefined,
     });
   }
@@ -120,6 +122,7 @@ export class AdminController {
   @ApiOperation({ summary: 'Update coupon' })
   updateCoupon(@Param('id') id: string, @Body() dto: UpdateCouponDto) {
     const data = { ...dto } as Record<string, unknown>;
+    if (dto.startsAt) data.startsAt = new Date(dto.startsAt);
     if (dto.expiresAt) data.expiresAt = new Date(dto.expiresAt);
     return this.adminService.updateCoupon(id, data);
   }

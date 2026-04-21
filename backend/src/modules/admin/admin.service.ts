@@ -477,6 +477,8 @@ export class AdminService {
     minOrderAmount?: number;
     maxDiscount?: number;
     maxUses?: number;
+    isActive?: boolean;
+    startsAt?: Date;
     expiresAt?: Date;
   }) {
     return this.prisma.coupon.create({
@@ -488,8 +490,9 @@ export class AdminService {
         minOrderAmount: data.minOrderAmount,
         maxDiscount: data.maxDiscount,
         maxUses: data.maxUses,
+        startsAt: data.startsAt,
         expiresAt: data.expiresAt,
-        isActive: true,
+        isActive: data.isActive ?? true,
       },
     });
   }
