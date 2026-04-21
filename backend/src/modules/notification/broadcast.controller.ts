@@ -3,7 +3,8 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { IsArray, IsEnum, IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { BroadcastService, BroadcastAudience, BroadcastChannel } from './broadcast.service';
+import { BroadcastService } from './broadcast.service';
+import type { BroadcastAudience, BroadcastChannel } from './broadcast.service';
 
 class SendBroadcastDto {
   @IsIn(['ALL', 'CUSTOMERS', 'SUBSCRIBERS', 'MANUAL'])
