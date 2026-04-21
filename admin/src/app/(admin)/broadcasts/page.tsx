@@ -270,19 +270,40 @@ export default function BroadcastsPage() {
 
                 <Grid size={{ xs: 12 }}>
                   <Divider sx={{ my: 1 }} />
-                  <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
-                    <Button
-                      variant="contained" color="primary" size="medium"
-                      startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
-                      onClick={handleSendClick}
-                      disabled={loading || !subject.trim() || !body.trim()}
-                    >
-                      {loading ? 'Gönderiliyor...' : 'Şimdi Gönder'}
-                    </Button>
-                    <Typography variant="caption" color="text.secondary">
-                      Gönderim işlemi geri alınamaz
-                    </Typography>
-                  </Stack>
+                  {(() => {
+                    const missing: string[] = [];
+                    if (!subject.trim()) missing.push('Konu');
+                    if (!body.trim()) missing.push('İçerik');
+                    if (audience === 'MANUAL' && manualEmails.length === 0) missing.push('Manuel liste');
+                    const disabled = loading || missing.length > 0;
+                    return (
+                      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Tooltip title={missing.length ? `Eksik alanlar: ${missing.join(', ')}` : ''} arrow>
+                          <span>
+                            <Button
+                              variant="contained" color="primary" size="medium"
+                              startIcon={loading ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
+                              onClick={handleSendClick}
+                              disabled={disabled}
+                            >
+                              {loading ? 'Gönderiliyor...' : 'Şimdi Gönder'}
+                            </Button>
+                          </span>
+                        </Tooltip>
+                        {missing.length > 0 ? (
+                          <Stack direction="row" spacing={0.75} flexWrap="wrap" useFlexGap>
+                            {missing.map((m) => (
+                              <Chip key={m} label={`Eksik: ${m}`} size="small" color="warning" variant="outlined" />
+                            ))}
+                          </Stack>
+                        ) : (
+                          <Typography variant="caption" color="text.secondary">
+                            Gönderim işlemi geri alınamaz
+                          </Typography>
+                        )}
+                      </Stack>
+                    );
+                  })()}
                 </Grid>
 
                 {error && (
