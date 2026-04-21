@@ -51,15 +51,6 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
       {/* Bottom hairline */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-black/25" aria-hidden />
 
-      {/* Road (dashed line moving leftward) */}
-      <div
-        className="pointer-events-none absolute inset-x-0 z-0"
-        style={{ top: 'calc(50% + 14px)' }}
-        aria-hidden
-      >
-        <div className="road-dash h-px w-full" />
-      </div>
-
       <div className="container relative flex h-[60px] items-center">
         {/* LEFT: Coffee shop */}
         <div className="relative z-10 hidden shrink-0 items-center gap-x-2 pr-3 sm:flex">
@@ -278,17 +269,6 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
         }
         .delivered-bubble { animation: deliveredPop 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
 
-        /* Road moving backward */
-        @keyframes roadDash {
-          from { background-position: 0 0; }
-          to   { background-position: -40px 0; }
-        }
-        .road-dash {
-          background-image: linear-gradient(to right, rgba(255, 220, 160, 0.25) 50%, transparent 50%);
-          background-size: 20px 1px;
-          animation: roadDash 0.6s linear infinite;
-        }
-
         /* Steam puffs rising at different rates */
         @keyframes steamRise {
           0%, 100% { transform: translateY(0) scaleY(0.8); opacity: 0.4; }
@@ -331,7 +311,6 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
           .scooter-trip,
           .wheel-spin,
           .delivered-bubble,
-          .road-dash,
           .steam-puff-1, .steam-puff-2, .steam-puff-3,
           .box-steam, .exhaust-puff, .speed-lines,
           :global(.door-ring) {
