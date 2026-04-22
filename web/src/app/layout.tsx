@@ -56,8 +56,62 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               await OneSignal.init({
                 appId: "${ONESIGNAL_APP_ID}",
                 safari_web_id: undefined,
-                notifyButton: { enable: false },
                 allowLocalhostAsSecureOrigin: true,
+                notifyButton: {
+                  enable: true,
+                  size: 'medium',
+                  theme: 'default',
+                  position: 'bottom-left',
+                  offset: { bottom: '20px', left: '20px', right: '0', top: '0' },
+                  prenotify: true,
+                  showCredit: false,
+                  text: {
+                    'tip.state.unsubscribed': 'Bildirimlere abone ol',
+                    'tip.state.subscribed': 'Bildirimlere abonesiniz',
+                    'tip.state.blocked': 'Bildirimleri engellediniz',
+                    'message.prenotify': 'Yeni kahvelerden haberdar olmak için tıklayın',
+                    'message.action.subscribed': 'Teşekkürler, artık abonesiniz!',
+                    'message.action.resubscribed': 'Yeniden abonesiniz',
+                    'message.action.unsubscribed': 'Artık bildirim almayacaksınız',
+                    'dialog.main.title': 'Site Bildirimleri',
+                    'dialog.main.button.subscribe': 'ABONE OL',
+                    'dialog.main.button.unsubscribe': 'ABONELİKTEN ÇIK',
+                    'dialog.blocked.title': 'Bildirimler Engellendi',
+                    'dialog.blocked.message': 'Tarayıcı ayarlarından bildirimlere izin vermelisiniz.',
+                  },
+                  colors: {
+                    'circle.background': '#3D2817',
+                    'circle.foreground': '#ffffff',
+                    'badge.background': '#C28A52',
+                    'badge.foreground': '#ffffff',
+                    'badge.bordercolor': '#ffffff',
+                    'pulse.color': '#C28A52',
+                    'dialog.button.background.hovering': '#5A3A1E',
+                    'dialog.button.background.active': '#3D2817',
+                    'dialog.button.background': '#4A2F1A',
+                    'dialog.button.foreground': '#ffffff',
+                  },
+                },
+                promptOptions: {
+                  slidedown: {
+                    prompts: [
+                      {
+                        type: 'push',
+                        autoPrompt: true,
+                        text: {
+                          actionMessage:
+                            'Yeni kahvelerden, özel indirimlerden ve kampanyalardan ilk siz haberdar olun.',
+                          acceptButton: 'İzin Ver',
+                          cancelButton: 'Belki Sonra',
+                        },
+                        delay: {
+                          pageViews: 1,
+                          timeDelay: 12,
+                        },
+                      },
+                    ],
+                  },
+                },
               });
             });
           `}
