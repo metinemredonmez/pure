@@ -113,17 +113,38 @@ const CartProduct = ({
 
   return (
     <div className="flex py-5 last:pb-0">
-      <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100">
-        {image && (
+      <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-amber-50 to-primary-50 dark:from-neutral-800 dark:to-neutral-900">
+        {image ? (
           <Image
             fill
             src={image}
             alt={name}
-            className="object-contain"
+            className="object-cover"
             sizes="200px"
           />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <svg
+              className="h-10 w-10 text-primary-700/50 dark:text-primary-400/40"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              {/* steam */}
+              <path d="M8 3c0 1 1 1 1 2M11 3c0 1 1 1 1 2M14 3c0 1 1 1 1 2" opacity="0.55" />
+              {/* cup */}
+              <path d="M3 8h13v6a4 4 0 01-4 4H7a4 4 0 01-4-4V8z" />
+              <path d="M16 10h1a3 3 0 010 6h-1" />
+              {/* saucer */}
+              <path d="M2 21h16" opacity="0.55" />
+            </svg>
+          </div>
         )}
-        <Link className="absolute inset-0" href={'/products/' + handle} />
+        <Link className="absolute inset-0" href={handle === 'subscription' ? '/subscription' : '/products/' + handle} />
       </div>
 
       <div className="ml-4 flex flex-1 flex-col">

@@ -354,6 +354,7 @@ export default function SubscriptionPage() {
       price: totalPrice,
       quantity: 1,
       size: gramsInfo.label,
+      image: cat.fallbackImage,
     })
 
     toast.success(`Abonelik sepete eklendi — tüm ${duration} ay tek ödemede`, { duration: 2500 })

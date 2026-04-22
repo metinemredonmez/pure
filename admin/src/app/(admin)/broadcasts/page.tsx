@@ -33,13 +33,73 @@ const CHANNEL_LABELS: Record<Channel, string> = {
   PUSH: 'Push Bildirim',
 };
 
-const ERROR_HINTS: Record<string, string> = {
-  'onesignal-broadcast': 'OneSignal push servisi yapılandırılmamış veya API anahtarı geçersiz. Entegrasyonlar → OneSignal ayarlarını kontrol edin.',
-  'onesignal-not-configured': 'OneSignal App ID veya API Key eksik. Entegrasyonlar sayfasından tanımlayın.',
-  'smtp-not-configured': 'SMTP sunucu ayarları yapılmamış. Entegrasyonlar → SMTP bölümünden tanımlayın.',
-  'smtp-send-failed': 'E-posta gönderimi başarısız — SMTP kimlik doğrulaması veya sunucu erişimi hatalı.',
-  'no-recipients': 'Hedef kitle boş — alıcı bulunamadı.',
+const ERROR_HINTS: Record<string, { title: string; detail: string; action?: string }> = {
+  'onesignal-broadcast': {
+    title: 'OneSignal gönderimi başarısız',
+    detail: 'OneSignal isteği reddetti. Aşağıdaki orijinal hata mesajına bakın.',
+    action: 'Entegrasyonlar → OneSignal ayarlarını kontrol edin (App ID + REST API Key).',
+  },
+  'onesignal-not-configured': {
+    title: 'OneSignal yapılandırılmamış',
+    detail: 'App ID veya API Key tanımlı değil.',
+    action: 'Entegrasyonlar → OneSignal bölümünden ekleyin.',
+  },
+  'smtp-not-configured': {
+    title: 'SMTP yapılandırılmamış',
+    detail: 'E-posta sunucu ayarları boş.',
+    action: 'Entegrasyonlar → SMTP bölümünden tanımlayın.',
+  },
+  'smtp-send-failed': {
+    title: 'E-posta gönderimi başarısız',
+    detail: 'SMTP kimlik doğrulaması veya sunucu erişimi başarısız.',
+    action: 'SMTP kullanıcı/parola ve port ayarlarını doğrulayın.',
+  },
+  'no-recipients': {
+    title: 'Alıcı bulunamadı',
+    detail: 'Hedef kitle boş.',
+  },
 };
+
+// Map raw OneSignal / provider error messages to user-friendly explanations
+function classifyRawError(raw: string): { title: string; detail: string; action?: string } | null {
+  const r = raw.toLowerCase();
+  if (r.includes('not subscribed') || r.includes('included players are not')) {
+    return {
+      title: 'Hiç aktif push abonesi yok',
+      detail: 'Sistemde kayıtlı kullanıcılar push bildirimine izin vermemiş ya da abonelikleri pasif. OneSignal sadece push iznini onaylamış cihazlara gönderim yapar.',
+      action: 'Test için: bir tarayıcıda siteyi açın, push izin penceresini onaylayın. Sonra "Manuel" hedefle değil "Tüm Kullanıcılar" ile tekrar gönderin.',
+    };
+  }
+  if (r.includes('invalid_player_ids') || r.includes('invalid playerids')) {
+    return {
+      title: 'Player ID listesi geçersiz',
+      detail: 'OneSignal hedef cihazları tanımıyor.',
+      action: 'OneSignal panelinde abone listesini kontrol edin.',
+    };
+  }
+  if (r.includes('rate limit')) {
+    return {
+      title: 'Hız limiti aşıldı',
+      detail: 'OneSignal kısa sürede çok istek aldığını söylüyor.',
+      action: 'Birkaç dakika bekleyin ve tekrar deneyin.',
+    };
+  }
+  if (r.includes('app_id') || r.includes('app id')) {
+    return {
+      title: 'OneSignal App ID hatalı',
+      detail: 'Entegrasyon ayarındaki App ID OneSignal panelindekiyle eşleşmiyor.',
+      action: 'Entegrasyonlar → OneSignal bölümünden App ID değerini doğrulayın.',
+    };
+  }
+  if (r.includes('rest api') || r.includes('unauthorized') || r.includes('401') || r.includes('403')) {
+    return {
+      title: 'OneSignal yetkisiz',
+      detail: 'REST API Key geçersiz ya da yanlış key kullanılıyor.',
+      action: 'OneSignal → Settings → Keys & IDs → REST API Key değerini güncelleyin.',
+    };
+  }
+  return null;
+}
 
 function unwrap(d: any): any {
   let c = d;
@@ -51,9 +111,15 @@ function unwrap(d: any): any {
   return c;
 }
 
-function humanizeError(code: string): string {
+function humanizeError(code: string, raw?: string): { title: string; detail: string; action?: string } {
+  // First try mapping the raw OneSignal/SMTP error text — it's most specific
+  if (raw) {
+    const cls = classifyRawError(raw);
+    if (cls) return cls;
+  }
+  // Fall back to the code-level hint
   if (ERROR_HINTS[code]) return ERROR_HINTS[code];
-  return code;
+  return { title: code, detail: raw || 'Detay yok.' };
 }
 
 export default function BroadcastsPage() {
@@ -139,13 +205,18 @@ export default function BroadcastsPage() {
   const totalAttempts = result ? (result.sent || 0) + (result.failed || 0) : 0;
   const successRate = totalAttempts > 0 ? Math.round(((result?.sent || 0) / totalAttempts) * 100) : 0;
 
-  // Group errors by code for cleaner display
-  const groupedErrors: Record<string, string[]> = {};
+  // Group errors by raw message (most informative) — collect emails per group.
+  // Backend may send {email, error} where 'email' can be a synthetic marker
+  // like "onesignal-broadcast" rather than a real address.
+  const groupedErrors: Record<string, { rawCode: string; emails: string[] }> = {};
   if (result?.errors?.length) {
     result.errors.forEach((e: any) => {
-      const key = e.code || e.reason || 'unknown';
-      if (!groupedErrors[key]) groupedErrors[key] = [];
-      if (e.email) groupedErrors[key].push(e.email);
+      const rawMsg = String(e.error || e.reason || e.message || '').trim();
+      const codeMarker = String(e.email || e.code || 'unknown');
+      const isSyntheticMarker = codeMarker.includes('-') && !codeMarker.includes('@');
+      const key = rawMsg || codeMarker;
+      if (!groupedErrors[key]) groupedErrors[key] = { rawCode: codeMarker, emails: [] };
+      if (!isSyntheticMarker && codeMarker) groupedErrors[key].emails.push(codeMarker);
     });
   }
 
@@ -389,35 +460,107 @@ export default function BroadcastsPage() {
                             endIcon={<ExpandMoreIcon sx={{ transform: showErrors ? 'rotate(180deg)' : 'none', transition: 'transform .2s' }} />}
                             sx={{ textTransform: 'none' }}
                           >
-                            Hata Detayları ({Object.values(groupedErrors).reduce((n, arr) => n + Math.max(arr.length, 1), 0)})
+                            Hata Detayları ({Object.keys(groupedErrors).length} farklı sebep)
                           </Button>
-                          <Collapse in={showErrors}>
-                            <Stack spacing={1.5} sx={{ mt: 1 }}>
-                              {Object.entries(groupedErrors).map(([code, emails]) => (
-                                <Paper key={code} variant="outlined" sx={{ p: 1.5, bgcolor: 'background.paper' }}>
-                                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-                                    <Chip
-                                      label={code}
-                                      size="small"
-                                      color="error"
-                                      variant="outlined"
-                                      sx={{ fontFamily: 'monospace', fontSize: 10 }}
-                                    />
-                                    <Typography variant="caption" color="text.secondary">
-                                      {emails.length > 0 ? `${emails.length} alıcı` : 'Toplu hata'}
-                                    </Typography>
-                                  </Stack>
-                                  <Typography variant="caption" sx={{ display: 'block', mb: 1 }}>
-                                    {humanizeError(code)}
-                                  </Typography>
-                                  {emails.length > 0 && (
-                                    <Box sx={{ maxHeight: 120, overflow: 'auto', bgcolor: 'action.hover', p: 1, borderRadius: 1, fontFamily: 'monospace', fontSize: 11 }}>
-                                      {emails.slice(0, 50).join(', ')}
-                                      {emails.length > 50 && ` ... +${emails.length - 50} daha`}
-                                    </Box>
-                                  )}
-                                </Paper>
-                              ))}
+                          <Collapse in={showErrors} sx={{ mt: 1 }}>
+                            <Stack spacing={1.5}>
+                              {Object.entries(groupedErrors).map(([rawMsg, info]) => {
+                                const human = humanizeError(info.rawCode, rawMsg);
+                                return (
+                                  <Paper
+                                    key={rawMsg}
+                                    variant="outlined"
+                                    sx={{
+                                      p: 2,
+                                      bgcolor: 'background.paper',
+                                      borderColor: 'error.light',
+                                    }}
+                                  >
+                                    <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                                      <ErrorIcon sx={{ color: 'error.main', fontSize: 20, mt: 0.25 }} />
+                                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                                        <Typography variant="subtitle2" fontWeight={700} sx={{ color: 'error.main' }}>
+                                          {human.title}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, lineHeight: 1.5 }}>
+                                          {human.detail}
+                                        </Typography>
+                                        {human.action && (
+                                          <Box
+                                            sx={{
+                                              mt: 1.25,
+                                              p: 1.25,
+                                              bgcolor: 'info.50',
+                                              border: '1px solid',
+                                              borderColor: 'info.light',
+                                              borderRadius: 1,
+                                              display: 'flex',
+                                              gap: 1,
+                                              alignItems: 'flex-start',
+                                            }}
+                                          >
+                                            <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 700, lineHeight: 1.6 }}>
+                                              ÇÖZÜM
+                                            </Typography>
+                                            <Typography variant="caption" sx={{ color: 'text.primary', lineHeight: 1.6 }}>
+                                              {human.action}
+                                            </Typography>
+                                          </Box>
+                                        )}
+                                        {/* Original raw error message — collapsible mono */}
+                                        <Box
+                                          component="details"
+                                          sx={{
+                                            mt: 1.25,
+                                            '& summary': {
+                                              cursor: 'pointer',
+                                              fontSize: 11,
+                                              color: 'text.disabled',
+                                              userSelect: 'none',
+                                            },
+                                          }}
+                                        >
+                                          <summary>Orijinal hata mesajı</summary>
+                                          <Box
+                                            sx={{
+                                              mt: 0.75,
+                                              p: 1,
+                                              bgcolor: 'action.hover',
+                                              borderRadius: 1,
+                                              fontFamily: 'monospace',
+                                              fontSize: 11,
+                                              wordBreak: 'break-word',
+                                            }}
+                                          >
+                                            <strong>{info.rawCode}</strong>: {rawMsg}
+                                          </Box>
+                                        </Box>
+                                        {info.emails.length > 0 && (
+                                          <Box sx={{ mt: 1.25 }}>
+                                            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block' }}>
+                                              Etkilenen alıcılar ({info.emails.length})
+                                            </Typography>
+                                            <Box
+                                              sx={{
+                                                maxHeight: 120,
+                                                overflow: 'auto',
+                                                bgcolor: 'action.hover',
+                                                p: 1,
+                                                borderRadius: 1,
+                                                fontFamily: 'monospace',
+                                                fontSize: 11,
+                                              }}
+                                            >
+                                              {info.emails.slice(0, 50).join(', ')}
+                                              {info.emails.length > 50 && ` ... +${info.emails.length - 50} daha`}
+                                            </Box>
+                                          </Box>
+                                        )}
+                                      </Box>
+                                    </Stack>
+                                  </Paper>
+                                );
+                              })}
                             </Stack>
                           </Collapse>
                         </Box>
