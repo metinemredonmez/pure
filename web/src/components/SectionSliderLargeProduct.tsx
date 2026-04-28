@@ -17,6 +17,8 @@ export interface SectionSliderLargeProductProps {
   products: TProductItem[]
   heading?: string
   headingDim?: string
+  viewAllLabel?: string
+  viewAllCaption?: string
   emblaOptions?: EmblaOptionsType
 }
 
@@ -25,6 +27,8 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
   products,
   heading = 'Uzmanlar seçti',
   headingDim = 'Haftanın favorileri',
+  viewAllLabel = 'Daha fazla',
+  viewAllCaption = 'Tümünü gör',
   emblaOptions = {
     slidesToScroll: 'auto',
   },
@@ -64,7 +68,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
               <div className="h-[410px] bg-black/5 dark:bg-neutral-800"></div>
               <div className="absolute inset-x-10 inset-y-6 flex flex-col items-center justify-center">
                 <div className="relative flex items-center justify-center">
-                  <span className="text-xl font-semibold">Daha fazla</span>
+                  <span className="text-xl font-semibold">{viewAllLabel}</span>
                   <HugeiconsIcon
                     icon={ArrowUpRight01Icon}
                     size={24}
@@ -73,7 +77,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
                     strokeWidth={1.5}
                   />
                 </div>
-                <span className="mt-1 text-sm">Tümünü gör</span>
+                <span className="mt-1 text-sm">{viewAllCaption}</span>
               </div>
             </div>
           </Link>

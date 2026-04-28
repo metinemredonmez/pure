@@ -7,9 +7,10 @@ import { Link } from './Link'
 interface Props {
   className?: string
   collection: TCollection
+  ctaLabel?: string
 }
 
-const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
+const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'Hepsini Gör' }) => {
   if (!collection.handle) {
     return null
   }
@@ -32,7 +33,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection }) => {
           </div>
           <div className="mt-auto pt-6">
             <Button color="light" className="[--btn-border:white]/0">
-              Hepsini Gör
+              {ctaLabel}
             </Button>
           </div>
         </div>

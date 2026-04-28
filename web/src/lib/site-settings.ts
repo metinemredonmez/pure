@@ -41,6 +41,17 @@ export interface SiteSettings {
   promo2Cta: string
   promo3Title: string
   promo3Subtitle: string
+  homeCollectionsHeading: string
+  homeCollectionsSubHeading: string
+  homeNewArrivalsHeading: string
+  homeNewArrivalsSubHeading: string
+  homeBestSellersHeading: string
+  homeBestSellersSubHeading: string
+  homeExpertsHeading: string
+  homeExpertsSubHeading: string
+  homeViewAllLabel: string
+  homeViewAllCaption: string
+  homeCollectionCardCta: string
 }
 
 const DEFAULTS: SiteSettings = {
@@ -70,6 +81,17 @@ const DEFAULTS: SiteSettings = {
   promo2Cta: '',
   promo3Title: '',
   promo3Subtitle: '',
+  homeCollectionsHeading: 'Daha fazla keşfet',
+  homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
+  homeNewArrivalsHeading: 'Yeni Gelenler',
+  homeNewArrivalsSubHeading: 'Taze kavrulmuş özel kahveler',
+  homeBestSellersHeading: 'Çok Satanlar',
+  homeBestSellersSubHeading: 'En sevilen kahvelerimiz',
+  homeExpertsHeading: 'Uzmanlar seçti',
+  homeExpertsSubHeading: 'Haftanın favorileri',
+  homeViewAllLabel: 'Daha fazla',
+  homeViewAllCaption: 'Tümünü gör',
+  homeCollectionCardCta: 'Hepsini Gör',
 }
 
 function coerce(value: unknown): string {

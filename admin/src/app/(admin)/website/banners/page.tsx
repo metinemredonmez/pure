@@ -227,19 +227,34 @@ export default function BannersPage() {
       {/* Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="md" fullWidth>
         <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          {editing ? 'Banner Duzenle' : 'Yeni Banner'}
+          {editing ? 'Banner Düzenle' : 'Yeni Banner'}
           <IconButton size="small" onClick={() => setDialogOpen(false)}><CloseIcon /></IconButton>
         </DialogTitle>
         <Divider />
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Baslik" size="small" value={form.title}
+              <TextField fullWidth label="Başlık" size="small" value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField fullWidth label="Alt Başlık (üst metin)" size="small" value={form.subtitle}
+                onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
+                helperText="Hero slide'da başlığın üzerinde küçük yazı (örn: 'Geleneksel 200gr paket')" />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth label="Buton Metni" size="small" value={form.ctaText}
+                onChange={(e) => setForm({ ...form, ctaText: e.target.value })}
+                helperText="Boş bırakılırsa 'İncele' kullanılır" />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth label="Buton Linki" size="small" value={form.ctaUrl}
+                onChange={(e) => setForm({ ...form, ctaUrl: e.target.value })}
+                helperText="Örn: /products/turk-kahvesi-200gr" />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="caption" color="text.secondary" gutterBottom component="div">
-                Masaustu Gorsel <strong>(1920x800px onerilen, max 10MB)</strong>
+                Masaüstü Görsel <strong>(1920x800px önerilen, max 10MB)</strong>
               </Typography>
               {form.image && (
                 <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
@@ -252,7 +267,7 @@ export default function BannersPage() {
                 </Box>
               )}
               <Button variant="outlined" component="label" fullWidth size="small" sx={{ borderStyle: 'dashed' }}>
-                {form.image ? 'Gorseli Degistir' : 'Gorsel Yukle'}
+                {form.image ? 'Görseli Değiştir' : 'Görsel Yükle'}
                 <input type="file" hidden accept="image/*" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (!file) return;
                   try { const res = await uploadApi.uploadSingle(file); const url = (res?.data || res)?.url; if (url) setForm((p) => ({ ...p, image: url })); } catch (err) { console.error(err); }
@@ -262,7 +277,7 @@ export default function BannersPage() {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="caption" color="text.secondary" gutterBottom component="div">
-                Mobil Gorsel <strong>(800x1000px onerilen, opsiyonel)</strong>
+                Mobil Görsel <strong>(800x1000px önerilen, opsiyonel)</strong>
               </Typography>
               {form.mobileImage && (
                 <Box sx={{ position: 'relative', width: '100%', height: 120, mb: 1, borderRadius: 1, overflow: 'hidden', border: '1px solid', borderColor: 'divider' }}>
@@ -275,7 +290,7 @@ export default function BannersPage() {
                 </Box>
               )}
               <Button variant="outlined" component="label" fullWidth size="small" sx={{ borderStyle: 'dashed' }}>
-                {form.mobileImage ? 'Gorseli Degistir' : 'Mobil Gorsel Yukle'}
+                {form.mobileImage ? 'Görseli Değiştir' : 'Mobil Görsel Yükle'}
                 <input type="file" hidden accept="image/*" onChange={async (e) => {
                   const file = e.target.files?.[0]; if (!file) return;
                   try { const res = await uploadApi.uploadSingle(file); const url = (res?.data || res)?.url; if (url) setForm((p) => ({ ...p, mobileImage: url })); } catch (err) { console.error(err); }
@@ -284,7 +299,7 @@ export default function BannersPage() {
               </Button>
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Siralama (kucuk numara once gosterilir)" type="number" size="small" value={form.sortOrder}
+              <TextField fullWidth label="Sıralama (küçük numara önce gösterilir)" type="number" size="small" value={form.sortOrder}
                 onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -296,9 +311,9 @@ export default function BannersPage() {
           </Grid>
         </DialogContent>
         <DialogActions sx={{ px: 3, py: 2 }}>
-          <Button onClick={() => setDialogOpen(false)}>Iptal</Button>
+          <Button onClick={() => setDialogOpen(false)}>İptal</Button>
           <Button variant="contained" onClick={handleSave} disabled={saving || !form.title || !form.image}>
-            {saving ? 'Kaydediliyor...' : editing ? 'Guncelle' : 'Olustur'}
+            {saving ? 'Kaydediliyor...' : editing ? 'Güncelle' : 'Oluştur'}
           </Button>
         </DialogActions>
       </Dialog>

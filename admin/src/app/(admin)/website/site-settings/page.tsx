@@ -42,6 +42,18 @@ interface SiteSettingsState {
   subscriptionDurations: DurationOption[];
   subscriptionPeriods: PeriodOption[];
   subscriptionGrinds: GrindGroup[];
+  // Anasayfa bölüm başlıkları
+  homeCollectionsHeading: string;
+  homeCollectionsSubHeading: string;
+  homeNewArrivalsHeading: string;
+  homeNewArrivalsSubHeading: string;
+  homeBestSellersHeading: string;
+  homeBestSellersSubHeading: string;
+  homeExpertsHeading: string;
+  homeExpertsSubHeading: string;
+  homeViewAllLabel: string;
+  homeViewAllCaption: string;
+  homeCollectionCardCta: string;
 }
 
 const DEFAULT_GRAMS: GramOption[] = [
@@ -80,6 +92,17 @@ const defaultSettings: SiteSettingsState = {
   subscriptionDurations: DEFAULT_DURATIONS,
   subscriptionPeriods: DEFAULT_PERIODS,
   subscriptionGrinds: DEFAULT_GRINDS,
+  homeCollectionsHeading: 'Daha fazla keşfet',
+  homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
+  homeNewArrivalsHeading: 'Yeni Gelenler',
+  homeNewArrivalsSubHeading: 'Taze kavrulmuş özel kahveler',
+  homeBestSellersHeading: 'Çok Satanlar',
+  homeBestSellersSubHeading: 'En sevilen kahvelerimiz',
+  homeExpertsHeading: 'Uzmanlar seçti',
+  homeExpertsSubHeading: 'Haftanın favorileri',
+  homeViewAllLabel: 'Daha fazla',
+  homeViewAllCaption: 'Tümünü gör',
+  homeCollectionCardCta: 'Hepsini Gör',
 };
 
 export default function SiteSettingsPage() {
@@ -128,6 +151,17 @@ export default function SiteSettingsPage() {
         subscriptionGrinds: Array.isArray(data.subscriptionGrinds) && data.subscriptionGrinds.length
           ? data.subscriptionGrinds
           : DEFAULT_GRINDS,
+        homeCollectionsHeading: data.homeCollectionsHeading || defaultSettings.homeCollectionsHeading,
+        homeCollectionsSubHeading: data.homeCollectionsSubHeading || defaultSettings.homeCollectionsSubHeading,
+        homeNewArrivalsHeading: data.homeNewArrivalsHeading || defaultSettings.homeNewArrivalsHeading,
+        homeNewArrivalsSubHeading: data.homeNewArrivalsSubHeading || defaultSettings.homeNewArrivalsSubHeading,
+        homeBestSellersHeading: data.homeBestSellersHeading || defaultSettings.homeBestSellersHeading,
+        homeBestSellersSubHeading: data.homeBestSellersSubHeading || defaultSettings.homeBestSellersSubHeading,
+        homeExpertsHeading: data.homeExpertsHeading || defaultSettings.homeExpertsHeading,
+        homeExpertsSubHeading: data.homeExpertsSubHeading || defaultSettings.homeExpertsSubHeading,
+        homeViewAllLabel: data.homeViewAllLabel || defaultSettings.homeViewAllLabel,
+        homeViewAllCaption: data.homeViewAllCaption || defaultSettings.homeViewAllCaption,
+        homeCollectionCardCta: data.homeCollectionCardCta || defaultSettings.homeCollectionCardCta,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -554,6 +588,89 @@ export default function SiteSettingsPage() {
                   </Grid>
                 </Grid>
               ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Anasayfa Bölüm Başlıkları */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Anasayfa Bölüm Başlıkları"
+              subheader="Anasayfadaki ürün ve koleksiyon bölümlerinin başlık + alt başlıkları. Bunlar tarayıcıda kullanıcıya görünen metinlerdir."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Koleksiyonlar Bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.homeCollectionsHeading}
+                    onChange={(e) => setSettings({ ...settings, homeCollectionsHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Alt Başlık" value={settings.homeCollectionsSubHeading}
+                    onChange={(e) => setSettings({ ...settings, homeCollectionsSubHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="Koleksiyon kart butonu" value={settings.homeCollectionCardCta}
+                    onChange={(e) => setSettings({ ...settings, homeCollectionCardCta: e.target.value })}
+                    helperText="Her koleksiyon kartının altındaki buton (örn: 'Hepsini Gör')" />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Yeni Gelenler Bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.homeNewArrivalsHeading}
+                    onChange={(e) => setSettings({ ...settings, homeNewArrivalsHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Alt Başlık" value={settings.homeNewArrivalsSubHeading}
+                    onChange={(e) => setSettings({ ...settings, homeNewArrivalsSubHeading: e.target.value })} />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Çok Satanlar Bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.homeBestSellersHeading}
+                    onChange={(e) => setSettings({ ...settings, homeBestSellersHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Alt Başlık" value={settings.homeBestSellersSubHeading}
+                    onChange={(e) => setSettings({ ...settings, homeBestSellersSubHeading: e.target.value })} />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Uzman Seçimi Bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.homeExpertsHeading}
+                    onChange={(e) => setSettings({ ...settings, homeExpertsHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Alt Başlık" value={settings.homeExpertsSubHeading}
+                    onChange={(e) => setSettings({ ...settings, homeExpertsSubHeading: e.target.value })} />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>"Tümünü Gör" Kartı (Uzman Seçimi sonu)</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Üst Etiket" value={settings.homeViewAllLabel}
+                    onChange={(e) => setSettings({ ...settings, homeViewAllLabel: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Alt Etiket" value={settings.homeViewAllCaption}
+                    onChange={(e) => setSettings({ ...settings, homeViewAllCaption: e.target.value })} />
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>

@@ -10,6 +10,7 @@ import SectionSliderProductCard from '@/components/SectionSliderProductCard'
 import { getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
 import { getApiProducts, getApiCategories, getApiCollections, getApiBanners } from '@/lib/api'
 import { adaptProduct, adaptCategory, adaptCollection, resolveImageUrl } from '@/lib/adapters'
+import { getSiteSettings } from '@/lib/site-settings'
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -24,6 +25,8 @@ async function PageHome() {
   let collections: any[] = []
 
   let backendBanners: any[] = []
+
+  const settings = await getSiteSettings()
 
   try {
     const apiProducts = await getApiProducts({ limit: 20 }) as any
@@ -137,19 +140,35 @@ async function PageHome() {
   return (
     <div className="nc-PageHome relative overflow-hidden">
       <SectionHero2 slides={heroSlides} />
-      <SectionCollectionSlider className="mt-24 lg:mt-32" collections={featuredCollections} />
+      <SectionCollectionSlider
+        className="mt-24 lg:mt-32"
+        collections={featuredCollections}
+        heading={settings.homeCollectionsHeading}
+        headingDim={settings.homeCollectionsSubHeading}
+        cardCtaLabel={settings.homeCollectionCardCta}
+      />
 
       <div className="relative container mt-24 flex flex-col gap-y-24 lg:mt-32 lg:gap-y-32">
-        <SectionSliderProductCard data={carouselProducts1} />
+        <SectionSliderProductCard
+          data={carouselProducts1}
+          heading={settings.homeNewArrivalsHeading}
+          subHeading={settings.homeNewArrivalsSubHeading}
+        />
         <Divider />
         <SectionPromo1 />
         <SectionSliderProductCard
           data={carouselProducts2}
-          heading="Çok Satanlar"
-          subHeading="En sevilen kahvelerimiz"
+          heading={settings.homeBestSellersHeading}
+          subHeading={settings.homeBestSellersSubHeading}
         />
         <SectionPromo2 />
-        <SectionSliderLargeProduct products={carouselProducts3} />
+        <SectionSliderLargeProduct
+          products={carouselProducts3}
+          heading={settings.homeExpertsHeading}
+          headingDim={settings.homeExpertsSubHeading}
+          viewAllLabel={settings.homeViewAllLabel}
+          viewAllCaption={settings.homeViewAllCaption}
+        />
       </div>
 
       {/* Newsletter — tight spacing, no extra top padding */}

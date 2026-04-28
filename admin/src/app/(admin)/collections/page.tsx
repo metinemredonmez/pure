@@ -14,6 +14,7 @@ import { collectionsApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import ExportButton from '@/components/common/ExportButton';
+import ImageUpload from '@/components/common/ImageUpload';
 import { useToast } from '@/contexts/ToastContext';
 
 interface Collection {
@@ -21,6 +22,7 @@ interface Collection {
   name: string;
   slug: string;
   description?: string;
+  image?: string;
   isActive?: boolean;
   sortOrder?: number;
   _count?: { products: number };
@@ -34,7 +36,7 @@ export default function CollectionsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingColl, setEditingColl] = useState<Collection | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({ name: '', slug: '', description: '', isActive: true });
+  const [form, setForm] = useState({ name: '', slug: '', description: '', image: '', sortOrder: 0, isActive: true });
   const [confirmDelete, setConfirmDelete] = useState<Collection | null>(null);
   const { showSuccess, showError } = useToast();
 
@@ -55,10 +57,17 @@ export default function CollectionsPage() {
   const handleOpenDialog = (coll?: Collection) => {
     if (coll) {
       setEditingColl(coll);
-      setForm({ name: coll.name, slug: coll.slug, description: coll.description || '', isActive: coll.isActive !== false });
+      setForm({
+        name: coll.name,
+        slug: coll.slug,
+        description: coll.description || '',
+        image: coll.image || '',
+        sortOrder: coll.sortOrder ?? 0,
+        isActive: coll.isActive !== false,
+      });
     } else {
       setEditingColl(null);
-      setForm({ name: '', slug: '', description: '', isActive: true });
+      setForm({ name: '', slug: '', description: '', image: '', sortOrder: 0, isActive: true });
     }
     setDialogOpen(true);
   };
@@ -130,9 +139,13 @@ export default function CollectionsPage() {
               }}>
                 <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
-                    <Avatar sx={{ width: 36, height: 36, bgcolor: `${COLL_COLORS[i % COLL_COLORS.length]}15`, color: COLL_COLORS[i % COLL_COLORS.length] }}>
-                      <CollIcon sx={{ fontSize: 20 }} />
-                    </Avatar>
+                    {c.image ? (
+                      <Avatar src={c.image} variant="rounded" sx={{ width: 44, height: 44 }} />
+                    ) : (
+                      <Avatar sx={{ width: 36, height: 36, bgcolor: `${COLL_COLORS[i % COLL_COLORS.length]}15`, color: COLL_COLORS[i % COLL_COLORS.length] }}>
+                        <CollIcon sx={{ fontSize: 20 }} />
+                      </Avatar>
+                    )}
                     <Stack direction="row" spacing={0.25}>
                       <IconButton size="small" onClick={() => handleOpenDialog(c)}><EditIcon sx={{ fontSize: 15 }} /></IconButton>
                       <IconButton size="small" color="error" onClick={() => setConfirmDelete(c)}><DeleteIcon sx={{ fontSize: 15 }} /></IconButton>
@@ -165,6 +178,14 @@ export default function CollectionsPage() {
               onChange={(e) => setForm({ ...form, name: e.target.value, slug: editingColl ? form.slug : generateSlug(e.target.value) })} />
             <TextField fullWidth label="Slug" value={form.slug} size="small" onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             <TextField fullWidth multiline rows={2} label="Aciklama" value={form.description} size="small" onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <ImageUpload
+              label="Kart Görseli (önerilen 800x600px)"
+              value={form.image}
+              onChange={(url) => setForm({ ...form, image: typeof url === 'string' ? url : '' })}
+            />
+            <TextField fullWidth type="number" label="Sıralama (küçük → önce)" size="small" value={form.sortOrder}
+              onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) || 0 })}
+              helperText="Anasayfada koleksiyonlar bu sayıya göre sıralanır" />
             <FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} size="small" />} label="Aktif" />
           </Stack>
         </DialogContent>

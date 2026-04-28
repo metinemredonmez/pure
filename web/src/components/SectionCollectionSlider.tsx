@@ -13,6 +13,7 @@ interface Props {
   collections: TCollection[]
   headingDim?: string
   heading?: string
+  cardCtaLabel?: string
 }
 
 const SectionCollectionSlider = ({
@@ -20,6 +21,7 @@ const SectionCollectionSlider = ({
   collections,
   headingDim = 'Sizin için seçilmiş koleksiyonlar',
   heading = 'Daha fazla keşfet',
+  cardCtaLabel = 'Hepsini Gör',
   emblaOptions = {
     slidesToScroll: 'auto',
   },
@@ -49,7 +51,7 @@ const SectionCollectionSlider = ({
               key={collection.id}
               className="max-w-2xl embla__slide basis-11/12 ps-5 sm:basis-2/3 lg:basis-3/7 xl:basis-2/5 2xl:basis-[34%]"
             >
-              <CollectionCard3 collection={collection} />
+              <CollectionCard3 collection={collection} ctaLabel={cardCtaLabel} />
             </div>
           ))}
         </div>
