@@ -305,9 +305,12 @@ function StaticEkipmanlarFallback() {
   )
 }
 
-export default function EkipmanlarPage() {
-  // Always render the rich static component — this page has a custom
-  // design with icons, category cards and a CTA. CmsPage wrapper
-  // would override it with plain HTML from the admin seed.
-  return <StaticEkipmanlarFallback />
+export default function Page() {
+  return (
+    <CmsPage
+      slug="ekipmanlar"
+      kicker="Kahve Dünyası"
+      fallback={<StaticEkipmanlarFallback />}
+    />
+  )
 }
