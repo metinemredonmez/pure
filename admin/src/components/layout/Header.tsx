@@ -117,7 +117,6 @@ export default function Header({ sidebarOpen, onMenuClick }: HeaderProps) {
     { label: 'Değerlendirmeler', path: '/reviews', keywords: 'değerlendirme review yorum' },
     { label: 'Kargo', path: '/shipping', keywords: 'kargo shipping teslimat' },
     { label: 'Blog', path: '/blog', keywords: 'blog yazı post' },
-    { label: 'SSS', path: '/faq', keywords: 'sss faq soru' },
     { label: 'SEO', path: '/seo', keywords: 'seo meta' },
     { label: 'Sadakat', path: '/loyalty', keywords: 'sadakat loyalty puan' },
     { label: 'B2B', path: '/b2b', keywords: 'b2b kurumsal' },

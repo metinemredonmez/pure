@@ -70,70 +70,12 @@ const faqGroups = [
 
 function Fallback() {
   return (
-    <div className="pb-24 lg:pb-32">
-      {/* Hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
-        <div className="container py-20 text-center lg:py-24">
-          <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 uppercase backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
-            Yardım Merkezi
-          </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 sm:text-5xl dark:text-white">
-            Sıkça Sorulan Sorular
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
-            Pure Olentia hakkında en çok merak edilen soruların yanıtları
-          </p>
-        </div>
-        <div className="pointer-events-none absolute -top-10 -right-10 opacity-5 select-none"><HugeiconsIcon icon={HelpCircleIcon} size={120} color="currentColor" strokeWidth={1} /></div>
-      </div>
-
-      {/* Category quick links */}
-      <div className="container mt-12">
-        <div className="flex flex-wrap justify-center gap-3">
-          {faqGroups.map((g) => (
-            <a
-              key={g.category}
-              href={`#${g.category.toLowerCase().replace(/[^a-zçğıöşü0-9]/g, '-')}`}
-              className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition hover:-translate-y-0.5 hover:border-primary-300 hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-            >
-              <span>{faqGroupIcons[g.category]}</span>
-              <span>{g.category}</span>
-            </a>
-          ))}
-        </div>
-      </div>
-
-      {/* FAQ sections */}
-      <div className="container mt-16">
-        <div className="mx-auto max-w-3xl space-y-12">
-          {faqGroups.map((group) => (
-            <section key={group.category} id={group.category.toLowerCase().replace(/[^a-zçğıöşü0-9]/g, '-')}>
-              <div className="mb-6 flex items-center gap-3">
-                <span className="text-3xl">{faqGroupIcons[group.category]}</span>
-                <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">{group.category}</h2>
-              </div>
-              <SssFaq questions={group.questions} />
-            </section>
-          ))}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="container mt-20">
-        <div className="relative mx-auto max-w-3xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary-700 to-primary-900 p-10 text-center text-white lg:p-14">
-          <h2 className="text-2xl font-bold">Cevabınızı bulamadınız mı?</h2>
-          <p className="mx-auto mt-3 max-w-xl text-white/70">
-            Ekibimiz size yardımcı olmaktan mutluluk duyar. Mesajınıza 24 saat içinde dönüş yaparız.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <a href="/contact" className="inline-flex items-center justify-center rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-primary-800 shadow-lg transition hover:bg-neutral-100">
-              Bize Ulaşın
-            </a>
-            <a href="tel:+905524622954" className="flex items-center gap-2 rounded-full border border-white/30 px-6 py-3 text-sm font-medium transition hover:bg-white/10">
-              <HugeiconsIcon icon={CallIcon} size={16} color="currentColor" strokeWidth={1.5} /> 0552 462 29 54
-            </a>
-          </div>
-        </div>
+    <div className="container pb-24 pt-16 lg:pb-32 lg:pt-24">
+      <div className="mx-auto max-w-3xl text-center">
+        <h1 className="text-3xl font-bold text-neutral-900 sm:text-4xl dark:text-white">Sıkça Sorulan Sorular</h1>
+        <p className="mt-6 text-neutral-600 dark:text-neutral-400">
+          Bu sayfanın içeriği admin panelinden yönetilmektedir. Eğer içerik görünmüyorsa lütfen daha sonra tekrar deneyin.
+        </p>
       </div>
     </div>
   )
