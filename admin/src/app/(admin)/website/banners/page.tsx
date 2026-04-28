@@ -235,7 +235,8 @@ export default function BannersPage() {
           <Grid container spacing={2}>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Başlık" size="small" value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })} />
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                helperText='Satır kırmak için <br /> kullanabilirsiniz. Örn: "Türk Kahvesi 200gr <br /> Geleneksel Paket"' />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Alt Başlık (üst metin)" size="small" value={form.subtitle}
