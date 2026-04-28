@@ -54,6 +54,13 @@ interface SiteSettingsState {
   homeViewAllLabel: string;
   homeViewAllCaption: string;
   homeCollectionCardCta: string;
+  // B2B sayfası hero
+  b2bHeroImage: string;
+  b2bHeroBadge: string;
+  b2bHeroTitle: string;
+  b2bHeroSubtitle: string;
+  b2bHeroPrimaryCta: string;
+  b2bHeroSecondaryCta: string;
 }
 
 const DEFAULT_GRAMS: GramOption[] = [
@@ -103,6 +110,12 @@ const defaultSettings: SiteSettingsState = {
   homeViewAllLabel: 'Daha fazla',
   homeViewAllCaption: 'Tümünü gör',
   homeCollectionCardCta: 'Hepsini Gör',
+  b2bHeroImage: '',
+  b2bHeroBadge: 'Kurumsal Çözümler',
+  b2bHeroTitle: 'İşletmeniz için Premium Kahve Tedariği',
+  b2bHeroSubtitle: 'Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlarla specialty kahve tedarikçisi.',
+  b2bHeroPrimaryCta: 'Teklif Alın',
+  b2bHeroSecondaryCta: 'Franchise',
 };
 
 export default function SiteSettingsPage() {
@@ -162,6 +175,12 @@ export default function SiteSettingsPage() {
         homeViewAllLabel: data.homeViewAllLabel || defaultSettings.homeViewAllLabel,
         homeViewAllCaption: data.homeViewAllCaption || defaultSettings.homeViewAllCaption,
         homeCollectionCardCta: data.homeCollectionCardCta || defaultSettings.homeCollectionCardCta,
+        b2bHeroImage: data.b2bHeroImage || '',
+        b2bHeroBadge: data.b2bHeroBadge || defaultSettings.b2bHeroBadge,
+        b2bHeroTitle: data.b2bHeroTitle || defaultSettings.b2bHeroTitle,
+        b2bHeroSubtitle: data.b2bHeroSubtitle || defaultSettings.b2bHeroSubtitle,
+        b2bHeroPrimaryCta: data.b2bHeroPrimaryCta || defaultSettings.b2bHeroPrimaryCta,
+        b2bHeroSecondaryCta: data.b2bHeroSecondaryCta || defaultSettings.b2bHeroSecondaryCta,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -669,6 +688,49 @@ export default function SiteSettingsPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField fullWidth size="small" label="Alt Etiket" value={settings.homeViewAllCaption}
                     onChange={(e) => setSettings({ ...settings, homeViewAllCaption: e.target.value })} />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* B2B Hero */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="B2B / Kurumsal Sayfası Hero"
+              subheader="/b2b sayfasının en üstündeki bölüm. Görsel yüklerseniz arka plan olur (üzerine koyu overlay binebilir); boş bırakırsanız varsayılan gradient kullanılır. Önerilen görsel: 1920x800px."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Hero Arka Plan Görseli"
+                    value={settings.b2bHeroImage}
+                    onChange={(url) => setSettings({ ...settings, b2bHeroImage: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Üst Etiket (badge)" value={settings.b2bHeroBadge}
+                    onChange={(e) => setSettings({ ...settings, b2bHeroBadge: e.target.value })}
+                    helperText="Örn: 'Kurumsal Çözümler'" />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Birincil Buton Metni" value={settings.b2bHeroPrimaryCta}
+                    onChange={(e) => setSettings({ ...settings, b2bHeroPrimaryCta: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.b2bHeroTitle}
+                    onChange={(e) => setSettings({ ...settings, b2bHeroTitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Alt Başlık" value={settings.b2bHeroSubtitle}
+                    onChange={(e) => setSettings({ ...settings, b2bHeroSubtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="İkincil Buton Metni" value={settings.b2bHeroSecondaryCta}
+                    onChange={(e) => setSettings({ ...settings, b2bHeroSecondaryCta: e.target.value })} />
                 </Grid>
               </Grid>
             </CardContent>

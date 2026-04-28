@@ -52,6 +52,12 @@ export interface SiteSettings {
   homeViewAllLabel: string
   homeViewAllCaption: string
   homeCollectionCardCta: string
+  b2bHeroImage: string
+  b2bHeroBadge: string
+  b2bHeroTitle: string
+  b2bHeroSubtitle: string
+  b2bHeroPrimaryCta: string
+  b2bHeroSecondaryCta: string
 }
 
 const DEFAULTS: SiteSettings = {
@@ -92,6 +98,12 @@ const DEFAULTS: SiteSettings = {
   homeViewAllLabel: 'Daha fazla',
   homeViewAllCaption: 'Tümünü gör',
   homeCollectionCardCta: 'Hepsini Gör',
+  b2bHeroImage: '',
+  b2bHeroBadge: 'Kurumsal Çözümler',
+  b2bHeroTitle: 'İşletmeniz için Premium Kahve Tedariği',
+  b2bHeroSubtitle: 'Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlarla specialty kahve tedarikçisi.',
+  b2bHeroPrimaryCta: 'Teklif Alın',
+  b2bHeroSecondaryCta: 'Franchise',
 }
 
 function coerce(value: unknown): string {

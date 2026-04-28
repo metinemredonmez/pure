@@ -1,4 +1,6 @@
 import { Metadata } from 'next'
+import { getSiteSettings } from '@/lib/site-settings'
+import { resolveImageUrl } from '@/lib/adapters'
 import B2BForm from './B2BForm'
 
 export const metadata: Metadata = {
@@ -72,28 +74,34 @@ const stats = [
   { value: '24s', label: 'Teslimat' },
 ]
 
-export default function B2BPage() {
+export default async function B2BPage() {
+  const settings = await getSiteSettings()
+  const heroImage = settings.b2bHeroImage ? resolveImageUrl(settings.b2bHeroImage) : ''
+
   return (
     <div className="pb-24 lg:pb-32">
-      {/* Hero - full width gradient */}
-      <div className="bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900">
-        <div className="container py-20 text-center text-white lg:py-28">
+      {/* Hero — admin-managed image (or gradient fallback) */}
+      <div
+        className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900"
+        style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
+        {heroImage && <div className="absolute inset-0 bg-black/55" aria-hidden />}
+        <div className="relative container py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide uppercase backdrop-blur-sm">
-            Kurumsal Cozumler
+            {settings.b2bHeroBadge}
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl">
-            Isletmeniz icin Premium Kahve Tedarigi
+            {settings.b2bHeroTitle}
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg text-white/70">
-            Ofisiniz, restoraniniz, oteliniz veya kafeniz icin ozel fiyatlarla
-            specialty kahve tedarikcisi.
+            {settings.b2bHeroSubtitle}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a href="#form" className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-primary-800 transition hover:bg-white/90">
-              Teklif Alın
+              {settings.b2bHeroPrimaryCta}
             </a>
             <a href="/franchise" className="rounded-full border border-white/30 px-6 py-3 text-sm font-medium text-white transition hover:bg-white/10">
-              Franchise
+              {settings.b2bHeroSecondaryCta}
             </a>
           </div>
         </div>
