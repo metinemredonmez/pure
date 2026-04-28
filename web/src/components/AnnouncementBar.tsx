@@ -209,8 +209,8 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
               <circle cx="6" cy="19" r="1.2" fill="#fff" opacity="0.3" className="exhaust-puff" />
             </svg>
 
-            {/* Delivered! bubble on arrival — positioned within bar bounds */}
-            <div className="delivered-bubble absolute -top-2 right-0 whitespace-nowrap rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white opacity-0 shadow-lg">
+            {/* Delivered! bubble — appears to the LEFT of scooter, vertically centered (avoids clipping above bar) */}
+            <div className="delivered-bubble absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white opacity-0 shadow-lg">
               ✓ Teslim edildi
             </div>
           </div>
