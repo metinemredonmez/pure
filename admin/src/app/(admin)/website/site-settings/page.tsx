@@ -22,6 +22,8 @@ interface FooterMenuGroup { id: string; title: string; items: FooterMenuItem[] }
 interface NavMenuChild { id: string; name: string; href: string; description?: string }
 interface NavMenuItem { id: string; name: string; href: string; children?: NavMenuChild[] }
 interface MegaMenuGroup { id: string; name: string; items: NavMenuChild[] }
+interface B2BFeature { id: string; title: string; desc: string; icon: string }
+interface B2BStat { id: string; value: string; label: string }
 
 interface SiteSettingsState {
   siteName: string;
@@ -81,6 +83,8 @@ interface SiteSettingsState {
   footerMenus: FooterMenuGroup[];
   navMenus: NavMenuItem[];
   megaMenu: MegaMenuGroup[];
+  b2bFeatures: B2BFeature[];
+  b2bStats: B2BStat[];
 }
 
 const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
@@ -169,6 +173,31 @@ const DEFAULT_MEGA_MENU: MegaMenuGroup[] = [
   ]},
 ];
 
+const ICON_OPTIONS = [
+  { value: 'price', label: 'Para / Fiyat' },
+  { value: 'leaf', label: 'Yaprak / Doğa' },
+  { value: 'truck', label: 'Kamyon / Teslimat' },
+  { value: 'cap', label: 'Diploma / Eğitim' },
+  { value: 'tag', label: 'Etiket' },
+  { value: 'person', label: 'Kişi' },
+];
+
+const DEFAULT_B2B_FEATURES: B2BFeature[] = [
+  { id: 'pricing', title: 'Özel Fiyatlandırma', desc: 'Hacme göre özel indirimli fiyatlar ve esnek ödeme seçenekleri.', icon: 'price' },
+  { id: 'roast', title: 'Özel Kavurma Profili', desc: 'Markanıza özel kavurma ve blend oluşturma imkanı.', icon: 'leaf' },
+  { id: 'delivery', title: 'Planlı Teslimat', desc: 'Periyodik ve zamanında teslimat garantisi.', icon: 'truck' },
+  { id: 'training', title: 'Barista Eğitimi', desc: 'Ekibinize profesyonel barista ve demleme eğitimi.', icon: 'cap' },
+  { id: 'label', title: 'Özel Etiketleme', desc: 'Kendi markanızla paketleme ve white-label hizmeti.', icon: 'tag' },
+  { id: 'manager', title: 'Kişisel Hesap Yöneticisi', desc: 'Size özel irtibat kişisi ve öncelikli destek.', icon: 'person' },
+];
+
+const DEFAULT_B2B_STATS: B2BStat[] = [
+  { id: 's1', value: '200+', label: 'Kurumsal Müşteri' },
+  { id: 's2', value: '15+', label: 'Şehir' },
+  { id: 's3', value: '%98', label: 'Memnuniyet' },
+  { id: 's4', value: '24s', label: 'Teslimat' },
+];
+
 const DEFAULT_GRAMS: GramOption[] = [
   { id: '1x250', label: '1 x 250 g', grams: 250, bags: 1 },
   { id: '2x250', label: '2 x 250 g', grams: 500, bags: 2 },
@@ -236,6 +265,8 @@ const defaultSettings: SiteSettingsState = {
   footerMenus: DEFAULT_FOOTER_MENUS,
   navMenus: DEFAULT_NAV_MENUS,
   megaMenu: DEFAULT_MEGA_MENU,
+  b2bFeatures: DEFAULT_B2B_FEATURES,
+  b2bStats: DEFAULT_B2B_STATS,
 };
 
 export default function SiteSettingsPage() {
@@ -321,6 +352,12 @@ export default function SiteSettingsPage() {
         megaMenu: Array.isArray(data.megaMenu) && data.megaMenu.length
           ? data.megaMenu
           : DEFAULT_MEGA_MENU,
+        b2bFeatures: Array.isArray(data.b2bFeatures) && data.b2bFeatures.length
+          ? data.b2bFeatures
+          : DEFAULT_B2B_FEATURES,
+        b2bStats: Array.isArray(data.b2bStats) && data.b2bStats.length
+          ? data.b2bStats
+          : DEFAULT_B2B_STATS,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -1070,6 +1107,290 @@ export default function SiteSettingsPage() {
                   >
                     Yeni Link
                   </Button>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Üst Menü (Navbar) */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Üst Menü (Navbar)"
+              subheader="Sitenin üstündeki ana menü öğeleri (Kahveler / Abonelik / Online Dükkan / Keşfet / Kurumsal / İletişim). Her grubun kendi açılır listesi olabilir."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({
+                    ...settings,
+                    navMenus: [...settings.navMenus, { id: `nav-${Date.now()}`, name: 'Yeni', href: '/', children: [] }],
+                  })}
+                >
+                  Yeni Menü
+                </Button>
+              }
+            />
+            <CardContent>
+              {settings.navMenus.map((m, mIdx) => (
+                <Box key={m.id || mIdx} sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1} sx={{ mb: 2, alignItems: 'center' }}>
+                    <Grid size={{ xs: 12, sm: 5 }}>
+                      <TextField fullWidth size="small" label="Menü Adı" value={m.name}
+                        onChange={(e) => {
+                          const arr = [...settings.navMenus];
+                          arr[mIdx] = { ...arr[mIdx], name: e.target.value };
+                          setSettings({ ...settings, navMenus: arr });
+                        }} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 5 }}>
+                      <TextField fullWidth size="small" label="URL (üst seviye link)" value={m.href}
+                        onChange={(e) => {
+                          const arr = [...settings.navMenus];
+                          arr[mIdx] = { ...arr[mIdx], href: e.target.value };
+                          setSettings({ ...settings, navMenus: arr });
+                        }}
+                        helperText="# yazarsanız sadece dropdown açar" />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                      <Button fullWidth size="small" color="error" variant="outlined"
+                        onClick={() => setSettings({ ...settings, navMenus: settings.navMenus.filter((_, i) => i !== mIdx) })}
+                      >
+                        Menüyü Sil
+                      </Button>
+                    </Grid>
+                  </Grid>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                    Açılır liste öğeleri:
+                  </Typography>
+                  {(m.children || []).map((c, cIdx) => (
+                    <Grid container spacing={1} key={cIdx} sx={{ mb: 1 }}>
+                      <Grid size={{ xs: 12, sm: 5 }}>
+                        <TextField fullWidth size="small" label="Alt link adı" value={c.name}
+                          onChange={(e) => {
+                            const arr = [...settings.navMenus];
+                            const ch = [...(arr[mIdx].children || [])];
+                            ch[cIdx] = { ...ch[cIdx], name: e.target.value };
+                            arr[mIdx] = { ...arr[mIdx], children: ch };
+                            setSettings({ ...settings, navMenus: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 9, sm: 5 }}>
+                        <TextField fullWidth size="small" label="URL" value={c.href}
+                          onChange={(e) => {
+                            const arr = [...settings.navMenus];
+                            const ch = [...(arr[mIdx].children || [])];
+                            ch[cIdx] = { ...ch[cIdx], href: e.target.value };
+                            arr[mIdx] = { ...arr[mIdx], children: ch };
+                            setSettings({ ...settings, navMenus: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 3, sm: 2 }}>
+                        <Button fullWidth size="small" color="error"
+                          onClick={() => {
+                            const arr = [...settings.navMenus];
+                            const ch = (arr[mIdx].children || []).filter((_, i) => i !== cIdx);
+                            arr[mIdx] = { ...arr[mIdx], children: ch };
+                            setSettings({ ...settings, navMenus: arr });
+                          }}
+                        >Sil</Button>
+                      </Grid>
+                    </Grid>
+                  ))}
+                  <Button size="small" startIcon={<AddIcon />}
+                    onClick={() => {
+                      const arr = [...settings.navMenus];
+                      const ch = [...(arr[mIdx].children || []), { id: `c-${Date.now()}`, name: '', href: '' }];
+                      arr[mIdx] = { ...arr[mIdx], children: ch };
+                      setSettings({ ...settings, navMenus: arr });
+                    }}
+                    sx={{ mt: 1 }}
+                  >
+                    Alt Link Ekle
+                  </Button>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Mega Menu */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title='Mega Menu ("Kahveler" altındaki büyük menü)'
+              subheader='Anasayfada "Kahveler" üzerine gelince çıkan büyük menü. Her grup (Menşei, İşleme Yöntemi vb.) altında alt linkler.'
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({
+                    ...settings,
+                    megaMenu: [...settings.megaMenu, { id: `mm-${Date.now()}`, name: 'Yeni Grup', items: [] }],
+                  })}
+                >Yeni Grup</Button>
+              }
+            />
+            <CardContent>
+              {settings.megaMenu.map((g, gIdx) => (
+                <Box key={g.id || gIdx} sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1} sx={{ mb: 2 }}>
+                    <Grid size={{ xs: 12, sm: 10 }}>
+                      <TextField fullWidth size="small" label="Grup Adı" value={g.name}
+                        onChange={(e) => {
+                          const arr = [...settings.megaMenu];
+                          arr[gIdx] = { ...arr[gIdx], name: e.target.value };
+                          setSettings({ ...settings, megaMenu: arr });
+                        }} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2 }}>
+                      <Button fullWidth size="small" color="error" variant="outlined"
+                        onClick={() => setSettings({ ...settings, megaMenu: settings.megaMenu.filter((_, i) => i !== gIdx) })}
+                      >Sil</Button>
+                    </Grid>
+                  </Grid>
+                  {g.items.map((it, iIdx) => (
+                    <Grid container spacing={1} key={iIdx} sx={{ mb: 1 }}>
+                      <Grid size={{ xs: 12, sm: 5 }}>
+                        <TextField fullWidth size="small" label="Link adı" value={it.name}
+                          onChange={(e) => {
+                            const arr = [...settings.megaMenu];
+                            const items = [...arr[gIdx].items];
+                            items[iIdx] = { ...items[iIdx], name: e.target.value };
+                            arr[gIdx] = { ...arr[gIdx], items };
+                            setSettings({ ...settings, megaMenu: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 9, sm: 5 }}>
+                        <TextField fullWidth size="small" label="URL" value={it.href}
+                          onChange={(e) => {
+                            const arr = [...settings.megaMenu];
+                            const items = [...arr[gIdx].items];
+                            items[iIdx] = { ...items[iIdx], href: e.target.value };
+                            arr[gIdx] = { ...arr[gIdx], items };
+                            setSettings({ ...settings, megaMenu: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 3, sm: 2 }}>
+                        <Button fullWidth size="small" color="error"
+                          onClick={() => {
+                            const arr = [...settings.megaMenu];
+                            arr[gIdx] = { ...arr[gIdx], items: arr[gIdx].items.filter((_, i) => i !== iIdx) };
+                            setSettings({ ...settings, megaMenu: arr });
+                          }}
+                        >Sil</Button>
+                      </Grid>
+                    </Grid>
+                  ))}
+                  <Button size="small" startIcon={<AddIcon />}
+                    onClick={() => {
+                      const arr = [...settings.megaMenu];
+                      arr[gIdx] = { ...arr[gIdx], items: [...arr[gIdx].items, { id: `i-${Date.now()}`, name: '', href: '' }] };
+                      setSettings({ ...settings, megaMenu: arr });
+                    }}
+                    sx={{ mt: 1 }}
+                  >
+                    Link Ekle
+                  </Button>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* B2B Stats */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="/b2b Sayfası Stats Kartları"
+              subheader='Hero altındaki 4 sayı kartı (200+ Kurumsal Müşteri / 15+ Şehir / %98 Memnuniyet / 24s Teslimat).'
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, b2bStats: [...settings.b2bStats, { id: `s-${Date.now()}`, value: '', label: '' }] })}
+                >Yeni Stat</Button>
+              }
+            />
+            <CardContent>
+              {settings.b2bStats.map((s, idx) => (
+                <Grid container spacing={1} key={s.id || idx} sx={{ mb: 1 }}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <TextField fullWidth size="small" label="Değer (örn: 200+)" value={s.value}
+                      onChange={(e) => {
+                        const arr = [...settings.b2bStats];
+                        arr[idx] = { ...arr[idx], value: e.target.value };
+                        setSettings({ ...settings, b2bStats: arr });
+                      }} />
+                  </Grid>
+                  <Grid size={{ xs: 9, sm: 6 }}>
+                    <TextField fullWidth size="small" label="Etiket (örn: Kurumsal Müşteri)" value={s.label}
+                      onChange={(e) => {
+                        const arr = [...settings.b2bStats];
+                        arr[idx] = { ...arr[idx], label: e.target.value };
+                        setSettings({ ...settings, b2bStats: arr });
+                      }} />
+                  </Grid>
+                  <Grid size={{ xs: 3, sm: 2 }}>
+                    <Button fullWidth size="small" color="error"
+                      onClick={() => setSettings({ ...settings, b2bStats: settings.b2bStats.filter((_, i) => i !== idx) })}
+                    >Sil</Button>
+                  </Grid>
+                </Grid>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* B2B Features */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title='/b2b "Neden Pure Olentia?" Özellik Kartları'
+              subheader="6 ikon kartı (Özel Fiyatlandırma, Özel Kavurma, Planlı Teslimat, Barista Eğitimi, Özel Etiketleme, Hesap Yöneticisi). Her kart için başlık + açıklama + ikon seçimi."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, b2bFeatures: [...settings.b2bFeatures, { id: `f-${Date.now()}`, title: '', desc: '', icon: 'price' }] })}
+                >Yeni Özellik</Button>
+              }
+            />
+            <CardContent>
+              {settings.b2bFeatures.map((f, idx) => (
+                <Box key={f.id || idx} sx={{ mb: 2, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 12, sm: 5 }}>
+                      <TextField fullWidth size="small" label="Başlık" value={f.title}
+                        onChange={(e) => {
+                          const arr = [...settings.b2bFeatures];
+                          arr[idx] = { ...arr[idx], title: e.target.value };
+                          setSettings({ ...settings, b2bFeatures: arr });
+                        }} />
+                    </Grid>
+                    <Grid size={{ xs: 9, sm: 5 }}>
+                      <TextField select fullWidth size="small" label="İkon" value={f.icon}
+                        onChange={(e) => {
+                          const arr = [...settings.b2bFeatures];
+                          arr[idx] = { ...arr[idx], icon: e.target.value };
+                          setSettings({ ...settings, b2bFeatures: arr });
+                        }}
+                        slotProps={{ select: { native: true } }}
+                      >
+                        {ICON_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+                      </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 3, sm: 2 }}>
+                      <Button fullWidth size="small" color="error"
+                        onClick={() => setSettings({ ...settings, b2bFeatures: settings.b2bFeatures.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField fullWidth size="small" multiline rows={2} label="Açıklama" value={f.desc}
+                        onChange={(e) => {
+                          const arr = [...settings.b2bFeatures];
+                          arr[idx] = { ...arr[idx], desc: e.target.value };
+                          setSettings({ ...settings, b2bFeatures: arr });
+                        }} />
+                    </Grid>
+                  </Grid>
                 </Box>
               ))}
             </CardContent>

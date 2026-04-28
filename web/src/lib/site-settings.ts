@@ -45,6 +45,19 @@ export interface MegaMenuGroup {
   items: NavMenuChild[]
 }
 
+export interface B2BFeature {
+  id: string
+  title: string
+  desc: string
+  icon: string  // hugeicon name (e.g. 'Coffee01Icon')
+}
+
+export interface B2BStat {
+  id: string
+  value: string
+  label: string
+}
+
 export interface SiteSettings {
   siteName: string
   logo: string
@@ -95,6 +108,8 @@ export interface SiteSettings {
   footerMenus: FooterMenuGroup[]
   navMenus: NavMenuItem[]
   megaMenu: MegaMenuGroup[]
+  b2bFeatures: B2BFeature[]
+  b2bStats: B2BStat[]
 }
 
 const DEFAULTS: SiteSettings = {
@@ -243,6 +258,20 @@ const DEFAULTS: SiteSettings = {
       { id: 'sub-mm', name: 'Abonelik', href: '/subscription' },
     ]},
   ],
+  b2bFeatures: [
+    { id: 'pricing', title: 'Özel Fiyatlandırma', desc: 'Hacme göre özel indirimli fiyatlar ve esnek ödeme seçenekleri.', icon: 'price' },
+    { id: 'roast', title: 'Özel Kavurma Profili', desc: 'Markanıza özel kavurma ve blend oluşturma imkanı.', icon: 'leaf' },
+    { id: 'delivery', title: 'Planlı Teslimat', desc: 'Periyodik ve zamanında teslimat garantisi.', icon: 'truck' },
+    { id: 'training', title: 'Barista Eğitimi', desc: 'Ekibinize profesyonel barista ve demleme eğitimi.', icon: 'cap' },
+    { id: 'label', title: 'Özel Etiketleme', desc: 'Kendi markanızla paketleme ve white-label hizmeti.', icon: 'tag' },
+    { id: 'manager', title: 'Kişisel Hesap Yöneticisi', desc: 'Size özel irtibat kişisi ve öncelikli destek.', icon: 'person' },
+  ],
+  b2bStats: [
+    { id: 's1', value: '200+', label: 'Kurumsal Müşteri' },
+    { id: 's2', value: '15+', label: 'Şehir' },
+    { id: 's3', value: '%98', label: 'Memnuniyet' },
+    { id: 's4', value: '24s', label: 'Teslimat' },
+  ],
 }
 
 function coerce(value: unknown): string {
@@ -281,6 +310,18 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'megaMenu') {
         if (Array.isArray(incoming) && incoming.length) {
           merged.megaMenu = incoming as MegaMenuGroup[]
+        }
+        continue
+      }
+      if (key === 'b2bFeatures') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.b2bFeatures = incoming as B2BFeature[]
+        }
+        continue
+      }
+      if (key === 'b2bStats') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.b2bStats = incoming as B2BStat[]
         }
         continue
       }
