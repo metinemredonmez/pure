@@ -2,6 +2,7 @@ import { CoffeeIcon, BulbIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Demleme Rehberi',
@@ -174,7 +175,7 @@ const accentStyles: Record<string, { bg: string; icon: string; border: string }>
   },
 }
 
-export default function DemlemeRehberiPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -310,4 +311,8 @@ export default function DemlemeRehberiPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="demleme-rehberi" kicker="Kahve Dünyası" fallback={<Fallback />} />
 }

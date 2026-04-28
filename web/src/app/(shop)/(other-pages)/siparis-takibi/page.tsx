@@ -1,6 +1,7 @@
 import { CheckmarkCircleIcon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, Location01Icon, Invoice01Icon, MailOpen01Icon, SmartPhone01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 import TrackingForm from './TrackingForm'
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ const accentBg: Record<string, string> = {
   primary: 'bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300',
 }
 
-export default function SiparisTakibiPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -105,4 +106,8 @@ export default function SiparisTakibiPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="siparis-takibi" kicker="Müşteri Hizmetleri" fallback={<Fallback />} />
 }

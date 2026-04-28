@@ -1,11 +1,12 @@
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'KVKK Aydınlatma Metni',
   description: 'Pure Olentia KVKK kapsamında kişisel verilerin korunması aydınlatma metni.',
 }
 
-export default function KvkkPage() {
+function Fallback() {
   return (
     <div className="container pb-24 lg:pb-32">
       <div className="mx-auto my-16 max-w-3xl lg:my-24">
@@ -225,4 +226,8 @@ export default function KvkkPage() {
       </article>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="kvkk" kicker="Yasal Bilgiler" fallback={<Fallback />} />
 }

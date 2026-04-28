@@ -2,6 +2,7 @@ import { Calendar01Icon, CoffeeIcon, Settings01Icon, ReturnRequestIcon, Delivery
 import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'İade & Değişim',
@@ -33,7 +34,7 @@ const accentBg: Record<string, string> = {
   violet: 'bg-violet-50 dark:bg-violet-900/20',
 }
 
-export default function IadeDegisimPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -116,4 +117,8 @@ export default function IadeDegisimPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="iade-degisim" kicker="Müşteri Hizmetleri" fallback={<Fallback />} />
 }

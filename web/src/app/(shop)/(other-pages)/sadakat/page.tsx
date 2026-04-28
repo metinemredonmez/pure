@@ -1,6 +1,7 @@
 import { Award01Icon, Coffee01Icon, GiftIcon, ShoppingCart01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
@@ -79,7 +80,7 @@ const howItWorks = [
   },
 ]
 
-export default function SadakatPage() {
+function Fallback() {
   return (
     <div className="overflow-x-hidden pb-24 lg:pb-32">
       {/* Hero */}
@@ -193,4 +194,8 @@ export default function SadakatPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="sadakat" kicker="Üyelik" fallback={<Fallback />} />
 }

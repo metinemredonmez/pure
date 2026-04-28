@@ -1,6 +1,7 @@
 import { CreditCardIcon, Invoice01Icon, SmartPhone01Icon, Shield01Icon, Building01Icon, Globe02Icon, Location01Icon, ShoppingCart01Icon, Coffee01Icon, PackageIcon, DeliveryTruck01Icon, BulbIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Ödeme & Teslimat',
@@ -19,7 +20,7 @@ const shippingZones = [
   { zone: 'Diğer İller', time: '2-3 iş günü', icon: <HugeiconsIcon icon={Location01Icon} size={28} color="currentColor" strokeWidth={1.5} /> },
 ]
 
-export default function OdemeTeslimatPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -124,4 +125,8 @@ export default function OdemeTeslimatPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="odeme-teslimat" kicker="Müşteri Hizmetleri" fallback={<Fallback />} />
 }

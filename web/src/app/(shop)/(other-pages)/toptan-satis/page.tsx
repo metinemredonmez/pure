@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import Image from 'next/image'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Toptan Satış',
@@ -43,7 +44,7 @@ const advantages = [
   { value: '7/24', label: 'Destek', desc: 'Özel müşteri temsilciniz her zaman yanınızda' },
 ]
 
-export default function ToptanSatisPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -173,4 +174,8 @@ export default function ToptanSatisPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="toptan-satis" kicker="Kurumsal" fallback={<Fallback />} />
 }

@@ -1,11 +1,12 @@
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Gizlilik Politikası',
   description: 'Pure Olentia kişisel verilerin korunması ve gizlilik politikası (KVKK).',
 }
 
-export default function GizlilikPolitikasiPage() {
+function Fallback() {
   return (
     <div className="container pb-24 lg:pb-32">
       <div className="mx-auto my-16 max-w-3xl lg:my-24">
@@ -126,4 +127,8 @@ export default function GizlilikPolitikasiPage() {
       </article>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="gizlilik-politikasi" kicker="Yasal Bilgiler" fallback={<Fallback />} />
 }

@@ -1,11 +1,12 @@
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Kullanim Kosullari',
   description: 'Pure Olentia web sitesi kullanim kosullari ve uyelik sartlari.',
 }
 
-export default function KullanimKosullariPage() {
+function Fallback() {
   return (
     <div className="container pb-24 lg:pb-32">
       <div className="mx-auto my-16 max-w-3xl lg:my-24">
@@ -160,4 +161,8 @@ export default function KullanimKosullariPage() {
       </article>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="kullanim-kosullari" kicker="Yasal Bilgiler" fallback={<Fallback />} />
 }

@@ -3,6 +3,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import Image from 'next/image'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 
 export const metadata: Metadata = {
   title: 'Kurumsal Hediye',
@@ -50,7 +51,7 @@ const benefits = [
   { icon: <HugeiconsIcon icon={ColorsIcon} size={24} color="currentColor" strokeWidth={1.5} />, title: 'Özel Kutu Tasarımı', desc: 'Etkinlik temanıza veya markanıza uygun kutu tasarımı.' },
 ]
 
-export default function KurumsalHediyePage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero — full width with gradient + real product image */}
@@ -193,4 +194,8 @@ export default function KurumsalHediyePage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="kurumsal-hediye" kicker="Kurumsal" fallback={<Fallback />} />
 }

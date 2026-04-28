@@ -2,6 +2,7 @@ import { PackageIcon, CoffeeIcon, ReturnRequestIcon, Building02Icon, Shield01Ico
 import { HugeiconsIcon } from '@hugeicons/react'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Metadata } from 'next'
+import CmsPage from '@/components/CmsPage'
 import SssFaq from './SssFaq'
 
 export const metadata: Metadata = {
@@ -67,7 +68,7 @@ const faqGroups = [
   },
 ]
 
-export default function SssPage() {
+function Fallback() {
   return (
     <div className="pb-24 lg:pb-32">
       {/* Hero */}
@@ -136,4 +137,8 @@ export default function SssPage() {
       </div>
     </div>
   )
+}
+
+export default function Page() {
+  return <CmsPage slug="sss" kicker="Sıkça Sorulanlar" fallback={<Fallback />} />
 }
