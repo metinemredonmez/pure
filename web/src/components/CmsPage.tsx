@@ -1,4 +1,5 @@
 import { getApiPage } from '@/lib/api'
+import { resolveImageUrl } from '@/lib/adapters'
 import { ReactNode } from 'react'
 
 interface CmsPageProps {
@@ -32,21 +33,34 @@ export default async function CmsPage({ slug, fallback, kicker, footer }: CmsPag
       ? safeParse(cmsPage.sections)
       : []
 
+  // Admin-uploaded hero image overrides the gradient.
+  // heroKicker takes precedence over the prop (per-page admin control).
+  const heroImage = cmsPage.heroImage ? resolveImageUrl(cmsPage.heroImage) : ''
+  const effectiveKicker = cmsPage.heroKicker || kicker
+
   return (
     <div className="pb-24 lg:pb-32">
-      {/* Colorful hero */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
-        {/* Decorative blurs */}
-        <div className="pointer-events-none absolute inset-0 opacity-20">
-          <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-amber-500/30 blur-3xl" />
-          <div className="absolute -right-20 top-20 h-96 w-96 rounded-full bg-orange-500/20 blur-3xl" />
-          <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-yellow-500/20 blur-3xl" />
-        </div>
+      {/* Hero — image if admin uploaded one, else colorful gradient */}
+      <div
+        className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950"
+        style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      >
+        {heroImage ? (
+          /* Dark overlay for text readability over image */
+          <div className="absolute inset-0 bg-black/55" aria-hidden />
+        ) : (
+          /* Decorative blurs only when gradient is used */
+          <div className="pointer-events-none absolute inset-0 opacity-20">
+            <div className="absolute -top-20 -left-20 h-80 w-80 rounded-full bg-amber-500/30 blur-3xl" />
+            <div className="absolute -right-20 top-20 h-96 w-96 rounded-full bg-orange-500/20 blur-3xl" />
+            <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-yellow-500/20 blur-3xl" />
+          </div>
+        )}
 
         <div className="container relative py-20 lg:py-28 text-center text-white">
-          {kicker && (
+          {effectiveKicker && (
             <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
-              {kicker}
+              {effectiveKicker}
             </span>
           )}
           <h1 className="mx-auto mt-6 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-6xl leading-tight">

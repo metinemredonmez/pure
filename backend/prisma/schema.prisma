@@ -1427,6 +1427,8 @@ model Page {
   slug           String   @unique
   sections       Json     @default("[]")
   isPublished    Boolean  @default(false)
+  heroImage      String?
+  heroKicker     String?
   seoTitle       String?
   seoDescription String?
   seoImage       String?

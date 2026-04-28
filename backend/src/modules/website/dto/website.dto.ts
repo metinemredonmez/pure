@@ -131,6 +131,8 @@ export class CreatePageDto {
   @ApiProperty() @IsString() slug: string;
   @ApiPropertyOptional() @IsOptional() sections?: any;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isPublished?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsString() heroImage?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() heroKicker?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoTitle?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoDescription?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoImage?: string;
@@ -141,6 +143,8 @@ export class UpdatePageDto {
   @ApiPropertyOptional() @IsOptional() @IsString() slug?: string;
   @ApiPropertyOptional() @IsOptional() sections?: any;
   @ApiPropertyOptional() @IsOptional() @IsBoolean() isPublished?: boolean;
+  @ApiPropertyOptional() @IsOptional() @IsString() heroImage?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() heroKicker?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoTitle?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoDescription?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() seoImage?: string;

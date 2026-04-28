@@ -1,113 +1,36 @@
+import { getSiteSettings } from '@/lib/site-settings'
+
 export async function getNavigation(): Promise<TNavigationItem[]> {
-  return [
-    {
-      id: '1',
-      href: '/collections/all',
-      name: 'Kahveler',
-      type: 'dropdown',
-      children: [
-        { id: '1-1', href: '/collections/turk-kahvesi', name: 'Türk Kahvesi', description: 'Geleneksel Türk kahvesi çeşitleri', icon: 'turk-kahvesi' },
-        { id: '1-2', href: '/collections/filtre-kahve', name: 'Filtre Kahve', description: 'Pour-over & filtre demleme', icon: 'filtre-kahve' },
-        { id: '1-3', href: '/collections/espresso', name: 'Espresso', description: 'Espresso makineleri için özel', icon: 'espresso' },
-      ],
-    },
-    {
-      id: '3',
-      href: '/subscription',
-      name: 'Abonelik',
-      type: 'dropdown',
-      children: [
-        { id: '3-1', href: '/subscription', name: 'Bireysel Abonelik' },
-        { id: '3-2', href: '/b2b', name: 'Kurumsal Abonelik' },
-      ],
-    },
-    { id: '4', href: '/collections/all', name: 'Online Dükkan' },
-    {
-      id: '9',
-      href: '#',
-      name: 'Keşfet',
-      type: 'dropdown',
-      children: [
-        { id: '9-1', href: '/blog', name: 'Blog' },
-        { id: '9-2', href: '/demleme-rehberi', name: 'Demleme Rehberi' },
-        { id: '9-3', href: '/kahve-sozlugu', name: 'Kahve Sözlüğü' },
-        { id: '9-4', href: '/ekipmanlar', name: 'Ekipmanlar' },
-        { id: '9-5', href: '/sadakat', name: 'Sadakat Programı' },
-      ],
-    },
-    {
-      id: '2',
-      href: '/b2b',
-      name: 'Kurumsal',
-      type: 'dropdown',
-      children: [
-        { id: '2-1', href: '/b2b', name: 'Kurumsal Satış' },
-        { id: '2-2', href: '/toptan-satis', name: 'Toptan Satış' },
-        { id: '2-3', href: '/kurumsal-hediye', name: 'Kurumsal Hediye' },
-        { id: '2-4', href: '/franchise', name: 'Franchise' },
-        { id: '2-5', href: '/subscription', name: 'Abonelik' },
-      ],
-    },
-    { id: '7', href: '/contact', name: 'İletişim' },
-  ]
+  const settings = await getSiteSettings()
+  return settings.navMenus.map((m): TNavigationItem => ({
+    id: m.id,
+    href: m.href,
+    name: m.name,
+    type: m.children && m.children.length ? 'dropdown' : undefined,
+    children: m.children?.map((c) => ({
+      id: c.id,
+      href: c.href,
+      name: c.name,
+      description: c.description,
+      icon: c.id, // mapped to SVG by handle in the renderer
+    })),
+  }))
 }
 
 export async function getNavMegaMenu(): Promise<TNavigationItem> {
+  const settings = await getSiteSettings()
   return {
-    id: '2',
+    id: 'mega',
     href: '/collections/all',
     name: 'Kahveler',
     type: 'mega-menu',
-    children: [
-      {
-        id: '1',
-        href: '/#',
-        name: 'Menşei',
-        type: 'dropdown',
-        children: [
-          { id: '1-1', href: '/collections/ethiopia', name: 'Etiyopya' },
-          { id: '1-2', href: '/collections/colombia', name: 'Kolombiya' },
-          { id: '1-3', href: '/collections/brazil', name: 'Brezilya' },
-          { id: '1-4', href: '/collections/kenya', name: 'Kenya' },
-          { id: '1-5', href: '/collections/guatemala', name: 'Guatemala' },
-        ],
-      },
-      {
-        id: '2',
-        href: '/#',
-        name: 'İşleme Yöntemi',
-        type: 'dropdown',
-        children: [
-          { id: '2-1', href: '/collections/washed', name: 'Yıkanmış (Washed)' },
-          { id: '2-2', href: '/collections/natural', name: 'Doğal (Natural)' },
-          { id: '2-3', href: '/collections/honey', name: 'Bal (Honey)' },
-          { id: '2-4', href: '/collections/anaerobic', name: 'Anaerobik' },
-        ],
-      },
-      {
-        id: '3',
-        href: '/#',
-        name: 'Kavurma Profili',
-        type: 'dropdown',
-        children: [
-          { id: '3-1', href: '/collections/light-roast', name: 'Açık Kavurma' },
-          { id: '3-2', href: '/collections/medium-roast', name: 'Orta Kavurma' },
-          { id: '3-3', href: '/collections/dark-roast', name: 'Koyu Kavurma' },
-        ],
-      },
-      {
-        id: '4',
-        href: '/#',
-        name: 'Ekipmanlar',
-        type: 'dropdown',
-        children: [
-          { id: '4-1', href: '/collections/grinders', name: 'Öğütücüler' },
-          { id: '4-2', href: '/collections/brewers', name: 'Demleme Ekipmanları' },
-          { id: '4-3', href: '/collections/accessories', name: 'Aksesuarlar' },
-          { id: '4-4', href: '/subscription', name: 'Abonelik' },
-        ],
-      },
-    ],
+    children: settings.megaMenu.map((g): TNavigationItem => ({
+      id: g.id,
+      href: '#',
+      name: g.name,
+      type: 'dropdown',
+      children: g.items.map((c) => ({ id: c.id, href: c.href, name: c.name })),
+    })),
   }
 }
 

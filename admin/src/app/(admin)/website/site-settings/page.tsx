@@ -19,6 +19,9 @@ interface GrindGroup { kind: string; options: string[] }
 interface SubscriptionBasePrices { 'turk-kahvesi': number; 'espresso': number; 'filtre-kahve': number }
 interface FooterMenuItem { label: string; href: string }
 interface FooterMenuGroup { id: string; title: string; items: FooterMenuItem[] }
+interface NavMenuChild { id: string; name: string; href: string; description?: string }
+interface NavMenuItem { id: string; name: string; href: string; children?: NavMenuChild[] }
+interface MegaMenuGroup { id: string; name: string; items: NavMenuChild[] }
 
 interface SiteSettingsState {
   siteName: string;
@@ -76,6 +79,8 @@ interface SiteSettingsState {
   b2bHeroPrimaryCta: string;
   b2bHeroSecondaryCta: string;
   footerMenus: FooterMenuGroup[];
+  navMenus: NavMenuItem[];
+  megaMenu: MegaMenuGroup[];
 }
 
 const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
@@ -106,6 +111,61 @@ const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
     { label: 'Mesafeli Satış', href: '/mesafeli-satis' },
     { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
     { label: 'Çerez Politikası', href: '/cerez-politikasi' },
+  ]},
+];
+
+const DEFAULT_NAV_MENUS: NavMenuItem[] = [
+  { id: 'kahveler', name: 'Kahveler', href: '/collections/all', children: [
+    { id: 'turk-kahvesi', name: 'Türk Kahvesi', href: '/collections/turk-kahvesi', description: 'Geleneksel Türk kahvesi çeşitleri' },
+    { id: 'filtre-kahve', name: 'Filtre Kahve', href: '/collections/filtre-kahve', description: 'Pour-over & filtre demleme' },
+    { id: 'espresso', name: 'Espresso', href: '/collections/espresso', description: 'Espresso makineleri için özel' },
+  ]},
+  { id: 'abonelik', name: 'Abonelik', href: '/subscription', children: [
+    { id: 'bireysel', name: 'Bireysel Abonelik', href: '/subscription' },
+    { id: 'kurumsal-ab', name: 'Kurumsal Abonelik', href: '/b2b' },
+  ]},
+  { id: 'online-dukkan', name: 'Online Dükkan', href: '/collections/all' },
+  { id: 'kesfet', name: 'Keşfet', href: '#', children: [
+    { id: 'blog', name: 'Blog', href: '/blog' },
+    { id: 'demleme', name: 'Demleme Rehberi', href: '/demleme-rehberi' },
+    { id: 'sozluk', name: 'Kahve Sözlüğü', href: '/kahve-sozlugu' },
+    { id: 'ekipman', name: 'Ekipmanlar', href: '/ekipmanlar' },
+    { id: 'sadakat', name: 'Sadakat Programı', href: '/sadakat' },
+  ]},
+  { id: 'kurumsal', name: 'Kurumsal', href: '/b2b', children: [
+    { id: 'kurumsal-satis', name: 'Kurumsal Satış', href: '/b2b' },
+    { id: 'toptan', name: 'Toptan Satış', href: '/toptan-satis' },
+    { id: 'hediye', name: 'Kurumsal Hediye', href: '/kurumsal-hediye' },
+    { id: 'franchise', name: 'Franchise', href: '/franchise' },
+    { id: 'abonelik2', name: 'Abonelik', href: '/subscription' },
+  ]},
+  { id: 'iletisim', name: 'İletişim', href: '/contact' },
+];
+
+const DEFAULT_MEGA_MENU: MegaMenuGroup[] = [
+  { id: 'mensei', name: 'Menşei', items: [
+    { id: 'ethiopia', name: 'Etiyopya', href: '/collections/ethiopia' },
+    { id: 'colombia', name: 'Kolombiya', href: '/collections/colombia' },
+    { id: 'brazil', name: 'Brezilya', href: '/collections/brazil' },
+    { id: 'kenya', name: 'Kenya', href: '/collections/kenya' },
+    { id: 'guatemala', name: 'Guatemala', href: '/collections/guatemala' },
+  ]},
+  { id: 'isleme', name: 'İşleme Yöntemi', items: [
+    { id: 'washed', name: 'Yıkanmış (Washed)', href: '/collections/washed' },
+    { id: 'natural', name: 'Doğal (Natural)', href: '/collections/natural' },
+    { id: 'honey', name: 'Bal (Honey)', href: '/collections/honey' },
+    { id: 'anaerobic', name: 'Anaerobik', href: '/collections/anaerobic' },
+  ]},
+  { id: 'kavurma', name: 'Kavurma Profili', items: [
+    { id: 'light', name: 'Açık Kavurma', href: '/collections/light-roast' },
+    { id: 'medium', name: 'Orta Kavurma', href: '/collections/medium-roast' },
+    { id: 'dark', name: 'Koyu Kavurma', href: '/collections/dark-roast' },
+  ]},
+  { id: 'ekipman-mm', name: 'Ekipmanlar', items: [
+    { id: 'grinder', name: 'Öğütücüler', href: '/collections/grinders' },
+    { id: 'brewer', name: 'Demleme Ekipmanları', href: '/collections/brewers' },
+    { id: 'accessory', name: 'Aksesuarlar', href: '/collections/accessories' },
+    { id: 'sub-mm', name: 'Abonelik', href: '/subscription' },
   ]},
 ];
 
@@ -174,6 +234,8 @@ const defaultSettings: SiteSettingsState = {
   b2bHeroPrimaryCta: 'Teklif Alın',
   b2bHeroSecondaryCta: 'Franchise',
   footerMenus: DEFAULT_FOOTER_MENUS,
+  navMenus: DEFAULT_NAV_MENUS,
+  megaMenu: DEFAULT_MEGA_MENU,
 };
 
 export default function SiteSettingsPage() {
@@ -253,6 +315,12 @@ export default function SiteSettingsPage() {
         footerMenus: Array.isArray(data.footerMenus) && data.footerMenus.length
           ? data.footerMenus
           : DEFAULT_FOOTER_MENUS,
+        navMenus: Array.isArray(data.navMenus) && data.navMenus.length
+          ? data.navMenus
+          : DEFAULT_NAV_MENUS,
+        megaMenu: Array.isArray(data.megaMenu) && data.megaMenu.length
+          ? data.megaMenu
+          : DEFAULT_MEGA_MENU,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');

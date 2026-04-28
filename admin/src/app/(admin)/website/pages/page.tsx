@@ -21,6 +21,8 @@ interface SitePage {
   slug: string;
   sections: any[];
   isPublished: boolean;
+  heroImage?: string;
+  heroKicker?: string;
   seoTitle?: string;
   seoDescription?: string;
   seoImage?: string;
@@ -37,6 +39,8 @@ const emptyForm = {
   slug: '',
   content: '', // raw HTML content — serialized to sections[{type:'html', content}]
   isPublished: false,
+  heroImage: '',
+  heroKicker: '',
   seoTitle: '',
   seoDescription: '',
   seoImage: '',
@@ -630,6 +634,8 @@ export default function PagesPage() {
         slug: page.slug,
         content: sectionsToContent(page.sections),
         isPublished: page.isPublished,
+        heroImage: page.heroImage || '',
+        heroKicker: page.heroKicker || '',
         seoTitle: page.seoTitle || '',
         seoDescription: page.seoDescription || '',
         seoImage: page.seoImage || '',
@@ -816,6 +822,26 @@ export default function PagesPage() {
                 helperText="Örnek: hakkimizda, kvkk, iletisim, sss, ekipmanlar" />
             </Grid>
             <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+              <Typography fontWeight={600} fontSize={14} sx={{ mb: 1 }}>Hero (Sayfa Üst Banner)</Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                Görsel yüklerseniz sayfanın üst banner'ına arkaplan olur. Boş bırakırsanız varsayılan kahverengi gradient kullanılır.
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12, md: 8 }}>
+              <ImageUpload
+                label="Hero Arkaplan Görseli (önerilen 1920x800px)"
+                value={form.heroImage}
+                onChange={(url) => setForm((prev) => ({ ...prev, heroImage: typeof url === 'string' ? url : '' }))}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <TextField fullWidth size="small" label="Üst Etiket (kicker)" value={form.heroKicker}
+                onChange={(e) => setForm({ ...form, heroKicker: e.target.value })}
+                helperText="Örn: 'Yasal Bilgiler', 'Müşteri Hizmetleri' (başlığın üstünde gösterilir)" />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
               <Box sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                 <Typography variant="body2" fontWeight={600} sx={{ mr: 'auto' }}>
                   Icerik (HTML)
