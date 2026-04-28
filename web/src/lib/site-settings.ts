@@ -58,6 +58,19 @@ export interface B2BStat {
   label: string
 }
 
+export interface IconStep {
+  id: string
+  title: string
+  desc: string
+  icon: string  // 'coffee' | 'package' | 'truck' | 'gift'
+}
+
+export interface FaqItem {
+  id: string
+  q: string
+  a: string
+}
+
 export interface SiteSettings {
   siteName: string
   logo: string
@@ -110,6 +123,14 @@ export interface SiteSettings {
   megaMenu: MegaMenuGroup[]
   b2bFeatures: B2BFeature[]
   b2bStats: B2BStat[]
+  subscriptionHeroBadge: string
+  subscriptionHeroTitle: string
+  subscriptionHeroSubtitle: string
+  subscriptionHeroCta: string
+  subscriptionSteps: IconStep[]
+  subscriptionFaqHeading: string
+  subscriptionFaq: FaqItem[]
+  subscriptionFaqCta: string
 }
 
 const DEFAULTS: SiteSettings = {
@@ -272,6 +293,24 @@ const DEFAULTS: SiteSettings = {
     { id: 's3', value: '%98', label: 'Memnuniyet' },
     { id: 's4', value: '24s', label: 'Teslimat' },
   ],
+  subscriptionHeroBadge: 'Kahve Aboneliği',
+  subscriptionHeroTitle: 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
+  subscriptionHeroSubtitle: 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca taze kahvenizi sabit tutacak şekilde hareket ediyoruz.',
+  subscriptionHeroCta: 'Abone Ol',
+  subscriptionSteps: [
+    { id: 'st1', title: 'Plan Seçin', desc: 'Size uygun paketi seçin', icon: 'coffee' },
+    { id: 'st2', title: 'Taze Kavrulsun', desc: 'Sipariş üzerine kavrulur', icon: 'package' },
+    { id: 'st3', title: 'Kapınıza Gelsin', desc: 'Ücretsiz hızlı kargo', icon: 'truck' },
+    { id: 'st4', title: 'Her Ay Yeni Lezzet', desc: 'Farklı menşeiler', icon: 'gift' },
+  ],
+  subscriptionFaqHeading: 'Sıkça Sorulan Sorular',
+  subscriptionFaq: [
+    { id: 'q1', q: 'Aboneliğimi istediğim zaman iptal edebilir miyim?', a: 'Evet, aboneliğinizi dilediğiniz zaman hesabınızdan iptal edebilirsiniz.' },
+    { id: 'q2', q: 'Kahve tercihimi değiştirebilir miyim?', a: 'Her teslimat öncesi tercihlerinizi değiştirebilirsiniz.' },
+    { id: 'q3', q: 'Teslimat ne zaman yapılır?', a: 'Kahveniz seçtiğiniz periyotlarda taze kavrularak 1-3 iş günü içinde kargoya verilir.' },
+    { id: 'q4', q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
+  ],
+  subscriptionFaqCta: 'Kahveleri Keşfet',
 }
 
 function coerce(value: unknown): string {
@@ -322,6 +361,18 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'b2bStats') {
         if (Array.isArray(incoming) && incoming.length) {
           merged.b2bStats = incoming as B2BStat[]
+        }
+        continue
+      }
+      if (key === 'subscriptionSteps') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.subscriptionSteps = incoming as IconStep[]
+        }
+        continue
+      }
+      if (key === 'subscriptionFaq') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.subscriptionFaq = incoming as FaqItem[]
         }
         continue
       }

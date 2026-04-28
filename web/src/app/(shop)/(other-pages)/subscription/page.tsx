@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { getSiteSettings } from '@/lib/site-settings'
 import SubscriptionPage from './SubscriptionPage'
 
 export const metadata: Metadata = {
@@ -6,6 +7,18 @@ export const metadata: Metadata = {
   description: 'Pure Olentia kahve aboneliği. Taze kavrulmuş specialty kahve her ay kapınızda.',
 }
 
-export default function Page() {
-  return <SubscriptionPage />
+export default async function Page() {
+  const settings = await getSiteSettings()
+  return (
+    <SubscriptionPage
+      heroBadge={settings.subscriptionHeroBadge}
+      heroTitle={settings.subscriptionHeroTitle}
+      heroSubtitle={settings.subscriptionHeroSubtitle}
+      heroCta={settings.subscriptionHeroCta}
+      steps={settings.subscriptionSteps}
+      faqHeading={settings.subscriptionFaqHeading}
+      faq={settings.subscriptionFaq}
+      faqCta={settings.subscriptionFaqCta}
+    />
+  )
 }

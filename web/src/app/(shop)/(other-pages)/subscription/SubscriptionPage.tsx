@@ -9,6 +9,24 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
 
+const STEP_ICON_MAP: Record<string, any> = {
+  coffee: Coffee01Icon,
+  package: PackageIcon,
+  truck: DeliveryTruck01Icon,
+  gift: GiftIcon,
+}
+
+interface SubscriptionPageProps {
+  heroBadge?: string
+  heroTitle?: string
+  heroSubtitle?: string
+  heroCta?: string
+  steps?: Array<{ id: string; title: string; desc: string; icon: string }>
+  faqHeading?: string
+  faq?: Array<{ id: string; q: string; a: string }>
+  faqCta?: string
+}
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 /* ---------------- Config ---------------- */
@@ -101,7 +119,16 @@ function formatPrice(v: number | string) {
 
 /* ---------------- Page ---------------- */
 
-export default function SubscriptionPage() {
+export default function SubscriptionPage({
+  heroBadge = 'Kahve Aboneliği',
+  heroTitle = 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
+  heroSubtitle = 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca taze kahvenizi sabit tutacak şekilde hareket ediyoruz.',
+  heroCta = 'Abone Ol',
+  steps = [],
+  faqHeading = 'Sıkça Sorulan Sorular',
+  faq = [],
+  faqCta = 'Kahveleri Keşfet',
+}: SubscriptionPageProps = {}) {
   const router = useRouter()
   const { addItem } = useCart()
   const [products, setProducts] = useState<Product[]>([])
@@ -373,43 +400,40 @@ export default function SubscriptionPage() {
       <div className="bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
         <div className="container py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
-            Kahve Aboneliği
+            {heroBadge}
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl leading-tight">
-            Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz
-          </h1>
+          <h1
+            className="mx-auto mt-6 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl leading-tight"
+            dangerouslySetInnerHTML={{ __html: heroTitle }}
+          />
           <p className="mx-auto mt-5 max-w-xl text-white/70 text-sm sm:text-base">
-            Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca
-            taze kahvenizi sabit tutacak şekilde hareket ediyoruz.
+            {heroSubtitle}
           </p>
           <button
             onClick={scrollToPlans}
             className="mt-10 inline-flex items-center justify-center rounded-full bg-white px-12 py-4 text-sm font-semibold uppercase tracking-widest text-neutral-900 shadow-lg transition hover:bg-neutral-100 hover:shadow-xl"
           >
-            Abone Ol
+            {heroCta}
           </button>
         </div>
       </div>
 
-      {/* How it works */}
-      <div className="container -mt-8">
-        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
-          {[
-            { icon: Coffee01Icon, title: 'Plan Seçin', desc: 'Size uygun paketi seçin' },
-            { icon: PackageIcon, title: 'Taze Kavrulsun', desc: 'Sipariş üzerine kavrulur' },
-            { icon: DeliveryTruck01Icon, title: 'Kapınıza Gelsin', desc: 'Ücretsiz hızlı kargo' },
-            { icon: GiftIcon, title: 'Her Ay Yeni Lezzet', desc: 'Farklı menşeiler' },
-          ].map((step, i) => (
-            <div key={i} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700 dark:bg-primary-900/30">
-                <HugeiconsIcon icon={step.icon} size={20} color="currentColor" strokeWidth={1.5} />
+      {/* How it works — admin-managed steps */}
+      {steps.length > 0 && (
+        <div className="container -mt-8">
+          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            {steps.map((step) => (
+              <div key={step.id} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-primary-700 dark:bg-primary-900/30">
+                  <HugeiconsIcon icon={STEP_ICON_MAP[step.icon] || Coffee01Icon} size={20} color="currentColor" strokeWidth={1.5} />
+                </div>
+                <h3 className="mt-2 text-sm font-semibold text-neutral-900 dark:text-white">{step.title}</h3>
+                <p className="mt-1 text-xs text-neutral-500">{step.desc}</p>
               </div>
-              <h3 className="mt-2 text-sm font-semibold text-neutral-900 dark:text-white">{step.title}</h3>
-              <p className="mt-1 text-xs text-neutral-500">{step.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Category Cards — admin plans'tan dinamik */}
       <div id="abonelik-planlari" className="container mt-20 scroll-mt-10">
@@ -614,34 +638,31 @@ export default function SubscriptionPage() {
         </div>
       )}
 
-      {/* SSS */}
-      <div className="container mt-24">
-        <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">Sıkça Sorulan Sorular</h2>
-        <div className="mx-auto mt-10 max-w-2xl space-y-4">
-          {[
-            { q: 'Aboneliğimi istediğim zaman iptal edebilir miyim?', a: 'Evet, aboneliğinizi dilediğiniz zaman hesabınızdan iptal edebilirsiniz.' },
-            { q: 'Kahve tercihimi değiştirebilir miyim?', a: 'Her teslimat öncesi tercihlerinizi değiştirebilirsiniz.' },
-            { q: 'Teslimat ne zaman yapılır?', a: 'Kahveniz seçtiğiniz periyotlarda taze kavrularak 1-3 iş günü içinde kargoya verilir.' },
-            { q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
-          ].map((item, i) => (
-            <details key={i} className="group rounded-2xl border border-neutral-200 dark:border-neutral-700">
-              <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-sm font-semibold text-neutral-900 dark:text-white">
-                {item.q}
-                <svg className="h-4 w-4 shrink-0 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                </svg>
-              </summary>
-              <div className="px-6 pb-4 text-sm text-neutral-500 dark:text-neutral-400">{item.a}</div>
-            </details>
-          ))}
-        </div>
+      {/* SSS — admin-managed */}
+      {faq.length > 0 && (
+        <div className="container mt-24">
+          <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">{faqHeading}</h2>
+          <div className="mx-auto mt-10 max-w-2xl space-y-4">
+            {faq.map((item) => (
+              <details key={item.id} className="group rounded-2xl border border-neutral-200 dark:border-neutral-700">
+                <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-sm font-semibold text-neutral-900 dark:text-white">
+                  {item.q}
+                  <svg className="h-4 w-4 shrink-0 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </summary>
+                <div className="px-6 pb-4 text-sm text-neutral-500 dark:text-neutral-400">{item.a}</div>
+              </details>
+            ))}
+          </div>
 
-        <div className="mt-10 text-center">
-          <Link href="/collections/all" className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-800">
-            Kahveleri Keşfet
-          </Link>
+          <div className="mt-10 text-center">
+            <Link href="/collections/all" className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-800">
+              {faqCta}
+            </Link>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

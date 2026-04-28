@@ -24,6 +24,8 @@ interface NavMenuItem { id: string; name: string; href: string; children?: NavMe
 interface MegaMenuGroup { id: string; name: string; items: NavMenuChild[] }
 interface B2BFeature { id: string; title: string; desc: string; icon: string }
 interface B2BStat { id: string; value: string; label: string }
+interface IconStep { id: string; title: string; desc: string; icon: string }
+interface FaqItem { id: string; q: string; a: string }
 
 interface SiteSettingsState {
   siteName: string;
@@ -85,6 +87,14 @@ interface SiteSettingsState {
   megaMenu: MegaMenuGroup[];
   b2bFeatures: B2BFeature[];
   b2bStats: B2BStat[];
+  subscriptionHeroBadge: string;
+  subscriptionHeroTitle: string;
+  subscriptionHeroSubtitle: string;
+  subscriptionHeroCta: string;
+  subscriptionSteps: IconStep[];
+  subscriptionFaqHeading: string;
+  subscriptionFaq: FaqItem[];
+  subscriptionFaqCta: string;
 }
 
 const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
@@ -198,6 +208,27 @@ const DEFAULT_B2B_STATS: B2BStat[] = [
   { id: 's4', value: '24s', label: 'Teslimat' },
 ];
 
+const STEP_ICON_OPTIONS = [
+  { value: 'coffee', label: 'Kahve' },
+  { value: 'package', label: 'Paket' },
+  { value: 'truck', label: 'Kamyon' },
+  { value: 'gift', label: 'Hediye' },
+];
+
+const DEFAULT_SUB_STEPS: IconStep[] = [
+  { id: 'st1', title: 'Plan Seçin', desc: 'Size uygun paketi seçin', icon: 'coffee' },
+  { id: 'st2', title: 'Taze Kavrulsun', desc: 'Sipariş üzerine kavrulur', icon: 'package' },
+  { id: 'st3', title: 'Kapınıza Gelsin', desc: 'Ücretsiz hızlı kargo', icon: 'truck' },
+  { id: 'st4', title: 'Her Ay Yeni Lezzet', desc: 'Farklı menşeiler', icon: 'gift' },
+];
+
+const DEFAULT_SUB_FAQ: FaqItem[] = [
+  { id: 'q1', q: 'Aboneliğimi istediğim zaman iptal edebilir miyim?', a: 'Evet, aboneliğinizi dilediğiniz zaman hesabınızdan iptal edebilirsiniz.' },
+  { id: 'q2', q: 'Kahve tercihimi değiştirebilir miyim?', a: 'Her teslimat öncesi tercihlerinizi değiştirebilirsiniz.' },
+  { id: 'q3', q: 'Teslimat ne zaman yapılır?', a: 'Kahveniz seçtiğiniz periyotlarda taze kavrularak 1-3 iş günü içinde kargoya verilir.' },
+  { id: 'q4', q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
+];
+
 const DEFAULT_GRAMS: GramOption[] = [
   { id: '1x250', label: '1 x 250 g', grams: 250, bags: 1 },
   { id: '2x250', label: '2 x 250 g', grams: 500, bags: 2 },
@@ -267,6 +298,14 @@ const defaultSettings: SiteSettingsState = {
   megaMenu: DEFAULT_MEGA_MENU,
   b2bFeatures: DEFAULT_B2B_FEATURES,
   b2bStats: DEFAULT_B2B_STATS,
+  subscriptionHeroBadge: 'Kahve Aboneliği',
+  subscriptionHeroTitle: 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
+  subscriptionHeroSubtitle: 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca taze kahvenizi sabit tutacak şekilde hareket ediyoruz.',
+  subscriptionHeroCta: 'Abone Ol',
+  subscriptionSteps: DEFAULT_SUB_STEPS,
+  subscriptionFaqHeading: 'Sıkça Sorulan Sorular',
+  subscriptionFaq: DEFAULT_SUB_FAQ,
+  subscriptionFaqCta: 'Kahveleri Keşfet',
 };
 
 export default function SiteSettingsPage() {
@@ -358,6 +397,18 @@ export default function SiteSettingsPage() {
         b2bStats: Array.isArray(data.b2bStats) && data.b2bStats.length
           ? data.b2bStats
           : DEFAULT_B2B_STATS,
+        subscriptionHeroBadge: data.subscriptionHeroBadge || defaultSettings.subscriptionHeroBadge,
+        subscriptionHeroTitle: data.subscriptionHeroTitle || defaultSettings.subscriptionHeroTitle,
+        subscriptionHeroSubtitle: data.subscriptionHeroSubtitle || defaultSettings.subscriptionHeroSubtitle,
+        subscriptionHeroCta: data.subscriptionHeroCta || defaultSettings.subscriptionHeroCta,
+        subscriptionSteps: Array.isArray(data.subscriptionSteps) && data.subscriptionSteps.length
+          ? data.subscriptionSteps
+          : DEFAULT_SUB_STEPS,
+        subscriptionFaqHeading: data.subscriptionFaqHeading || defaultSettings.subscriptionFaqHeading,
+        subscriptionFaq: Array.isArray(data.subscriptionFaq) && data.subscriptionFaq.length
+          ? data.subscriptionFaq
+          : DEFAULT_SUB_FAQ,
+        subscriptionFaqCta: data.subscriptionFaqCta || defaultSettings.subscriptionFaqCta,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -1393,6 +1444,140 @@ export default function SiteSettingsPage() {
                   </Grid>
                 </Box>
               ))}
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Abonelik Sayfası — Hero / Adımlar / SSS */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="/subscription Sayfası — Hero, Adımlar, SSS"
+              subheader='Abonelik sayfasının üst banner metinleri, "Nasıl çalışır?" 4 ikon kartı ve SSS bölümü. Plan kartları ayrı bir yerden (Abonelikler → Planlar), configurator ayrı (Site Ayarları → Abonelik Ayarları) yönetiliyor.'
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Hero Bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Üst Etiket (badge)" value={settings.subscriptionHeroBadge}
+                    onChange={(e) => setSettings({ ...settings, subscriptionHeroBadge: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Buton Metni" value={settings.subscriptionHeroCta}
+                    onChange={(e) => setSettings({ ...settings, subscriptionHeroCta: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="Başlık (HTML — &lt;br /&gt; ile satır kırabilirsiniz)" value={settings.subscriptionHeroTitle}
+                    onChange={(e) => setSettings({ ...settings, subscriptionHeroTitle: e.target.value })}
+                    helperText='Örn: "Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz"' />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={settings.subscriptionHeroSubtitle}
+                    onChange={(e) => setSettings({ ...settings, subscriptionHeroSubtitle: e.target.value })} />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Nasıl Çalışır? (4 ikon kartı)</Typography>
+                    <Button size="small" startIcon={<AddIcon />}
+                      onClick={() => setSettings({ ...settings, subscriptionSteps: [...settings.subscriptionSteps, { id: `st-${Date.now()}`, title: '', desc: '', icon: 'coffee' }] })}
+                    >Yeni Adım</Button>
+                  </Box>
+                </Grid>
+                {settings.subscriptionSteps.map((s, idx) => (
+                  <Grid size={{ xs: 12 }} key={s.id || idx}>
+                    <Grid container spacing={1}>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextField fullWidth size="small" label="Başlık" value={s.title}
+                          onChange={(e) => {
+                            const arr = [...settings.subscriptionSteps];
+                            arr[idx] = { ...arr[idx], title: e.target.value };
+                            setSettings({ ...settings, subscriptionSteps: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextField fullWidth size="small" label="Açıklama" value={s.desc}
+                          onChange={(e) => {
+                            const arr = [...settings.subscriptionSteps];
+                            arr[idx] = { ...arr[idx], desc: e.target.value };
+                            setSettings({ ...settings, subscriptionSteps: arr });
+                          }} />
+                      </Grid>
+                      <Grid size={{ xs: 9, sm: 3 }}>
+                        <TextField select fullWidth size="small" label="İkon" value={s.icon}
+                          onChange={(e) => {
+                            const arr = [...settings.subscriptionSteps];
+                            arr[idx] = { ...arr[idx], icon: e.target.value };
+                            setSettings({ ...settings, subscriptionSteps: arr });
+                          }}
+                          slotProps={{ select: { native: true } }}
+                        >
+                          {STEP_ICON_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+                        </TextField>
+                      </Grid>
+                      <Grid size={{ xs: 3, sm: 1 }}>
+                        <Button fullWidth size="small" color="error"
+                          onClick={() => setSettings({ ...settings, subscriptionSteps: settings.subscriptionSteps.filter((_, i) => i !== idx) })}
+                        >Sil</Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="SSS Başlığı" value={settings.subscriptionFaqHeading}
+                    onChange={(e) => setSettings({ ...settings, subscriptionFaqHeading: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>SSS Soruları</Typography>
+                    <Button size="small" startIcon={<AddIcon />}
+                      onClick={() => setSettings({ ...settings, subscriptionFaq: [...settings.subscriptionFaq, { id: `fq-${Date.now()}`, q: '', a: '' }] })}
+                    >Yeni Soru</Button>
+                  </Box>
+                </Grid>
+                {settings.subscriptionFaq.map((f, idx) => (
+                  <Grid size={{ xs: 12 }} key={f.id || idx}>
+                    <Box sx={{ p: 1.5, mb: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                      <Grid container spacing={1}>
+                        <Grid size={{ xs: 11 }}>
+                          <TextField fullWidth size="small" label="Soru" value={f.q}
+                            onChange={(e) => {
+                              const arr = [...settings.subscriptionFaq];
+                              arr[idx] = { ...arr[idx], q: e.target.value };
+                              setSettings({ ...settings, subscriptionFaq: arr });
+                            }} />
+                        </Grid>
+                        <Grid size={{ xs: 1 }}>
+                          <Button fullWidth size="small" color="error"
+                            onClick={() => setSettings({ ...settings, subscriptionFaq: settings.subscriptionFaq.filter((_, i) => i !== idx) })}
+                          >Sil</Button>
+                        </Grid>
+                        <Grid size={{ xs: 12 }}>
+                          <TextField fullWidth size="small" multiline rows={2} label="Cevap" value={f.a}
+                            onChange={(e) => {
+                              const arr = [...settings.subscriptionFaq];
+                              arr[idx] = { ...arr[idx], a: e.target.value };
+                              setSettings({ ...settings, subscriptionFaq: arr });
+                            }} />
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  </Grid>
+                ))}
+
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="SSS Altı CTA Buton Metni" value={settings.subscriptionFaqCta}
+                    onChange={(e) => setSettings({ ...settings, subscriptionFaqCta: e.target.value })} />
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
