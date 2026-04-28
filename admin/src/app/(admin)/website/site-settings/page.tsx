@@ -6,7 +6,7 @@ import {
   CardContent, CardHeader,
 } from '@mui/material';
 import {
-  Settings as SettingsIcon, Save as SaveIcon,
+  Settings as SettingsIcon, Save as SaveIcon, Add as AddIcon,
 } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
