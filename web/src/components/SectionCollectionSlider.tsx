@@ -18,8 +18,8 @@ interface Props {
 const SectionCollectionSlider = ({
   className,
   collections,
-  headingDim = 'Sizin icin secilmis koleksiyonlar',
-  heading = 'Daha fazla kesfet',
+  headingDim = 'Sizin için seçilmiş koleksiyonlar',
+  heading = 'Daha fazla keşfet',
   emblaOptions = {
     slidesToScroll: 'auto',
   },

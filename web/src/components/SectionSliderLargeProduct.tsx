@@ -23,8 +23,8 @@ export interface SectionSliderLargeProductProps {
 const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
   className = '',
   products,
-  heading = 'Uzmanlar secti',
-  headingDim = 'Haftanin favorileri',
+  heading = 'Uzmanlar seçti',
+  headingDim = 'Haftanın favorileri',
   emblaOptions = {
     slidesToScroll: 'auto',
   },
@@ -73,7 +73,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
                     strokeWidth={1.5}
                   />
                 </div>
-                <span className="mt-1 text-sm">Tumunu gor</span>
+                <span className="mt-1 text-sm">Tümünü gör</span>
               </div>
             </div>
           </Link>

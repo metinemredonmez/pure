@@ -98,15 +98,15 @@ export default async function Page({
               />
             </svg>
           </div>
-          <h3 className="mt-6 text-xl font-semibold">Bu kategoride henuz urun yok</h3>
+          <h3 className="mt-6 text-xl font-semibold">Bu kategoride henüz ürün yok</h3>
           <p className="mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
-            Cok yakinda bu kategoriye yeni urunler eklenecektir. Diger kategorilerimizi kesfetmek ister misiniz?
+            Çok yakında bu kategoriye yeni ürünler eklenecektir. Diğer kategorilerimizi keşfetmek ister misiniz?
           </p>
           <a
             href="/collections/all"
             className="mt-6 rounded-full bg-primary-700 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-primary-800"
           >
-            Tum Kahveleri Gor
+            Tüm Kahveleri Gör
           </a>
         </div>
       )}

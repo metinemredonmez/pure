@@ -23,7 +23,7 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   headingFontClassName,
   headingClassName,
   heading,
-  subHeading = 'Taze kavrulmus ozel kahveler',
+  subHeading = 'Taze kavrulmuş özel kahveler',
   data,
   emblaOptions = {
     slidesToScroll: 'auto',

@@ -22,8 +22,8 @@ export interface SectionSliderCategoriesProps {
 }
 
 const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
-  heading = 'Menseilere gore',
-  headingDim = 'Kahve dunyasini kesfet',
+  heading = 'Menşeilere göre',
+  headingDim = 'Kahve dünyasını keşfet',
   subHeading,
   className,
   collections,
