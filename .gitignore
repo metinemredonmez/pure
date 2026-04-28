@@ -28,6 +28,13 @@ npm-debug.log*
 *.docx
 *.jpeg
 *.jpg
+# Allow public/static asset images (admin login bg, web hero photos vs.)
+!admin/public/images/*.jpg
+!admin/public/images/*.jpeg
+!web/public/hero/*.jpg
+!web/public/hero/*.jpeg
+!web/public/images/*.jpg
+!web/public/images/*.jpeg
 .env.production
 .env.development
 .env.staging
