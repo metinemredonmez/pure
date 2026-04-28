@@ -43,8 +43,6 @@ interface SiteSettingsState {
   twitter: string;
   linkedin: string;
   youtube: string;
-  kvkkText: string;
-  cookiePolicy: string;
   franchiseBanners: string[];
   subscriptionGrams: GramOption[];
   subscriptionBasePrices: SubscriptionBasePrices;
@@ -123,8 +121,8 @@ const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
     { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
     { label: 'KVKK', href: '/kvkk' },
     { label: 'Mesafeli Satış', href: '/mesafeli-satis' },
-    { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
-    { label: 'Çerez Politikası', href: '/cerez-politikasi' },
+    { label: 'Kullanım Koşulları', href: '/kullanım-kosullari' },
+    { label: 'Çerez Politikası', href: '/çerez-politikasi' },
   ]},
 ];
 
@@ -258,7 +256,6 @@ const defaultSettings: SiteSettingsState = {
   siteName: '', logo: '', favicon: '', footerText: '',
   phone: '', email: '', address: '', mapLat: '', mapLng: '', workingHours: '',
   facebook: '', instagram: '', twitter: '', linkedin: '', youtube: '',
-  kvkkText: '', cookiePolicy: '',
   franchiseBanners: [],
   subscriptionGrams: DEFAULT_GRAMS,
   subscriptionBasePrices: { 'turk-kahvesi': 180, 'espresso': 180, 'filtre-kahve': 200 },
@@ -336,8 +333,6 @@ export default function SiteSettingsPage() {
         twitter: data.twitter || '',
         linkedin: data.linkedin || '',
         youtube: data.youtube || '',
-        kvkkText: data.kvkkText || '',
-        cookiePolicy: data.cookiePolicy || '',
         franchiseBanners: Array.isArray(data.franchiseBanners) ? data.franchiseBanners : [],
         subscriptionGrams: Array.isArray(data.subscriptionGrams) && data.subscriptionGrams.length
           ? data.subscriptionGrams
@@ -462,14 +457,14 @@ export default function SiteSettingsPage() {
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <ImageUpload
-                    label="Logo (onerilen: 400x120px, seffaf PNG)"
+                    label="Logo (önerilen: 400x120px, şeffaf PNG)"
                     value={settings.logo}
                     onChange={(url) => setSettings({ ...settings, logo: url as string })}
                   />
                 </Grid>
                 <Grid size={{ xs: 12 }}>
                   <ImageUpload
-                    label="Favicon (onerilen: 64x64px, PNG/ICO)"
+                    label="Favicon (önerilen: 64x64px, PNG/ICO)"
                     value={settings.favicon}
                     onChange={(url) => setSettings({ ...settings, favicon: url as string })}
                   />
@@ -555,12 +550,12 @@ export default function SiteSettingsPage() {
           <Card>
             <CardHeader
               title="Franchise Sayfasi Banner"
-              subheader="Franchise sayfasindaki 'Pure Olentia Magaza Konsepti' bolumunde gosterilen gorseller. Birden fazla eklerseniz otomatik slideshow olur (5 sn gecis). Onerilen: 1920x820px (21:9 oran)."
+              subheader="Franchise sayfasindaki 'Pure Olentia Magaza Konsepti' bolumunde gösterilen gorseller. Birden fazla eklerseniz otomatik slideshow olur (5 sn gecis). Onerilen: 1920x820px (21:9 oran)."
               titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
             />
             <CardContent>
               <ImageUpload
-                label="Franchise Banner Gorselleri"
+                label="Franchise Banner Görselleri"
                 value={settings.franchiseBanners}
                 onChange={(urls) => setSettings({ ...settings, franchiseBanners: Array.isArray(urls) ? urls : urls ? [urls] : [] })}
                 multiple
@@ -575,7 +570,7 @@ export default function SiteSettingsPage() {
           <Card>
             <CardHeader
               title="Abonelik Ayarlari"
-              subheader="Abonelik sayfasinda (/subscription) gosterilen gramaj secenekleri ve kategori bazli 250g basina baslangic fiyatlari. Toplam fiyat: baz_fiyat x paket_sayisi x (gramaj/250) x ayda_teslimat x toplam_ay"
+              subheader="Abonelik sayfasinda (/subscription) gösterilen gramaj seçenekleri ve kategori bazli 250g basina baslangic fiyatlari. Toplam fiyat: baz_fiyat x paket_sayisi x (gramaj/250) x ayda_teslimat x toplam_ay"
               titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
             />
             <CardContent>
@@ -1582,24 +1577,9 @@ export default function SiteSettingsPage() {
           </Card>
         </Grid>
 
-        {/* Yasal Metinler */}
-        <Grid size={{ xs: 12, md: 6 }}>
-          <Card>
-            <CardHeader title="Yasal Metinler" titleTypographyProps={{ fontSize: 15, fontWeight: 600 }} />
-            <CardContent>
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 12 }}>
-                  <TextField fullWidth label="KVKK / Aydinlatma Metni" size="small" multiline rows={6} value={settings.kvkkText}
-                    onChange={(e) => setSettings({ ...settings, kvkkText: e.target.value })} />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <TextField fullWidth label="Cerez Politikasi" size="small" multiline rows={6} value={settings.cookiePolicy}
-                    onChange={(e) => setSettings({ ...settings, cookiePolicy: e.target.value })} />
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        </Grid>
+        {/* Eski "Yasal Metinler" kartı kaldırıldı — yasal sayfalar artık
+            Web Sitesi → Sayfalar (CMS) üzerinden yönetiliyor (kvkk, çerez-politikasi
+            mesafeli-satis, kullanım-kosullari, gizlilik-politikasi). */}
       </Grid>
     </Box>
   );

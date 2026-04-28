@@ -233,7 +233,7 @@ export default function MachinesPage() {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ImageUpload
-                label="Makine Gorselleri (onerilen: 1200x800px, birden fazla secilebilir)"
+                label="Makine Görselleri (önerilen: 1200x800px, birden fazla seçilebilir)"
                 value={form.images ? String(form.images).split(',').map((s: string) => s.trim()).filter(Boolean) : []}
                 onChange={(urls) => setForm({ ...form, images: Array.isArray(urls) ? urls.join(',') : urls })}
                 multiple

@@ -85,11 +85,11 @@ export default function LeadsPage() {
   };
 
   const exportData = filteredLeads.map(l => ({
-    'Sirket': l.companyName || '',
+    'Şirket': l.companyName || '',
     'Iletisim': l.contactName || '',
     'E-posta': l.email || '',
     'Telefon': l.phone || '',
-    'Sehir': l.city || '',
+    'Şehir': l.city || '',
     'Kisi Sayisi': l.dailyPersonCount || '',
     'Durum': statusConfig[l.status]?.label || l.status,
     'Tarih': formatDate(l.createdAt),
@@ -109,7 +109,7 @@ export default function LeadsPage() {
       <Card sx={{ mt: 3 }}>
         <Box sx={{ p: 2 }}>
           <TextField
-            size="small" placeholder="Ara... (sirket, isim, e-posta, sehir)"
+            size="small" placeholder="Ara... (şirket, isim, e-posta, şehir)"
             value={search} onChange={(e) => setSearch(e.target.value)}
             sx={{ width: 350 }}
           />
@@ -118,11 +118,11 @@ export default function LeadsPage() {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Sirket</TableCell>
+                <TableCell>Şirket</TableCell>
                 <TableCell>Iletisim</TableCell>
                 <TableCell>E-posta</TableCell>
                 <TableCell>Telefon</TableCell>
-                <TableCell>Sehir</TableCell>
+                <TableCell>Şehir</TableCell>
                 <TableCell align="center">Durum</TableCell>
                 <TableCell>Tarih</TableCell>
                 <TableCell align="right">Islemler</TableCell>
@@ -188,7 +188,7 @@ export default function LeadsPage() {
           {selectedLead && (
             <Grid container spacing={2}>
               <Grid size={{ xs: 6 }}>
-                <Typography fontSize={12} color="text.secondary">Sirket</Typography>
+                <Typography fontSize={12} color="text.secondary">Şirket</Typography>
                 <Typography fontSize={14} fontWeight={600}>{selectedLead.companyName || '-'}</Typography>
               </Grid>
               <Grid size={{ xs: 6 }}>
@@ -204,7 +204,7 @@ export default function LeadsPage() {
                 <Typography fontSize={14}>{selectedLead.phone || '-'}</Typography>
               </Grid>
               <Grid size={{ xs: 6 }}>
-                <Typography fontSize={12} color="text.secondary">Sehir</Typography>
+                <Typography fontSize={12} color="text.secondary">Şehir</Typography>
                 <Typography fontSize={14}>{selectedLead.city || '-'}</Typography>
               </Grid>
               <Grid size={{ xs: 6 }}>

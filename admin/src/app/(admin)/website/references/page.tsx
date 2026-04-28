@@ -95,7 +95,7 @@ export default function ReferencesPage() {
             <TableHead>
               <TableRow>
                 <TableCell width={50}>#</TableCell>
-                <TableCell>Sirket</TableCell>
+                <TableCell>Şirket</TableCell>
                 <TableCell>Sektor</TableCell>
                 <TableCell>Iletisim Kisisi</TableCell>
                 <TableCell>Yorum</TableCell>
@@ -159,7 +159,7 @@ export default function ReferencesPage() {
         <DialogContent sx={{ pt: 3 }}>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="Sirket Adi" size="small" value={form.companyName}
+              <TextField fullWidth label="Şirket Adi" size="small" value={form.companyName}
                 onChange={(e) => setForm({ ...form, companyName: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -168,7 +168,7 @@ export default function ReferencesPage() {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ImageUpload
-                label="Firma Logosu (onerilen: 400x200px, seffaf PNG)"
+                label="Firma Logosu (önerilen: 400x200px, şeffaf PNG)"
                 value={form.logo}
                 onChange={(url) => setForm({ ...form, logo: url as string })}
               />

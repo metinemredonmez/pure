@@ -39,7 +39,7 @@ interface LeaderboardUser {
 
 const tierConfig: Record<string, { label: string; color: string; icon: string; minPoints: number; benefit: string }> = {
   BRONZE: { label: 'Bronz', color: '#CD7F32', icon: '🥉', minPoints: 0, benefit: '%5 indirim' },
-  SILVER: { label: 'Gumus', color: '#C0C0C0', icon: '🥈', minPoints: 500, benefit: '%10 indirim + ucretsiz kargo' },
+  SILVER: { label: 'Gümüş', color: '#C0C0C0', icon: '🥈', minPoints: 500, benefit: '%10 indirim + ücretsiz kargo' },
   GOLD: { label: 'Altin', color: '#FFD700', icon: '🥇', minPoints: 2000, benefit: '%15 indirim + oncelikli kargo' },
   PLATINUM: { label: 'Platin', color: '#E5E4E2', icon: '💎', minPoints: 5000, benefit: '%20 indirim + ozel urunler' },
   DIAMOND: { label: 'Elmas', color: '#B9F2FF', icon: '👑', minPoints: 10000, benefit: '%25 indirim + VIP erişim' },
@@ -221,7 +221,7 @@ export default function LoyaltyPage() {
         ))}
       </Grid>
 
-      {/* Puan Kullanim Orani + Tier Distribution */}
+      {/* Puan Kullanım Orani + Tier Distribution */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {/* Redeem Rate */}
         <Grid size={{ xs: 12, md: 4 }}>
@@ -229,7 +229,7 @@ export default function LoyaltyPage() {
             <Stack spacing={2}>
               <Stack direction="row" spacing={1} alignItems="center">
                 <GiftIcon sx={{ color: '#AB47BC', fontSize: 20 }} />
-                <Typography variant="subtitle2" fontWeight={700}>Puan Kullanim Orani</Typography>
+                <Typography variant="subtitle2" fontWeight={700}>Puan Kullanım Orani</Typography>
               </Stack>
               <Box sx={{ textAlign: 'center', py: 1 }}>
                 {loading ? <Skeleton width={80} height={48} sx={{ mx: 'auto' }} /> : (

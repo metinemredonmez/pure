@@ -187,7 +187,7 @@ E-posta: info@pureolentia.com · Telefon: 0552 462 29 54</p>
   },
   {
     title: 'Kullanım Koşulları',
-    slug: 'kullanim-kosullari',
+    slug: 'kullanım-kosullari',
     seoDescription: 'Pure Olentia web sitesi kullanım koşulları.',
     content: `<h2>Kullanım Koşulları</h2>
 <p>Pure Olentia web sitesini (pureolentia.com) kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.</p>
@@ -210,7 +210,7 @@ E-posta: info@pureolentia.com · Telefon: 0552 462 29 54</p>
   },
   {
     title: 'Çerez Politikası',
-    slug: 'cerez-politikasi',
+    slug: 'çerez-politikasi',
     seoDescription: 'Pure Olentia çerez kullanım politikası.',
     content: `<h2>Çerez Politikası</h2>
 <p>Pure Olentia web sitesinde (pureolentia.com) kullanılan çerezler hakkında bilgi.</p>
@@ -911,7 +911,7 @@ export default function PagesPage() {
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <ImageUpload
-                label="SEO Paylasim Gorseli (onerilen: 1200x630px, sosyal medya icin)"
+                label="SEO Paylaşım Görseli (önerilen: 1200x630px, sosyal medya icin)"
                 value={form.seoImage}
                 onChange={(url) => setForm({ ...form, seoImage: url as string })}
               />

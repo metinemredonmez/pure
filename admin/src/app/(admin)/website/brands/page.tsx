@@ -157,7 +157,7 @@ export default function BrandsPage() {
             </Grid>
             <Grid size={{ xs: 12 }}>
               <ImageUpload
-                label="Marka Logosu (onerilen: 400x200px, seffaf PNG)"
+                label="Marka Logosu (önerilen: 400x200px, şeffaf PNG)"
                 value={form.logo}
                 onChange={(url) => setForm({ ...form, logo: url as string })}
               />
