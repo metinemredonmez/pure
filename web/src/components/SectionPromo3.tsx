@@ -1,5 +1,6 @@
 import backgroundLineSvg from '@/images/BackgroundLine.svg'
 import rightImgDemo from '@/images/promo3.png'
+import { resolveImageUrl } from '@/lib/adapters'
 import { getSiteSettings } from '@/lib/site-settings'
 import NcImage from '@/shared/NcImage/NcImage'
 import { Badge } from '@/shared/badge'
@@ -16,6 +17,7 @@ const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
   const title = settings.promo3Title || 'Fırsatları kaçırmayın.'
   const subtitle =
     settings.promo3Subtitle || 'Yeni mahsul kahveler, özel indirimler ve kahve dünyasından haberler.'
+  const customImage = settings.promo3Image ? resolveImageUrl(settings.promo3Image) : ''
 
   return (
     <div className={clsx(className)}>
@@ -49,13 +51,24 @@ const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
           <NewsletterForm />
         </div>
 
-        <NcImage
-          alt="right hero"
-          containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
-          src={rightImgDemo}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className=""
-        />
+        {customImage ? (
+          <div className="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]">
+            <img
+              alt="right hero"
+              src={customImage}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="w-full h-auto"
+            />
+          </div>
+        ) : (
+          <NcImage
+            alt="right hero"
+            containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
+            src={rightImgDemo}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className=""
+          />
+        )}
       </div>
     </div>
   )

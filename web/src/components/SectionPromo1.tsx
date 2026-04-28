@@ -1,6 +1,7 @@
 import Logo from '@/components/Logo'
 import rightLargeImgDark from '@/images/promo1-dark.png'
 import rightImgDemo from '@/images/promo1.png'
+import { resolveImageUrl } from '@/lib/adapters'
 import { getSiteSettings } from '@/lib/site-settings'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
@@ -16,6 +17,7 @@ const SectionPromo1 = async ({ className = '' }: SectionPromo1Props) => {
   const subtitle =
     settings.promo1Subtitle || 'Pure Olentia ile ücretsiz kargo ve abonelik indirimi fırsatı.'
   const cta = settings.promo1Cta || 'Kahveleri İncele'
+  const customImage = settings.promo1Image ? resolveImageUrl(settings.promo1Image) : ''
 
   return (
     <div className={`relative flex flex-col items-center lg:flex-row ${className}`}>
@@ -33,20 +35,31 @@ const SectionPromo1 = async ({ className = '' }: SectionPromo1Props) => {
         </div>
       </div>
       <div className="relative max-w-xl flex-1 lg:max-w-none">
-        <NcImage
-          alt=""
-          containerClassName="block dark:hidden"
-          src={rightImgDemo}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="rounded-2xl"
-        />
-        <NcImage
-          alt=""
-          containerClassName="hidden dark:block"
-          src={rightLargeImgDark}
-          sizes="(max-width: 768px) 100vw, 50vw"
-          className="rounded-2xl"
-        />
+        {customImage ? (
+          <img
+            alt=""
+            src={customImage}
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="w-full rounded-2xl object-cover"
+          />
+        ) : (
+          <>
+            <NcImage
+              alt=""
+              containerClassName="block dark:hidden"
+              src={rightImgDemo}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="rounded-2xl"
+            />
+            <NcImage
+              alt=""
+              containerClassName="hidden dark:block"
+              src={rightLargeImgDark}
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="rounded-2xl"
+            />
+          </>
+        )}
       </div>
     </div>
   )

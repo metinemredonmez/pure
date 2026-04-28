@@ -42,6 +42,18 @@ interface SiteSettingsState {
   subscriptionDurations: DurationOption[];
   subscriptionPeriods: PeriodOption[];
   subscriptionGrinds: GrindGroup[];
+  // Promo bölümleri (anasayfa)
+  promo1Title: string;
+  promo1Subtitle: string;
+  promo1Cta: string;
+  promo1Image: string;
+  promo2Title: string;
+  promo2Subtitle: string;
+  promo2Cta: string;
+  promo2Image: string;
+  promo3Title: string;
+  promo3Subtitle: string;
+  promo3Image: string;
   // Anasayfa bölüm başlıkları
   homeCollectionsHeading: string;
   homeCollectionsSubHeading: string;
@@ -99,6 +111,17 @@ const defaultSettings: SiteSettingsState = {
   subscriptionDurations: DEFAULT_DURATIONS,
   subscriptionPeriods: DEFAULT_PERIODS,
   subscriptionGrinds: DEFAULT_GRINDS,
+  promo1Title: 'Taze kavurma, hızlı teslimat.',
+  promo1Subtitle: 'Pure Olentia ile ücretsiz kargo ve abonelik indirimi fırsatı.',
+  promo1Cta: 'Kahveleri İncele',
+  promo1Image: '',
+  promo2Title: 'Hediye paketi kahve setleri',
+  promo2Subtitle: 'Sevdiklerinize özel kahve deneyimi hediye edin. Taze kavrulmuş, özenle paketlenmiş.',
+  promo2Cta: 'Hediye Setleri',
+  promo2Image: '',
+  promo3Title: 'Fırsatları kaçırmayın.',
+  promo3Subtitle: 'Yeni mahsul kahveler, özel indirimler ve kahve dünyasından haberler.',
+  promo3Image: '',
   homeCollectionsHeading: 'Daha fazla keşfet',
   homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
   homeNewArrivalsHeading: 'Yeni Gelenler',
@@ -164,6 +187,17 @@ export default function SiteSettingsPage() {
         subscriptionGrinds: Array.isArray(data.subscriptionGrinds) && data.subscriptionGrinds.length
           ? data.subscriptionGrinds
           : DEFAULT_GRINDS,
+        promo1Title: data.promo1Title || defaultSettings.promo1Title,
+        promo1Subtitle: data.promo1Subtitle || defaultSettings.promo1Subtitle,
+        promo1Cta: data.promo1Cta || defaultSettings.promo1Cta,
+        promo1Image: data.promo1Image || '',
+        promo2Title: data.promo2Title || defaultSettings.promo2Title,
+        promo2Subtitle: data.promo2Subtitle || defaultSettings.promo2Subtitle,
+        promo2Cta: data.promo2Cta || defaultSettings.promo2Cta,
+        promo2Image: data.promo2Image || '',
+        promo3Title: data.promo3Title || defaultSettings.promo3Title,
+        promo3Subtitle: data.promo3Subtitle || defaultSettings.promo3Subtitle,
+        promo3Image: data.promo3Image || '',
         homeCollectionsHeading: data.homeCollectionsHeading || defaultSettings.homeCollectionsHeading,
         homeCollectionsSubHeading: data.homeCollectionsSubHeading || defaultSettings.homeCollectionsSubHeading,
         homeNewArrivalsHeading: data.homeNewArrivalsHeading || defaultSettings.homeNewArrivalsHeading,
@@ -688,6 +722,92 @@ export default function SiteSettingsPage() {
                 <Grid size={{ xs: 12, md: 6 }}>
                   <TextField fullWidth size="small" label="Alt Etiket" value={settings.homeViewAllCaption}
                     onChange={(e) => setSettings({ ...settings, homeViewAllCaption: e.target.value })} />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Anasayfa Promo Bölümleri */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Anasayfa Promo Bölümleri"
+              subheader="Anasayfadaki 3 promo bölümünün başlık + alt yazı + buton + sağdaki görsel. Görsel boş bırakılırsa varsayılan statik görsel kullanılır."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={2}>
+                {/* Promo 1 */}
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Promo 1 — "Taze kavurma, hızlı teslimat" bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.promo1Title}
+                    onChange={(e) => setSettings({ ...settings, promo1Title: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Buton Metni" value={settings.promo1Cta}
+                    onChange={(e) => setSettings({ ...settings, promo1Cta: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={settings.promo1Subtitle}
+                    onChange={(e) => setSettings({ ...settings, promo1Subtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Sağ Görsel (önerilen 800x600px)"
+                    value={settings.promo1Image}
+                    onChange={(url) => setSettings({ ...settings, promo1Image: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+                {/* Promo 2 */}
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Promo 2 — "Hediye paketi kahve setleri" bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.promo2Title}
+                    onChange={(e) => setSettings({ ...settings, promo2Title: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Buton Metni" value={settings.promo2Cta}
+                    onChange={(e) => setSettings({ ...settings, promo2Cta: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={settings.promo2Subtitle}
+                    onChange={(e) => setSettings({ ...settings, promo2Subtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Sol Görsel (önerilen 800x800px, kare)"
+                    value={settings.promo2Image}
+                    onChange={(url) => setSettings({ ...settings, promo2Image: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+                {/* Promo 3 — Newsletter */}
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Promo 3 — Newsletter / "Fırsatları kaçırmayın" bölümü</Typography>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="Başlık" value={settings.promo3Title}
+                    onChange={(e) => setSettings({ ...settings, promo3Title: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={settings.promo3Subtitle}
+                    onChange={(e) => setSettings({ ...settings, promo3Subtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Sağ Görsel (önerilen 600x600px)"
+                    value={settings.promo3Image}
+                    onChange={(url) => setSettings({ ...settings, promo3Image: typeof url === 'string' ? url : '' })}
+                  />
                 </Grid>
               </Grid>
             </CardContent>

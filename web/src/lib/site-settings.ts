@@ -39,8 +39,11 @@ export interface SiteSettings {
   promo2Title: string
   promo2Subtitle: string
   promo2Cta: string
+  promo1Image: string
+  promo2Image: string
   promo3Title: string
   promo3Subtitle: string
+  promo3Image: string
   homeCollectionsHeading: string
   homeCollectionsSubHeading: string
   homeNewArrivalsHeading: string
@@ -85,8 +88,11 @@ const DEFAULTS: SiteSettings = {
   promo2Title: '',
   promo2Subtitle: '',
   promo2Cta: '',
+  promo1Image: '',
+  promo2Image: '',
   promo3Title: '',
   promo3Subtitle: '',
+  promo3Image: '',
   homeCollectionsHeading: 'Daha fazla keşfet',
   homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
   homeNewArrivalsHeading: 'Yeni Gelenler',
