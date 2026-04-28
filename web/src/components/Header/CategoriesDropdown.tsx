@@ -45,9 +45,9 @@ export default function CategoriesDropdown({ className, categories }: Props) {
           {/* FOOTER */}
           <div className="bg-neutral-50 p-6 dark:bg-neutral-700">
             <Link href="/collections/all">
-              <span className="block text-sm font-medium">Tum kahveleri gor</span>
+              <span className="block text-sm font-medium">Tüm kahveleri gör</span>
               <span className="mt-0.5 block text-sm text-neutral-500 dark:text-neutral-400">
-                Aradaginizi bulun.
+                Aradığınızı bulun.
               </span>
             </Link>
           </div>

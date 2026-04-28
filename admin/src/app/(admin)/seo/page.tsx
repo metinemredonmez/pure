@@ -16,7 +16,7 @@ export default function SeoPage() {
     try { await api.put(`/admin/seo/${encodeURIComponent(pagePath)}`, form); setSaved(true); setTimeout(() => setSaved(false), 3000); } catch (e) { console.error(e); } finally { setSaving(false); }
   };
 
-  const pages = ['/', '/products', '/about', '/contact', '/blog', '/faq'];
+  const pages = ['/', '/products', '/about', '/contact', '/blog', '/sss', '/subscription', '/b2b', '/franchise'];
 
   return (
     <Box>

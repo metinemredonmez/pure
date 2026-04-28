@@ -96,39 +96,36 @@ export const getCurrencies = async () => {
   ]
 }
 
+// SVG icons mapped by category handle. Admin can edit name/description/href via
+// Site Ayarları → Üst Menü → "Kahveler" dropdown, but icons stay consistent here.
+const CATEGORY_ICONS: Record<string, string> = {
+  'turk-kahvesi': `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3 8H21V8C21 13.5228 17.5228 17 12 17C6.47715 17 3 13.5228 3 8V8Z" stroke="currentColor" stroke-width="1.5"/><path d="M8 20H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 17V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 4C10 4 10.5 2 12 2C13.5 2 14 4 14 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  'filtre-kahve': `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 4L18 4L15 20H9L6 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M4 4H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M10 9L14 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+  'espresso': `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="8" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M19 11H20C21.1046 11 22 11.8954 22 13C22 14.1046 21.1046 15 20 15H19" stroke="currentColor" stroke-width="1.5"/><path d="M9 5C9 5 9.5 3 12 3C14.5 3 15 5 15 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+}
+
+const DEFAULT_CATEGORY_ICON = `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.5"/></svg>`
+
 export const getHeaderDropdownCategories = async () => {
-  return [
-    {
-      name: 'Türk Kahvesi',
-      handle: 'turk-kahvesi',
-      description: 'Geleneksel Türk kahvesi çeşitleri',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M17 8C17 10.7614 14.7614 13 12 13C9.23858 13 7 10.7614 7 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M3 8H21V8C21 13.5228 17.5228 17 12 17C6.47715 17 3 13.5228 3 8V8Z" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M8 20H16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M12 17V20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M10 4C10 4 10.5 2 12 2C13.5 2 14 4 14 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`,
-    },
-    {
-      name: 'Filtre Kahve',
-      handle: 'filtre-kahve',
-      description: 'Pour-over & filtre demleme',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M6 4L18 4L15 20H9L6 4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-    <path d="M4 4H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    <path d="M10 9L14 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`,
-    },
-    {
-      name: 'Espresso',
-      handle: 'espresso',
-      description: 'Espresso makineleri için özel',
-      icon: `<svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="5" y="8" width="14" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M19 11H20C21.1046 11 22 11.8954 22 13C22 14.1046 21.1046 15 20 15H19" stroke="currentColor" stroke-width="1.5"/>
-    <path d="M9 5C9 5 9.5 3 12 3C14.5 3 15 5 15 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-    </svg>`,
-    },
-  ]
+  const settings = await getSiteSettings()
+  // Pull "Kahveler" menu from settings.navMenus, fall back to defaults.
+  const kahveler = settings.navMenus.find((m) => m.id === 'kahveler')
+  const items = kahveler?.children?.length
+    ? kahveler.children
+    : [
+        { id: 'turk-kahvesi', name: 'Türk Kahvesi', href: '/collections/turk-kahvesi', description: 'Geleneksel Türk kahvesi çeşitleri' },
+        { id: 'filtre-kahve', name: 'Filtre Kahve', href: '/collections/filtre-kahve', description: 'Pour-over & filtre demleme' },
+        { id: 'espresso', name: 'Espresso', href: '/collections/espresso', description: 'Espresso makineleri için özel' },
+      ]
+
+  return items.map((c) => {
+    // Derive handle from href (e.g. '/collections/turk-kahvesi' → 'turk-kahvesi')
+    const handle = (c.href || '').replace(/^\/collections\//, '') || c.id
+    return {
+      name: c.name,
+      handle,
+      description: c.description || '',
+      icon: CATEGORY_ICONS[c.id] || CATEGORY_ICONS[handle] || DEFAULT_CATEGORY_ICON,
+    }
+  })
 }
