@@ -1,71 +1,18 @@
 import Logo from '@/components/Logo'
-import { CustomLink } from '@/data/types'
-import { getSiteSettings } from '@/lib/site-settings'
+import { FooterMenuGroup, getSiteSettings } from '@/lib/site-settings'
 import SocialsList1 from '@/shared/SocialsList1/SocialsList1'
 import React from 'react'
 
-interface WidgetFooterMenu {
-  id: string
-  title: string
-  menus: CustomLink[]
-}
-
-const widgetMenus: WidgetFooterMenu[] = [
-  {
-    id: '2',
-    title: 'Keşfet',
-    menus: [
-      { href: '/blog', label: 'Blog' },
-      { href: '/demleme-rehberi', label: 'Demleme Rehberi' },
-      { href: '/kahve-sozlugu', label: 'Kahve Sözlüğü' },
-      { href: '/ekipmanlar', label: 'Ekipmanlar' },
-      { href: '/sadakat', label: 'Sadakat Programı' },
-    ],
-  },
-  {
-    id: '3',
-    title: 'Kurumsal',
-    menus: [
-      { href: '/b2b', label: 'Kurumsal Satış' },
-      { href: '/toptan-satis', label: 'Toptan Satış' },
-      { href: '/kurumsal-hediye', label: 'Kurumsal Hediye' },
-      { href: '/franchise', label: 'Franchise' },
-      { href: '/subscription', label: 'Abonelik' },
-    ],
-  },
-  {
-    id: '4',
-    title: 'Destek',
-    menus: [
-      { href: '/siparis-takibi', label: 'Sipariş Takibi' },
-      { href: '/iade-degisim', label: 'İade & Değişim' },
-      { href: '/odeme-teslimat', label: 'Ödeme & Teslimat' },
-      { href: '/sss', label: 'SSS' },
-      { href: '/contact', label: 'İletişim' },
-    ],
-  },
-  {
-    id: '5',
-    title: 'Yasal',
-    menus: [
-      { href: '/gizlilik-politikasi', label: 'Gizlilik Politikası' },
-      { href: '/kvkk', label: 'KVKK' },
-      { href: '/mesafeli-satis', label: 'Mesafeli Satış' },
-      { href: '/kullanim-kosullari', label: 'Kullanım Koşulları' },
-      { href: '/cerez-politikasi', label: 'Çerez Politikası' },
-    ],
-  },
-]
-
 const Footer: React.FC = async () => {
   const settings = await getSiteSettings()
+  const widgetMenus: FooterMenuGroup[] = settings.footerMenus
 
-  const renderWidgetMenuItem = (menu: WidgetFooterMenu, index: number) => {
+  const renderWidgetMenuItem = (menu: FooterMenuGroup, index: number) => {
     return (
-      <div key={index} className="text-sm">
+      <div key={menu.id || index} className="text-sm">
         <h2 className="font-semibold text-neutral-700 dark:text-neutral-200">{menu.title}</h2>
         <ul className="mt-5 space-y-4">
-          {menu.menus.map((item, idx) => (
+          {(menu.items || []).map((item, idx) => (
             <li key={idx}>
               <a
                 className="text-neutral-600 hover:text-black dark:text-neutral-300 dark:hover:text-white"

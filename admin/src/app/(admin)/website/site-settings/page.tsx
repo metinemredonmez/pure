@@ -17,6 +17,8 @@ interface DurationOption { months: number; label: string }
 interface PeriodOption { weeks: number; label: string }
 interface GrindGroup { kind: string; options: string[] }
 interface SubscriptionBasePrices { 'turk-kahvesi': number; 'espresso': number; 'filtre-kahve': number }
+interface FooterMenuItem { label: string; href: string }
+interface FooterMenuGroup { id: string; title: string; items: FooterMenuItem[] }
 
 interface SiteSettingsState {
   siteName: string;
@@ -73,7 +75,39 @@ interface SiteSettingsState {
   b2bHeroSubtitle: string;
   b2bHeroPrimaryCta: string;
   b2bHeroSecondaryCta: string;
+  footerMenus: FooterMenuGroup[];
 }
+
+const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
+  { id: 'kesfet', title: 'Keşfet', items: [
+    { label: 'Blog', href: '/blog' },
+    { label: 'Demleme Rehberi', href: '/demleme-rehberi' },
+    { label: 'Kahve Sözlüğü', href: '/kahve-sozlugu' },
+    { label: 'Ekipmanlar', href: '/ekipmanlar' },
+    { label: 'Sadakat Programı', href: '/sadakat' },
+  ]},
+  { id: 'kurumsal', title: 'Kurumsal', items: [
+    { label: 'Kurumsal Satış', href: '/b2b' },
+    { label: 'Toptan Satış', href: '/toptan-satis' },
+    { label: 'Kurumsal Hediye', href: '/kurumsal-hediye' },
+    { label: 'Franchise', href: '/franchise' },
+    { label: 'Abonelik', href: '/subscription' },
+  ]},
+  { id: 'destek', title: 'Destek', items: [
+    { label: 'Sipariş Takibi', href: '/siparis-takibi' },
+    { label: 'İade & Değişim', href: '/iade-degisim' },
+    { label: 'Ödeme & Teslimat', href: '/odeme-teslimat' },
+    { label: 'SSS', href: '/sss' },
+    { label: 'İletişim', href: '/contact' },
+  ]},
+  { id: 'yasal', title: 'Yasal', items: [
+    { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
+    { label: 'KVKK', href: '/kvkk' },
+    { label: 'Mesafeli Satış', href: '/mesafeli-satis' },
+    { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
+    { label: 'Çerez Politikası', href: '/cerez-politikasi' },
+  ]},
+];
 
 const DEFAULT_GRAMS: GramOption[] = [
   { id: '1x250', label: '1 x 250 g', grams: 250, bags: 1 },
@@ -139,6 +173,7 @@ const defaultSettings: SiteSettingsState = {
   b2bHeroSubtitle: 'Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlarla specialty kahve tedarikçisi.',
   b2bHeroPrimaryCta: 'Teklif Alın',
   b2bHeroSecondaryCta: 'Franchise',
+  footerMenus: DEFAULT_FOOTER_MENUS,
 };
 
 export default function SiteSettingsPage() {
@@ -215,6 +250,9 @@ export default function SiteSettingsPage() {
         b2bHeroSubtitle: data.b2bHeroSubtitle || defaultSettings.b2bHeroSubtitle,
         b2bHeroPrimaryCta: data.b2bHeroPrimaryCta || defaultSettings.b2bHeroPrimaryCta,
         b2bHeroSecondaryCta: data.b2bHeroSecondaryCta || defaultSettings.b2bHeroSecondaryCta,
+        footerMenus: Array.isArray(data.footerMenus) && data.footerMenus.length
+          ? data.footerMenus
+          : DEFAULT_FOOTER_MENUS,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -853,6 +891,119 @@ export default function SiteSettingsPage() {
                     onChange={(e) => setSettings({ ...settings, b2bHeroSecondaryCta: e.target.value })} />
                 </Grid>
               </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Footer Menü Grupları */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Footer Menü Grupları"
+              subheader="Sitenin altındaki menü kolonları (Keşfet / Kurumsal / Destek / Yasal vb.). Her grubun başlığı + altında istediğiniz kadar link. Sıralama yukarıdan aşağıya, soldan sağa."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={() => setSettings({
+                    ...settings,
+                    footerMenus: [
+                      ...settings.footerMenus,
+                      { id: `grup-${Date.now()}`, title: 'Yeni Grup', items: [{ label: '', href: '' }] },
+                    ],
+                  })}
+                >
+                  Yeni Grup
+                </Button>
+              }
+            />
+            <CardContent>
+              {settings.footerMenus.length === 0 && (
+                <Typography variant="body2" color="text.secondary">Henüz menü grubu yok. "Yeni Grup" ile ekleyin.</Typography>
+              )}
+              {settings.footerMenus.map((group, gIdx) => (
+                <Box key={group.id || gIdx} sx={{ mb: 3, p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Box sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
+                    <TextField
+                      size="small"
+                      label="Grup Başlığı"
+                      value={group.title}
+                      onChange={(e) => {
+                        const arr = [...settings.footerMenus];
+                        arr[gIdx] = { ...arr[gIdx], title: e.target.value };
+                        setSettings({ ...settings, footerMenus: arr });
+                      }}
+                      sx={{ flex: 1 }}
+                    />
+                    <Button
+                      size="small" color="error" variant="outlined"
+                      onClick={() => setSettings({
+                        ...settings,
+                        footerMenus: settings.footerMenus.filter((_, i) => i !== gIdx),
+                      })}
+                    >
+                      Grubu Sil
+                    </Button>
+                  </Box>
+
+                  {group.items.map((item, iIdx) => (
+                    <Grid container spacing={1} key={iIdx} sx={{ mb: 1, alignItems: 'center' }}>
+                      <Grid size={{ xs: 12, sm: 5 }}>
+                        <TextField
+                          fullWidth size="small" label="Link Yazısı"
+                          value={item.label}
+                          onChange={(e) => {
+                            const arr = [...settings.footerMenus];
+                            const items = [...arr[gIdx].items];
+                            items[iIdx] = { ...items[iIdx], label: e.target.value };
+                            arr[gIdx] = { ...arr[gIdx], items };
+                            setSettings({ ...settings, footerMenus: arr });
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 9, sm: 5 }}>
+                        <TextField
+                          fullWidth size="small" label="URL (örn: /sss veya https://...)"
+                          value={item.href}
+                          onChange={(e) => {
+                            const arr = [...settings.footerMenus];
+                            const items = [...arr[gIdx].items];
+                            items[iIdx] = { ...items[iIdx], href: e.target.value };
+                            arr[gIdx] = { ...arr[gIdx], items };
+                            setSettings({ ...settings, footerMenus: arr });
+                          }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 3, sm: 2 }}>
+                        <Button
+                          fullWidth size="small" color="error"
+                          onClick={() => {
+                            const arr = [...settings.footerMenus];
+                            const items = arr[gIdx].items.filter((_, i) => i !== iIdx);
+                            arr[gIdx] = { ...arr[gIdx], items };
+                            setSettings({ ...settings, footerMenus: arr });
+                          }}
+                        >
+                          Sil
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  ))}
+
+                  <Button
+                    size="small" startIcon={<AddIcon />}
+                    onClick={() => {
+                      const arr = [...settings.footerMenus];
+                      arr[gIdx] = { ...arr[gIdx], items: [...arr[gIdx].items, { label: '', href: '' }] };
+                      setSettings({ ...settings, footerMenus: arr });
+                    }}
+                    sx={{ mt: 1 }}
+                  >
+                    Yeni Link
+                  </Button>
+                </Box>
+              ))}
             </CardContent>
           </Card>
         </Grid>

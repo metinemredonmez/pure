@@ -14,6 +14,17 @@
  */
 import { getApiSiteSettings } from '@/lib/api'
 
+export interface FooterMenuItem {
+  label: string
+  href: string
+}
+
+export interface FooterMenuGroup {
+  id: string
+  title: string
+  items: FooterMenuItem[]
+}
+
 export interface SiteSettings {
   siteName: string
   logo: string
@@ -61,6 +72,7 @@ export interface SiteSettings {
   b2bHeroSubtitle: string
   b2bHeroPrimaryCta: string
   b2bHeroSecondaryCta: string
+  footerMenus: FooterMenuGroup[]
 }
 
 const DEFAULTS: SiteSettings = {
@@ -110,6 +122,52 @@ const DEFAULTS: SiteSettings = {
   b2bHeroSubtitle: 'Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlarla specialty kahve tedarikçisi.',
   b2bHeroPrimaryCta: 'Teklif Alın',
   b2bHeroSecondaryCta: 'Franchise',
+  footerMenus: [
+    {
+      id: 'kesfet',
+      title: 'Keşfet',
+      items: [
+        { label: 'Blog', href: '/blog' },
+        { label: 'Demleme Rehberi', href: '/demleme-rehberi' },
+        { label: 'Kahve Sözlüğü', href: '/kahve-sozlugu' },
+        { label: 'Ekipmanlar', href: '/ekipmanlar' },
+        { label: 'Sadakat Programı', href: '/sadakat' },
+      ],
+    },
+    {
+      id: 'kurumsal',
+      title: 'Kurumsal',
+      items: [
+        { label: 'Kurumsal Satış', href: '/b2b' },
+        { label: 'Toptan Satış', href: '/toptan-satis' },
+        { label: 'Kurumsal Hediye', href: '/kurumsal-hediye' },
+        { label: 'Franchise', href: '/franchise' },
+        { label: 'Abonelik', href: '/subscription' },
+      ],
+    },
+    {
+      id: 'destek',
+      title: 'Destek',
+      items: [
+        { label: 'Sipariş Takibi', href: '/siparis-takibi' },
+        { label: 'İade & Değişim', href: '/iade-degisim' },
+        { label: 'Ödeme & Teslimat', href: '/odeme-teslimat' },
+        { label: 'SSS', href: '/sss' },
+        { label: 'İletişim', href: '/contact' },
+      ],
+    },
+    {
+      id: 'yasal',
+      title: 'Yasal',
+      items: [
+        { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
+        { label: 'KVKK', href: '/kvkk' },
+        { label: 'Mesafeli Satış', href: '/mesafeli-satis' },
+        { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
+        { label: 'Çerez Politikası', href: '/cerez-politikasi' },
+      ],
+    },
+  ],
 }
 
 function coerce(value: unknown): string {
@@ -131,9 +189,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     // Merge with defaults so a missing key falls back to sane value
     const merged: SiteSettings = { ...DEFAULTS }
     for (const key of Object.keys(DEFAULTS) as (keyof SiteSettings)[]) {
-      if (data[key] !== undefined && data[key] !== null && data[key] !== '') {
-        merged[key] = coerce(data[key])
+      const incoming = data[key]
+      if (incoming === undefined || incoming === null || incoming === '') continue
+      if (key === 'footerMenus') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.footerMenus = incoming as FooterMenuGroup[]
+        }
+        continue
       }
+      ;(merged as any)[key] = coerce(incoming)
     }
     return merged
   } catch {
