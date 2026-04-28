@@ -62,13 +62,13 @@ export default async function B2BPage() {
         </div>
       </div>
 
-      {/* Stats */}
-      <div className="container -mt-10">
+      {/* Stats — pop out from hero via negative margin, white card stays above gradient */}
+      <div className="container relative z-10 -mt-12 lg:-mt-16">
         <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
           {(settings.b2bStats || []).map((s, i) => (
-            <div key={s.id || i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
-              <div className="text-2xl font-bold text-primary-700">{s.value}</div>
-              <div className="mt-1 text-xs text-neutral-500">{s.label}</div>
+            <div key={s.id || i} className="rounded-2xl border border-neutral-100 bg-white p-5 text-center shadow-xl dark:border-neutral-700 dark:bg-neutral-800">
+              <div className="text-2xl font-bold text-primary-700 dark:text-amber-400">{s.value}</div>
+              <div className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{s.label}</div>
             </div>
           ))}
         </div>
