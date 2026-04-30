@@ -78,37 +78,25 @@ export default async function CmsPage({ slug, fallback, kicker, footer }: CmsPag
       </div>
 
       {/* Content card */}
-      <div className="container -mt-8 relative">
-        <div className="mx-auto max-w-3xl rounded-3xl bg-white shadow-2xl p-8 sm:p-12 dark:bg-neutral-900 dark:shadow-neutral-950/50">
-          <article
-            className="prose prose-sm sm:prose-base lg:prose-lg max-w-none
-              prose-headings:text-neutral-900 dark:prose-headings:text-white
-              prose-headings:font-bold
-              prose-h2:text-2xl sm:prose-h2:text-3xl prose-h2:mt-10 prose-h2:mb-4
-              prose-h2:pb-2 prose-h2:border-b-2 prose-h2:border-amber-200 dark:prose-h2:border-amber-700/50
-              prose-h3:text-xl prose-h3:text-amber-800 dark:prose-h3:text-amber-300 prose-h3:mt-8
-              prose-p:text-neutral-700 dark:prose-p:text-neutral-300 prose-p:leading-relaxed
-              prose-a:text-primary-700 prose-a:font-semibold prose-a:no-underline hover:prose-a:text-primary-800
-              prose-strong:text-neutral-900 dark:prose-strong:text-white
-              prose-ul:my-4 prose-li:my-1 prose-li:text-neutral-700 dark:prose-li:text-neutral-300
-              prose-blockquote:border-l-4 prose-blockquote:border-amber-500
-              prose-blockquote:bg-amber-50 dark:prose-blockquote:bg-amber-900/20
-              prose-blockquote:px-5 prose-blockquote:py-3 prose-blockquote:rounded-r-lg
-              prose-blockquote:not-italic prose-blockquote:text-amber-900 dark:prose-blockquote:text-amber-200
-              prose-code:bg-neutral-100 dark:prose-code:bg-neutral-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-              prose-code:text-primary-700 dark:prose-code:text-amber-300 prose-code:font-normal
-              prose-img:rounded-2xl prose-img:shadow-lg"
-          >
-            {sections.map((section, i) => {
-              if (!section) return null
-              const { type, content } = section
-              if (!content) return null
-              if (type === 'html' || type === 'markdown' || !type) {
-                return <div key={i} dangerouslySetInnerHTML={{ __html: String(content) }} />
-              }
-              return null
-            })}
-          </article>
+      <div className="container -mt-12 relative">
+        <div className="mx-auto max-w-4xl">
+          {/* Decorative background blobs */}
+          <div className="pointer-events-none absolute -left-20 top-40 h-72 w-72 rounded-full bg-amber-300/20 blur-3xl" aria-hidden />
+          <div className="pointer-events-none absolute -right-20 top-96 h-72 w-72 rounded-full bg-orange-300/20 blur-3xl" aria-hidden />
+
+          <div className="relative rounded-3xl bg-white/90 backdrop-blur-sm shadow-2xl p-6 sm:p-10 lg:p-14 ring-1 ring-amber-100 dark:bg-neutral-900/90 dark:ring-amber-900/30 dark:shadow-neutral-950/50">
+            <article className="cms-content max-w-none">
+              {sections.map((section, i) => {
+                if (!section) return null
+                const { type, content } = section
+                if (!content) return null
+                if (type === 'html' || type === 'markdown' || !type) {
+                  return <div key={i} dangerouslySetInnerHTML={{ __html: String(content) }} />
+                }
+                return null
+              })}
+            </article>
+          </div>
         </div>
 
         {footer && <div className="mx-auto max-w-3xl mt-10">{footer}</div>}
