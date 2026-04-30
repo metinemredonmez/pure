@@ -57,7 +57,7 @@ const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
               alt="right hero"
               src={customImage}
               sizes="(max-width: 768px) 100vw, 50vw"
-              className="w-full h-auto"
+              className="w-full h-auto rounded-2xl"
             />
           </div>
         ) : (
@@ -66,7 +66,7 @@ const SectionPromo3 = async ({ className }: SectionPromo3Props) => {
             containerClassName="relative block lg:absolute lg:right-0 lg:bottom-0 mt-10 lg:mt-0 max-w-lg lg:max-w-[calc(50%-40px)]"
             src={rightImgDemo}
             sizes="(max-width: 768px) 100vw, 50vw"
-            className=""
+            className="rounded-2xl"
           />
         )}
       </div>
