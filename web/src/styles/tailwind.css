@@ -405,3 +405,234 @@
   .cms-content > h2, .cms-content > div > h2 { font-size: 1.125rem; margin-top: 1.5rem; }
   .cms-content > h3, .cms-content > div > h3 { font-size: 0.95rem; margin-top: 1.25rem; }
 }
+
+/* ═══════════════════════════════════════════════════════
+   CMS LAYOUT YARDIMCI CLASS'LARI
+   admin HTML'inde <div class="cms-grid-3"> gibi kullanılır
+   her sayfa farklı layout ile benzersiz görünüm kazanır
+   ═══════════════════════════════════════════════════════ */
+
+/* 3 sütun kart grid — features, tiers, methods */
+.cms-content .cms-grid-3 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
+  margin: 1.5rem 0;
+}
+@media (min-width: 640px) { .cms-content .cms-grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .cms-content .cms-grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* 2 sütun grid — karşılaştırma, definitions */
+.cms-content .cms-grid-2 {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(1, 1fr);
+  margin: 1.5rem 0;
+}
+@media (min-width: 640px) { .cms-content .cms-grid-2 { grid-template-columns: repeat(2, 1fr); } }
+
+/* 4 sütun stat — küçük metrik kartları */
+.cms-content .cms-grid-4 {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 1.5rem 0;
+}
+@media (min-width: 768px) { .cms-content .cms-grid-4 { grid-template-columns: repeat(4, 1fr); } }
+
+/* Kart — /b2b özellik kartı tarzı */
+.cms-content .cms-card {
+  border: 1px solid rgb(231 229 224);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  background: white;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.cms-content .cms-card:hover {
+  border-color: rgb(217 119 6 / 0.4);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.04);
+}
+.cms-content .cms-card h3,
+.cms-content .cms-card h4 {
+  margin: 0.625rem 0 0.375rem;
+  padding: 0;
+  background: none;
+  font-size: 0.95rem;
+}
+.cms-content .cms-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgb(115 115 115);
+  line-height: 1.55;
+}
+.cms-content .cms-card ul, .cms-content .cms-card ol { margin: 0.5rem 0 0; padding-left: 1rem; }
+.cms-content .cms-card li { font-size: 0.85rem; color: rgb(115 115 115); }
+.dark .cms-content .cms-card {
+  background: rgb(30 25 20 / 0.5);
+  border-color: rgb(60 50 40);
+}
+.dark .cms-content .cms-card p, .dark .cms-content .cms-card li { color: rgb(160 160 160); }
+
+/* Kart ikonu pill (b2b feature card tarzı) */
+.cms-content .cms-card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  background: rgb(252 233 213);
+  color: rgb(110 65 30);
+  font-size: 1.125rem;
+  margin-bottom: 0.25rem;
+}
+.dark .cms-content .cms-card-icon {
+  background: rgb(110 65 30 / 0.25);
+  color: rgb(252 211 77);
+}
+
+/* Stat kartı — değer + etiket (b2b stats tarzı) */
+.cms-content .cms-stat {
+  border: 1px solid rgb(231 229 224);
+  border-radius: 0.875rem;
+  padding: 1rem 0.75rem;
+  background: white;
+  text-align: center;
+}
+.cms-content .cms-stat .cms-stat-value {
+  display: block;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: rgb(110 65 30);
+  margin-bottom: 0.125rem;
+}
+.cms-content .cms-stat .cms-stat-label {
+  display: block;
+  font-size: 0.7rem;
+  color: rgb(115 115 115);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.dark .cms-content .cms-stat { background: rgb(30 25 20 / 0.5); border-color: rgb(60 50 40); }
+.dark .cms-content .cms-stat .cms-stat-value { color: rgb(252 211 77); }
+
+/* Highlight kutusu — vurgulu tek bilgi (info, note, tip) */
+.cms-content .cms-callout {
+  margin: 1.25rem 0;
+  padding: 1rem 1.25rem;
+  border-radius: 0.625rem;
+  background: rgb(252 248 241);
+  border-left: 3px solid rgb(217 119 6);
+  font-size: 0.9rem;
+  color: rgb(82 82 82);
+}
+.cms-content .cms-callout strong { color: rgb(110 65 30); }
+.dark .cms-content .cms-callout {
+  background: rgb(40 30 20 / 0.4);
+  color: rgb(180 180 180);
+}
+.dark .cms-content .cms-callout strong { color: rgb(252 211 77); }
+
+/* Bölüm başlığı (h2 yerine kullanılabilir merkez başlık) */
+.cms-content .cms-section-header {
+  text-align: center;
+  margin: 2.5rem 0 1.25rem;
+}
+.cms-content .cms-section-header h2,
+.cms-content .cms-section-header > div > h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+.cms-content .cms-section-header p {
+  margin: 0.375rem 0 0;
+  font-size: 0.875rem;
+  color: rgb(115 115 115);
+}
+
+/* Feature card — ikon + başlık + açıklama (b2b'deki gibi) */
+.cms-content .cms-feature {
+  border: 1px solid rgb(231 229 224);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  background: white;
+  transition: all 0.2s;
+}
+.cms-content .cms-feature:hover {
+  border-color: rgb(217 119 6 / 0.5);
+}
+.cms-content .cms-feature .cms-feature-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.75rem;
+  background: rgb(252 233 213);
+  color: rgb(110 65 30);
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+.cms-content .cms-feature h3,
+.cms-content .cms-feature h4 {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  background: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: rgb(23 23 23);
+}
+.cms-content .cms-feature p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: rgb(115 115 115);
+}
+.dark .cms-content .cms-feature { background: rgb(30 25 20 / 0.5); border-color: rgb(60 50 40); }
+.dark .cms-content .cms-feature h3, .dark .cms-content .cms-feature h4 { color: rgb(245 245 245); }
+.dark .cms-content .cms-feature p { color: rgb(160 160 160); }
+.dark .cms-content .cms-feature .cms-feature-icon { background: rgb(110 65 30 / 0.25); color: rgb(252 211 77); }
+
+/* Pill / badge — kategori etiketi */
+.cms-content .cms-pill {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-radius: 99px;
+  background: rgb(252 233 213);
+  color: rgb(110 65 30);
+  margin: 0.25rem 0.25rem 0.25rem 0;
+}
+.dark .cms-content .cms-pill { background: rgb(110 65 30 / 0.3); color: rgb(252 211 77); }
+
+/* 2 kolonlu definition list (kahve sözlüğü için) */
+.cms-content .cms-defs {
+  display: grid;
+  gap: 0.5rem 2rem;
+  grid-template-columns: 1fr;
+  margin: 1rem 0;
+}
+@media (min-width: 640px) { .cms-content .cms-defs { grid-template-columns: 1fr 1fr; } }
+.cms-content .cms-defs > div {
+  padding: 0.625rem 0;
+  border-bottom: 1px solid rgb(231 229 224);
+}
+.cms-content .cms-defs > div:last-child { border-bottom: none; }
+.cms-content .cms-defs strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.125rem;
+  color: rgb(110 65 30);
+}
+.cms-content .cms-defs span, .cms-content .cms-defs p {
+  font-size: 0.85rem;
+  color: rgb(115 115 115);
+  margin: 0;
+}
+.dark .cms-content .cms-defs strong { color: rgb(252 211 77); }
+.dark .cms-content .cms-defs > div { border-bottom-color: rgb(60 50 40); }
+.dark .cms-content .cms-defs span, .dark .cms-content .cms-defs p { color: rgb(160 160 160); }
