@@ -85,7 +85,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     () => {
       handleAutoNext()
     },
-    isRunning ? 5000 : 999999
+    isRunning ? 8000 : 999999
   )
 
   const handleAutoNext = () => {

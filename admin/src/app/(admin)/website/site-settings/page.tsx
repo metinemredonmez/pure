@@ -121,8 +121,8 @@ const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
     { label: 'Gizlilik Politikası', href: '/gizlilik-politikasi' },
     { label: 'KVKK', href: '/kvkk' },
     { label: 'Mesafeli Satış', href: '/mesafeli-satis' },
-    { label: 'Kullanım Koşulları', href: '/kullanım-kosullari' },
-    { label: 'Çerez Politikası', href: '/çerez-politikasi' },
+    { label: 'Kullanım Koşulları', href: '/kullanim-kosullari' },
+    { label: 'Çerez Politikası', href: '/cerez-politikasi' },
   ]},
 ];
 

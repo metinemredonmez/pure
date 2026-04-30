@@ -27,6 +27,20 @@ import toast from 'react-hot-toast'
 
 type Tab = 'ContactInfo' | 'ShippingAddress' | 'PaymentMethod'
 
+// Türkiye'nin 81 ili (alfabetik)
+const TR_PROVINCES = [
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
+  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
+  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
+  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
+  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkâri', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
+  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri', 'Kilis',
+  'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa',
+  'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye',
+  'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt', 'Sinop', 'Şırnak', 'Sivas',
+  'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
+]
+
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
@@ -253,28 +267,24 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
               <Label>İl</Label>
-              <Input defaultValue={String(initialValues.city || '')} name="city" />
+              <Select defaultValue={String(initialValues.city || '')} name="city">
+                <option value="">Seçiniz...</option>
+                {TR_PROVINCES.map((p) => (<option key={p} value={p}>{p}</option>))}
+              </Select>
             </Field>
             <Field>
               <Label>Ülke</Label>
               <Select defaultValue={String(initialValues.country || 'Turkey')} name="country">
                 <option value="Turkey">Türkiye</option>
-                
-                
-                
-                
-                
-                
-                
               </Select>
             </Field>
             <Field>
               <Label>İlçe</Label>
-              <Input defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
+              <Input placeholder="İlçe" defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
             </Field>
             <Field>
               <Label>Posta Kodu</Label>
-              <Input defaultValue={String(initialValues['postal-code'] || '')} name="postal-code" />
+              <Input placeholder="34000" defaultValue={String(initialValues['postal-code'] || '')} name="postal-code" />
             </Field>
           </div>
 

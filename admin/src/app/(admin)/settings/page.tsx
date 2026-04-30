@@ -6,7 +6,7 @@ import {
   FormControlLabel, Stack, Alert, Skeleton, Snackbar,
 } from '@mui/material';
 import { Save as SaveIcon, RestoreOutlined } from '@mui/icons-material';
-import { integrationsApi } from '@/lib/api';
+import { websiteApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 
 interface SiteSettings {
@@ -43,21 +43,22 @@ const DEFAULTS: SiteSettings = {
   lowStockThreshold: 10,
 };
 
+// Map UI field → SiteSettings key (websiteApi upsert ediyor, key'ler dinamik)
 const SETTING_KEYS: Record<keyof SiteSettings, string> = {
-  siteName: 'SITE_NAME',
-  siteDescription: 'SITE_DESCRIPTION',
-  contactEmail: 'SITE_CONTACT_EMAIL',
-  contactPhone: 'SITE_CONTACT_PHONE',
-  address: 'SITE_ADDRESS',
-  currency: 'SITE_CURRENCY',
-  taxRate: 'SITE_TAX_RATE',
-  freeShippingThreshold: 'SITE_FREE_SHIPPING_THRESHOLD',
-  shippingCost: 'SITE_SHIPPING_COST',
-  maintenanceMode: 'SITE_MAINTENANCE_MODE',
-  emailNotifications: 'SITE_EMAIL_NOTIFICATIONS',
-  orderNotifications: 'SITE_ORDER_NOTIFICATIONS',
-  stockAlerts: 'SITE_STOCK_ALERTS',
-  lowStockThreshold: 'SITE_LOW_STOCK_THRESHOLD',
+  siteName: 'siteName',
+  siteDescription: 'siteDescription',
+  contactEmail: 'email',
+  contactPhone: 'phone',
+  address: 'address',
+  currency: 'currency',
+  taxRate: 'taxRate',
+  freeShippingThreshold: 'freeShippingThreshold',
+  shippingCost: 'shippingCost',
+  maintenanceMode: 'maintenanceMode',
+  emailNotifications: 'emailNotifications',
+  orderNotifications: 'orderNotifications',
+  stockAlerts: 'stockAlerts',
+  lowStockThreshold: 'lowStockThreshold',
 };
 
 export default function SettingsPage() {
@@ -79,28 +80,25 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const res = await integrationsApi.getSettings('site');
-      const data = res.data || res;
-      const settingsArr = data.settings || data || [];
+      const res = await websiteApi.getSettings();
+      const data = (res?.data || res || {}) as Record<string, unknown>;
 
-      if (Array.isArray(settingsArr) && settingsArr.length > 0) {
-        const loaded = { ...DEFAULTS };
-        settingsArr.forEach((s: { key: string; value: string }) => {
-          const localKey = Object.entries(SETTING_KEYS).find(([, v]) => v === s.key)?.[0] as keyof SiteSettings | undefined;
-          if (localKey && s.value !== null && s.value !== undefined) {
-            const val = s.value;
-            if (typeof DEFAULTS[localKey] === 'boolean') {
-              (loaded as Record<string, unknown>)[localKey] = val === 'true' || (val as unknown) === true;
-            } else if (typeof DEFAULTS[localKey] === 'number') {
-              (loaded as Record<string, unknown>)[localKey] = Number(val);
-            } else {
-              (loaded as Record<string, unknown>)[localKey] = String(val);
-            }
+      const loaded = { ...DEFAULTS };
+      (Object.keys(SETTING_KEYS) as (keyof SiteSettings)[]).forEach((localKey) => {
+        const apiKey = SETTING_KEYS[localKey];
+        const v = data[apiKey];
+        if (v !== null && v !== undefined && v !== '') {
+          if (typeof DEFAULTS[localKey] === 'boolean') {
+            (loaded as Record<string, unknown>)[localKey] = v === 'true' || v === true;
+          } else if (typeof DEFAULTS[localKey] === 'number') {
+            (loaded as Record<string, unknown>)[localKey] = Number(v);
+          } else {
+            (loaded as Record<string, unknown>)[localKey] = String(v);
           }
-        });
-        setSettings(loaded);
-        setOriginal(loaded);
-      }
+        }
+      });
+      setSettings(loaded);
+      setOriginal(loaded);
     } catch {
       // Use defaults on first load
     }
@@ -109,21 +107,22 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true);
+    let failed = 0;
     try {
-      const promises = Object.entries(settings).map(([key, value]) => {
-        const apiKey = SETTING_KEYS[key as keyof SiteSettings];
-        if (apiKey) {
-          return integrationsApi.updateSetting(apiKey, String(value)).catch(() => null);
-        }
-        return Promise.resolve();
-      });
-      await Promise.all(promises);
+      // Bulk upsert via websiteApi (SiteSettings table — works correctly)
+      const entries = Object.entries(settings).map(([key, value]) => ({
+        key: SETTING_KEYS[key as keyof SiteSettings] || key,
+        value,
+      }));
+      await websiteApi.updateMultipleSettings(entries);
       setOriginal({ ...settings });
       setToast({ open: true, message: 'Ayarlar başarıyla kaydedildi', severity: 'success' });
-    } catch {
-      setToast({ open: true, message: 'Ayarlar kaydedilemedi', severity: 'error' });
+    } catch (err) {
+      failed = 1;
+      setToast({ open: true, message: 'Ayarlar kaydedilemedi: ' + (err instanceof Error ? err.message : 'Sunucu hatası'), severity: 'error' });
     }
     setSaving(false);
+    void failed;
   };
 
   const handleReset = () => {
