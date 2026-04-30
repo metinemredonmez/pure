@@ -27,6 +27,35 @@ function getInitials(name?: string): string {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase() || '?'
 }
 
+/** JWT expiration check — returns true if token is missing or expired */
+function isTokenExpired(token: string | null): boolean {
+  if (!token) return true
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (typeof payload.exp !== 'number') return false
+    // exp is in seconds, Date.now() in ms
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true // malformed token = treat as expired
+  }
+}
+
+/** Clear all auth storage. Returns true if anything was cleared. */
+function clearAuthStorage(): boolean {
+  let cleared = false
+  try {
+    if (localStorage.getItem('pureolentia_token')) cleared = true
+    localStorage.removeItem('pureolentia_token')
+    localStorage.removeItem('pureolentia_refresh_token')
+    localStorage.removeItem('pureolentia_user')
+    localStorage.removeItem('accessToken')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('token')
+    localStorage.removeItem('authToken')
+  } catch {}
+  return cleared
+}
+
 export default function AvatarDropdown({ className }: Props) {
   const router = useRouter()
   const [user, setUser] = useState<CurrentUser | null>(null)
@@ -40,17 +69,44 @@ export default function AvatarDropdown({ className }: Props) {
         localStorage.setItem('pureolentia_token', legacyToken)
       }
 
-      const hasSession = !!localStorage.getItem('pureolentia_token') || !!localStorage.getItem('pureolentia_refresh_token')
+      const accessToken = localStorage.getItem('pureolentia_token')
+      const refreshToken = localStorage.getItem('pureolentia_refresh_token')
       const raw = localStorage.getItem('pureolentia_user')
 
+      // Token expired? Clear all auth state and treat as guest.
+      // (Backend interceptor / refresh logic ayrı yerden kovalanmalı; bu UI fallback.)
+      if (accessToken && isTokenExpired(accessToken) && (!refreshToken || isTokenExpired(refreshToken))) {
+        clearAuthStorage()
+        setUser(null)
+        return
+      }
+
+      const hasSession = !!accessToken || !!refreshToken
       if (raw && hasSession) {
         setUser(JSON.parse(raw))
       } else if (raw && !hasSession) {
-        localStorage.removeItem('pureolentia_user')
+        clearAuthStorage()
         setUser(null)
       }
     } catch {}
   }, [])
+
+  // Periodic re-check (every 60s) — if token expires while user is on page,
+  // logout silently so UI doesn't show stale logged-in state.
+  useEffect(() => {
+    if (!mounted) return
+    const id = setInterval(() => {
+      try {
+        const t = localStorage.getItem('pureolentia_token')
+        const r = localStorage.getItem('pureolentia_refresh_token')
+        if (t && isTokenExpired(t) && (!r || isTokenExpired(r))) {
+          clearAuthStorage()
+          setUser(null)
+        }
+      } catch {}
+    }, 60000)
+    return () => clearInterval(id)
+  }, [mounted])
 
   const handleLogout = () => {
     try {

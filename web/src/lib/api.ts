@@ -51,17 +51,43 @@ function getLegacyStoredToken(): string | null {
   return null
 }
 
+/** JWT exp claim check — true if missing or expired */
+function isJwtExpired(token: string | null): boolean {
+  if (!token) return true
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (typeof payload.exp !== 'number') return false
+    return payload.exp * 1000 < Date.now()
+  } catch {
+    return true
+  }
+}
+
+function clearAllAuthStorage(): void {
+  if (typeof window === 'undefined') return
+  localStorage.removeItem('pureolentia_token')
+  localStorage.removeItem('pureolentia_refresh_token')
+  localStorage.removeItem('pureolentia_user')
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('access_token')
+  localStorage.removeItem('token')
+  localStorage.removeItem('authToken')
+}
+
 export async function getStoredAccessToken(): Promise<string | null> {
   if (typeof window === 'undefined') return null
 
   const token = getLegacyStoredToken()
-  if (token) return token
 
+  // Geçerli (henüz expire olmamış) token varsa direkt dön
+  if (token && !isJwtExpired(token)) return token
+
+  // Expire olmuş veya hiç yoksa refresh dene
   const refreshed = await refreshAccessToken()
-  if (refreshed) return refreshed
+  if (refreshed && !isJwtExpired(refreshed)) return refreshed
 
-  // A stored user without a token is a stale UI session; do not let checkout show as logged in.
-  localStorage.removeItem('pureolentia_user')
+  // Hem access hem refresh expired → tüm auth state temizle (UI guest moduna geçsin)
+  clearAllAuthStorage()
   return null
 }
 
