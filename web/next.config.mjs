@@ -40,6 +40,22 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // Türkçe karakterli eski URL'ler → ASCII slug (bookmark/cache uyumu)
+      { source: '/çerez-politikasi', destination: '/cerez-politikasi', permanent: true },
+      { source: '/%C3%A7erez-politikasi', destination: '/cerez-politikasi', permanent: true },
+      { source: '/kullanım-kosullari', destination: '/kullanim-kosullari', permanent: true },
+      { source: '/kullan%C4%B1m-kosullari', destination: '/kullanim-kosullari', permanent: true },
+      { source: '/sürdürülebilirlik', destination: '/surdurulebilirlik', permanent: true },
+      { source: '/menşeiler', destination: '/menseiler', permanent: true },
+      { source: '/kahve-sözlüğü', destination: '/kahve-sozlugu', permanent: true },
+      { source: '/iade-değişim', destination: '/iade-degisim', permanent: true },
+      { source: '/sipariş-takibi', destination: '/siparis-takibi', permanent: true },
+      { source: '/ödeme-teslimat', destination: '/odeme-teslimat', permanent: true },
+      { source: '/toptan-satış', destination: '/toptan-satis', permanent: true },
+    ]
+  },
   async headers() {
     return [
       {
