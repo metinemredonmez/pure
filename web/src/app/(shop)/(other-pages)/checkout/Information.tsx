@@ -283,7 +283,7 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
               <Input placeholder="İlçe" defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
             </Field>
             <Field>
-              <Label>Posta Kodu</Label>
+              <Label>Posta Kodu (opsiyonel)</Label>
               <Input placeholder="34000" defaultValue={String(initialValues['postal-code'] || '')} name="postal-code" />
             </Field>
           </div>
@@ -356,7 +356,10 @@ const PaymentMethod = ({
         const token = await getStoredAccessToken()
 
         if (!token) {
-          toast.error('Oturum suresi dolmus. Lutfen tekrar giris yapin.')
+          toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın, sepetiniz korunacak.', { duration: 6000 })
+          setTimeout(() => {
+            window.location.href = '/login?redirect=/checkout'
+          }, 2000)
           return
         }
 
@@ -369,6 +372,7 @@ const PaymentMethod = ({
         const district = String(checkoutData['state-province'] || '').trim()
         const postalCode = String(checkoutData['postal-code'] || '').trim()
 
+        // Posta kodu opsiyonel — müşteri talebi
         const missingFields = [
           !firstName && 'ad',
           !lastName && 'soyad',
@@ -376,8 +380,7 @@ const PaymentMethod = ({
           !email && 'e-posta',
           !address && 'adres',
           !city && 'il',
-          !district && 'ilce',
-          !postalCode && 'posta kodu',
+          !district && 'ilçe',
         ].filter(Boolean) as string[]
 
         if (missingFields.length > 0) {
@@ -443,7 +446,20 @@ const PaymentMethod = ({
           clearCart()
           window.location.href = iframeUrl
         } catch (error: any) {
-          toast.error(error?.message || 'Odeme baslatilamadi')
+          const msg = String(error?.message || '')
+          // Friendly Turkish messages for common backend errors
+          let userMsg = 'Ödeme başlatılamadı. Lütfen tekrar deneyin.'
+          if (/Product not found|product/i.test(msg)) {
+            userMsg = 'Sepetinizdeki ürünlerden biri artık satışta değil. Sepeti yenileyip tekrar deneyin.'
+          } else if (/unauthorized|401|token/i.test(msg)) {
+            userMsg = 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.'
+            setTimeout(() => { window.location.href = '/login?redirect=/checkout' }, 2000)
+          } else if (/network|fetch/i.test(msg)) {
+            userMsg = 'Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.'
+          } else if (msg && !/^TypeError|^undefined/.test(msg)) {
+            userMsg = msg
+          }
+          toast.error(userMsg, { duration: 5000 })
         } finally {
           setSubmitting(false)
         }
