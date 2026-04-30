@@ -25,55 +25,40 @@ const SUGGESTIONS = [
 
 /**
  * Bot mesajındaki URL'leri tıklanabilir link, **bold** ifadeleri kalın yapar.
- * WhatsApp linkleri yeşil + ikonlu rendreder.
+ * WhatsApp linkleri yeşil + ikonlu render eder.
  */
 function renderMessage(text: string, isUser: boolean): React.ReactNode {
   if (isUser) return text
 
-  const urlRegex = /(https?:\/\/[^\s)]+)/g
-  const boldRegex = /\*\*([^*]+)\*\*/g
+  // Tek tokenize: **bold** veya http://... eşleşmelerini sıralı bul
+  const re = /(\*\*[^*]+\*\*)|(https?:\/\/[^\s)]+)/g
+  const out: React.ReactNode[] = []
+  let last = 0
+  let key = 0
+  let m: RegExpExecArray | null
 
-  const tokens: { type: 'text' | 'bold' | 'url'; value: string }[] = []
-  let working = text
-  // 1. Önce bold'ları kapsa
-  const placeholders: string[] = []
-  working = working.replace(boldRegex, (_, b) => {
-    placeholders.push(b)
-    return `${placeholders.length - 1}`
-  })
-  // 2. URL'leri ayrıştır
-  working.split(urlRegex).forEach((seg) => {
-    if (urlRegex.test(seg)) {
-      tokens.push({ type: 'url', value: seg })
-    } else {
-      // bold placeholder split
-      const re = /(\d+)/g
-      let m: RegExpExecArray | null
-      let last = 0
-      while ((m = re.exec(seg)) !== null) {
-        if (m.index > last) tokens.push({ type: 'text', value: seg.slice(last, m.index) })
-        tokens.push({ type: 'bold', value: placeholders[Number(m[1])] })
-        last = m.index + m[0].length
-      }
-      if (last < seg.length) tokens.push({ type: 'text', value: seg.slice(last) })
-    }
-  })
-
-  return tokens.map((t, i) => {
-    if (t.type === 'bold') return <strong key={i}>{t.value}</strong>
-    if (t.type === 'url') {
-      const isWhatsapp = /wa\.me|whatsapp\.com/i.test(t.value)
-      const isInternal = t.value.startsWith('/') || /pureolentia\.com/.test(t.value)
-      const display = isWhatsapp ? 'WhatsApp\'tan Yaz' : isInternal ? t.value.replace(/^https?:\/\/[^/]+/, '') : t.value
-      return (
+  while ((m = re.exec(text)) !== null) {
+    if (m.index > last) out.push(<span key={key++}>{text.slice(last, m.index)}</span>)
+    if (m[1]) {
+      out.push(<strong key={key++}>{m[1].slice(2, -2)}</strong>)
+    } else if (m[2]) {
+      const url = m[2]
+      const isWhatsapp = /wa\.me|whatsapp\.com/i.test(url)
+      const isInternal = url.startsWith('/') || /pureolentia\.com/.test(url)
+      const display = isWhatsapp
+        ? "WhatsApp'tan Yaz"
+        : isInternal
+          ? url.replace(/^https?:\/\/[^/]+/, '')
+          : url
+      out.push(
         <a
-          key={i}
-          href={t.value}
-          target={t.value.startsWith('/') ? '_self' : '_blank'}
+          key={key++}
+          href={url}
+          target={url.startsWith('/') ? '_self' : '_blank'}
           rel="noreferrer"
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 mx-0.5 text-xs font-semibold transition ${
+          className={`mx-0.5 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition ${
             isWhatsapp
-              ? 'bg-green-500 text-white hover:bg-green-600'
+              ? 'bg-green-500 text-white shadow-sm hover:bg-green-600'
               : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
           }`}
         >
@@ -82,8 +67,11 @@ function renderMessage(text: string, isUser: boolean): React.ReactNode {
         </a>
       )
     }
-    return <span key={i}>{t.value}</span>
-  })
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(<span key={key++}>{text.slice(last)}</span>)
+
+  return out
 }
 
 export default function ChatbotWidget() {

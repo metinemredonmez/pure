@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { getApiReferences } from '@/lib/api'
 import { resolveImageUrl } from '@/lib/adapters'
+import SectionGoogleReviews from '@/components/SectionGoogleReviews'
 
 export const metadata: Metadata = {
   title: 'Referanslar',
@@ -105,6 +106,11 @@ export default async function ReferencesPage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Google Reviews — bireysel müşteri yorumları */}
+      <div className="mx-auto mt-24 max-w-6xl">
+        <SectionGoogleReviews />
       </div>
     </div>
   )
