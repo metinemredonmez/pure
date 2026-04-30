@@ -187,7 +187,7 @@ E-posta: info@pureolentia.com · Telefon: 0552 462 29 54</p>
   },
   {
     title: 'Kullanım Koşulları',
-    slug: 'kullanım-kosullari',
+    slug: 'kullanim-kosullari',
     seoDescription: 'Pure Olentia web sitesi kullanım koşulları.',
     content: `<h2>Kullanım Koşulları</h2>
 <p>Pure Olentia web sitesini (pureolentia.com) kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.</p>
@@ -210,7 +210,7 @@ E-posta: info@pureolentia.com · Telefon: 0552 462 29 54</p>
   },
   {
     title: 'Çerez Politikası',
-    slug: 'çerez-politikasi',
+    slug: 'cerez-politikasi',
     seoDescription: 'Pure Olentia çerez kullanım politikası.',
     content: `<h2>Çerez Politikası</h2>
 <p>Pure Olentia web sitesinde (pureolentia.com) kullanılan çerezler hakkında bilgi.</p>

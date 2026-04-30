@@ -1578,8 +1578,8 @@ export default function SiteSettingsPage() {
         </Grid>
 
         {/* Eski "Yasal Metinler" kartı kaldırıldı — yasal sayfalar artık
-            Web Sitesi → Sayfalar (CMS) üzerinden yönetiliyor (kvkk, çerez-politikasi
-            mesafeli-satis, kullanım-kosullari, gizlilik-politikasi). */}
+            Web Sitesi → Sayfalar (CMS) üzerinden yönetiliyor (kvkk, cerez-politikasi,
+            mesafeli-satis, kullanim-kosullari, gizlilik-politikasi). */}
       </Grid>
     </Box>
   );
