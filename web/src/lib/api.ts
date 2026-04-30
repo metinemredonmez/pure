@@ -249,6 +249,10 @@ export const apiRemoveCartItem = (token: string, itemId: string) =>
 export const apiMergeCart = (token: string, guestCartId: string) =>
   fetchAPI<any>('/cart/merge', { method: 'POST', body: JSON.stringify({ guestCartId }), headers: authHeaders(token), revalidate: 0 })
 
+// ============ COUPONS ============
+export const apiValidateCoupon = (code: string, subtotal: number) =>
+  fetchAPI<any>('/coupons/validate', { method: 'POST', body: JSON.stringify({ code, subtotal }), revalidate: 0 })
+
 // ============ ORDERS ============
 export const apiCreateOrder = (token: string, data: any) =>
   fetchAPI<any>('/orders', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })

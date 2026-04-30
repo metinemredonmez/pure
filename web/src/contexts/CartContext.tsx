@@ -15,15 +15,26 @@ export interface CartItem {
   variantId?: string
 }
 
+export interface AppliedCoupon {
+  code: string
+  type: 'percentage' | 'fixed' | 'free_shipping'
+  discount: number
+  freeShipping: boolean
+  description?: string
+}
+
 interface CartContextType {
   items: CartItem[]
   totalQuantity: number
   subtotal: number
   isHydrated: boolean
+  coupon: AppliedCoupon | null
   addItem: (item: Omit<CartItem, 'id'>) => void
   removeItem: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
+  applyCoupon: (coupon: AppliedCoupon) => void
+  removeCoupon: () => void
 }
 
 const CartContext = createContext<CartContextType>({
@@ -31,14 +42,18 @@ const CartContext = createContext<CartContextType>({
   totalQuantity: 0,
   subtotal: 0,
   isHydrated: false,
+  coupon: null,
   addItem: () => {},
   removeItem: () => {},
   updateQuantity: () => {},
   clearCart: () => {},
+  applyCoupon: () => {},
+  removeCoupon: () => {},
 })
 
 const STORAGE_KEY = 'pureolentia_cart'
 const STORAGE_OWNER_KEY = 'pureolentia_cart_owner'
+const STORAGE_COUPON_KEY = 'pureolentia_cart_coupon'
 
 function getCurrentCartOwner(): 'guest' | `user:${string}` {
   if (typeof window === 'undefined') return 'guest'
@@ -86,9 +101,31 @@ function clearPersistedCart() {
   } catch {}
 }
 
+function readCouponFromStorage(): AppliedCoupon | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(STORAGE_COUPON_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+function persistCoupon(coupon: AppliedCoupon | null) {
+  if (typeof window === 'undefined') return
+  try {
+    if (coupon) {
+      localStorage.setItem(STORAGE_COUPON_KEY, JSON.stringify(coupon))
+    } else {
+      localStorage.removeItem(STORAGE_COUPON_KEY)
+    }
+  } catch {}
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isHydrated, setIsHydrated] = useState(false)
+  const [coupon, setCoupon] = useState<AppliedCoupon | null>(null)
 
   useEffect(() => {
     const syncCart = () => {
@@ -98,8 +135,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (storedOwner !== owner) {
         clearPersistedCart()
         setItems([])
+        persistCoupon(null)
+        setCoupon(null)
       } else {
         setItems(readCartFromStorage())
+        setCoupon(readCouponFromStorage())
       }
 
       setIsHydrated(true)
@@ -170,6 +210,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
       persistCart([])
       return []
     })
+    persistCoupon(null)
+    setCoupon(null)
+  }, [])
+
+  const applyCoupon = useCallback((next: AppliedCoupon) => {
+    persistCoupon(next)
+    setCoupon(next)
+  }, [])
+
+  const removeCoupon = useCallback(() => {
+    persistCoupon(null)
+    setCoupon(null)
   }, [])
 
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items])
@@ -177,7 +229,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, totalQuantity, subtotal, isHydrated, addItem, removeItem, updateQuantity, clearCart }}
+      value={{ items, totalQuantity, subtotal, isHydrated, coupon, addItem, removeItem, updateQuantity, clearCart, applyCoupon, removeCoupon }}
     >
       {children}
     </CartContext.Provider>

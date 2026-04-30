@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { apiValidateCoupon } from '@/lib/api'
 import Prices from '@/components/Prices'
 import Breadcrumb from '@/shared/Breadcrumb'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
@@ -8,16 +9,56 @@ import { Coffee01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
+import toast from 'react-hot-toast'
 import Information from './Information'
 
 export default function CheckoutContent() {
-  const { items, subtotal, removeItem, updateQuantity, isHydrated } = useCart()
+  const { items, subtotal, removeItem, updateQuantity, isHydrated, coupon, applyCoupon, removeCoupon } = useCart()
+  const [couponInput, setCouponInput] = useState('')
+  const [applying, setApplying] = useState(false)
 
   const freeShippingThreshold = 300
-  const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
+  const baseShipping = subtotal >= freeShippingThreshold ? 0 : 29.90
+  const shippingCost = coupon?.freeShipping ? 0 : baseShipping
+  const discount = coupon?.discount || 0
   const kdvRate = 0.10
-  const kdvAmount = subtotal * kdvRate
-  const total = subtotal + shippingCost + kdvAmount
+  const kdvAmount = Math.max(subtotal - discount, 0) * kdvRate
+  const total = Math.max(subtotal - discount, 0) + shippingCost + kdvAmount
+
+  const handleApplyCoupon = async () => {
+    const code = couponInput.trim().toUpperCase()
+    if (!code) {
+      toast.error('Kupon kodu giriniz')
+      return
+    }
+    if (subtotal === 0) {
+      toast.error('Sepetinizde ürün yok')
+      return
+    }
+    setApplying(true)
+    try {
+      const res: any = await apiValidateCoupon(code, subtotal)
+      const data = res?.data || res
+      if (!data?.valid) {
+        toast.error(data?.error || 'Kupon geçerli değil')
+        return
+      }
+      applyCoupon({
+        code,
+        type: data.coupon?.type || 'percentage',
+        discount: Number(data.discount || 0),
+        freeShipping: !!data.freeShipping,
+        description: data.coupon?.description,
+      })
+      toast.success('Kupon uygulandı!')
+      setCouponInput('')
+    } catch (e: any) {
+      toast.error(e?.message || 'Kupon doğrulanamadı')
+    } finally {
+      setApplying(false)
+    }
+  }
 
   if (!isHydrated) {
     return <main className="container py-16 lg:pt-20 lg:pb-28"><div className="py-20 text-center text-neutral-400">Yükleniyor...</div></main>
@@ -95,13 +136,61 @@ export default function CheckoutContent() {
             ))}
           </div>
 
-          <div className="mt-10 border-t border-neutral-200/70 pt-6 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+          {/* Kupon Kodu */}
+          <div className="mt-8 rounded-2xl border border-neutral-200/70 p-4 dark:border-neutral-700">
+            <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-200">Kupon Kodu</h4>
+            {coupon ? (
+              <div className="mt-3 flex items-center justify-between rounded-lg bg-green-50 px-3 py-2.5 dark:bg-green-900/20">
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-green-600 px-2 py-0.5 text-[10px] font-bold uppercase text-white">{coupon.code}</span>
+                  <span className="text-xs text-green-700 dark:text-green-400">
+                    {coupon.freeShipping ? 'Ücretsiz kargo' : `₺${coupon.discount.toFixed(2)} indirim`} uygulandı
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeCoupon}
+                  className="text-xs font-medium text-red-600 hover:text-red-700"
+                >
+                  Kaldır
+                </button>
+              </div>
+            ) : (
+              <div className="mt-3 flex gap-2">
+                <input
+                  type="text"
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
+                  placeholder="Örn: KAHVE10"
+                  className="flex-1 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm uppercase placeholder:text-neutral-400 focus:border-primary-500 focus:outline-none dark:border-neutral-600 dark:bg-neutral-800"
+                  disabled={applying}
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyCoupon}
+                  disabled={applying || !couponInput.trim()}
+                  className="rounded-lg bg-primary-700 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-800 disabled:opacity-50"
+                >
+                  {applying ? '...' : 'Uygula'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-6 border-t border-neutral-200/70 pt-6 text-sm text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
             <div className="flex justify-between py-2.5">
               <span>Ara Toplam</span>
               <span className="font-semibold text-neutral-900 dark:text-neutral-200">
-                ₺{subtotal.toLocaleString('tr-TR')}
+                ₺{subtotal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
+            {discount > 0 && (
+              <div className="flex justify-between py-2.5 text-green-700 dark:text-green-400">
+                <span>İndirim ({coupon?.code})</span>
+                <span className="font-semibold">−₺{discount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            )}
             <div className="flex justify-between py-2.5">
               <span>Kargo</span>
               <span className="font-semibold text-neutral-900 dark:text-neutral-200">

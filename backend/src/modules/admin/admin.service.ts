@@ -554,6 +554,7 @@ export class AdminService {
 
     // İndirim hesapla
     let discount = 0;
+    let freeShipping = false;
     if (coupon.type === 'percentage') {
       discount = subtotal * (Number(coupon.value) / 100);
       if (coupon.maxDiscount && discount > Number(coupon.maxDiscount)) {
@@ -561,12 +562,21 @@ export class AdminService {
       }
     } else if (coupon.type === 'fixed') {
       discount = Number(coupon.value);
+    } else if (coupon.type === 'free_shipping') {
+      freeShipping = true;
     }
 
     return {
       valid: true,
-      coupon,
+      coupon: {
+        id: coupon.id,
+        code: coupon.code,
+        type: coupon.type,
+        value: Number(coupon.value),
+        description: coupon.description,
+      },
       discount: Math.round(discount * 100) / 100,
+      freeShipping,
     };
   }
 }

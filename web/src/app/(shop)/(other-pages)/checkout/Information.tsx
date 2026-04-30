@@ -44,7 +44,7 @@ const TR_PROVINCES = [
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
-  const { items, clearCart } = useCart()
+  const { items, clearCart, coupon, removeCoupon } = useCart()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -132,6 +132,8 @@ const Information = () => {
             checkoutData={checkoutData}
             cartItems={items}
             clearCart={clearCart}
+            couponCode={coupon?.code}
+            onCouponInvalid={removeCoupon}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -337,11 +339,15 @@ const PaymentMethod = ({
   checkoutData,
   cartItems,
   clearCart,
+  couponCode,
+  onCouponInvalid,
 }: {
   onClose: () => void
   checkoutData: Record<string, any>
   cartItems: CartItem[]
   clearCart: () => void
+  couponCode?: string
+  onCouponInvalid?: () => void
 }) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
   const [submitting, setSubmitting] = useState(false)
@@ -420,6 +426,7 @@ const PaymentMethod = ({
 
           const orderRes = await apiCreateOrder(token, {
             addressId,
+            couponCode: couponCode || undefined,
             items: cartItems.map((item) => ({
               productId: item.productId,
               variantId: item.variantId || undefined,
@@ -451,6 +458,9 @@ const PaymentMethod = ({
           let userMsg = 'Ödeme başlatılamadı. Lütfen tekrar deneyin.'
           if (/Product not found|product/i.test(msg)) {
             userMsg = 'Sepetinizdeki ürünlerden biri artık satışta değil. Sepeti yenileyip tekrar deneyin.'
+          } else if (/kupon|coupon/i.test(msg)) {
+            userMsg = msg.replace(/^.*?:/, '').trim() || 'Kupon geçerli değil. Sepetten kuponu kaldırıp tekrar deneyin.'
+            onCouponInvalid?.()
           } else if (/unauthorized|401|token/i.test(msg)) {
             userMsg = 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.'
             setTimeout(() => { window.location.href = '/login?redirect=/checkout' }, 2000)
