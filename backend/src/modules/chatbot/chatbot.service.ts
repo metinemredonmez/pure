@@ -319,12 +319,40 @@ export class ChatbotService {
       };
     }
 
+    // İnsan temsilci / canlı destek talebi → WhatsApp'a yönlendir
+    if (
+      has(
+        'yönlendir',
+        'yönelendir',
+        'canlı destek',
+        'canli destek',
+        'insan',
+        'temsilci',
+        'operatör',
+        'operator',
+        'müşteri hizmetleri',
+        'musteri hizmetleri',
+        'birisi',
+        'biri ile',
+        'ilgili kişi',
+        'whatsapp',
+        'wp',
+        'bana ulaş',
+      )
+    ) {
+      return {
+        intent: 'human_handoff',
+        response:
+          '👋 Sizi hemen ekibimize bağlayalım! En hızlı yanıt için WhatsApp:\n\n📱 **WhatsApp:** https://wa.me/905524622954\n📞 **Telefon:** 0552 462 29 54\n📧 **E-posta:** info@pureolentia.com\n\nÇalışma saatlerimiz: Pzt-Cum 09:00-18:00. WhatsApp\'tan dakikalar içinde dönüş yaparız.',
+      };
+    }
+
     // İletişim
-    if (has('iletişim', 'telefon', 'contact', 'ulaş', 'çağrı')) {
+    if (has('iletişim', 'iletisim', 'telefon', 'contact', 'ulaş', 'çağrı')) {
       return {
         intent: 'contact',
         response:
-          '📞 Bize ulaşın:\n\n• E-posta: info@pureolentia.com\n• Telefon: 0552 462 29 54\n• Form: /contact\n• Adres: Maltepe, İstanbul\n\nÇalışma saatleri: 09:00-18:00 (Hafta içi)',
+          '📞 Bize ulaşın:\n\n📱 **WhatsApp:** https://wa.me/905524622954 _(en hızlı dönüş)_\n📞 **Telefon:** 0552 462 29 54\n📧 **E-posta:** info@pureolentia.com\n📍 Adres: Maltepe, İstanbul\n📝 Form: /contact\n\nÇalışma saatleri: 09:00-18:00 (Hafta içi)',
       };
     }
 
@@ -337,11 +365,11 @@ export class ChatbotService {
       };
     }
 
-    // Default
+    // Default — sorunuzu anlayamadıysam direkt WhatsApp'a yönlendireyim
     return {
       intent: 'general',
       response:
-        "☕ Sorunuzu tam anlayamadım. Size şu konularda yardımcı olabilirim:\n\n• Kahve önerisi (damak tadınıza göre)\n• Sipariş/kargo durumu\n• Abonelik planları\n• Kurumsal/Franchise\n• Ödeme ve iade\n• Demleme rehberi\n\nKonu seçin veya sorunuzu yazın, size yönlendireyim.",
+        "☕ Sorunuzu tam anlayamadım. Size şu konularda yardımcı olabilirim:\n\n• Kahve önerisi (damak tadınıza göre)\n• Sipariş/kargo durumu\n• Abonelik planları\n• Kurumsal/Franchise\n• Ödeme ve iade\n• Demleme rehberi\n\n👉 **Bir temsilciyle görüşmek için:** https://wa.me/905524622954 (WhatsApp)",
     };
   }
 }

@@ -20,8 +20,71 @@ const SUGGESTIONS = [
   { emoji: '☕', text: 'En çok satan kahveler?' },
   { emoji: '📦', text: 'Kargo ne zaman gelir?' },
   { emoji: '🎁', text: 'Kurumsal hediye paketleri' },
-  { emoji: '💳', text: 'Nasıl ödeme yapabilirim?' },
+  { emoji: '💬', text: 'Bir temsilciyle görüşmek istiyorum' },
 ]
+
+/**
+ * Bot mesajındaki URL'leri tıklanabilir link, **bold** ifadeleri kalın yapar.
+ * WhatsApp linkleri yeşil + ikonlu rendreder.
+ */
+function renderMessage(text: string, isUser: boolean): React.ReactNode {
+  if (isUser) return text
+
+  const urlRegex = /(https?:\/\/[^\s)]+)/g
+  const boldRegex = /\*\*([^*]+)\*\*/g
+
+  const tokens: { type: 'text' | 'bold' | 'url'; value: string }[] = []
+  let working = text
+  // 1. Önce bold'ları kapsa
+  const placeholders: string[] = []
+  working = working.replace(boldRegex, (_, b) => {
+    placeholders.push(b)
+    return `${placeholders.length - 1}`
+  })
+  // 2. URL'leri ayrıştır
+  working.split(urlRegex).forEach((seg) => {
+    if (urlRegex.test(seg)) {
+      tokens.push({ type: 'url', value: seg })
+    } else {
+      // bold placeholder split
+      const re = /(\d+)/g
+      let m: RegExpExecArray | null
+      let last = 0
+      while ((m = re.exec(seg)) !== null) {
+        if (m.index > last) tokens.push({ type: 'text', value: seg.slice(last, m.index) })
+        tokens.push({ type: 'bold', value: placeholders[Number(m[1])] })
+        last = m.index + m[0].length
+      }
+      if (last < seg.length) tokens.push({ type: 'text', value: seg.slice(last) })
+    }
+  })
+
+  return tokens.map((t, i) => {
+    if (t.type === 'bold') return <strong key={i}>{t.value}</strong>
+    if (t.type === 'url') {
+      const isWhatsapp = /wa\.me|whatsapp\.com/i.test(t.value)
+      const isInternal = t.value.startsWith('/') || /pureolentia\.com/.test(t.value)
+      const display = isWhatsapp ? 'WhatsApp\'tan Yaz' : isInternal ? t.value.replace(/^https?:\/\/[^/]+/, '') : t.value
+      return (
+        <a
+          key={i}
+          href={t.value}
+          target={t.value.startsWith('/') ? '_self' : '_blank'}
+          rel="noreferrer"
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 mx-0.5 text-xs font-semibold transition ${
+            isWhatsapp
+              ? 'bg-green-500 text-white hover:bg-green-600'
+              : 'bg-amber-100 text-amber-900 hover:bg-amber-200'
+          }`}
+        >
+          {isWhatsapp && <span aria-hidden>📱</span>}
+          {display}
+        </a>
+      )
+    }
+    return <span key={i}>{t.value}</span>
+  })
+}
 
 export default function ChatbotWidget() {
   const [open, setOpen] = useState(false)
@@ -276,7 +339,7 @@ export default function ChatbotWidget() {
                         : 'rounded-bl-md bg-white text-neutral-900 ring-1 ring-neutral-100 dark:bg-neutral-800 dark:text-neutral-100 dark:ring-neutral-700'
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{m.text}</p>
+                    <p className="whitespace-pre-wrap">{renderMessage(m.text, m.role === 'user')}</p>
                     <p
                       className={`mt-1 text-[10px] tracking-wide ${
                         m.role === 'user' ? 'text-white/55' : 'text-neutral-400'
