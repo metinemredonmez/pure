@@ -889,6 +889,31 @@ export default function PagesPage() {
                 >
                   HTML Ekle
                 </Button>
+                {/* Şablon (snippet) butonları — tek tıkla layout ekle */}
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-section-header'>\n  <h2>Bölüm Başlığı</h2>\n  <p>Bölümün kısa açıklaması</p>\n</div>\n` }))}>
+                  ➕ Bölüm Başlığı
+                </Button>
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-grid-3'>\n  <div class='cms-feature'>\n    <div class='cms-feature-icon'>☕</div>\n    <h3>Başlık 1</h3>\n    <p>Kısa açıklama metni.</p>\n  </div>\n  <div class='cms-feature'>\n    <div class='cms-feature-icon'>🎁</div>\n    <h3>Başlık 2</h3>\n    <p>Kısa açıklama metni.</p>\n  </div>\n  <div class='cms-feature'>\n    <div class='cms-feature-icon'>🚀</div>\n    <h3>Başlık 3</h3>\n    <p>Kısa açıklama metni.</p>\n  </div>\n</div>\n` }))}>
+                  📦 3'lü Özellik Kartı
+                </Button>
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-grid-3'>\n  <div class='cms-card'>\n    <div class='cms-card-icon'>☕</div>\n    <h4>Kart 1</h4>\n    <p>Kısa açıklama.</p>\n  </div>\n  <div class='cms-card'>\n    <div class='cms-card-icon'>🌱</div>\n    <h4>Kart 2</h4>\n    <p>Kısa açıklama.</p>\n  </div>\n  <div class='cms-card'>\n    <div class='cms-card-icon'>📦</div>\n    <h4>Kart 3</h4>\n    <p>Kısa açıklama.</p>\n  </div>\n</div>\n` }))}>
+                  🃏 3'lü Mini Kart
+                </Button>
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-grid-4'>\n  <div class='cms-stat'><span class='cms-stat-value'>200+</span><span class='cms-stat-label'>Etiket 1</span></div>\n  <div class='cms-stat'><span class='cms-stat-value'>15+</span><span class='cms-stat-label'>Etiket 2</span></div>\n  <div class='cms-stat'><span class='cms-stat-value'>%98</span><span class='cms-stat-label'>Etiket 3</span></div>\n  <div class='cms-stat'><span class='cms-stat-value'>24sa</span><span class='cms-stat-label'>Etiket 4</span></div>\n</div>\n` }))}>
+                  📊 4'lü Sayı Kartı
+                </Button>
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-callout'>\n  <strong>İpucu:</strong> Buraya vurgulamak istediğiniz mesajı yazın.\n</div>\n` }))}>
+                  💡 Vurgu Kutusu
+                </Button>
+                <Button size="small" variant="outlined" sx={{ borderStyle: 'dashed' }}
+                  onClick={() => setForm((p) => ({ ...p, content: p.content + `\n<div class='cms-defs'>\n  <div><strong>Terim 1</strong><span>Kısa tanım metni.</span></div>\n  <div><strong>Terim 2</strong><span>Kısa tanım metni.</span></div>\n  <div><strong>Terim 3</strong><span>Kısa tanım metni.</span></div>\n  <div><strong>Terim 4</strong><span>Kısa tanım metni.</span></div>\n</div>\n` }))}>
+                  📖 Sözlük (2 Kolon)
+                </Button>
               </Box>
               <TextField
                 fullWidth

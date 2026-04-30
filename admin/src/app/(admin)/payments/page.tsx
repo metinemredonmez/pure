@@ -23,8 +23,12 @@ interface Payment {
   status: string;
   method: string;
   transactionId?: string;
-  order?: { id: string; orderNumber: string };
-  user?: { email: string; firstName?: string; lastName?: string };
+  providerPaymentId?: string;
+  providerData?: any;
+  paidAt?: string;
+  updatedAt?: string;
+  order?: { id: string; orderNumber: string; total?: number };
+  user?: { email: string; firstName?: string; lastName?: string; phone?: string };
   createdAt: string;
 }
 
@@ -61,6 +65,7 @@ export default function PaymentsPage() {
   const [refundAmount, setRefundAmount] = useState(0);
   const [refundReason, setRefundReason] = useState('');
   const [refunding, setRefunding] = useState(false);
+  const [viewDialog, setViewDialog] = useState<Payment | null>(null);
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
