@@ -2,7 +2,7 @@
 
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
-import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder, getStoredAccessToken } from '@/lib/api'
+import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder, apiGetAddresses, getStoredAccessToken } from '@/lib/api'
 import { useCart, type CartItem } from '@/contexts/CartContext'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
@@ -49,19 +49,56 @@ const Information = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
+    // 1. Önce localStorage'dan kullanıcı profil bilgilerini doldur
+    //    (kayıt sırasında girdiği veya /account'tan güncellediği veriler)
     try {
       const rawUser = localStorage.getItem('pureolentia_user')
-      if (!rawUser) return
-
-      const user = JSON.parse(rawUser)
-      setCheckoutData((current) => ({
-        email: current.email || user?.email || '',
-        phone: current.phone || user?.phone || '',
-        'first-name': current['first-name'] || user?.firstName || '',
-        'last-name': current['last-name'] || user?.lastName || '',
-        ...current,
-      }))
+      if (rawUser) {
+        const user = JSON.parse(rawUser)
+        setCheckoutData((current) => ({
+          email: user?.email || '',
+          phone: user?.phone || '',
+          'first-name': user?.firstName || '',
+          'last-name': user?.lastName || '',
+          // /account formundan gelen adres bilgileri
+          address: user?.address || '',
+          city: user?.city || '',
+          'state-province': user?.district || '',
+          'postal-code': user?.postalCode || '',
+          country: 'Turkey',
+          ...current,
+        }))
+      }
     } catch {}
+
+    // 2. Backend'den de en son kullanılan/default adresi yükle (üstüne yazar)
+    //    İlk siparişten sonra Address tablosunda kayıt olur, bir sonraki sefer otomatik dolar.
+    ;(async () => {
+      try {
+        const token = await getStoredAccessToken()
+        if (!token) return
+        const res: any = await apiGetAddresses(token)
+        const addresses: any[] = res?.data?.data || res?.data || res || []
+        if (!Array.isArray(addresses) || addresses.length === 0) return
+        // Default address önce, yoksa en son oluşturulan
+        const def =
+          addresses.find((a: any) => a.isDefault) ||
+          [...addresses].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+        if (!def) return
+        setCheckoutData((current) => ({
+          ...current,
+          'first-name': current['first-name'] || def.firstName || '',
+          'last-name': current['last-name'] || def.lastName || '',
+          phone: current.phone || def.phone || '',
+          address: current.address || def.line1 || '',
+          'apt-suite': current['apt-suite'] || def.line2 || '',
+          city: current.city || def.city || '',
+          'state-province': current['state-province'] || def.district || '',
+          'postal-code': current['postal-code'] || def.postalCode || '',
+          country: current.country || (def.country === 'TR' ? 'Turkey' : def.country || 'Turkey'),
+        }))
+      } catch {}
+    })()
   }, [])
 
   const handleScrollToEl = (id: string) => {
