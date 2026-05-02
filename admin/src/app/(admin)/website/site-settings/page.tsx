@@ -26,6 +26,7 @@ interface B2BFeature { id: string; title: string; desc: string; icon: string }
 interface B2BStat { id: string; value: string; label: string }
 interface IconStep { id: string; title: string; desc: string; icon: string }
 interface FaqItem { id: string; q: string; a: string }
+interface AnnouncementItem { id: string; text: string; href: string; cta: string }
 
 interface SiteSettingsState {
   siteName: string;
@@ -93,7 +94,15 @@ interface SiteSettingsState {
   subscriptionFaqHeading: string;
   subscriptionFaq: FaqItem[];
   subscriptionFaqCta: string;
+  announcements: AnnouncementItem[];
 }
+
+const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
+  { id: 'a1', text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
+  { id: 'a2', text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },
+  { id: 'a3', text: 'Aylık kahve aboneliğinde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
+  { id: 'a4', text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
+];
 
 const DEFAULT_FOOTER_MENUS: FooterMenuGroup[] = [
   { id: 'kesfet', title: 'Keşfet', items: [
@@ -303,6 +312,7 @@ const defaultSettings: SiteSettingsState = {
   subscriptionFaqHeading: 'Sıkça Sorulan Sorular',
   subscriptionFaq: DEFAULT_SUB_FAQ,
   subscriptionFaqCta: 'Kahveleri Keşfet',
+  announcements: DEFAULT_ANNOUNCEMENTS,
 };
 
 export default function SiteSettingsPage() {
@@ -404,6 +414,9 @@ export default function SiteSettingsPage() {
           ? data.subscriptionFaq
           : DEFAULT_SUB_FAQ,
         subscriptionFaqCta: data.subscriptionFaqCta || defaultSettings.subscriptionFaqCta,
+        announcements: Array.isArray(data.announcements) && data.announcements.length
+          ? data.announcements
+          : DEFAULT_ANNOUNCEMENTS,
       });
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
@@ -913,6 +926,53 @@ export default function SiteSettingsPage() {
                     onChange={(e) => setSettings({ ...settings, homeViewAllCaption: e.target.value })} />
                 </Grid>
               </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Duyuru Çubuğu (Üst Bant) */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Duyuru Çubuğu (Üst Bant)"
+              subheader="Sitenin en üstündeki sarı/kahverengi duyuru çubuğunda dönen mesajlar (Taze kavrulmuş kahveniz kapınızda, ₺300 üzeri ücretsiz kargo vb.). Her 4.5 saniyede bir döner."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, announcements: [...settings.announcements, { id: `a-${Date.now()}`, text: '', href: '/collections/all', cta: 'İncele' }] })}
+                >Yeni Duyuru</Button>
+              }
+            />
+            <CardContent>
+              {settings.announcements.map((a, idx) => (
+                <Box key={a.id || idx} sx={{ p: 2, mb: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField fullWidth size="small" label="Duyuru Metni"
+                        value={a.text}
+                        onChange={(e) => { const arr = [...settings.announcements]; arr[idx] = { ...arr[idx], text: e.target.value }; setSettings({ ...settings, announcements: arr }); }}
+                        helperText="Ana mesaj — örn 'Taze kavrulmuş kahveniz kapınızda'" />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <TextField fullWidth size="small" label="Buton Metni (CTA)"
+                        value={a.cta}
+                        onChange={(e) => { const arr = [...settings.announcements]; arr[idx] = { ...arr[idx], cta: e.target.value }; setSettings({ ...settings, announcements: arr }); }}
+                        helperText="Sağdaki kısa buton metni — örn 'Sipariş Ver'" />
+                    </Grid>
+                    <Grid size={{ xs: 9, sm: 5 }}>
+                      <TextField fullWidth size="small" label="Buton Linki"
+                        value={a.href}
+                        onChange={(e) => { const arr = [...settings.announcements]; arr[idx] = { ...arr[idx], href: e.target.value }; setSettings({ ...settings, announcements: arr }); }}
+                        helperText="Örn: /collections/all veya /subscription" />
+                    </Grid>
+                    <Grid size={{ xs: 3, sm: 1 }}>
+                      <Button fullWidth size="small" color="error" sx={{ height: '100%' }}
+                        onClick={() => setSettings({ ...settings, announcements: settings.announcements.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
             </CardContent>
           </Card>
         </Grid>

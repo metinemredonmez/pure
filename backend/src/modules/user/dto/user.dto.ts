@@ -233,6 +233,24 @@ export class UpdateProfileDto {
   @MaxLength(500)
   address?: string;
 
+  @ApiPropertyOptional({ example: 'İstanbul' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  city?: string;
+
+  @ApiPropertyOptional({ example: 'Sancaktepe' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  district?: string;
+
+  @ApiPropertyOptional({ example: '34887' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  postalCode?: string;
+
   @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
   @IsOptional()
   @IsString()

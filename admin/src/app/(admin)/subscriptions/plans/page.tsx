@@ -13,6 +13,7 @@ import {
 import { subscriptionsApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
+import ImageUpload from '@/components/common/ImageUpload';
 import { useToast } from '@/contexts/ToastContext';
 
 interface DurationOption { months: number; label: string }
@@ -24,6 +25,7 @@ interface SubPlan {
   name: string;
   slug: string;
   description: string;
+  image?: string | null;
   monthlyWeight: number;
   priceMonthly: number;
   discountPercent: number;
@@ -63,7 +65,7 @@ export default function SubscriptionPlansPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<SubPlan | null>(null);
   const [form, setForm] = useState({
-    name: '', slug: '', description: '', monthlyWeight: 250,
+    name: '', slug: '', description: '', image: '', monthlyWeight: 250,
     priceMonthly: 0, discountPercent: 0, freeShipping: true, isActive: true, sortOrder: 0,
     availableDurations: DEFAULT_DURATIONS as DurationOption[],
     availablePeriods: DEFAULT_PERIODS as PeriodOption[],
@@ -89,7 +91,7 @@ export default function SubscriptionPlansPage() {
     if (plan) {
       setEditingPlan(plan);
       setForm({
-        name: plan.name, slug: plan.slug, description: plan.description || '',
+        name: plan.name, slug: plan.slug, description: plan.description || '', image: plan.image || '',
         monthlyWeight: plan.monthlyWeight, priceMonthly: Number(plan.priceMonthly),
         discountPercent: plan.discountPercent, freeShipping: plan.freeShipping,
         isActive: plan.isActive, sortOrder: plan.sortOrder,
@@ -100,7 +102,7 @@ export default function SubscriptionPlansPage() {
     } else {
       setEditingPlan(null);
       setForm({
-        name: '', slug: '', description: '', monthlyWeight: 250, priceMonthly: 0,
+        name: '', slug: '', description: '', image: '', monthlyWeight: 250, priceMonthly: 0,
         discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1,
         availableDurations: DEFAULT_DURATIONS, availablePeriods: DEFAULT_PERIODS, availableGrinds: DEFAULT_GRINDS,
       });
@@ -217,7 +219,12 @@ export default function SubscriptionPlansPage() {
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
             <TextField fullWidth label="Plan Adi" value={form.name} size="small" onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            <TextField fullWidth label="Aciklama" value={form.description} size="small" multiline rows={2} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <TextField fullWidth label="Açıklama" value={form.description} size="small" multiline rows={2} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <ImageUpload
+              label="Plan Görseli (önerilen 800x600px)"
+              value={form.image}
+              onChange={(url) => setForm({ ...form, image: typeof url === 'string' ? url : '' })}
+            />
             <Stack direction="row" spacing={2}>
               <TextField fullWidth type="number" label="Fiyat (TL)" value={form.priceMonthly} size="small" onChange={(e) => setForm({ ...form, priceMonthly: Number(e.target.value) })} />
               <TextField fullWidth type="number" label="Miktar (g)" value={form.monthlyWeight} size="small" onChange={(e) => setForm({ ...form, monthlyWeight: Number(e.target.value) })} />

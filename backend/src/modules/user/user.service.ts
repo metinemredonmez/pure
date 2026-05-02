@@ -270,6 +270,10 @@ export class UserService {
       firstName?: string;
       lastName?: string;
       phone?: string;
+      address?: string;
+      city?: string;
+      district?: string;
+      postalCode?: string;
       avatar?: string;
       marketingConsent?: boolean;
     },
@@ -283,6 +287,10 @@ export class UserService {
         firstName: true,
         lastName: true,
         phone: true,
+        address: true,
+        city: true,
+        district: true,
+        postalCode: true,
         avatar: true,
         role: true,
         emailVerified: true,

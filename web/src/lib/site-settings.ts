@@ -71,6 +71,13 @@ export interface FaqItem {
   a: string
 }
 
+export interface AnnouncementItem {
+  id: string
+  text: string
+  href: string
+  cta: string
+}
+
 export interface SiteSettings {
   siteName: string
   logo: string
@@ -123,6 +130,7 @@ export interface SiteSettings {
   megaMenu: MegaMenuGroup[]
   b2bFeatures: B2BFeature[]
   b2bStats: B2BStat[]
+  announcements: AnnouncementItem[]
   subscriptionHeroBadge: string
   subscriptionHeroTitle: string
   subscriptionHeroSubtitle: string
@@ -311,6 +319,12 @@ const DEFAULTS: SiteSettings = {
     { id: 'q4', q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
   ],
   subscriptionFaqCta: 'Kahveleri Keşfet',
+  announcements: [
+    { id: 'a1', text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
+    { id: 'a2', text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },
+    { id: 'a3', text: 'Aylık kahve aboneliğinde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
+    { id: 'a4', text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
+  ],
 }
 
 function coerce(value: unknown): string {
@@ -373,6 +387,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'subscriptionFaq') {
         if (Array.isArray(incoming) && incoming.length) {
           merged.subscriptionFaq = incoming as FaqItem[]
+        }
+        continue
+      }
+      if (key === 'announcements') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.announcements = incoming as AnnouncementItem[]
         }
         continue
       }

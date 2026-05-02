@@ -956,6 +956,7 @@ model SubPlan {
   name            String
   slug            String         @unique
   description     String?
+  image           String?
   monthlyWeight   Int
   priceMonthly    Decimal        @db.Decimal(10, 2)
   discountPercent Int            @default(10)
@@ -1070,6 +1071,9 @@ model User {
   lastName           String
   phone              String?
   address            String?
+  city               String?
+  district           String?
+  postalCode         String?
   avatar             String?
   role               UserRole            @default(CUSTOMER)
   provider           AuthProvider        @default(LOCAL)

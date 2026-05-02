@@ -12,6 +12,19 @@ import {
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useEffect, useState } from 'react'
 
+const TR_PROVINCES = [
+  'Adana', 'Adıyaman', 'Afyonkarahisar', 'Ağrı', 'Aksaray', 'Amasya', 'Ankara', 'Antalya',
+  'Ardahan', 'Artvin', 'Aydın', 'Balıkesir', 'Bartın', 'Batman', 'Bayburt', 'Bilecik',
+  'Bingöl', 'Bitlis', 'Bolu', 'Burdur', 'Bursa', 'Çanakkale', 'Çankırı', 'Çorum',
+  'Denizli', 'Diyarbakır', 'Düzce', 'Edirne', 'Elazığ', 'Erzincan', 'Erzurum', 'Eskişehir',
+  'Gaziantep', 'Giresun', 'Gümüşhane', 'Hakkâri', 'Hatay', 'Iğdır', 'Isparta', 'İstanbul',
+  'İzmir', 'Kahramanmaraş', 'Karabük', 'Karaman', 'Kars', 'Kastamonu', 'Kayseri', 'Kilis',
+  'Kırıkkale', 'Kırklareli', 'Kırşehir', 'Kocaeli', 'Konya', 'Kütahya', 'Malatya', 'Manisa',
+  'Mardin', 'Mersin', 'Muğla', 'Muş', 'Nevşehir', 'Niğde', 'Ordu', 'Osmaniye',
+  'Rize', 'Sakarya', 'Samsun', 'Şanlıurfa', 'Siirt', 'Sinop', 'Şırnak', 'Sivas',
+  'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
+]
+
 export default function AccountPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
@@ -54,6 +67,9 @@ export default function AccountPage() {
       lastName: String(fd.get('lastName') || ''),
       phone: String(fd.get('phone') || ''),
       address: String(fd.get('address') || ''),
+      city: String(fd.get('city') || ''),
+      district: String(fd.get('district') || ''),
+      postalCode: String(fd.get('postalCode') || ''),
     }
 
     try {
@@ -115,12 +131,37 @@ export default function AccountPage() {
               </InputGroup>
             </Field>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field>
+                <Label>Şehir</Label>
+                <select
+                  name="city"
+                  defaultValue={user.city || ''}
+                  className="block w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm focus:border-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800"
+                >
+                  <option value="">— Şehir Seçin —</option>
+                  {TR_PROVINCES.map((p) => (
+                    <option key={p} value={p}>{p}</option>
+                  ))}
+                </select>
+              </Field>
+              <Field>
+                <Label>İlçe</Label>
+                <Input name="district" defaultValue={user.district || ''} placeholder="Örn: Sancaktepe" />
+              </Field>
+            </div>
+
             <Field>
-              <Label>Adres</Label>
+              <Label>Açık Adres</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={MapsLocation01Icon} size={16} />
-                <Input name="address" defaultValue={user.address || ''} placeholder="Şehir, İlçe" />
+                <Input name="address" defaultValue={user.address || ''} placeholder="Mahalle, sokak, kapı no, daire" />
               </InputGroup>
+            </Field>
+
+            <Field>
+              <Label>Posta Kodu (opsiyonel)</Label>
+              <Input name="postalCode" defaultValue={user.postalCode || ''} placeholder="34887" />
             </Field>
 
             {msg && (

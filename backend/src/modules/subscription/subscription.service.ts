@@ -61,6 +61,7 @@ export class SubscriptionService implements OnModuleInit {
     name: string;
     slug: string;
     description?: string;
+    image?: string;
     monthlyWeight?: number;
     priceMonthly: number;
     discountPercent?: number;
@@ -76,6 +77,7 @@ export class SubscriptionService implements OnModuleInit {
         name: data.name,
         slug: data.slug,
         description: data.description || '',
+        image: data.image || null,
         monthlyWeight: data.monthlyWeight || 250,
         priceMonthly: data.priceMonthly,
         discountPercent: data.discountPercent || 0,
@@ -93,6 +95,7 @@ export class SubscriptionService implements OnModuleInit {
     name: string;
     slug: string;
     description: string;
+    image: string | null;
     monthlyWeight: number;
     priceMonthly: number;
     discountPercent: number;
