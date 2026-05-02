@@ -44,6 +44,7 @@ const TR_PROVINCES = [
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
+  const [prefillReady, setPrefillReady] = useState(false)
   const { items, clearCart, coupon, removeCoupon } = useCart()
 
   useEffect(() => {
@@ -76,28 +77,34 @@ const Information = () => {
     ;(async () => {
       try {
         const token = await getStoredAccessToken()
-        if (!token) return
+        if (!token) {
+          setPrefillReady(true) // misafir kullanıcı, async yüklenecek bir şey yok
+          return
+        }
         const res: any = await apiGetAddresses(token)
         const addresses: any[] = res?.data?.data || res?.data || res || []
-        if (!Array.isArray(addresses) || addresses.length === 0) return
-        // Default address önce, yoksa en son oluşturulan
-        const def =
-          addresses.find((a: any) => a.isDefault) ||
-          [...addresses].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
-        if (!def) return
-        setCheckoutData((current) => ({
-          ...current,
-          'first-name': current['first-name'] || def.firstName || '',
-          'last-name': current['last-name'] || def.lastName || '',
-          phone: current.phone || def.phone || '',
-          address: current.address || def.line1 || '',
-          'apt-suite': current['apt-suite'] || def.line2 || '',
-          city: current.city || def.city || '',
-          'state-province': current['state-province'] || def.district || '',
-          'postal-code': current['postal-code'] || def.postalCode || '',
-          country: current.country || (def.country === 'TR' ? 'Turkey' : def.country || 'Turkey'),
-        }))
+        if (Array.isArray(addresses) && addresses.length > 0) {
+          // Default address önce, yoksa en son oluşturulan
+          const def =
+            addresses.find((a: any) => a.isDefault) ||
+            [...addresses].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
+          if (def) {
+            setCheckoutData((current) => ({
+              ...current,
+              'first-name': current['first-name'] || def.firstName || '',
+              'last-name': current['last-name'] || def.lastName || '',
+              phone: current.phone || def.phone || '',
+              address: current.address || def.line1 || '',
+              'apt-suite': current['apt-suite'] || def.line2 || '',
+              city: current.city || def.city || '',
+              'state-province': current['state-province'] || def.district || '',
+              'postal-code': current['postal-code'] || def.postalCode || '',
+              country: current.country || (def.country === 'TR' ? 'Turkey' : def.country || 'Turkey'),
+            }))
+          }
+        }
       } catch {}
+      setPrefillReady(true)
     })()
   }, [])
 
@@ -143,14 +150,19 @@ const Information = () => {
           }}
         />
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ShippingAddress' && 'invisible hidden')}>
-          <ShippingAddress
-            initialValues={checkoutData}
-            onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
-            onClose={() => {
-              setTabActive('PaymentMethod')
-              handleScrollToEl('PaymentMethod')
-            }}
-          />
+          {prefillReady ? (
+            <ShippingAddress
+              key={`shipping-${checkoutData.city || 'empty'}-${checkoutData['state-province'] || ''}`}
+              initialValues={checkoutData}
+              onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
+              onClose={() => {
+                setTabActive('PaymentMethod')
+                handleScrollToEl('PaymentMethod')
+              }}
+            />
+          ) : (
+            <div className="py-8 text-center text-sm text-neutral-400">Adres bilgileri yükleniyor...</div>
+          )}
         </div>
       </div>
 
