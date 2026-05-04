@@ -290,6 +290,7 @@ export default function SubscriptionPlansPage() {
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                 <TextField select fullWidth size="small" label="Varsayılan Gramaj"
                   SelectProps={{ native: true }}
+                  InputLabelProps={{ shrink: true }}
                   value={form.defaultGramsId || ''}
                   onChange={(e) => setForm({ ...form, defaultGramsId: e.target.value })}
                   helperText="Site Ayarları → Abonelik → Gramaj listesinden">
@@ -300,6 +301,7 @@ export default function SubscriptionPlansPage() {
                 </TextField>
                 <TextField select fullWidth size="small" label="Varsayılan Süre (ay)"
                   SelectProps={{ native: true }}
+                  InputLabelProps={{ shrink: true }}
                   value={form.defaultDuration ?? ''}
                   onChange={(e) => setForm({ ...form, defaultDuration: e.target.value ? Number(e.target.value) : null })}>
                   <option value="">— Seçim yok —</option>
@@ -309,6 +311,7 @@ export default function SubscriptionPlansPage() {
                 </TextField>
                 <TextField select fullWidth size="small" label="Varsayılan Periyot (hafta)"
                   SelectProps={{ native: true }}
+                  InputLabelProps={{ shrink: true }}
                   value={form.defaultPeriod ?? ''}
                   onChange={(e) => setForm({ ...form, defaultPeriod: e.target.value ? Number(e.target.value) : null })}>
                   <option value="">— Seçim yok —</option>
