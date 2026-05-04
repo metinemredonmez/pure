@@ -540,23 +540,21 @@ export default function SubscriptionPage({
               {cat.name}
             </h2>
 
-            <div className="mt-4 text-3xl font-bold text-neutral-900 dark:text-white">
-              {formatPrice(totalPrice)}
-            </div>
-            <p className="mt-1 text-xs text-neutral-500">
-              {effectiveDurations.find((d) => d.months === duration)?.label} toplam · sevkiyat başı {formatPrice(pricePerShipment)}
-            </p>
-            {/* Aylık ortalama + plan baz fiyatı — saydam breakdown */}
             {(() => {
               const monthlyAvg = duration > 0 ? totalPrice / duration : 0
-              const planMonthly = cat.basePrice || 0
-              const planMonthlyWeight = (cat.monthlyWeight || 1000) as number
-              const fmtKg = (g: number) => g >= 1000 ? `${g / 1000} kg` : `${g} g`
               return (
-                <div className="mt-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                  <div>Aylık ortalama: <strong>{formatPrice(monthlyAvg)}</strong></div>
-                  <div>Plan baz fiyatı: <strong>{formatPrice(planMonthly)}/ay</strong> ({fmtKg(planMonthlyWeight)}/ay için)</div>
-                </div>
+                <>
+                  {/* BÜYÜK rakam = aylık fiyat (admin'le aynı görünür) */}
+                  <div className="mt-4 flex items-baseline gap-2">
+                    <span className="text-3xl font-bold text-neutral-900 dark:text-white">
+                      {formatPrice(monthlyAvg)}
+                    </span>
+                    <span className="text-sm font-medium text-neutral-500">/ ay</span>
+                  </div>
+                  <p className="mt-1 text-xs text-neutral-500">
+                    {duration} ay × {formatPrice(monthlyAvg)} = <strong>{formatPrice(totalPrice)}</strong> toplam · sevkiyat başı {formatPrice(pricePerShipment)}
+                  </p>
+                </>
               )
             })()}
 
