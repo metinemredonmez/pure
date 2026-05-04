@@ -303,24 +303,53 @@ export default function SubscriptionPage({
     return gramsList
   }, [activePlan, gramsList])
 
-  // Reset duration/period/grams when plan changes — apply plan defaults if available
+  // Reset duration/period/grams when plan changes — apply plan defaults if available.
+  // Admin defaults yoksa: plan.monthlyWeight'i tutturan en uygun kombinasyonu otomatik seçer
+  // (örn: plan 1000g/ay → "ayda 1" + "1×1kg" → 1000g/ay ✓)
   useEffect(() => {
     if (!activePlan) return
     const def = activePlan as any
+
+    // 1) Süre
     if (typeof def.defaultDuration === 'number' && effectiveDurations.find((d) => d.months === def.defaultDuration)) {
       setDuration(def.defaultDuration)
     } else if (effectiveDurations.length && !effectiveDurations.find((d) => d.months === duration)) {
       setDuration(effectiveDurations[0].months)
     }
-    if (typeof def.defaultPeriod === 'number' && effectivePeriods.find((p) => p.weeks === def.defaultPeriod)) {
-      setPeriod(def.defaultPeriod)
-    } else if (effectivePeriods.length && !effectivePeriods.find((p) => p.weeks === period)) {
-      setPeriod(effectivePeriods[0].weeks)
-    }
-    if (typeof def.defaultGramsId === 'string' && effectiveGramsList.find((g) => g.id === def.defaultGramsId)) {
-      setGramsOpt(def.defaultGramsId)
-    } else if (effectiveGramsList.length && !effectiveGramsList.find((g) => g.id === gramsOpt)) {
-      setGramsOpt(effectiveGramsList[0].id)
+
+    // 2) Periyot + Gramaj — admin set etmediyse plan.monthlyWeight'i tutturan kombinasyon ara
+    const adminPeriodSet = typeof def.defaultPeriod === 'number' && effectivePeriods.find((p) => p.weeks === def.defaultPeriod)
+    const adminGramsSet = typeof def.defaultGramsId === 'string' && effectiveGramsList.find((g) => g.id === def.defaultGramsId)
+    const targetMonthlyWeight = Number(activePlan.monthlyWeight) || 0
+
+    if (adminPeriodSet) setPeriod(def.defaultPeriod)
+    if (adminGramsSet) setGramsOpt(def.defaultGramsId)
+
+    if (!adminPeriodSet || !adminGramsSet) {
+      // Auto-pick: prefer "ayda 1" (period=4) with gramaj that matches monthlyWeight
+      const periodPriority = [4, 2, 1] // ayda 1 > 2 haftada 1 > haftada 1
+      let bestMatch: { period: number; gramsId: string; diff: number } | null = null
+      for (const periodWeeks of periodPriority) {
+        const periodOpt = effectivePeriods.find((p) => p.weeks === periodWeeks)
+        if (!periodOpt) continue
+        const periodsPerMonth = periodWeeks === 4 ? 1 : periodWeeks === 2 ? 2 : 4
+        for (const g of effectiveGramsList) {
+          const monthlyTotal = g.grams * g.bags * periodsPerMonth
+          const diff = Math.abs(monthlyTotal - targetMonthlyWeight)
+          if (!bestMatch || diff < bestMatch.diff) {
+            bestMatch = { period: periodWeeks, gramsId: g.id, diff }
+            if (diff === 0) break
+          }
+        }
+        if (bestMatch && bestMatch.diff === 0) break
+      }
+      if (bestMatch) {
+        if (!adminPeriodSet) setPeriod(bestMatch.period)
+        if (!adminGramsSet) setGramsOpt(bestMatch.gramsId)
+      } else {
+        if (!adminPeriodSet && effectivePeriods.length) setPeriod(effectivePeriods[0].weeks)
+        if (!adminGramsSet && effectiveGramsList.length) setGramsOpt(effectiveGramsList[0].id)
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePlan?.id, effectiveDurations, effectivePeriods, effectiveGramsList])
@@ -508,22 +537,33 @@ export default function SubscriptionPage({
         <div id="configurator" className="container mt-16 scroll-mt-10">
           <div className="mx-auto max-w-2xl">
             <h2 className="text-3xl font-bold text-neutral-900 dark:text-white sm:text-4xl">
-              {cat.title}
-              <br />
               {cat.name}
             </h2>
 
-            <div className="mt-4 text-2xl font-bold text-neutral-900 dark:text-white">
+            <div className="mt-4 text-3xl font-bold text-neutral-900 dark:text-white">
               {formatPrice(totalPrice)}
             </div>
             <p className="mt-1 text-xs text-neutral-500">
-              {effectiveDurations.find((d) => d.months === duration)?.label} · sevkiyat başı {formatPrice(pricePerShipment)}
+              {effectiveDurations.find((d) => d.months === duration)?.label} toplam · sevkiyat başı {formatPrice(pricePerShipment)}
             </p>
+            {/* Aylık ortalama + plan baz fiyatı — saydam breakdown */}
+            {(() => {
+              const monthlyAvg = duration > 0 ? totalPrice / duration : 0
+              const planMonthly = cat.basePrice
+              const planMonthlyWeight = cat.monthlyWeight || 1000
+              const fmtKg = (g: number) => g >= 1000 ? `${g / 1000} kg` : `${g} g`
+              return (
+                <div className="mt-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                  <div>Aylık ortalama: <strong>{formatPrice(monthlyAvg)}</strong></div>
+                  <div>Plan baz fiyatı: <strong>{formatPrice(planMonthly)}/ay</strong> ({fmtKg(planMonthlyWeight)}/ay için)</div>
+                </div>
+              )
+            })()}
 
             {/* Süre + Peryot */}
             <div className="mt-8 grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Süre</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Abonelik Süresi</label>
                 <select
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
@@ -537,7 +577,7 @@ export default function SubscriptionPage({
                 </select>
               </div>
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Peryot</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Gönderim Sıklığı</label>
                 <select
                   value={period}
                   onChange={(e) => setPeriod(Number(e.target.value))}
@@ -554,7 +594,7 @@ export default function SubscriptionPage({
 
             {/* Kahve seçimi */}
             <div className="mt-8">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Kahve</label>
+              <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Kahve Türü</label>
               {categoryProducts.length === 0 ? (
                 <p className="mt-3 text-sm text-neutral-500 italic">
                   Bu kategoride henüz ürün yok — sürpriz paket gönderilecek.
@@ -595,7 +635,7 @@ export default function SubscriptionPage({
             {/* Gramaj + Çekme */}
             <div className="mt-8 grid grid-cols-2 gap-4">
               <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Gramaj</label>
+                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Her Gönderimdeki Miktar</label>
                 <select
                   value={gramsOpt}
                   onChange={(e) => setGramsOpt(e.target.value)}
@@ -631,23 +671,48 @@ export default function SubscriptionPage({
               const totalGrams = perShipmentGrams * totalShipments
               const fmtGr = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} kg` : `${g} g`
               const periodLabel = period === 4 ? 'ayda 1' : period === 2 ? '15 günde 1' : period === 1 ? 'haftada 1' : `${period} haftada 1`
+              const periodFullLabel = period === 4 ? 'Ayda 1' : period === 2 ? '15 günde 1' : period === 1 ? 'Haftada 1' : `${period} haftada 1`
               return (
-                <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-200 p-4 dark:bg-amber-900/20 dark:border-amber-700/40">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40">
-                      ☕
+                <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-700/40 dark:bg-amber-900/20">
+                  <div className="border-b border-amber-200/60 px-4 py-2.5 dark:border-amber-700/30">
+                    <p className="text-xs font-bold uppercase tracking-widest text-amber-800 dark:text-amber-300">
+                      📦 Sipariş Özeti
+                    </p>
+                  </div>
+                  <div className="divide-y divide-amber-200/40 px-4 dark:divide-amber-700/20">
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Her gönderimde:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{fmtGr(perShipmentGrams)}</span>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                        {duration} Aylık Abonelik — Tek Ödeme
-                      </p>
-                      <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
-                        Her gönderimde <strong>{fmtGr(perShipmentGrams)}</strong> taze kavrulmuş kahve, {periodLabel} sıklığıyla {duration} ay boyunca <strong>{totalShipments} kez</strong> kargolanır.
-                      </p>
-                      <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
-                        Toplam: <strong>{fmtGr(totalGrams)}</strong> kahve · <strong>{formatPrice(totalPrice)}</strong> tek seferde ödenir.
-                      </p>
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Abonelik süresi:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{duration} ay</span>
                     </div>
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Gönderim sıklığı:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{periodFullLabel}</span>
+                    </div>
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Toplam gönderim:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{totalShipments} adet</span>
+                    </div>
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Toplam kahve miktarı:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{fmtGr(totalGrams)}</span>
+                    </div>
+                    <div className="flex justify-between py-2 text-xs">
+                      <span className="text-amber-900/70 dark:text-amber-200/70">Kahve türü:</span>
+                      <span className="font-semibold text-amber-900 dark:text-amber-100">{cat.name} · {grind}</span>
+                    </div>
+                    <div className="flex items-center justify-between py-3">
+                      <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">Toplam Ödenecek:</span>
+                      <span className="text-base font-bold text-amber-900 dark:text-amber-100">{formatPrice(totalPrice)}</span>
+                    </div>
+                  </div>
+                  <div className="border-t border-amber-200/60 bg-amber-100/40 px-4 py-2.5 dark:border-amber-700/30 dark:bg-amber-900/10">
+                    <p className="text-[11px] leading-relaxed text-amber-900/70 dark:text-amber-200/60">
+                      ℹ️ Bu abonelikte seçtiğiniz miktar <strong>her gönderim için</strong> geçerlidir. Toplam kahve miktarı, abonelik süresi ve gönderim sıklığına göre hesaplanır.
+                    </p>
                   </div>
                 </div>
               )

@@ -265,9 +265,26 @@ export default function SubscriptionPlansPage() {
               onChange={(url) => setForm({ ...form, image: typeof url === 'string' ? url : '' })}
             />
             <Stack direction="row" spacing={2}>
-              <TextField fullWidth type="number" label="Fiyat (TL)" value={form.priceMonthly} size="small" onChange={(e) => setForm({ ...form, priceMonthly: Number(e.target.value) })} />
-              <TextField fullWidth type="number" label="Miktar (g)" value={form.monthlyWeight} size="small" onChange={(e) => setForm({ ...form, monthlyWeight: Number(e.target.value) })} />
+              <TextField fullWidth type="number" label="Aylık Fiyat (₺)"
+                value={form.priceMonthly} size="small"
+                onChange={(e) => setForm({ ...form, priceMonthly: Number(e.target.value) })}
+                helperText="Aşağıdaki 'Aylık Miktar' kadar kahve için baz fiyat. Müşteri farklı miktar seçince orantısal hesaplanır." />
+              <TextField fullWidth type="number" label="Aylık Miktar (g)"
+                value={form.monthlyWeight} size="small"
+                onChange={(e) => setForm({ ...form, monthlyWeight: Number(e.target.value) })}
+                helperText="Bu plan'ın baz aylık kahve miktarı (örn 1000g = 1kg/ay). Üstündeki fiyat bu miktar için." />
             </Stack>
+            {form.priceMonthly > 0 && form.monthlyWeight > 0 && (
+              <Box sx={{ p: 1.5, bgcolor: 'success.dark', color: 'success.contrastText', borderRadius: 1, opacity: 0.85 }}>
+                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
+                  Birim fiyat: {formatCurrency(form.priceMonthly / (form.monthlyWeight / 1000))} / kg
+                  {' '}({formatCurrency(form.priceMonthly / (form.monthlyWeight / 250))} / 250g paket)
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', opacity: 0.85 }}>
+                  Müşteri 500g/ay seçerse aylık {formatCurrency(form.priceMonthly / 2)}, 2kg/ay seçerse aylık {formatCurrency(form.priceMonthly * 2)} öder.
+                </Typography>
+              </Box>
+            )}
             <Stack direction="row" spacing={2}>
               <TextField fullWidth type="number" label="Indirim (%)" value={form.discountPercent} size="small" onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })} />
               <TextField fullWidth type="number" label="Sira" value={form.sortOrder} size="small" onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} />
@@ -288,18 +305,18 @@ export default function SubscriptionPlansPage() {
                 Plan ilk açıldığında bu seçenekler otomatik dolu gelir. Müşteri istediği gibi değiştirebilir.
               </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField select fullWidth size="small" label="Varsayılan Gramaj"
+                <TextField select fullWidth size="small" label="Varsayılan Gönderim Miktarı"
                   SelectProps={{ native: true }}
                   InputLabelProps={{ shrink: true }}
                   value={form.defaultGramsId || ''}
                   onChange={(e) => setForm({ ...form, defaultGramsId: e.target.value })}
-                  helperText="Site Ayarları → Abonelik → Gramaj listesinden">
-                  <option value="">— Seçim yok (ilk gramajı kullan) —</option>
+                  helperText="Müşteri planı açtığında ön-seçili miktar">
+                  <option value="">— Seçim yok —</option>
                   {globalGrams.map((g) => (
                     <option key={g.id} value={g.id}>{g.label}</option>
                   ))}
                 </TextField>
-                <TextField select fullWidth size="small" label="Varsayılan Süre (ay)"
+                <TextField select fullWidth size="small" label="Varsayılan Abonelik Süresi"
                   SelectProps={{ native: true }}
                   InputLabelProps={{ shrink: true }}
                   value={form.defaultDuration ?? ''}
@@ -309,7 +326,7 @@ export default function SubscriptionPlansPage() {
                     <option key={d.months} value={d.months}>{d.label}</option>
                   ))}
                 </TextField>
-                <TextField select fullWidth size="small" label="Varsayılan Periyot (hafta)"
+                <TextField select fullWidth size="small" label="Varsayılan Gönderim Sıklığı"
                   SelectProps={{ native: true }}
                   InputLabelProps={{ shrink: true }}
                   value={form.defaultPeriod ?? ''}
@@ -325,7 +342,7 @@ export default function SubscriptionPlansPage() {
             {/* İzinli Gramajlar — bu plan için sınırlı seçenek */}
             <Box>
               <Typography variant="body2" fontWeight={600} gutterBottom>
-                Bu Plan için İzinli Gramajlar
+                Bu Plan için İzinli Gönderim Miktarları
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                 Boş bırakılırsa müşteri tüm Site Ayarları gramajlarından seçebilir. Sadece belirli gramajlara kısıtlamak için aşağıdan seç.
@@ -361,7 +378,7 @@ export default function SubscriptionPlansPage() {
 
             {/* Süre Seçenekleri */}
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" fontWeight={600}>Süre Seçenekleri</Typography>
+              <Typography variant="body2" fontWeight={600}>Abonelik Süresi Seçenekleri</Typography>
               <Button size="small" onClick={() => setForm({ ...form, availableDurations: [...form.availableDurations, { months: 1, label: 'Yeni Süre' }] })}>+ Ekle</Button>
             </Stack>
             {form.availableDurations.map((d, idx) => (
@@ -378,7 +395,7 @@ export default function SubscriptionPlansPage() {
 
             {/* Peryot Seçenekleri */}
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" fontWeight={600}>Peryot Seçenekleri</Typography>
+              <Typography variant="body2" fontWeight={600}>Gönderim Sıklığı Seçenekleri</Typography>
               <Button size="small" onClick={() => setForm({ ...form, availablePeriods: [...form.availablePeriods, { weeks: 1, label: 'Yeni Peryot' }] })}>+ Ekle</Button>
             </Stack>
             {form.availablePeriods.map((p, idx) => (
