@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { resolveImageUrl } from '@/lib/adapters'
 import { Coffee01Icon, DeliveryTruck01Icon, GiftIcon, PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
@@ -247,7 +248,10 @@ export default function SubscriptionPage({
         // Admin "Ev Başlangıç Paketi" yazınca web'de aynı görünür.
         title: p.name || `Abonelik No.0${i + 1}`,
         name: p.name,
-        fallbackImage: (p as any).image || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
+        // Plan görselinde /uploads/... relative path varsa api.pureolentia.com'a çöz, yoksa fallback (web public/hero/)
+        fallbackImage: (p as any).image
+          ? resolveImageUrl((p as any).image)
+          : FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
         grind: inferred.grind,
         planId: p.id,
         basePrice: Number(p.priceMonthly) || 0,
