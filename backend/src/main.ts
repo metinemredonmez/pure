@@ -1,3 +1,6 @@
+// Load .env BEFORE any other imports so configuration.ts top-level
+// validation sees the env vars instead of warning "Missing env".
+import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SanitizePipe } from './common/pipes/sanitize.pipe';
