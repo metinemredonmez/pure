@@ -473,18 +473,17 @@ export default function SubscriptionPage({
             const active = selectedCategory === c.id
             return (
               <div key={c.id} className="group">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-shadow group-hover:shadow-xl dark:bg-neutral-800">
+                <div className="relative aspect-square overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-shadow group-hover:shadow-xl dark:bg-neutral-800">
                   <Image
                     src={c.fallbackImage}
                     alt={c.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="object-contain transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <div className="mt-4">
                   <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{c.title}</h3>
-                  <p className="mt-0.5 text-sm text-neutral-500">{c.name}</p>
                   <button
                     onClick={() => chooseCategory(c.id)}
                     className={`mt-3 flex w-full items-center justify-between border-b-2 py-2 text-sm font-semibold transition ${
