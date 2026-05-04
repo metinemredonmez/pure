@@ -23,8 +23,8 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
       <div
         className={`relative flex min-h-[300px] items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:min-h-[360px] sm:p-8 lg:min-h-[400px] ${collection.color}`}
       >
-        {/* Text — left half */}
-        <div className="relative z-10 flex w-1/2 flex-col pr-2">
+        {/* Text — left 2/5 */}
+        <div className="relative z-10 flex w-2/5 flex-col pr-2">
           <div>
             <span className="mb-2 block text-sm text-neutral-700">{collection.title}</span>
             {collection.description && (
@@ -41,9 +41,9 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
           </div>
         </div>
 
-        {/* Image — right half */}
+        {/* Image — right 3/5 */}
         {collection.image && (
-          <div className="relative w-1/2 overflow-hidden rounded-2xl">
+          <div className="relative w-3/5 overflow-hidden rounded-2xl">
             <Image
               alt={collection.image.alt || ''}
               src={collection.image}
