@@ -5,14 +5,14 @@ import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Chip, IconButton, TextField, Dialog, DialogTitle,
   DialogContent, DialogActions, Button, Divider, Skeleton, Stack, Grid, Tooltip,
-  Switch, FormControlLabel,
+  Switch, FormControlLabel, ToggleButton, ToggleButtonGroup, Autocomplete,
 } from '@mui/material';
 import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
   ViewCarousel as BannerIcon, Close as CloseIcon,
   DragIndicator as DragIcon,
 } from '@mui/icons-material';
-import { websiteApi, uploadApi } from '@/lib/api';
+import { websiteApi, uploadApi, productsApi, collectionsApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 
@@ -60,6 +60,38 @@ const emptyForm = {
   sortOrder: 0, isActive: true, startDate: '', endDate: '',
 };
 
+type LinkMode = 'product' | 'collection' | 'page' | 'custom';
+
+interface PickerOption { slug: string; label: string }
+
+// Detect mode from a stored URL so we can pre-fill the picker on edit.
+function detectLinkMode(url: string): LinkMode {
+  if (!url) return 'product';
+  if (url.startsWith('/products/')) return 'product';
+  if (url.startsWith('/collections/')) return 'collection';
+  if (url.startsWith('http://') || url.startsWith('https://')) return 'custom';
+  return 'page';
+}
+
+// Strip the mode-specific prefix so the picker shows the bare slug/path.
+function stripPrefix(url: string, mode: LinkMode): string {
+  if (!url) return '';
+  if (mode === 'product') return url.replace(/^\/products\//, '');
+  if (mode === 'collection') return url.replace(/^\/collections\//, '');
+  if (mode === 'page') return url.replace(/^\//, '');
+  return url;
+}
+
+// Re-build the stored URL from the picker's mode + value.
+function buildUrl(mode: LinkMode, value: string): string {
+  const v = (value || '').trim();
+  if (!v) return '';
+  if (mode === 'product') return `/products/${v.replace(/^\//, '')}`;
+  if (mode === 'collection') return `/collections/${v.replace(/^\//, '')}`;
+  if (mode === 'page') return v.startsWith('/') ? v : `/${v}`;
+  return v;
+}
+
 export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +99,12 @@ export default function BannersPage() {
   const [editing, setEditing] = useState<Banner | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+
+  // Buton Linki picker state — UI-only, persisted via form.ctaUrl
+  const [linkMode, setLinkMode] = useState<LinkMode>('product');
+  const [productOpts, setProductOpts] = useState<PickerOption[]>([]);
+  const [collectionOpts, setCollectionOpts] = useState<PickerOption[]>([]);
+  const [pageOpts, setPageOpts] = useState<PickerOption[]>([]);
 
   const fetchBanners = useCallback(async () => {
     try {
@@ -79,6 +117,44 @@ export default function BannersPage() {
 
   useEffect(() => { fetchBanners(); }, [fetchBanners]);
 
+  // Lazily load picker options the first time the dialog opens.
+  useEffect(() => {
+    if (!dialogOpen) return;
+    if (productOpts.length === 0) {
+      productsApi.getProducts({ limit: 500 }).then((res: any) => {
+        const list = res?.data?.data || res?.data || res || [];
+        setProductOpts(
+          (Array.isArray(list) ? list : []).map((p: any) => ({
+            slug: p.slug || p.handle || '',
+            label: p.title || p.name || p.slug || '',
+          })).filter((o) => o.slug),
+        );
+      }).catch(() => {});
+    }
+    if (collectionOpts.length === 0) {
+      collectionsApi.getCollections().then((res: any) => {
+        const list = res?.data?.data || res?.data || res || [];
+        setCollectionOpts(
+          (Array.isArray(list) ? list : []).map((c: any) => ({
+            slug: c.slug || c.handle || '',
+            label: c.name || c.title || c.slug || '',
+          })).filter((o) => o.slug),
+        );
+      }).catch(() => {});
+    }
+    if (pageOpts.length === 0) {
+      websiteApi.getPages().then((res: any) => {
+        const list = res?.data?.data || res?.data || res || [];
+        setPageOpts(
+          (Array.isArray(list) ? list : []).map((p: any) => ({
+            slug: p.slug || '',
+            label: p.title || p.slug || '',
+          })).filter((o) => o.slug),
+        );
+      }).catch(() => {});
+    }
+  }, [dialogOpen, productOpts.length, collectionOpts.length, pageOpts.length]);
+
   const handleOpen = (banner?: Banner) => {
     if (banner) {
       setEditing(banner);
@@ -89,9 +165,11 @@ export default function BannersPage() {
         startDate: banner.startDate ? banner.startDate.slice(0, 10) : '',
         endDate: banner.endDate ? banner.endDate.slice(0, 10) : '',
       });
+      setLinkMode(detectLinkMode(banner.ctaUrl || ''));
     } else {
       setEditing(null);
       setForm({ ...emptyForm, sortOrder: banners.length });
+      setLinkMode('product');
     }
     setDialogOpen(true);
   };
@@ -251,9 +329,69 @@ export default function BannersPage() {
                 helperText="Boş bırakılırsa 'İncele' kullanılır" />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField fullWidth label="Buton Linki" size="small" value={form.ctaUrl}
-                onChange={(e) => setForm({ ...form, ctaUrl: e.target.value })}
-                helperText="Örn: /products/turk-kahvesi-200gr  •  veya tam URL: https://pureolentia.com/b2b" />
+              <Typography variant="caption" color="text.secondary" gutterBottom component="div">
+                Butonun Yönlendireceği Yer
+              </Typography>
+              <ToggleButtonGroup
+                size="small" exclusive fullWidth
+                value={linkMode}
+                onChange={(_, v: LinkMode | null) => {
+                  if (!v) return;
+                  setLinkMode(v);
+                  // Reset URL when switching modes — avoids stitching wrong slugs into wrong prefixes
+                  setForm((p) => ({ ...p, ctaUrl: '' }));
+                }}
+                sx={{ mb: 1 }}
+              >
+                <ToggleButton value="product">Ürün</ToggleButton>
+                <ToggleButton value="collection">Koleksiyon</ToggleButton>
+                <ToggleButton value="page">Sayfa</ToggleButton>
+                <ToggleButton value="custom">Özel URL</ToggleButton>
+              </ToggleButtonGroup>
+
+              {linkMode === 'custom' ? (
+                <TextField
+                  fullWidth size="small" label="Tam URL"
+                  value={form.ctaUrl}
+                  onChange={(e) => setForm({ ...form, ctaUrl: e.target.value })}
+                  placeholder="https://pureolentia.com/b2b"
+                  helperText="Tam URL girin (https:// ile başlamalı)"
+                />
+              ) : (
+                (() => {
+                  const opts = linkMode === 'product' ? productOpts : linkMode === 'collection' ? collectionOpts : pageOpts;
+                  const currentSlug = stripPrefix(form.ctaUrl, linkMode);
+                  const selected = opts.find((o) => o.slug === currentSlug) || null;
+                  const labelMap = { product: 'Ürün Seç', collection: 'Koleksiyon Seç', page: 'Sayfa Seç', custom: '' };
+                  const helperMap = {
+                    product: 'Banner butonu seçili ürünün sayfasına yönlendirir',
+                    collection: 'Banner butonu seçili koleksiyona yönlendirir',
+                    page: 'Banner butonu seçili sayfaya yönlendirir',
+                    custom: '',
+                  };
+                  return (
+                    <Autocomplete
+                      size="small"
+                      options={opts}
+                      getOptionLabel={(o) => o?.label || ''}
+                      isOptionEqualToValue={(a, b) => a.slug === b.slug}
+                      value={selected}
+                      onChange={(_, v) => {
+                        const next = v ? buildUrl(linkMode, v.slug) : '';
+                        setForm((p) => ({ ...p, ctaUrl: next }));
+                      }}
+                      noOptionsText="Sonuç yok"
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label={labelMap[linkMode]}
+                          helperText={helperMap[linkMode]}
+                        />
+                      )}
+                    />
+                  );
+                })()
+              )}
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="caption" color="text.secondary" gutterBottom component="div">
