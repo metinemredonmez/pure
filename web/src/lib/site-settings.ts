@@ -19,6 +19,14 @@ export interface FooterMenuItem {
   href: string
 }
 
+export interface HomeCollectionCard {
+  id: string
+  image: string
+  title: string
+  subtitle: string
+  ctaUrl: string
+}
+
 export interface FooterMenuGroup {
   id: string
   title: string
@@ -119,6 +127,7 @@ export interface SiteSettings {
   homeViewAllLabel: string
   homeViewAllCaption: string
   homeCollectionCardCta: string
+  homeCollectionCards: HomeCollectionCard[]
   b2bHeroImage: string
   b2bHeroBadge: string
   b2bHeroTitle: string
@@ -182,6 +191,7 @@ const DEFAULTS: SiteSettings = {
   homeViewAllLabel: 'Daha fazla',
   homeViewAllCaption: 'Tümünü gör',
   homeCollectionCardCta: 'Hepsini Gör',
+  homeCollectionCards: [],
   b2bHeroImage: '',
   b2bHeroBadge: 'Kurumsal Çözümler',
   b2bHeroTitle: 'İşletmeniz için Premium Kahve Tedariği',
@@ -393,6 +403,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'announcements') {
         if (Array.isArray(incoming) && incoming.length) {
           merged.announcements = incoming as AnnouncementItem[]
+        }
+        continue
+      }
+      if (key === 'homeCollectionCards') {
+        if (Array.isArray(incoming)) {
+          merged.homeCollectionCards = incoming as HomeCollectionCard[]
         }
         continue
       }

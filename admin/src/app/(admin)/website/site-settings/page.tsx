@@ -3,12 +3,12 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   Box, Typography, Card, TextField, Button, Grid, Divider, Skeleton,
-  CardContent, CardHeader,
+  CardContent, CardHeader, ToggleButton, ToggleButtonGroup, Autocomplete,
 } from '@mui/material';
 import {
   Settings as SettingsIcon, Save as SaveIcon, Add as AddIcon,
 } from '@mui/icons-material';
-import { websiteApi } from '@/lib/api';
+import { websiteApi, productsApi, collectionsApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 
@@ -27,6 +27,36 @@ interface B2BStat { id: string; value: string; label: string }
 interface IconStep { id: string; title: string; desc: string; icon: string }
 interface FaqItem { id: string; q: string; a: string }
 interface AnnouncementItem { id: string; text: string; href: string; cta: string }
+interface HomeCollectionCard { id: string; image: string; title: string; subtitle: string; ctaUrl: string }
+
+// ── Link picker helpers (also used by banner page; kept inline to avoid premature abstraction) ──
+type LinkMode = 'product' | 'collection' | 'page' | 'custom';
+interface PickerOption { slug: string; label: string }
+
+function detectLinkMode(url: string): LinkMode {
+  if (!url) return 'product';
+  if (url.startsWith('/products/')) return 'product';
+  if (url.startsWith('/collections/')) return 'collection';
+  if (url.startsWith('http://') || url.startsWith('https://')) return 'custom';
+  return 'page';
+}
+
+function stripPrefix(url: string, mode: LinkMode): string {
+  if (!url) return '';
+  if (mode === 'product') return url.replace(/^\/products\//, '');
+  if (mode === 'collection') return url.replace(/^\/collections\//, '');
+  if (mode === 'page') return url.replace(/^\//, '');
+  return url;
+}
+
+function buildUrl(mode: LinkMode, value: string): string {
+  const v = (value || '').trim();
+  if (!v) return '';
+  if (mode === 'product') return `/products/${v.replace(/^\//, '')}`;
+  if (mode === 'collection') return `/collections/${v.replace(/^\//, '')}`;
+  if (mode === 'page') return v.startsWith('/') ? v : `/${v}`;
+  return v;
+}
 
 interface SiteSettingsState {
   siteName: string;
@@ -95,7 +125,14 @@ interface SiteSettingsState {
   subscriptionFaq: FaqItem[];
   subscriptionFaqCta: string;
   announcements: AnnouncementItem[];
+  homeCollectionCards: HomeCollectionCard[];
 }
+
+const DEFAULT_HOME_COLLECTION_CARDS: HomeCollectionCard[] = [
+  { id: 'hc1', image: '', title: '', subtitle: '', ctaUrl: '' },
+  { id: 'hc2', image: '', title: '', subtitle: '', ctaUrl: '' },
+  { id: 'hc3', image: '', title: '', subtitle: '', ctaUrl: '' },
+];
 
 const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
   { id: 'a1', text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
@@ -313,6 +350,7 @@ const defaultSettings: SiteSettingsState = {
   subscriptionFaq: DEFAULT_SUB_FAQ,
   subscriptionFaqCta: 'Kahveleri Keşfet',
   announcements: DEFAULT_ANNOUNCEMENTS,
+  homeCollectionCards: DEFAULT_HOME_COLLECTION_CARDS,
 };
 
 export default function SiteSettingsPage() {
@@ -320,6 +358,42 @@ export default function SiteSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  // Per-card transient link mode; URL itself is the source of truth in settings.homeCollectionCards
+  const [cardLinkModes, setCardLinkModes] = useState<LinkMode[]>(['product', 'product', 'product']);
+  const [productOpts, setProductOpts] = useState<PickerOption[]>([]);
+  const [collectionOpts, setCollectionOpts] = useState<PickerOption[]>([]);
+  const [pageOpts, setPageOpts] = useState<PickerOption[]>([]);
+
+  // Load picker options once
+  useEffect(() => {
+    productsApi.getProducts({ limit: 500 }).then((res: any) => {
+      const list = res?.data?.data || res?.data || res || [];
+      setProductOpts(
+        (Array.isArray(list) ? list : []).map((p: any) => ({
+          slug: p.slug || p.handle || '',
+          label: p.title || p.name || p.slug || '',
+        })).filter((o) => o.slug),
+      );
+    }).catch(() => {});
+    collectionsApi.getCollections().then((res: any) => {
+      const list = res?.data?.data || res?.data || res || [];
+      setCollectionOpts(
+        (Array.isArray(list) ? list : []).map((c: any) => ({
+          slug: c.slug || c.handle || '',
+          label: c.name || c.title || c.slug || '',
+        })).filter((o) => o.slug),
+      );
+    }).catch(() => {});
+    websiteApi.getPages().then((res: any) => {
+      const list = res?.data?.data || res?.data || res || [];
+      setPageOpts(
+        (Array.isArray(list) ? list : []).map((p: any) => ({
+          slug: p.slug || '',
+          label: p.title || p.slug || '',
+        })).filter((o) => o.slug),
+      );
+    }).catch(() => {});
+  }, []);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -417,7 +491,14 @@ export default function SiteSettingsPage() {
         announcements: Array.isArray(data.announcements) && data.announcements.length
           ? data.announcements
           : DEFAULT_ANNOUNCEMENTS,
+        homeCollectionCards: Array.isArray(data.homeCollectionCards) && data.homeCollectionCards.length === 3
+          ? data.homeCollectionCards
+          : DEFAULT_HOME_COLLECTION_CARDS,
       });
+      const loadedCards: HomeCollectionCard[] = Array.isArray(data.homeCollectionCards) && data.homeCollectionCards.length === 3
+        ? data.homeCollectionCards
+        : DEFAULT_HOME_COLLECTION_CARDS;
+      setCardLinkModes(loadedCards.map((c) => detectLinkMode(c.ctaUrl || '')));
     } catch (e: any) {
       setFetchError(e?.message || 'Ayarlar yuklenemedi. Sayfa verilerinizi kaybetmemek icin Kaydet butonu devre disi.');
     }
@@ -925,6 +1006,89 @@ export default function SiteSettingsPage() {
                   <TextField fullWidth size="small" label="Alt Etiket" value={settings.homeViewAllCaption}
                     onChange={(e) => setSettings({ ...settings, homeViewAllCaption: e.target.value })} />
                 </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Anasayfa Koleksiyon Kartları (3 adet) */}
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Anasayfa Koleksiyon Kartları (3 adet)"
+              subheader='Anasayfada "Daha fazla keşfet" başlığı altında yan yana gösterilen 3 büyük kart. Her kart bir görsel, başlık, alt başlık ve hedef linkten oluşur. Bu alanı doldurursanız anasayfa BURADAN beslenir; tüm alanları boş bırakırsanız eski Koleksiyonlar sayfası kullanılır.'
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={3}>
+                {settings.homeCollectionCards.map((card, idx) => {
+                  const mode = cardLinkModes[idx] || 'product';
+                  const updateCard = (partial: Partial<HomeCollectionCard>) => {
+                    const next = [...settings.homeCollectionCards];
+                    next[idx] = { ...next[idx], ...partial };
+                    setSettings({ ...settings, homeCollectionCards: next });
+                  };
+                  const updateMode = (m: LinkMode) => {
+                    const nextModes = [...cardLinkModes];
+                    nextModes[idx] = m;
+                    setCardLinkModes(nextModes);
+                    // Reset URL on mode switch — prefixes don't translate cleanly
+                    updateCard({ ctaUrl: '' });
+                  };
+                  const opts = mode === 'product' ? productOpts : mode === 'collection' ? collectionOpts : pageOpts;
+                  const currentSlug = stripPrefix(card.ctaUrl, mode);
+                  const selectedOpt = opts.find((o) => o.slug === currentSlug) || null;
+                  const labelMap: Record<LinkMode, string> = { product: 'Ürün Seç', collection: 'Koleksiyon Seç', page: 'Sayfa Seç', custom: '' };
+                  return (
+                    <Grid size={{ xs: 12, md: 4 }} key={card.id}>
+                      <Box sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, display: 'block', mb: 1 }}>
+                          Kart {idx + 1}
+                        </Typography>
+                        <ImageUpload
+                          label="Görsel (önerilen 800×600px)"
+                          value={card.image}
+                          onChange={(v) => updateCard({ image: typeof v === 'string' ? v : v[0] || '' })}
+                        />
+                        <TextField fullWidth size="small" label="Üst Etiket (küçük yazı)" sx={{ mt: 2 }}
+                          value={card.title}
+                          onChange={(e) => updateCard({ title: e.target.value })}
+                          placeholder="Müşterilerimizin En Sevdiği Kahveler"
+                          helperText="Kartın üstünde küçük yazı olarak görünür (kategori/eyebrow)" />
+                        <TextField fullWidth size="small" label="Açıklama (büyük başlık)" multiline rows={2} sx={{ mt: 2 }}
+                          value={card.subtitle}
+                          onChange={(e) => updateCard({ subtitle: e.target.value })}
+                          placeholder="Müşterilerimizin en çok tercih ettiği taze kavrulmuş kahveler."
+                          helperText="Kartın ortasındaki büyük yazı (asıl mesaj)" />
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 2, mb: 1, display: 'block' }}>
+                          Butonun Yönlendireceği Yer
+                        </Typography>
+                        <ToggleButtonGroup size="small" exclusive fullWidth value={mode}
+                          onChange={(_, v: LinkMode | null) => v && updateMode(v)} sx={{ mb: 1 }}>
+                          <ToggleButton value="product">Ürün</ToggleButton>
+                          <ToggleButton value="collection">Koleksiyon</ToggleButton>
+                          <ToggleButton value="page">Sayfa</ToggleButton>
+                          <ToggleButton value="custom">Özel URL</ToggleButton>
+                        </ToggleButtonGroup>
+                        {mode === 'custom' ? (
+                          <TextField fullWidth size="small" label="Tam URL"
+                            value={card.ctaUrl}
+                            onChange={(e) => updateCard({ ctaUrl: e.target.value })}
+                            placeholder="https://pureolentia.com/b2b" />
+                        ) : (
+                          <Autocomplete size="small" options={opts}
+                            getOptionLabel={(o) => o?.label || ''}
+                            isOptionEqualToValue={(a, b) => a.slug === b.slug}
+                            value={selectedOpt}
+                            onChange={(_, v) => updateCard({ ctaUrl: v ? buildUrl(mode, v.slug) : '' })}
+                            noOptionsText="Sonuç yok"
+                            renderInput={(params) => <TextField {...params} label={labelMap[mode]} />}
+                          />
+                        )}
+                      </Box>
+                    </Grid>
+                  );
+                })}
               </Grid>
             </CardContent>
           </Card>

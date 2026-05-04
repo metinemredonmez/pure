@@ -44,14 +44,18 @@ const SectionCollectionSlider = ({
         {heading}
       </Heading>
 
-      <div className="embla pl-container" ref={emblaRef}>
+      <div className="embla pl-container pr-container" ref={emblaRef}>
         <div className="-ms-5 embla__container">
           {collections.map((collection) => (
             <div
               key={collection.id}
               className="max-w-2xl embla__slide basis-11/12 ps-5 sm:basis-2/3 lg:basis-1/3"
             >
-              <CollectionCard3 collection={collection} ctaLabel={cardCtaLabel} />
+              <CollectionCard3
+                collection={collection}
+                ctaLabel={cardCtaLabel}
+                href={(collection as any).cardHref}
+              />
             </div>
           ))}
         </div>

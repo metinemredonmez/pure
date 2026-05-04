@@ -8,10 +8,13 @@ interface Props {
   className?: string
   collection: TCollection
   ctaLabel?: string
+  /** Override the card's link target. Falls back to `/collections/${handle}` when omitted. */
+  href?: string
 }
 
-const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'Hepsini Gör' }) => {
-  if (!collection.handle) {
+const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'Hepsini Gör', href }) => {
+  const linkHref = href || (collection.handle ? '/collections/' + collection.handle : null)
+  if (!linkHref) {
     return null
   }
 
@@ -54,7 +57,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
         <span className="absolute inset-0 bg-black/10 opacity-0 transition-opacity group-hover/CollectionCard3:opacity-40"></span>
       </div>
 
-      <Link href={'/collections/' + collection.handle} className="absolute inset-0" />
+      <Link href={linkHref} className="absolute inset-0" />
     </div>
   )
 }
