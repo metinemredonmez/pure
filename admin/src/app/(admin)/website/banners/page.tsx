@@ -45,8 +45,10 @@ function resolveImagePreviewUrl(url: string): string {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://')) return url;
   if (url.startsWith('/uploads/')) {
+    // Anchor `/api` to end of string — `api.pureolentia.com` subdomain
+    // would otherwise be corrupted by an unanchored replace.
     const api = process.env.NEXT_PUBLIC_API_URL || '';
-    return api.replace('/api', '') + url;
+    return api.replace(/\/api\/?$/, '') + url;
   }
   // Legacy paths (/hero/...) were stored relative to the public website
   const web = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pureolentia.com';
@@ -251,7 +253,7 @@ export default function BannersPage() {
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField fullWidth label="Buton Linki" size="small" value={form.ctaUrl}
                 onChange={(e) => setForm({ ...form, ctaUrl: e.target.value })}
-                helperText="Örn: /products/turk-kahvesi-200gr" />
+                helperText="Örn: /products/turk-kahvesi-200gr  •  veya tam URL: https://pureolentia.com/b2b" />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="caption" color="text.secondary" gutterBottom component="div">

@@ -11,8 +11,10 @@ function resolveImagePreviewUrl(url: string): string {
   if (!url) return '';
   if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('blob:')) return url;
   if (url.startsWith('/uploads/')) {
+    // Strip trailing /api or /api/ — anchored to end so the literal `api` in
+    // the `api.pureolentia.com` subdomain isn't matched.
     const apiBase = process.env.NEXT_PUBLIC_API_URL || '';
-    return apiBase.replace('/api', '') + url;
+    return apiBase.replace(/\/api\/?$/, '') + url;
   }
   const webBase = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pureolentia.com';
   return url.startsWith('/') ? webBase + url : url;
