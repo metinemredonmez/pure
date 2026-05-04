@@ -71,6 +71,10 @@ export class SubscriptionService implements OnModuleInit {
     availableDurations?: any;
     availablePeriods?: any;
     availableGrinds?: any;
+    availableGrams?: any;
+    defaultGramsId?: string;
+    defaultDuration?: number;
+    defaultPeriod?: number;
   }) {
     return this.prisma.subPlan.create({
       data: {
@@ -87,6 +91,10 @@ export class SubscriptionService implements OnModuleInit {
         availableDurations: data.availableDurations ?? undefined,
         availablePeriods: data.availablePeriods ?? undefined,
         availableGrinds: data.availableGrinds ?? undefined,
+        availableGrams: data.availableGrams ?? undefined,
+        defaultGramsId: data.defaultGramsId ?? null,
+        defaultDuration: data.defaultDuration ?? null,
+        defaultPeriod: data.defaultPeriod ?? null,
       },
     });
   }
@@ -105,6 +113,10 @@ export class SubscriptionService implements OnModuleInit {
     availableDurations: any;
     availablePeriods: any;
     availableGrinds: any;
+    availableGrams: any;
+    defaultGramsId: string | null;
+    defaultDuration: number | null;
+    defaultPeriod: number | null;
   }>) {
     return this.prisma.subPlan.update({
       where: { id },

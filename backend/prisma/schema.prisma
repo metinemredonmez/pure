@@ -966,6 +966,13 @@ model SubPlan {
   availableDurations Json?
   availablePeriods   Json?
   availableGrinds    Json?
+  // Per-shipment gram options allowed for this plan (subset of global subscriptionGrams).
+  // Empty/null → all global options allowed.
+  availableGrams     Json?
+  // Default selections shown when customer opens this plan
+  defaultGramsId     String?
+  defaultDuration    Int?
+  defaultPeriod      Int?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime @updatedAt
   subscriptions        Subscription[] @relation("activeSubscriptions")

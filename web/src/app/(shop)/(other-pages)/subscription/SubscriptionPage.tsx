@@ -243,7 +243,9 @@ export default function SubscriptionPage({
       return {
         id: p.slug || p.id,
         slugs: inferred.slugs.length ? inferred.slugs : [p.slug].filter(Boolean),
-        title: `Abonelik No.0${i + 1}`,
+        // Plan adı admin'den geliyor — "Abonelik No.0X" hardcoded başlık kaldırıldı.
+        // Admin "Ev Başlangıç Paketi" yazınca web'de aynı görünür.
+        title: p.name || `Abonelik No.0${i + 1}`,
         name: p.name,
         fallbackImage: (p as any).image || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
         grind: inferred.grind,
@@ -286,18 +288,38 @@ export default function SubscriptionPage({
     return grindsMap
   }, [activePlan, grindsMap])
 
-  // Reset duration/period if effective list changes and current value isn't available
+  // Plan-specific gram options (admin: availableGrams). Empty/missing → all global options
+  const effectiveGramsList = useMemo(() => {
+    const planGrams = (activePlan as any)?.availableGrams
+    if (Array.isArray(planGrams) && planGrams.length) {
+      const ids = planGrams.map((g: any) => g?.id || g).filter(Boolean)
+      const filtered = gramsList.filter((g) => ids.includes(g.id))
+      if (filtered.length) return filtered
+    }
+    return gramsList
+  }, [activePlan, gramsList])
+
+  // Reset duration/period/grams when plan changes — apply plan defaults if available
   useEffect(() => {
-    if (effectiveDurations.length && !effectiveDurations.find((d) => d.months === duration)) {
+    if (!activePlan) return
+    const def = activePlan as any
+    if (typeof def.defaultDuration === 'number' && effectiveDurations.find((d) => d.months === def.defaultDuration)) {
+      setDuration(def.defaultDuration)
+    } else if (effectiveDurations.length && !effectiveDurations.find((d) => d.months === duration)) {
       setDuration(effectiveDurations[0].months)
     }
-  }, [effectiveDurations, duration])
-
-  useEffect(() => {
-    if (effectivePeriods.length && !effectivePeriods.find((p) => p.weeks === period)) {
+    if (typeof def.defaultPeriod === 'number' && effectivePeriods.find((p) => p.weeks === def.defaultPeriod)) {
+      setPeriod(def.defaultPeriod)
+    } else if (effectivePeriods.length && !effectivePeriods.find((p) => p.weeks === period)) {
       setPeriod(effectivePeriods[0].weeks)
     }
-  }, [effectivePeriods, period])
+    if (typeof def.defaultGramsId === 'string' && effectiveGramsList.find((g) => g.id === def.defaultGramsId)) {
+      setGramsOpt(def.defaultGramsId)
+    } else if (effectiveGramsList.length && !effectiveGramsList.find((g) => g.id === gramsOpt)) {
+      setGramsOpt(effectiveGramsList[0].id)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePlan?.id, effectiveDurations, effectivePeriods, effectiveGramsList])
 
   // Products of selected category
   const categoryProducts = useMemo(() => {
@@ -576,7 +598,7 @@ export default function SubscriptionPage({
                   onChange={(e) => setGramsOpt(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {gramsList.map((g) => (
+                  {effectiveGramsList.map((g) => (
                     <option key={g.id} value={g.id}>
                       {g.label}
                     </option>
@@ -599,24 +621,34 @@ export default function SubscriptionPage({
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-200 p-4 dark:bg-amber-900/20 dark:border-amber-700/40">
-              <div className="flex items-start gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40">
-                  ☕
+            {/* CTA — toplam özeti: per-shipment × shipments = total */}
+            {(() => {
+              const totalShipments = duration * periodsPerMonth
+              const perShipmentGrams = gramsInfo.grams * gramsInfo.bags
+              const totalGrams = perShipmentGrams * totalShipments
+              const fmtGr = (g: number) => g >= 1000 ? `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} kg` : `${g} g`
+              const periodLabel = period === 4 ? 'ayda 1' : period === 2 ? '15 günde 1' : period === 1 ? 'haftada 1' : `${period} haftada 1`
+              return (
+                <div className="mt-8 rounded-2xl bg-amber-50 border border-amber-200 p-4 dark:bg-amber-900/20 dark:border-amber-700/40">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40">
+                      ☕
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+                        {duration} Aylık Abonelik — Tek Ödeme
+                      </p>
+                      <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
+                        Her gönderimde <strong>{fmtGr(perShipmentGrams)}</strong> taze kavrulmuş kahve, {periodLabel} sıklığıyla {duration} ay boyunca <strong>{totalShipments} kez</strong> kargolanır.
+                      </p>
+                      <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
+                        Toplam: <strong>{fmtGr(totalGrams)}</strong> kahve · <strong>{formatPrice(totalPrice)}</strong> tek seferde ödenir.
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
-                    {duration} Aylık Abonelik — Tek Ödeme
-                  </p>
-                  <p className="mt-1 text-xs text-amber-900/80 dark:text-amber-200/80 leading-snug">
-                    Toplam <strong>{formatPrice(totalPrice)}</strong> tek seferde ödenir. Sonrasında{' '}
-                    her {period === 4 ? 'ay' : `${period} haftada bir`} taze kavrulmuş kahveniz adresinize kargolanır
-                    (toplam {duration * periodsPerMonth} teslimat).
-                  </p>
-                </div>
-              </div>
-            </div>
+              )
+            })()}
 
             <button
               onClick={addToCart}

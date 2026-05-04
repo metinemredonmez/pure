@@ -20,6 +20,8 @@ interface DurationOption { months: number; label: string }
 interface PeriodOption { weeks: number; label: string }
 interface GrindGroup { kind: string; options: string[] }
 
+interface GramOption { id: string; label: string; grams: number; bags: number }
+
 interface SubPlan {
   id: string;
   name: string;
@@ -35,6 +37,10 @@ interface SubPlan {
   availableDurations?: DurationOption[] | null;
   availablePeriods?: PeriodOption[] | null;
   availableGrinds?: GrindGroup[] | null;
+  availableGrams?: GramOption[] | null;
+  defaultGramsId?: string | null;
+  defaultDuration?: number | null;
+  defaultPeriod?: number | null;
   _count?: { subscriptions: number };
 }
 
@@ -70,12 +76,40 @@ export default function SubscriptionPlansPage() {
     availableDurations: DEFAULT_DURATIONS as DurationOption[],
     availablePeriods: DEFAULT_PERIODS as PeriodOption[],
     availableGrinds: DEFAULT_GRINDS as GrindGroup[],
+    availableGrams: [] as GramOption[],
+    defaultGramsId: '' as string,
+    defaultDuration: null as number | null,
+    defaultPeriod: null as number | null,
   });
+  const [globalGrams, setGlobalGrams] = useState<GramOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SubPlan | null>(null);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => { fetchPlans(); }, []);
+
+  // Site Ayarları'ndan global gram listesi (planın availableGrams whitelisti için)
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/public/site-settings`)
+      .then((r) => r.json())
+      .then((res) => {
+        const s = res?.data || res || {};
+        if (Array.isArray(s.subscriptionGrams)) {
+          const norm: GramOption[] = s.subscriptionGrams
+            .map((g: any) => {
+              const grams = Number(g.grams);
+              const bags = Number(g.bags) || 1;
+              if (!grams || grams <= 0) return null;
+              const label = g.label || (grams >= 1000 ? `${bags} x ${grams / 1000} kg` : `${bags} x ${grams} g`);
+              const id = g.id || `${bags}x${grams}`;
+              return { id, label, grams, bags };
+            })
+            .filter(Boolean);
+          setGlobalGrams(norm);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const fetchPlans = async () => {
     setLoading(true);
@@ -98,6 +132,10 @@ export default function SubscriptionPlansPage() {
         availableDurations: Array.isArray(plan.availableDurations) && plan.availableDurations.length ? plan.availableDurations : DEFAULT_DURATIONS,
         availablePeriods: Array.isArray(plan.availablePeriods) && plan.availablePeriods.length ? plan.availablePeriods : DEFAULT_PERIODS,
         availableGrinds: Array.isArray(plan.availableGrinds) && plan.availableGrinds.length ? plan.availableGrinds : DEFAULT_GRINDS,
+        availableGrams: Array.isArray(plan.availableGrams) ? plan.availableGrams : [],
+        defaultGramsId: plan.defaultGramsId || '',
+        defaultDuration: plan.defaultDuration ?? null,
+        defaultPeriod: plan.defaultPeriod ?? null,
       });
     } else {
       setEditingPlan(null);
@@ -105,6 +143,7 @@ export default function SubscriptionPlansPage() {
         name: '', slug: '', description: '', image: '', monthlyWeight: 250, priceMonthly: 0,
         discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1,
         availableDurations: DEFAULT_DURATIONS, availablePeriods: DEFAULT_PERIODS, availableGrinds: DEFAULT_GRINDS,
+        availableGrams: [], defaultGramsId: '', defaultDuration: null, defaultPeriod: null,
       });
     }
     setDialogOpen(true);
@@ -237,6 +276,83 @@ export default function SubscriptionPlansPage() {
               <FormControlLabel control={<Switch checked={form.freeShipping} onChange={(e) => setForm({ ...form, freeShipping: e.target.checked })} size="small" />} label="Ucretsiz Kargo" />
               <FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} size="small" />} label="Aktif" />
             </Stack>
+
+            <Divider sx={{ my: 1 }} />
+
+            {/* Plan Varsayılanları — müşteri planı açtığında pre-selected değerler */}
+            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                Müşteri Bu Planı Açınca Pre-Selected Değerler
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+                Plan ilk açıldığında bu seçenekler otomatik dolu gelir. Müşteri istediği gibi değiştirebilir.
+              </Typography>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField select fullWidth size="small" label="Varsayılan Gramaj"
+                  SelectProps={{ native: true }}
+                  value={form.defaultGramsId || ''}
+                  onChange={(e) => setForm({ ...form, defaultGramsId: e.target.value })}
+                  helperText="Site Ayarları → Abonelik → Gramaj listesinden">
+                  <option value="">— Seçim yok (ilk gramajı kullan) —</option>
+                  {globalGrams.map((g) => (
+                    <option key={g.id} value={g.id}>{g.label}</option>
+                  ))}
+                </TextField>
+                <TextField select fullWidth size="small" label="Varsayılan Süre (ay)"
+                  SelectProps={{ native: true }}
+                  value={form.defaultDuration ?? ''}
+                  onChange={(e) => setForm({ ...form, defaultDuration: e.target.value ? Number(e.target.value) : null })}>
+                  <option value="">— Seçim yok —</option>
+                  {form.availableDurations.map((d) => (
+                    <option key={d.months} value={d.months}>{d.label}</option>
+                  ))}
+                </TextField>
+                <TextField select fullWidth size="small" label="Varsayılan Periyot (hafta)"
+                  SelectProps={{ native: true }}
+                  value={form.defaultPeriod ?? ''}
+                  onChange={(e) => setForm({ ...form, defaultPeriod: e.target.value ? Number(e.target.value) : null })}>
+                  <option value="">— Seçim yok —</option>
+                  {form.availablePeriods.map((p) => (
+                    <option key={p.weeks} value={p.weeks}>{p.label}</option>
+                  ))}
+                </TextField>
+              </Stack>
+            </Box>
+
+            {/* İzinli Gramajlar — bu plan için sınırlı seçenek */}
+            <Box>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                Bu Plan için İzinli Gramajlar
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                Boş bırakılırsa müşteri tüm Site Ayarları gramajlarından seçebilir. Sadece belirli gramajlara kısıtlamak için aşağıdan seç.
+              </Typography>
+              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                {globalGrams.map((g) => {
+                  const isSelected = form.availableGrams.some((sg) => sg.id === g.id);
+                  return (
+                    <Chip key={g.id}
+                      label={g.label}
+                      size="small"
+                      color={isSelected ? 'primary' : 'default'}
+                      variant={isSelected ? 'filled' : 'outlined'}
+                      onClick={() => {
+                        const next = isSelected
+                          ? form.availableGrams.filter((sg) => sg.id !== g.id)
+                          : [...form.availableGrams, g];
+                        setForm({ ...form, availableGrams: next });
+                      }}
+                      sx={{ cursor: 'pointer' }}
+                    />
+                  );
+                })}
+                {globalGrams.length === 0 && (
+                  <Typography variant="caption" color="text.secondary">
+                    Site Ayarları → Abonelik → Gramaj Seçenekleri'nden önce ekleme yap.
+                  </Typography>
+                )}
+              </Stack>
+            </Box>
 
             <Divider sx={{ my: 1 }} />
 
