@@ -549,8 +549,8 @@ export default function SubscriptionPage({
             {/* Aylık ortalama + plan baz fiyatı — saydam breakdown */}
             {(() => {
               const monthlyAvg = duration > 0 ? totalPrice / duration : 0
-              const planMonthly = cat.basePrice
-              const planMonthlyWeight = cat.monthlyWeight || 1000
+              const planMonthly = cat.basePrice || 0
+              const planMonthlyWeight = (cat.monthlyWeight || 1000) as number
               const fmtKg = (g: number) => g >= 1000 ? `${g / 1000} kg` : `${g} g`
               return (
                 <div className="mt-2 rounded-lg bg-neutral-50 dark:bg-neutral-800/50 px-3 py-2 text-[11px] text-neutral-600 dark:text-neutral-400 leading-relaxed">
