@@ -192,8 +192,8 @@ export const apiGetMe = (token: string) =>
   fetchAPI<any>('/auth/me', { headers: authHeaders(token), revalidate: 0 })
 export const apiForgotPassword = (email: string) =>
   fetchAPI<any>('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }), revalidate: 0 })
-export const apiResetPassword = (token: string, password: string) =>
-  fetchAPI<any>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }), revalidate: 0 })
+export const apiResetPassword = (token: string, newPassword: string) =>
+  fetchAPI<any>('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, newPassword }), revalidate: 0 })
 export const apiChangePassword = (token: string, data: any) =>
   fetchAPI<any>('/auth/change-password', { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiRefreshToken = (refreshToken: string) =>

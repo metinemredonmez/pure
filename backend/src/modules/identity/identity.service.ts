@@ -392,8 +392,9 @@ export class IdentityService {
       },
     });
 
-    // Email gönder
-    const resetLink = `${this.configService.get('app.frontendUrl') || 'http://localhost:3000'}/auth/reset-password?token=${token}`;
+    // Email gönder — Next.js (auth) bir route group, public URL /reset-password (no /auth/ prefix)
+    const frontendUrl = this.configService.get('app.frontendUrl') || 'https://pureolentia.com';
+    const resetLink = `${frontendUrl}/reset-password?token=${token}`;
     await this.notificationService.sendPasswordReset(email, resetLink);
 
     return {
