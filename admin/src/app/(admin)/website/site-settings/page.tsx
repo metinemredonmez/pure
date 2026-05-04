@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   Box, Typography, Card, TextField, Button, Grid, Divider, Skeleton,
   CardContent, CardHeader, ToggleButton, ToggleButtonGroup, Autocomplete,
+  Tabs, Tab,
 } from '@mui/material';
 import {
   Settings as SettingsIcon, Save as SaveIcon, Add as AddIcon,
@@ -426,6 +427,8 @@ export default function SiteSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  // Active tab in Site Ayarları (UI only, not persisted)
+  const [activeTab, setActiveTab] = useState<'genel' | 'anasayfa' | 'menuler' | 'abonelik' | 'b2b'>('genel');
   // Per-card transient link mode; URL itself is the source of truth in settings.homeCollectionCards
   const [cardLinkModes, setCardLinkModes] = useState<LinkMode[]>(['product', 'product', 'product']);
   const [productOpts, setProductOpts] = useState<PickerOption[]>([]);
@@ -609,8 +612,19 @@ export default function SiteSettingsPage() {
         }
       />
 
+      <Box sx={{ mt: 2, borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} variant="scrollable" scrollButtons="auto">
+          <Tab label="Genel" value="genel" />
+          <Tab label="Anasayfa" value="anasayfa" />
+          <Tab label="Menüler" value="menuler" />
+          <Tab label="Abonelik" value="abonelik" />
+          <Tab label="B2B / Kurumsal" value="b2b" />
+        </Tabs>
+      </Box>
+
       <Grid container spacing={3} sx={{ mt: 1 }}>
         {/* Genel */}
+        {activeTab === 'genel' && (
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader title="Genel Bilgiler" titleTypographyProps={{ fontSize: 15, fontWeight: 600 }} />
@@ -642,8 +656,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Iletisim */}
+        {activeTab === 'genel' && (
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader title="Iletisim Bilgileri" titleTypographyProps={{ fontSize: 15, fontWeight: 600 }} />
@@ -678,8 +694,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Sosyal Medya */}
+        {activeTab === 'genel' && (
         <Grid size={{ xs: 12, md: 6 }}>
           <Card>
             <CardHeader title="Sosyal Medya" titleTypographyProps={{ fontSize: 15, fontWeight: 600 }} />
@@ -709,8 +727,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Franchise Banner */}
+        {activeTab === 'b2b' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -729,8 +749,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Abonelik Ayarlari */}
+        {activeTab === 'abonelik' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -998,8 +1020,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Anasayfa Bölüm Başlıkları */}
+        {activeTab === 'anasayfa' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1081,8 +1105,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Anasayfa Koleksiyon Kartları (3 adet) */}
+        {activeTab === 'anasayfa' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1164,8 +1190,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Duyuru Çubuğu (Üst Bant) */}
+        {activeTab === 'anasayfa' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1211,8 +1239,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Anasayfa Promo Bölümleri */}
+        {activeTab === 'anasayfa' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1324,8 +1354,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* B2B Hero */}
+        {activeTab === 'b2b' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1367,8 +1399,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Footer Menü Grupları */}
+        {activeTab === 'menuler' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1436,16 +1470,17 @@ export default function SiteSettingsPage() {
                         />
                       </Grid>
                       <Grid size={{ xs: 9, sm: 5 }}>
-                        <TextField
-                          fullWidth size="small" label="URL (örn: /sss veya https://...)"
+                        <LinkPickerField
+                          label=""
                           value={item.href}
-                          onChange={(e) => {
+                          onChange={(v) => {
                             const arr = [...settings.footerMenus];
                             const items = [...arr[gIdx].items];
-                            items[iIdx] = { ...items[iIdx], href: e.target.value };
+                            items[iIdx] = { ...items[iIdx], href: v };
                             arr[gIdx] = { ...arr[gIdx], items };
                             setSettings({ ...settings, footerMenus: arr });
                           }}
+                          productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
                         />
                       </Grid>
                       <Grid size={{ xs: 3, sm: 2 }}>
@@ -1480,8 +1515,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Üst Menü (Navbar) */}
+        {activeTab === 'menuler' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1512,13 +1549,15 @@ export default function SiteSettingsPage() {
                         }} />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 5 }}>
-                      <TextField fullWidth size="small" label="URL (üst seviye link)" value={m.href}
-                        onChange={(e) => {
+                      <LinkPickerField label="URL (üst seviye link)"
+                        value={m.href}
+                        onChange={(v) => {
                           const arr = [...settings.navMenus];
-                          arr[mIdx] = { ...arr[mIdx], href: e.target.value };
+                          arr[mIdx] = { ...arr[mIdx], href: v };
                           setSettings({ ...settings, navMenus: arr });
                         }}
-                        helperText="# yazarsanız sadece dropdown açar" />
+                        productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                        helperText="# yazarsanız sadece dropdown açar (Özel URL → '#')" />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 2 }}>
                       <Button fullWidth size="small" color="error" variant="outlined"
@@ -1544,14 +1583,17 @@ export default function SiteSettingsPage() {
                           }} />
                       </Grid>
                       <Grid size={{ xs: 9, sm: 5 }}>
-                        <TextField fullWidth size="small" label="URL" value={c.href}
-                          onChange={(e) => {
+                        <LinkPickerField label=""
+                          value={c.href}
+                          onChange={(v) => {
                             const arr = [...settings.navMenus];
                             const ch = [...(arr[mIdx].children || [])];
-                            ch[cIdx] = { ...ch[cIdx], href: e.target.value };
+                            ch[cIdx] = { ...ch[cIdx], href: v };
                             arr[mIdx] = { ...arr[mIdx], children: ch };
                             setSettings({ ...settings, navMenus: arr });
-                          }} />
+                          }}
+                          productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                        />
                       </Grid>
                       <Grid size={{ xs: 3, sm: 2 }}>
                         <Button fullWidth size="small" color="error"
@@ -1581,8 +1623,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Mega Menu */}
+        {activeTab === 'menuler' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1629,14 +1673,17 @@ export default function SiteSettingsPage() {
                           }} />
                       </Grid>
                       <Grid size={{ xs: 9, sm: 5 }}>
-                        <TextField fullWidth size="small" label="URL" value={it.href}
-                          onChange={(e) => {
+                        <LinkPickerField label=""
+                          value={it.href}
+                          onChange={(v) => {
                             const arr = [...settings.megaMenu];
                             const items = [...arr[gIdx].items];
-                            items[iIdx] = { ...items[iIdx], href: e.target.value };
+                            items[iIdx] = { ...items[iIdx], href: v };
                             arr[gIdx] = { ...arr[gIdx], items };
                             setSettings({ ...settings, megaMenu: arr });
-                          }} />
+                          }}
+                          productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                        />
                       </Grid>
                       <Grid size={{ xs: 3, sm: 2 }}>
                         <Button fullWidth size="small" color="error"
@@ -1664,8 +1711,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* B2B Stats */}
+        {activeTab === 'b2b' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1707,8 +1756,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* B2B Features */}
+        {activeTab === 'b2b' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1764,8 +1815,10 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Abonelik Sayfası — Hero / Adımlar / SSS */}
+        {activeTab === 'abonelik' && (
         <Grid size={{ xs: 12 }}>
           <Card>
             <CardHeader
@@ -1898,6 +1951,7 @@ export default function SiteSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+        )}
 
         {/* Eski "Yasal Metinler" kartı kaldırıldı — yasal sayfalar artık
             Web Sitesi → Sayfalar (CMS) üzerinden yönetiliyor (kvkk, cerez-politikasi,
