@@ -12,10 +12,13 @@ export default function ForgotPasswordForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    // Capture form ref before any await — React recycles the synthetic event
+    // so e.currentTarget would be null after the network call below.
+    const form = e.currentTarget
     setStatus('loading')
     setErrorMsg('')
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
     const email = String(formData.get('email') || '').trim()
 
     if (!email) {
@@ -32,7 +35,7 @@ export default function ForgotPasswordForm() {
         return
       }
       setStatus('success')
-      ;(e.currentTarget as HTMLFormElement).reset()
+      form.reset()
     } catch {
       setStatus('error')
       setErrorMsg('Bir hata oluştu. Lütfen tekrar deneyin.')
