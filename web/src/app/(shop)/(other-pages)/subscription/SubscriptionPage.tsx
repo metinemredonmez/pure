@@ -320,7 +320,7 @@ export default function SubscriptionPage({
     // 2) Periyot + Gramaj — admin set etmediyse plan.monthlyWeight'i tutturan kombinasyon ara
     const adminPeriodSet = typeof def.defaultPeriod === 'number' && effectivePeriods.find((p) => p.weeks === def.defaultPeriod)
     const adminGramsSet = typeof def.defaultGramsId === 'string' && effectiveGramsList.find((g) => g.id === def.defaultGramsId)
-    const targetMonthlyWeight = Number(activePlan.monthlyWeight) || 0
+    const targetMonthlyWeight = Number((activePlan as any).monthlyWeight) || 0
 
     if (adminPeriodSet) setPeriod(def.defaultPeriod)
     if (adminGramsSet) setGramsOpt(def.defaultGramsId)
