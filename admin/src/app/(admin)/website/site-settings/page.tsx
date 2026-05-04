@@ -58,6 +58,68 @@ function buildUrl(mode: LinkMode, value: string): string {
   return v;
 }
 
+interface LinkPickerFieldProps {
+  value: string;
+  onChange: (next: string) => void;
+  label: string;
+  productOpts: PickerOption[];
+  collectionOpts: PickerOption[];
+  pageOpts: PickerOption[];
+  helperText?: string;
+}
+
+/**
+ * Self-contained link picker — toggle (Ürün/Koleksiyon/Sayfa/Özel URL)
+ * + autocomplete or text field. Stores final URL via onChange.
+ * Mode is derived from value initially, then kept in local state so
+ * empty values after toggle don't snap back.
+ */
+function LinkPickerField({
+  value, onChange, label, productOpts, collectionOpts, pageOpts, helperText,
+}: LinkPickerFieldProps) {
+  const [mode, setMode] = useState<LinkMode>(() => detectLinkMode(value));
+  const opts = mode === 'product' ? productOpts : mode === 'collection' ? collectionOpts : pageOpts;
+  const currentSlug = stripPrefix(value, mode);
+  const selected = opts.find((o) => o.slug === currentSlug) || null;
+  const placeholderMap: Record<LinkMode, string> = {
+    product: 'Ürün Seç', collection: 'Koleksiyon Seç', page: 'Sayfa Seç', custom: 'Tam URL',
+  };
+  return (
+    <Box>
+      {label && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+          {label}
+        </Typography>
+      )}
+      <ToggleButtonGroup size="small" exclusive fullWidth value={mode}
+        onChange={(_, v: LinkMode | null) => { if (!v) return; setMode(v); onChange(''); }}
+        sx={{ mb: 1 }}
+      >
+        <ToggleButton value="product">Ürün</ToggleButton>
+        <ToggleButton value="collection">Koleksiyon</ToggleButton>
+        <ToggleButton value="page">Sayfa</ToggleButton>
+        <ToggleButton value="custom">Özel URL</ToggleButton>
+      </ToggleButtonGroup>
+      {mode === 'custom' ? (
+        <TextField fullWidth size="small" label="Tam URL" placeholder="https://pureolentia.com/..."
+          value={value} onChange={(e) => onChange(e.target.value)}
+          helperText={helperText} />
+      ) : (
+        <Autocomplete size="small" options={opts}
+          getOptionLabel={(o) => o?.label || ''}
+          isOptionEqualToValue={(a, b) => a.slug === b.slug}
+          value={selected}
+          onChange={(_, v) => onChange(v ? buildUrl(mode, v.slug) : '')}
+          noOptionsText="Sonuç yok"
+          renderInput={(params) => (
+            <TextField {...params} label={placeholderMap[mode]} helperText={helperText} />
+          )}
+        />
+      )}
+    </Box>
+  );
+}
+
 interface SiteSettingsState {
   siteName: string;
   logo: string;
@@ -92,6 +154,9 @@ interface SiteSettingsState {
   promo3Title: string;
   promo3Subtitle: string;
   promo3Image: string;
+  promo1PrimaryUrl: string;
+  promo1SecondaryUrl: string;
+  promo2Url: string;
   // Anasayfa bölüm başlıkları
   homeCollectionsHeading: string;
   homeCollectionsSubHeading: string;
@@ -319,6 +384,9 @@ const defaultSettings: SiteSettingsState = {
   promo3Title: 'Fırsatları kaçırmayın.',
   promo3Subtitle: 'Yeni mahsul kahveler, özel indirimler ve kahve dünyasından haberler.',
   promo3Image: '',
+  promo1PrimaryUrl: '',
+  promo1SecondaryUrl: '',
+  promo2Url: '',
   homeCollectionsHeading: 'Daha fazla keşfet',
   homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
   homeNewArrivalsHeading: 'Yeni Gelenler',
@@ -444,6 +512,9 @@ export default function SiteSettingsPage() {
         promo3Title: data.promo3Title || defaultSettings.promo3Title,
         promo3Subtitle: data.promo3Subtitle || defaultSettings.promo3Subtitle,
         promo3Image: data.promo3Image || '',
+        promo1PrimaryUrl: data.promo1PrimaryUrl || '',
+        promo1SecondaryUrl: data.promo1SecondaryUrl || '',
+        promo2Url: data.promo2Url || '',
         homeCollectionsHeading: data.homeCollectionsHeading || defaultSettings.homeCollectionsHeading,
         homeCollectionsSubHeading: data.homeCollectionsSubHeading || defaultSettings.homeCollectionsSubHeading,
         homeNewArrivalsHeading: data.homeNewArrivalsHeading || defaultSettings.homeNewArrivalsHeading,
@@ -1174,6 +1245,24 @@ export default function SiteSettingsPage() {
                     onChange={(url) => setSettings({ ...settings, promo1Image: typeof url === 'string' ? url : '' })}
                   />
                 </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <LinkPickerField
+                    label='Birinci Buton (yukarıdaki "Buton Metni") — Hedefi'
+                    value={settings.promo1PrimaryUrl}
+                    onChange={(v) => setSettings({ ...settings, promo1PrimaryUrl: v })}
+                    productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                    helperText="Boş bırakılırsa varsayılan: /collections/all"
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <LinkPickerField
+                    label='İkinci Buton ("Abonelik Planları") — Hedefi'
+                    value={settings.promo1SecondaryUrl}
+                    onChange={(v) => setSettings({ ...settings, promo1SecondaryUrl: v })}
+                    productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                    helperText="Boş bırakılırsa varsayılan: /subscription"
+                  />
+                </Grid>
 
                 <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
 
@@ -1198,6 +1287,15 @@ export default function SiteSettingsPage() {
                     label="Sol Görsel (önerilen 800x800px, kare)"
                     value={settings.promo2Image}
                     onChange={(url) => setSettings({ ...settings, promo2Image: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <LinkPickerField
+                    label='"Hediye Setleri" Butonu — Hedefi'
+                    value={settings.promo2Url}
+                    onChange={(v) => setSettings({ ...settings, promo2Url: v })}
+                    productOpts={productOpts} collectionOpts={collectionOpts} pageOpts={pageOpts}
+                    helperText="Boş bırakılırsa varsayılan: /kurumsal-hediye"
                   />
                 </Grid>
 

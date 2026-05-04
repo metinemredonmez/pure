@@ -1,4 +1,5 @@
-import Logo from '@/components/Logo'
+import { Link } from '@/components/Link'
+import logoFallback from '@/images/logo.png'
 import backgroundLineSvg from '@/images/Moon.svg'
 import { resolveImageUrl } from '@/lib/adapters'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -19,6 +20,10 @@ const SectionPromo2 = async ({ className }: SectionPromo2Props) => {
     'Sevdiklerinize özel kahve deneyimi hediye edin. Taze kavrulmuş, özenle paketlenmiş.'
   const cta = settings.promo2Cta || 'Hediye Setleri'
   const promoImage = settings.promo2Image ? resolveImageUrl(settings.promo2Image) : '/hero/hediye-paketi.jpg'
+  const ctaUrl = settings.promo2Url || '/kurumsal-hediye'
+  // Use site logo from settings if uploaded; fallback to bundled asset
+  const siteLogo = settings.logo ? resolveImageUrl(settings.logo) : null
+  const siteName = settings.siteName || 'Pure Olentia'
 
   return (
     <div className={clsx(className, 'xl:pt-10 2xl:pt-24')}>
@@ -28,13 +33,27 @@ const SectionPromo2 = async ({ className }: SectionPromo2Props) => {
         </div>
 
         <div className="relative max-w-lg lg:w-[45%]">
-          <Logo className="w-28" />
+          <Link href="/" className="flex items-center gap-2 text-neutral-950 dark:text-neutral-50">
+            {siteLogo ? (
+              <Image
+                src={siteLogo}
+                alt={siteName}
+                width={40}
+                height={40}
+                className="rounded-full"
+                unoptimized={siteLogo.startsWith('http') || siteLogo.startsWith('/uploads')}
+              />
+            ) : (
+              <Image src={logoFallback} alt={siteName} width={40} height={40} className="rounded-full" />
+            )}
+            <span className="text-xl font-semibold tracking-tight">{siteName}</span>
+          </Link>
           <h2 className="mt-6 text-3xl leading-[1.13]! font-semibold tracking-tight sm:mt-10 sm:text-4xl xl:text-5xl 2xl:text-6xl">
             {title}
           </h2>
           <span className="mt-6 block text-neutral-500 dark:text-neutral-400">{subtitle}</span>
           <div className="mt-6 flex space-x-2 sm:mt-12 sm:space-x-5">
-            <ButtonPrimary href="/kurumsal-hediye">{cta}</ButtonPrimary>
+            <ButtonPrimary href={ctaUrl}>{cta}</ButtonPrimary>
           </div>
         </div>
 

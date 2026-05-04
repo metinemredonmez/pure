@@ -116,6 +116,10 @@ export interface SiteSettings {
   promo3Title: string
   promo3Subtitle: string
   promo3Image: string
+  // Promo CTA links (boş bırakılırsa kod içindeki default hardcoded URL'ye düşer)
+  promo1PrimaryUrl: string
+  promo1SecondaryUrl: string
+  promo2Url: string
   homeCollectionsHeading: string
   homeCollectionsSubHeading: string
   homeNewArrivalsHeading: string
@@ -180,6 +184,9 @@ const DEFAULTS: SiteSettings = {
   promo3Title: '',
   promo3Subtitle: '',
   promo3Image: '',
+  promo1PrimaryUrl: '',
+  promo1SecondaryUrl: '',
+  promo2Url: '',
   homeCollectionsHeading: 'Daha fazla keşfet',
   homeCollectionsSubHeading: 'Sizin için seçilmiş koleksiyonlar',
   homeNewArrivalsHeading: 'Yeni Gelenler',

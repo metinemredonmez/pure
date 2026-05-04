@@ -18,6 +18,8 @@ const SectionPromo1 = async ({ className = '' }: SectionPromo1Props) => {
     settings.promo1Subtitle || 'Pure Olentia ile ücretsiz kargo ve abonelik indirimi fırsatı.'
   const cta = settings.promo1Cta || 'Kahveleri İncele'
   const customImage = settings.promo1Image ? resolveImageUrl(settings.promo1Image) : ''
+  const primaryUrl = settings.promo1PrimaryUrl || '/collections/all'
+  const secondaryUrl = settings.promo1SecondaryUrl || '/subscription'
 
   return (
     <div className={`relative flex flex-col items-center lg:flex-row ${className}`}>
@@ -28,8 +30,8 @@ const SectionPromo1 = async ({ className = '' }: SectionPromo1Props) => {
         </h2>
         <span className="mt-6 block text-neutral-500 dark:text-neutral-400">{subtitle}</span>
         <div className="mt-6 flex flex-wrap gap-2 sm:mt-12 sm:gap-x-5">
-          <ButtonPrimary href="/collections/all">{cta}</ButtonPrimary>
-          <ButtonSecondary href="/subscription" className="border border-neutral-100 dark:border-neutral-700">
+          <ButtonPrimary href={primaryUrl}>{cta}</ButtonPrimary>
+          <ButtonSecondary href={secondaryUrl} className="border border-neutral-100 dark:border-neutral-700">
             Abonelik Planları
           </ButtonSecondary>
         </div>
