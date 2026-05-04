@@ -4,6 +4,7 @@ import { apiResetPassword } from '@/lib/api'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
@@ -14,6 +15,8 @@ export default function ResetPasswordForm() {
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
+  // Token-level errors (used/expired/invalid) — show "Yeni Bağlantı Talep Et" CTA instead of retry
+  const [tokenInvalid, setTokenInvalid] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -44,8 +47,13 @@ export default function ResetPasswordForm() {
     try {
       const res = (await apiResetPassword(token, password)) as any
       if (res?.success === false) {
+        const msg = (res?.message as string) || 'Şifre güncellenemedi.'
+        // Detect token-level errors so we can show the "yeni bağlantı talep et" CTA
+        const isTokenIssue =
+          /bağlantı|token|geçersiz|süresi|kullanılmış/i.test(msg) || res?.statusCode === 400
         setStatus('error')
-        setErrorMsg(res?.message || 'Şifre güncellenemedi. Token süresi dolmuş olabilir.')
+        setErrorMsg(msg)
+        if (isTokenIssue) setTokenInvalid(true)
         return
       }
       setStatus('success')
@@ -97,14 +105,26 @@ export default function ResetPasswordForm() {
             </div>
           )}
           {status === 'error' && errorMsg && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {errorMsg}
+            <div className="space-y-3">
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+                {errorMsg}
+              </div>
+              {tokenInvalid && (
+                <Link
+                  href="/forgot-password"
+                  className="block w-full rounded-full bg-primary-700 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-primary-800"
+                >
+                  Yeni Şifre Sıfırlama Bağlantısı Talep Et
+                </Link>
+              )}
             </div>
           )}
 
-          <ButtonPrimary className="w-full" type="submit" disabled={status === 'loading' || status === 'success'}>
-            {status === 'loading' ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
-          </ButtonPrimary>
+          {!tokenInvalid && (
+            <ButtonPrimary className="w-full" type="submit" disabled={status === 'loading' || status === 'success'}>
+              {status === 'loading' ? 'Güncelleniyor...' : 'Şifreyi Güncelle'}
+            </ButtonPrimary>
+          )}
         </FieldGroup>
       </Fieldset>
     </form>

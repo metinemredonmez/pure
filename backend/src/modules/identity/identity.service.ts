@@ -33,10 +33,10 @@ export class IdentityService {
     const exists = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-    if (exists) throw new ConflictException('Email already registered');
+    if (exists) throw new ConflictException('Bu e-posta adresi zaten kayıtlı. Giriş yapmayı veya şifre sıfırlamayı deneyin.');
 
     if (!dto.privacyAccepted) {
-      throw new BadRequestException('Privacy policy must be accepted');
+      throw new BadRequestException('Devam etmek için Gizlilik Politikası ve Kullanım Koşullarını kabul etmelisiniz.');
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
@@ -232,7 +232,7 @@ export class IdentityService {
     });
 
     if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid refresh token');
+      throw new UnauthorizedException('Oturum süreniz dolmuş. Lütfen tekrar giriş yapın.');
     }
 
     await this.prisma.refreshToken.update({
@@ -259,7 +259,7 @@ export class IdentityService {
   // ── MFA Setup (generate QR) ──
   async setupMfa(userId: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) throw new BadRequestException('User not found');
+    if (!user) throw new BadRequestException('Kullanıcı bulunamadı.');
 
     const secret = generateSecret();
     const otpAuthUrl = generateURI({
@@ -283,13 +283,13 @@ export class IdentityService {
   async enableMfa(userId: string, code: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user || !user.mfaSecret)
-      throw new BadRequestException('Setup MFA first');
+      throw new BadRequestException('Önce iki adımlı doğrulamayı kurmanız gerekiyor.');
 
     // Decrypt MFA secret for verification
     const decryptedSecret = this.encryptionService.decrypt(user.mfaSecret);
     const result = verifySync({ token: code, secret: decryptedSecret });
     const isValid = result.valid;
-    if (!isValid) throw new BadRequestException('Invalid code');
+    if (!isValid) throw new BadRequestException('Doğrulama kodu hatalı veya süresi dolmuş.');
 
     await this.prisma.user.update({
       where: { id: userId },
@@ -410,15 +410,21 @@ export class IdentityService {
     });
 
     if (!resetToken) {
-      throw new BadRequestException('Geçersiz veya süresi dolmuş token');
+      throw new BadRequestException(
+        'Şifre sıfırlama bağlantısı geçersiz. Lütfen yeni bir bağlantı talep edin.',
+      );
     }
 
     if (resetToken.usedAt) {
-      throw new BadRequestException('Bu token zaten kullanılmış');
+      throw new BadRequestException(
+        'Bu şifre sıfırlama bağlantısı daha önce kullanılmış. Yeni bir bağlantı talep edin.',
+      );
     }
 
     if (resetToken.expiresAt < new Date()) {
-      throw new BadRequestException('Token süresi dolmuş');
+      throw new BadRequestException(
+        'Şifre sıfırlama bağlantısının süresi dolmuş (1 saat geçerlidir). Lütfen yeni bir bağlantı talep edin.',
+      );
     }
 
     // Password policy check
