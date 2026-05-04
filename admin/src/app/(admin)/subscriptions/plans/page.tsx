@@ -275,12 +275,18 @@ export default function SubscriptionPlansPage() {
                 helperText="Bu plan'ın baz aylık kahve miktarı (örn 1000g = 1kg/ay). Üstündeki fiyat bu miktar için." />
             </Stack>
             {form.priceMonthly > 0 && form.monthlyWeight > 0 && (
-              <Box sx={{ p: 1.5, bgcolor: 'success.dark', color: 'success.contrastText', borderRadius: 1, opacity: 0.85 }}>
-                <Typography variant="caption" sx={{ display: 'block', fontWeight: 600 }}>
+              <Box sx={{
+                p: 1.5,
+                borderRadius: 1,
+                border: '1px solid',
+                borderColor: 'divider',
+                bgcolor: 'action.hover',
+              }}>
+                <Typography variant="caption" sx={{ display: 'block', fontWeight: 700, color: 'text.primary', mb: 0.5 }}>
                   Birim fiyat: {formatCurrency(form.priceMonthly / (form.monthlyWeight / 1000))} / kg
                   {' '}({formatCurrency(form.priceMonthly / (form.monthlyWeight / 250))} / 250g paket)
                 </Typography>
-                <Typography variant="caption" sx={{ display: 'block', opacity: 0.85 }}>
+                <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
                   Müşteri 500g/ay seçerse aylık {formatCurrency(form.priceMonthly / 2)}, 2kg/ay seçerse aylık {formatCurrency(form.priceMonthly * 2)} öder.
                 </Typography>
               </Box>
