@@ -121,7 +121,7 @@ export default function BannersPage() {
   useEffect(() => {
     if (!dialogOpen) return;
     if (productOpts.length === 0) {
-      productsApi.getProducts({ limit: 500 }).then((res: any) => {
+      productsApi.getProducts({ limit: 100 }).then((res: any) => {
         const list = res?.data?.data || res?.data || res || [];
         setProductOpts(
           (Array.isArray(list) ? list : []).map((p: any) => ({

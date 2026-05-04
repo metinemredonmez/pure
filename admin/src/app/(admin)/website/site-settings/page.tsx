@@ -366,7 +366,7 @@ export default function SiteSettingsPage() {
 
   // Load picker options once
   useEffect(() => {
-    productsApi.getProducts({ limit: 500 }).then((res: any) => {
+    productsApi.getProducts({ limit: 100 }).then((res: any) => {
       const list = res?.data?.data || res?.data || res || [];
       setProductOpts(
         (Array.isArray(list) ? list : []).map((p: any) => ({
