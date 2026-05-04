@@ -71,7 +71,9 @@ async function PageHome() {
   const carouselProducts3 = products.slice(1, 5)
 
   // Use backend collections for featured, fallback to categories
-  const featuredCollections = collections.length ? collections.slice(0, 4) : categories.slice(0, 4)
+  // Anasayfada 3 koleksiyon kartı (Müşterilerimizin En Sevdiği / Fırsat Ürünleri / Yeni Kahveler vb.)
+  // Admin → Koleksiyonlar'dan ilk 3 aktif koleksiyon (sortOrder'a göre) gösterilir
+  const featuredCollections = collections.length ? collections.slice(0, 3) : categories.slice(0, 3)
 
   // Hero slides: 3 curated Pure Olentia products with REAL product photos
   // Admin can later swap these via website/banners (HeroBanner model)
