@@ -21,7 +21,7 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
   return (
     <div className={`group/CollectionCard3 relative block ${className}`}>
       <div
-        className={`relative flex min-h-[260px] items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:min-h-[300px] sm:p-8 lg:min-h-[340px] ${collection.color}`}
+        className={`relative flex aspect-square items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:p-6 ${collection.color}`}
       >
         {/* Text — left 3/5 (genişletildi) */}
         <div className="relative z-10 flex w-3/5 flex-col pr-2">
