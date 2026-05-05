@@ -21,8 +21,9 @@ const SectionPromo2 = async ({ className }: SectionPromo2Props) => {
   const cta = settings.promo2Cta || 'Hediye Setleri'
   const promoImage = settings.promo2Image ? resolveImageUrl(settings.promo2Image) : '/hero/hediye-paketi.jpg'
   const ctaUrl = settings.promo2Url || '/kurumsal-hediye'
-  // Use site logo from settings if uploaded; fallback to bundled asset
-  const siteLogo = settings.logo ? resolveImageUrl(settings.logo) : null
+  // Sadece /uploads/ veya http(s) URL'siyse settings logosunu kullan (yoksa bundled asset)
+  const isValidLogoUrl = (u: string) => u.startsWith('/uploads/') || u.startsWith('http://') || u.startsWith('https://')
+  const siteLogo = settings.logo && isValidLogoUrl(settings.logo) ? resolveImageUrl(settings.logo) : null
   const siteName = settings.siteName || 'Pure Olentia'
 
   return (

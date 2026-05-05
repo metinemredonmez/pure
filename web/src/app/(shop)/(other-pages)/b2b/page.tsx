@@ -31,7 +31,8 @@ export const metadata: Metadata = {
 
 export default async function B2BPage() {
   const settings = await getSiteSettings()
-  const heroImage = settings.b2bHeroImage ? resolveImageUrl(settings.b2bHeroImage) : ''
+  // Admin yüklediyse onu, yoksa /hero/b2b-bg.jpg fallback
+  const heroImage = settings.b2bHeroImage ? resolveImageUrl(settings.b2bHeroImage) : '/hero/b2b-bg.jpg'
 
   return (
     <div className="pb-24 lg:pb-32">
@@ -40,7 +41,7 @@ export default async function B2BPage() {
         className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900"
         style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
       >
-        {heroImage && <div className="absolute inset-0 bg-black/55" aria-hidden />}
+        {heroImage && <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/45 to-black/30" aria-hidden />}
         <div className="relative container py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide uppercase backdrop-blur-sm">
             {settings.b2bHeroBadge}
