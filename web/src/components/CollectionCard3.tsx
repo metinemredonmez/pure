@@ -25,12 +25,12 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
       >
         {/* Üstte: Üst Etiket (küçük) + Başlık */}
         <div className="relative z-10 w-full">
-          <span className="mb-2 line-clamp-2 block text-xs leading-tight text-neutral-700 sm:text-sm">
+          <span className="mb-2 block text-xs leading-snug text-neutral-700 sm:text-sm">
             {collection.title}
           </span>
           {collection.description && (
             <h2
-              className="line-clamp-3 text-base leading-snug font-semibold text-neutral-900 sm:text-lg md:text-xl"
+              className="text-base leading-snug font-semibold text-neutral-900 sm:text-lg"
               dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
             />
           )}
