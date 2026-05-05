@@ -451,9 +451,18 @@ export default function SubscriptionPage({
 
   return (
     <div className="overflow-x-hidden pb-24 lg:pb-32">
-      {/* Hero */}
-      <div className="bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
-        <div className="container py-20 text-center text-white lg:py-28">
+      {/* Hero — kahveli arka plan görseli (hafif blur + low opacity) */}
+      <div className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-amber-900 to-primary-950">
+        {/* Bg image — kahveli ambient görüntü, çok hafif görünür */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-15 blur-sm"
+          style={{ backgroundImage: 'url(/hero/turk-kahvesi-200gr.jpg)' }}
+          aria-hidden
+        />
+        {/* Karanlık-kahve overlay — okunabilirlik için gradient'i destekler */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-900/60 via-transparent to-primary-950/40" aria-hidden />
+
+        <div className="container relative z-10 py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
             {heroBadge}
           </span>
