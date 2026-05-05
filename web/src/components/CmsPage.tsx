@@ -33,21 +33,20 @@ export default async function CmsPage({ slug, fallback, kicker, footer }: CmsPag
       ? safeParse(cmsPage.sections)
       : []
 
-  // Admin-uploaded hero image overrides the gradient.
-  // heroKicker takes precedence over the prop (per-page admin control).
-  const heroImage = cmsPage.heroImage ? resolveImageUrl(cmsPage.heroImage) : ''
+  // Admin-uploaded hero image overrides; aksi halde varsayılan kahveli görsel
+  const heroImage = cmsPage.heroImage ? resolveImageUrl(cmsPage.heroImage) : '/hero/cms-default-bg.jpg'
   const effectiveKicker = cmsPage.heroKicker || kicker
 
   return (
     <div className="pb-24 lg:pb-32">
-      {/* Hero — /b2b ile tutarlı sade tasarım */}
+      {/* Hero — kompakt + kahveli arka plan */}
       <div
-        className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900"
-        style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+        className="relative overflow-hidden"
+        style={{ backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
-        {heroImage && <div className="absolute inset-0 bg-black/55" aria-hidden />}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/40" aria-hidden />
 
-        <div className="container relative py-16 text-center text-white lg:py-20">
+        <div className="container relative z-10 py-10 text-center text-white lg:py-14">
           {effectiveKicker && (
             <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide uppercase backdrop-blur-sm">
               {effectiveKicker}
