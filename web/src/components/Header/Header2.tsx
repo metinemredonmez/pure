@@ -18,7 +18,7 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
   const allCollections = await getCollections()
 
   return (
-    <div className="relative z-10 w-full bg-white">
+    <div className="relative z-50 w-full bg-white">
       <div
         className={clsx(
           'relative border-neutral-200 bg-white dark:border-neutral-700 dark:bg-neutral-900',

@@ -19,7 +19,7 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
   const currencies = await getCurrencies()
 
   return (
-    <div className="relative z-10">
+    <div className="relative z-50">
       <div className="container">
         <div
           className={clsx(
