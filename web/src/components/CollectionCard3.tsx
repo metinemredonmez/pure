@@ -21,35 +21,37 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
   return (
     <div className={`group/CollectionCard3 relative block ${className}`}>
       <div
-        className={`relative flex min-h-[300px] items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:min-h-[360px] sm:p-8 lg:min-h-[400px] ${collection.color}`}
+        className={`relative flex min-h-[260px] items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:min-h-[300px] sm:p-8 lg:min-h-[340px] ${collection.color}`}
       >
-        {/* Text — left 2/5 */}
-        <div className="relative z-10 flex w-2/5 flex-col pr-2">
+        {/* Text — left 3/5 (genişletildi) */}
+        <div className="relative z-10 flex w-3/5 flex-col pr-2">
           <div>
-            <span className="mb-2 block text-sm text-neutral-700">{collection.title}</span>
+            <span className="mb-2 line-clamp-2 block text-xs leading-tight text-neutral-700 sm:text-sm">
+              {collection.title}
+            </span>
             {collection.description && (
               <h2
-                className="line-clamp-3 text-lg font-semibold text-neutral-900 sm:text-xl md:text-2xl"
+                className="line-clamp-4 text-base leading-snug font-semibold text-neutral-900 sm:text-lg md:text-xl"
                 dangerouslySetInnerHTML={{ __html: collection.sortDescription || '' }}
               />
             )}
           </div>
-          <div className="mt-auto pt-6">
-            <Button color="light" className="[--btn-border:white]/0">
+          <div className="mt-auto pt-4">
+            <Button color="light" className="!py-1.5 !px-4 !text-xs [--btn-border:white]/0">
               {ctaLabel}
             </Button>
           </div>
         </div>
 
-        {/* Image — right 3/5 */}
+        {/* Image — right 2/5 (daraltıldı + sabit aspect ratio) */}
         {collection.image && (
-          <div className="relative w-3/5 overflow-hidden rounded-2xl">
+          <div className="relative my-auto aspect-[4/5] w-2/5 overflow-hidden rounded-2xl">
             <Image
               alt={collection.image.alt || ''}
               src={collection.image}
               fill
               className="object-cover object-center drop-shadow-xl"
-              sizes="300px"
+              sizes="(min-width: 1024px) 200px, 160px"
             />
           </div>
         )}
