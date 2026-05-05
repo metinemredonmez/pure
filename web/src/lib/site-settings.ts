@@ -7,10 +7,9 @@
  * edited from admin → Web Sitesi → Site Ayarları.
  *
  * Keys must match the admin form field names:
- *   siteName, logo, favicon, footerText,
+ *   siteName, logo, favicon,
  *   phone, email, address, mapLat, mapLng, workingHours,
- *   facebook, instagram, twitter, linkedin, youtube,
- *   kvkkText, cookiePolicy
+ *   facebook, instagram, twitter, linkedin, youtube
  */
 import { getApiSiteSettings } from '@/lib/api'
 
@@ -90,7 +89,6 @@ export interface SiteSettings {
   siteName: string
   logo: string
   favicon: string
-  footerText: string
   phone: string
   email: string
   address: string
@@ -102,9 +100,6 @@ export interface SiteSettings {
   twitter: string
   linkedin: string
   youtube: string
-  kvkkText: string
-  cookiePolicy: string
-  announcementText: string
   promo1Title: string
   promo1Subtitle: string
   promo1Cta: string
@@ -158,7 +153,6 @@ const DEFAULTS: SiteSettings = {
   siteName: 'Pure Olentia',
   logo: '/logo.png',
   favicon: '/icon.png',
-  footerText: 'Tarladan fincana izlenebilir specialty kahve deneyimi.',
   phone: '0552 462 29 54',
   email: 'info@pureolentia.com',
   address: 'Abdurrahmangazi, Nane Sk. No:8, 34887 Sancaktepe/İstanbul',
@@ -170,9 +164,6 @@ const DEFAULTS: SiteSettings = {
   twitter: 'https://twitter.com/pureolentia',
   linkedin: 'https://linkedin.com/company/pureolentia',
   youtube: 'https://youtube.com/@pureolentia',
-  kvkkText: '',
-  cookiePolicy: '',
-  announcementText: '',
   promo1Title: '',
   promo1Subtitle: '',
   promo1Cta: '',

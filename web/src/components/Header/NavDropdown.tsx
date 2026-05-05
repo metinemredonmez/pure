@@ -47,7 +47,8 @@ export default function NavDropdown({ item }: NavDropdownProps) {
   }, [])
 
   const handleLeave = useCallback(() => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 150)
+    // 300ms grace — mouse'un parent'tan dropdown'a köprülenmesi için yeterli süre
+    timeoutRef.current = setTimeout(() => setOpen(false), 300)
   }, [])
 
   if (!item.children?.length) {
@@ -64,7 +65,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
   const hasIcons = item.children.some((c) => c.icon)
 
   return (
-    <div className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <div className="relative py-4" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
       <Link
         href={item.href || '/'}
         className="flex items-center gap-1 text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
@@ -77,7 +78,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
 
       {open && (
         <div
-          className="absolute left-0 top-full z-50 pt-2"
+          className="absolute left-0 top-full z-50"
           onMouseEnter={handleEnter}
           onMouseLeave={handleLeave}
         >

@@ -480,7 +480,7 @@ export default function SubscriptionPage({
 
       {/* How it works — admin-managed steps */}
       {steps.length > 0 && (
-        <div className="container -mt-8">
+        <div className="container relative z-10 -mt-10 lg:-mt-12">
           <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
             {steps.map((step) => (
               <div key={step.id} className="rounded-2xl bg-white p-4 text-center shadow-lg sm:p-5 dark:bg-neutral-800">

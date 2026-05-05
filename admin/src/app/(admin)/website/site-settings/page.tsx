@@ -125,7 +125,6 @@ interface SiteSettingsState {
   siteName: string;
   logo: string;
   favicon: string;
-  footerText: string;
   phone: string;
   email: string;
   address: string;
@@ -365,7 +364,7 @@ const DEFAULT_GRINDS: GrindGroup[] = [
 ];
 
 const defaultSettings: SiteSettingsState = {
-  siteName: '', logo: '', favicon: '', footerText: '',
+  siteName: '', logo: '', favicon: '',
   phone: '', email: '', address: '', mapLat: '', mapLng: '', workingHours: '',
   facebook: '', instagram: '', twitter: '', linkedin: '', youtube: '',
   franchiseBanners: [],
@@ -476,7 +475,6 @@ export default function SiteSettingsPage() {
         siteName: data.siteName || '',
         logo: data.logo || '',
         favicon: data.favicon || '',
-        footerText: data.footerText || '',
         phone: data.phone || '',
         email: data.email || '',
         address: data.address || '',
@@ -647,10 +645,6 @@ export default function SiteSettingsPage() {
                     value={settings.favicon}
                     onChange={(url) => setSettings({ ...settings, favicon: url as string })}
                   />
-                </Grid>
-                <Grid size={{ xs: 12 }}>
-                  <TextField fullWidth label="Footer Metni" size="small" value={settings.footerText}
-                    onChange={(e) => setSettings({ ...settings, footerText: e.target.value })} />
                 </Grid>
               </Grid>
             </CardContent>
