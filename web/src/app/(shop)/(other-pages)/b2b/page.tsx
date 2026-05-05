@@ -35,24 +35,13 @@ export default async function B2BPage() {
 
   return (
     <div className="pb-24 lg:pb-32">
-      {/* Hero — admin-managed image varsa onu kullan, yoksa hafif kahve arka plan + gradient */}
+      {/* Hero — admin-managed image (or gradient fallback) */}
       <div
         className="relative overflow-hidden bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900"
         style={heroImage ? { backgroundImage: `url(${heroImage})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
       >
         {heroImage && <div className="absolute inset-0 bg-black/55" aria-hidden />}
-        {/* Admin görseli yoksa: hafif blurlu kahve görseli ambient olarak görünür */}
-        {!heroImage && (
-          <>
-            <div
-              className="pointer-events-none absolute inset-0 bg-cover bg-center opacity-15 blur-sm"
-              style={{ backgroundImage: 'url(/hero/brazil-santos.jpg)' }}
-              aria-hidden
-            />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary-900/60 via-transparent to-neutral-950/40" aria-hidden />
-          </>
-        )}
-        <div className="relative z-10 container py-20 text-center text-white lg:py-28">
+        <div className="relative container py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide uppercase backdrop-blur-sm">
             {settings.b2bHeroBadge}
           </span>
