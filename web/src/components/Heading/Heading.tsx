@@ -37,7 +37,7 @@ const Heading: React.FC<HeadingProps> = ({
           {children}
           {headingDim ? (
             <>
-              <span>{'. '}</span>
+              {children ? <span>{'. '}</span> : null}
               <span className="text-neutral-400">{headingDim}</span>
             </>
           ) : null}

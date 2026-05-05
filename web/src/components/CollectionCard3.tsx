@@ -23,8 +23,8 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
       <div
         className={`relative flex aspect-square items-stretch gap-4 overflow-hidden rounded-2xl p-5 sm:p-6 ${collection.color}`}
       >
-        {/* Text — left 3/5 (genişletildi) */}
-        <div className="relative z-10 flex w-3/5 flex-col pr-2">
+        {/* Text — left 1/2 */}
+        <div className="relative z-10 flex w-1/2 flex-col pr-2">
           <div>
             <span className="mb-2 line-clamp-2 block text-xs leading-tight text-neutral-700 sm:text-sm">
               {collection.title}
@@ -43,15 +43,15 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
           </div>
         </div>
 
-        {/* Image — right 2/5 (daraltıldı + sabit aspect ratio) */}
+        {/* Image — right 1/2 — kart yüksekliğine yayılır */}
         {collection.image && (
-          <div className="relative my-auto aspect-[4/5] w-2/5 overflow-hidden rounded-2xl">
+          <div className="relative w-1/2 overflow-hidden rounded-2xl">
             <Image
               alt={collection.image.alt || ''}
               src={collection.image}
               fill
               className="object-cover object-center drop-shadow-xl"
-              sizes="(min-width: 1024px) 200px, 160px"
+              sizes="(min-width: 1024px) 280px, 220px"
             />
           </div>
         )}
