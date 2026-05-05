@@ -29,9 +29,13 @@ const benefits = [
 export default function FranchisePage() {
   return (
     <div className="overflow-x-hidden pb-24 lg:pb-32">
-      {/* Hero — full width gradient with stats overlay */}
-      <div className="relative bg-gradient-to-br from-primary-800 via-primary-900 to-neutral-900 pb-16">
-        <div className="container py-20 text-center text-white lg:py-28">
+      {/* Hero — kahveli arka plan + okunabilirlik için koyu overlay */}
+      <div
+        className="relative overflow-hidden pb-16"
+        style={{ backgroundImage: 'url(/hero/franchise-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/50 to-black/40" aria-hidden />
+        <div className="container relative z-10 py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
             Franchise Fırsatı
           </span>
@@ -53,7 +57,7 @@ export default function FranchisePage() {
         </div>
 
         {/* Stats — inside hero so they don't get clipped */}
-        <div className="container">
+        <div className="container relative z-10">
           <div className="mx-auto grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-4">
             {stats.map((s, i) => (
               <div key={i} className="rounded-2xl bg-white p-5 text-center shadow-lg dark:bg-neutral-800">
