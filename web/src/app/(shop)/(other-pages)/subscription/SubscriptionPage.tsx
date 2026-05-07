@@ -43,11 +43,23 @@ type CategoryDef = {
   basePrice?: number
   monthlyWeight?: number
   discountPercent?: number
+  availableGrinds?: { kind: string; options: string[] }[] | null
 }
 
 const FALLBACK_IMAGES = ['/hero/turk-kahvesi-100gr.jpg', '/hero/brazil-santos.jpg', '/hero/hediye-paketi.jpg']
 
-/** Derive category metadata from plan name */
+/** Map a grind "kind" string from admin (Türk / Türk Kahvesi / Espresso / Filtre / Filtre Kahve)
+ *  to product-category slug candidates. */
+function kindToProductSlugs(kind: string | null | undefined): string[] {
+  if (!kind) return []
+  const n = kind.toLowerCase()
+  if (n.includes('türk') || n.includes('turk')) return ['turk-kahvesi', 'turk']
+  if (n.includes('espresso') || n.includes('moka')) return ['espresso']
+  if (n.includes('filtre') || n.includes('filter') || n.includes('french') || n.includes('chemex') || n.includes('aero')) return ['filtre-kahve', 'filtre']
+  return []
+}
+
+/** Derive category metadata from plan name (used only when plan has no availableGrinds). */
 function inferCategoryFromName(name: string): { slugs: string[]; grind: string } {
   const n = name.toLowerCase()
   if (n.includes('türk') || n.includes('turk')) return { slugs: ['turk-kahvesi', 'turk'], grind: 'Türk' }
@@ -241,9 +253,17 @@ export default function SubscriptionPage({
     const sorted = [...plans].sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
     return sorted.map((p: any, i: number) => {
       const inferred = inferCategoryFromName(p.name || '')
+      // Eğer plan adı kategori vermiyor ama availableGrinds varsa, ilk kind'ı default kategori say
+      const planGrinds: { kind: string; options: string[] }[] | null =
+        Array.isArray(p.availableGrinds) && p.availableGrinds.length ? p.availableGrinds : null
+      const fallbackKind = planGrinds?.[0]?.kind || ''
+      const initialKind = inferred.slugs.length ? inferred.grind : (fallbackKind || inferred.grind)
+      const initialSlugs = inferred.slugs.length
+        ? inferred.slugs
+        : (kindToProductSlugs(fallbackKind).length ? kindToProductSlugs(fallbackKind) : [p.slug].filter(Boolean))
       return {
         id: p.slug || p.id,
-        slugs: inferred.slugs.length ? inferred.slugs : [p.slug].filter(Boolean),
+        slugs: initialSlugs,
         // Plan adı admin'den geliyor — "Abonelik No.0X" hardcoded başlık kaldırıldı.
         // Admin "Ev Başlangıç Paketi" yazınca web'de aynı görünür.
         title: p.name || `Abonelik No.0${i + 1}`,
@@ -252,11 +272,12 @@ export default function SubscriptionPage({
         fallbackImage: (p as any).image
           ? resolveImageUrl((p as any).image)
           : FALLBACK_IMAGES[i % FALLBACK_IMAGES.length],
-        grind: inferred.grind,
+        grind: initialKind,
         planId: p.id,
         basePrice: Number(p.priceMonthly) || 0,
         monthlyWeight: Number(p.monthlyWeight ?? p.weightGrams ?? 250) || 250,
         discountPercent: Number((p as any).discountPercent) || 0,
+        availableGrinds: planGrinds,
       }
     })
   }, [plans])
@@ -354,14 +375,50 @@ export default function SubscriptionPage({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePlan?.id, effectiveDurations, effectivePeriods, effectiveGramsList])
 
-  // Products of selected category
+  // Plan'ın tüm grind options'ları flatten — dropdown ve "selected grind → kind" lookup için
+  const flatGrindOptions = useMemo(() => {
+    if (!cat) return [] as { value: string; kind: string }[]
+    const items: { value: string; kind: string }[] = []
+    const seen = new Set<string>()
+    if (Array.isArray(cat.availableGrinds) && cat.availableGrinds.length) {
+      cat.availableGrinds.forEach((g) => {
+        if (!g || !Array.isArray(g.options)) return
+        g.options.forEach((opt) => {
+          if (typeof opt === 'string' && opt.trim() && !seen.has(opt)) {
+            seen.add(opt)
+            items.push({ value: opt, kind: g.kind })
+          }
+        })
+      })
+    }
+    if (items.length) return items
+    // Fallback: global grindsMap'ten cat.grind'a karşılık gelen
+    const globalOpts = grindsMap[cat.grind] || ['Filtre']
+    return globalOpts.map((o) => ({ value: o, kind: cat.grind }))
+  }, [cat, grindsMap])
+
+  // Şu an seçili olan grind'ın hangi "kind" grubuna ait olduğunu bul
+  const activeKind = useMemo(() => {
+    const found = flatGrindOptions.find((g) => g.value === grind)
+    return found?.kind || cat?.grind || ''
+  }, [flatGrindOptions, grind, cat])
+
+  // Aktif kind'a göre ürün filtre slug'larını dinamik hesapla
+  const activeSlugs = useMemo(() => {
+    const fromKind = kindToProductSlugs(activeKind)
+    if (fromKind.length) return fromKind
+    return cat?.slugs || []
+  }, [activeKind, cat])
+
+  // Products of selected category — dinamik (seçilen grind kind'ına göre)
   const categoryProducts = useMemo(() => {
     if (!cat) return []
+    if (!activeSlugs.length) return []
     return products.filter((p) => {
       const slug = p.category?.slug?.toLowerCase() || ''
-      return cat.slugs.includes(slug)
+      return activeSlugs.includes(slug)
     })
-  }, [cat, products])
+  }, [cat, products, activeSlugs])
 
   // Base price per 250g bag — admin plan fiyatı/gramajı normalize edilir
   const basePricePerBag = useMemo(() => {
@@ -398,11 +455,17 @@ export default function SubscriptionPage({
     const c = categories.find((x) => x.id === id)
     if (!c) return
     setSelectedCategory(id)
-    const plan = plans.find((p) => p.id === c.planId)
-    const planGrinds = plan && Array.isArray(plan.availableGrinds) && plan.availableGrinds.length
-      ? plan.availableGrinds.find((g) => g.kind === c.grind)?.options
-      : null
-    setGrind(planGrinds?.[0] || grindsMap[c.grind]?.[0] || c.grind)
+    // Plan'ın availableGrinds'ından FLAT olarak ilk option'u seç (tüm kinds dahil)
+    let firstGrind: string | null = null
+    if (Array.isArray(c.availableGrinds) && c.availableGrinds.length) {
+      for (const g of c.availableGrinds) {
+        if (g && Array.isArray(g.options) && g.options.length) {
+          firstGrind = g.options[0]
+          break
+        }
+      }
+    }
+    setGrind(firstGrind || grindsMap[c.grind]?.[0] || c.grind)
     setSelectedCoffees([])
     setTimeout(() => {
       document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -658,9 +721,9 @@ export default function SubscriptionPage({
                   onChange={(e) => setGrind(e.target.value)}
                   className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
                 >
-                  {(effectiveGrindsMap[cat.grind] || ['Filtre']).map((g) => (
-                    <option key={g} value={g}>
-                      {g}
+                  {flatGrindOptions.map((g) => (
+                    <option key={g.value} value={g.value}>
+                      {g.value}
                     </option>
                   ))}
                 </select>
