@@ -10,6 +10,7 @@ import {
 import {
   Search as SearchIcon, Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
   Inventory as ProductIcon, Close as CloseIcon, Visibility as ViewIcon,
+  ContentCopy as DuplicateIcon,
 } from '@mui/icons-material';
 import { productsApi, categoriesApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
@@ -238,6 +239,37 @@ export default function ProductsPage() {
     }
   };
 
+  // Mevcut ürünü baz alıp kopyasıyla "Yeni Ürün" diyaloğunu aç.
+  // Form CREATE moduna girer (editingProduct=null), kullanıcı düzeltip kaydeder.
+  const handleDuplicate = (product: Product) => {
+    const stamp = Date.now().toString(36).toUpperCase().slice(-4);
+    setEditingProduct(null);
+    setForm({
+      name: `${product.name} (Kopya)`,
+      slug: `${product.slug}-kopya-${stamp.toLowerCase()}`,
+      sku: `${product.sku}-COPY-${stamp}`,
+      description: product.description || '',
+      shortDescription: product.shortDescription || '',
+      price: Number(product.price) || 0,
+      compareAtPrice: Number(product.compareAtPrice) || 0,
+      costPrice: Number(product.costPrice) || 0,
+      stock: 0, // kopyada stok 0 — kullanıcı manuel girer
+      imageUrls: (product.images || []).map((img: any) => img.url),
+      status: 'DRAFT', // kopya taslak başlar — kullanıcı yayına almadan kontrol eder
+      isFeatured: false,
+      origin: product.origin || '',
+      roastLevel: product.roastLevel || '',
+      weight: product.weight || 0,
+      aromaProfile: Array.isArray(product.aromaProfile) ? product.aromaProfile.join(', ') : '',
+      brewGuide: product.brewGuide || '',
+      altitude: product.altitude || '',
+      process: product.process || '',
+      categoryId: product.category?.id || '',
+    });
+    setDialogOpen(true);
+    showSuccess('Ürün kopyalandı — düzenleyip kaydet');
+  };
+
   const totalStock = (product: Product) => {
     if (product.variants && product.variants.length > 0) {
       return product.variants.reduce((sum, v) => sum + (v.stock || 0), 0);
@@ -410,6 +442,9 @@ export default function ProductsPage() {
                       <TableCell align="center">
                         <Tooltip title="Düzenle">
                           <IconButton size="small" onClick={() => handleOpenDialog(product)}><EditIcon fontSize="small" /></IconButton>
+                        </Tooltip>
+                        <Tooltip title="Kopyala">
+                          <IconButton size="small" onClick={() => handleDuplicate(product)}><DuplicateIcon fontSize="small" /></IconButton>
                         </Tooltip>
                         <Tooltip title="Sil">
                           <IconButton size="small" color="error" onClick={() => setDeleteConfirm(product.id)}><DeleteIcon fontSize="small" /></IconButton>
