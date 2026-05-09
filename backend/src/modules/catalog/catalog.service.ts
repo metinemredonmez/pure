@@ -193,24 +193,9 @@ export class CatalogService {
   async delete(id: string) {
     await this.findById(id);
 
-    // Sipariş geçmişi varsa hard delete yapamayız (audit trail / iade / iade dosyaları için).
-    // Bu durumda otomatik arşivleme yapıp listeden kaldırıyoruz.
-    const orderItemCount = await this.prisma.orderItem.count({ where: { productId: id } });
-
-    if (orderItemCount > 0) {
-      await this.prisma.product.update({
-        where: { id },
-        data: { status: 'ARCHIVED', isActive: false },
-      });
-      return {
-        message: 'Product archived (has order history)',
-        archived: true,
-        orderItemCount,
-      };
-    }
-
-    // Sipariş geçmişi yok → bağımlı kayıtları temizle, sonra ürünü sil.
-    // Tek transaction ile çalıştırarak yarıda kalmamasını garantile.
+    // Tek transaction'da bağımlı kayıtları temizleyip ürünü siler.
+    // OrderItem.productId artık nullable — ürün silinince DB-seviyesinde SET NULL ile
+    // null olur; sipariş geçmişi productName/variantName snapshot'ı üzerinden korunur.
     await this.prisma.$transaction([
       this.prisma.cartItem.deleteMany({ where: { productId: id } }),
       this.prisma.wishlistItem.deleteMany({ where: { productId: id } }),
@@ -222,7 +207,7 @@ export class CatalogService {
       this.prisma.productVariant.deleteMany({ where: { productId: id } }),
       this.prisma.product.delete({ where: { id } }),
     ]);
-    return { message: 'Product deleted', archived: false };
+    return { message: 'Product deleted' };
   }
 
   // ── Variants ──
