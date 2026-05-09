@@ -76,7 +76,8 @@ export class AnalysisService {
     const productSales = new Map<string, number>();
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        const name = item.product.name;
+        // Ürün silinmiş olabilir → snapshot productName fallback
+        const name = item.product?.name || item.productName;
         productSales.set(name, (productSales.get(name) || 0) + item.quantity);
       });
     });
@@ -266,13 +267,15 @@ export class AnalysisService {
     // Top ürün isimlerini al
     let topProductNames: string[] = [];
     if (topVariants.length > 0) {
+      // productId null olabilir (silinmiş ürün) — null'ları filtrele
+      const ids = topVariants.map(v => v.productId).filter((id): id is string => id !== null);
       const products = await this.prisma.product.findMany({
-        where: { id: { in: topVariants.map(v => v.productId) } },
+        where: { id: { in: ids } },
         select: { id: true, name: true },
       });
       topProductNames = topVariants.map(v => {
-        const p = products.find(pr => pr.id === v.productId);
-        return `${p?.name || 'Bilinmeyen'} (${v._sum.quantity} adet)`;
+        const p = v.productId ? products.find(pr => pr.id === v.productId) : null;
+        return `${p?.name || 'Silinmiş ürün'} (${v._sum.quantity} adet)`;
       });
     }
 

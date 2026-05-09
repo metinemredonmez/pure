@@ -622,7 +622,8 @@ export class PaymentService {
                 where: { id: item.variantId },
                 data: { stock: { increment: item.quantity } },
               });
-            } else {
+            } else if (item.productId) {
+              // Ürün silinmiş olabilir (productId null) → stock geri yüklemeye gerek yok
               await tx.product.update({
                 where: { id: item.productId },
                 data: { stock: { increment: item.quantity } },
@@ -772,7 +773,8 @@ export class PaymentService {
                   where: { id: item.variantId },
                   data: { stock: { increment: item.quantity } },
                 });
-              } else {
+              } else if (item.productId) {
+                // Ürün silinmiş olabilir → atla
                 await tx.product.update({
                   where: { id: item.productId },
                   data: { stock: { increment: item.quantity } },
@@ -884,7 +886,8 @@ export class PaymentService {
               where: { id: item.variantId },
               data: { stock: { increment: item.quantity } },
             });
-          } else {
+          } else if (item.productId) {
+            // Ürün silinmiş olabilir → atla
             await tx.product.update({
               where: { id: item.productId },
               data: { stock: { increment: item.quantity } },

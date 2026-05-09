@@ -205,7 +205,8 @@ export class AdminService {
       take: limit,
     });
 
-    const productIds = orderItems.map((item) => item.productId);
+    // productId null olabilir (ürün silinmiş orderItem) — null'ları filtrele.
+    const productIds = orderItems.map((item) => item.productId).filter((id): id is string => id !== null);
     const products = await this.prisma.product.findMany({
       where: { id: { in: productIds } },
       select: { id: true, name: true, slug: true, images: { take: 1 } },

@@ -469,11 +469,12 @@ export class LoyaltyService {
 
     for (const order of orders) {
       for (const item of order.items) {
-        const pid = item.productId;
+        // Ürün silinmiş olabilir → productId null. Snapshot productName ile devam et.
+        const pid = item.productId || `deleted:${item.productName}`;
         if (!productCounts[pid]) {
           productCounts[pid] = {
-            name: item.product.name,
-            slug: item.product.slug,
+            name: item.product?.name || item.productName,
+            slug: item.product?.slug || '',
             count: 0,
             lastOrder: order.createdAt,
           };
