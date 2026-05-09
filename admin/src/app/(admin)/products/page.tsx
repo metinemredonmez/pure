@@ -227,14 +227,19 @@ export default function ProductsPage() {
   const handleDelete = async (id: string) => {
     try {
       const res = await productsApi.deleteProduct(id);
-      // Backend, sipariş geçmişi varsa silmek yerine arşivler — kullanıcıya doğru mesajı göster.
-      if (res?.archived) {
+      // API response: { success, data: { message, archived }, timestamp }
+      // Bazı durumlarda axios direkt unwrap'liyor — iki seviyeyi de kontrol et.
+      const archived = res?.data?.archived ?? res?.archived ?? false;
+      if (archived) {
         showSuccess('Ürün arşivlendi (sipariş geçmişi var, kalıcı silinemez)');
       } else {
         showSuccess('Ürün silindi');
       }
       setDeleteConfirm(null);
-      fetchProducts();
+      // Yeniden fetch beklemeden listeden anında düşür — kullanıcı "gitti" görmek istiyor.
+      // Hard delete'te zaten DB'den gitti; arşiv ise admin liste arşivlilerle dolu olmasın diye gizle.
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setTotal((prev) => Math.max(0, prev - 1));
     } catch (error: any) {
       const msg = error?.response?.data?.message || error?.message || 'Bilinmeyen hata';
       showError(`Ürün silinemedi: ${msg}`);
