@@ -192,8 +192,37 @@ export class CatalogService {
 
   async delete(id: string) {
     await this.findById(id);
-    await this.prisma.product.delete({ where: { id } });
-    return { message: 'Product deleted' };
+
+    // Sipariş geçmişi varsa hard delete yapamayız (audit trail / iade / iade dosyaları için).
+    // Bu durumda otomatik arşivleme yapıp listeden kaldırıyoruz.
+    const orderItemCount = await this.prisma.orderItem.count({ where: { productId: id } });
+
+    if (orderItemCount > 0) {
+      await this.prisma.product.update({
+        where: { id },
+        data: { status: 'ARCHIVED', isActive: false },
+      });
+      return {
+        message: 'Product archived (has order history)',
+        archived: true,
+        orderItemCount,
+      };
+    }
+
+    // Sipariş geçmişi yok → bağımlı kayıtları temizle, sonra ürünü sil.
+    // Tek transaction ile çalıştırarak yarıda kalmamasını garantile.
+    await this.prisma.$transaction([
+      this.prisma.cartItem.deleteMany({ where: { productId: id } }),
+      this.prisma.wishlistItem.deleteMany({ where: { productId: id } }),
+      this.prisma.review.deleteMany({ where: { productId: id } }),
+      this.prisma.productCollection.deleteMany({ where: { productId: id } }),
+      this.prisma.productImage.deleteMany({ where: { productId: id } }),
+      this.prisma.productPrice.deleteMany({ where: { productId: id } }),
+      this.prisma.customerPrice.deleteMany({ where: { productId: id } }),
+      this.prisma.productVariant.deleteMany({ where: { productId: id } }),
+      this.prisma.product.delete({ where: { id } }),
+    ]);
+    return { message: 'Product deleted', archived: false };
   }
 
   // ── Variants ──

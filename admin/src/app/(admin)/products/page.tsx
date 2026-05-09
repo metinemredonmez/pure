@@ -15,6 +15,7 @@ import { productsApi, categoriesApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import ExportButton from '@/components/common/ExportButton';
+import { useToast } from '@/contexts/ToastContext';
 
 interface Product {
   id: string;
@@ -75,6 +76,7 @@ function imageUrl(url?: string) {
 }
 
 export default function ProductsPage() {
+  const { showSuccess, showError } = useToast();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -224,11 +226,18 @@ export default function ProductsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await productsApi.deleteProduct(id);
+      const res = await productsApi.deleteProduct(id);
+      // Backend, sipariş geçmişi varsa silmek yerine arşivler — kullanıcıya doğru mesajı göster.
+      if (res?.archived) {
+        showSuccess('Ürün arşivlendi (sipariş geçmişi var, kalıcı silinemez)');
+      } else {
+        showSuccess('Ürün silindi');
+      }
       setDeleteConfirm(null);
       fetchProducts();
-    } catch (error) {
-      console.error('Ürün silinemedi:', error);
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || error?.message || 'Bilinmeyen hata';
+      showError(`Ürün silinemedi: ${msg}`);
     }
   };
 
