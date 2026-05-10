@@ -108,7 +108,7 @@ export default function Header({ sidebarOpen, onMenuClick }: HeaderProps) {
     { label: 'Siparişler', path: '/orders', keywords: 'sipariş order' },
     { label: 'Ürünler', path: '/products', keywords: 'ürün product kahve' },
     { label: 'Kategoriler', path: '/categories', keywords: 'kategori category' },
-    { label: 'Koleksiyonlar', path: '/collections', keywords: 'koleksiyon collection' },
+    // Koleksiyonlar arama sonuçlarından gizlendi — yönetimi Site Ayarları'na taşındı.
     { label: 'Abonelikler', path: '/subscriptions', keywords: 'abonelik subscription' },
     { label: 'Ödemeler', path: '/payments', keywords: 'ödeme payment' },
     { label: 'Kuponlar', path: '/coupons', keywords: 'kupon coupon indirim' },

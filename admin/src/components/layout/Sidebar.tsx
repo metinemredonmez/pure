@@ -41,7 +41,9 @@ const menuItems: MenuItem[] = [
     children: [
       { title: 'Ürün Listesi', path: '/products' },
       { title: 'Kategoriler', path: '/categories' },
-      { title: 'Koleksiyonlar', path: '/collections' },
+      // Koleksiyonlar sidebar'dan kaldırıldı — anasayfa kartları artık Site Ayarları'ndan
+      // tek yerden yönetiliyor. Sayfa URL ile (/collections) hâlâ erişilebilir
+      // (gerekirse koleksiyona ürün eklemek için).
     ],
   },
   { title: 'Abonelikler', icon: <SubscriptionsIcon sx={{ fontSize: 20 }} />, children: [
