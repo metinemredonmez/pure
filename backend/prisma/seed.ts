@@ -880,70 +880,8 @@ async function main() {
   });
   console.log('✅ Test customer loyalty hesabı oluşturuldu');
 
-  // ── 13. FAQ ──
-  const faqs = await Promise.all([
-    prisma.faqItem.upsert({
-      where: { id: 'faq-kargo' },
-      update: {},
-      create: {
-        id: 'faq-kargo',
-        question: 'Kargo ücreti ne kadar?',
-        answer: '500 TL ve üzeri siparişlerde kargo ücretsizdir. 500 TL altı siparişlerde kargo ücreti 29.90 TL\'dir.',
-        category: 'Kargo',
-        sortOrder: 1,
-        isActive: true,
-      },
-    }),
-    prisma.faqItem.upsert({
-      where: { id: 'faq-iade' },
-      update: {},
-      create: {
-        id: 'faq-iade',
-        question: 'İade politikanız nedir?',
-        answer: 'Açılmamış ürünleri 14 gün içinde iade edebilirsiniz. İade kargo ücreti bize aittir. Açılmış ürünlerde kalite sorunu varsa değişim yapılır.',
-        category: 'İade',
-        sortOrder: 2,
-        isActive: true,
-      },
-    }),
-    prisma.faqItem.upsert({
-      where: { id: 'faq-abonelik' },
-      update: {},
-      create: {
-        id: 'faq-abonelik',
-        question: 'Aboneliğimi nasıl iptal ederim?',
-        answer: 'Hesabınızdan abonelik bölümüne giderek istediğiniz zaman iptal edebilirsiniz. İptal işlemi bir sonraki dönemden geçerli olur.',
-        category: 'Abonelik',
-        sortOrder: 3,
-        isActive: true,
-      },
-    }),
-    prisma.faqItem.upsert({
-      where: { id: 'faq-ogutme' },
-      update: {},
-      create: {
-        id: 'faq-ogutme',
-        question: 'Öğütme derecesini seçebilir miyim?',
-        answer: 'Evet! Sipariş sırasında çekirdek, filtre, espresso, Türk kahvesi, French press ve Moka pot seçeneklerinden birini tercih edebilirsiniz.',
-        category: 'Ürün',
-        sortOrder: 4,
-        isActive: true,
-      },
-    }),
-    prisma.faqItem.upsert({
-      where: { id: 'faq-tazelik' },
-      update: {},
-      create: {
-        id: 'faq-tazelik',
-        question: 'Kahveler ne kadar taze?',
-        answer: 'Tüm kahvelerimiz sipariş aldıktan sonra kavrulur. Kavurma tarihi her paketin üzerinde belirtilir. Tazelik garantisi veriyoruz.',
-        category: 'Ürün',
-        sortOrder: 5,
-        isActive: true,
-      },
-    }),
-  ]);
-  console.log(`✅ ${faqs.length} FAQ oluşturuldu`);
+  // ── 13. FAQ kaldırıldı: FaqItem modeli silindi (orphan). ──
+  // /sss sayfası DB'deki CmsPage 'sss' kaydından besleniyor.
 
   // ── 14. System Settings ──
   const settings = [
@@ -1005,20 +943,7 @@ async function main() {
   }
   console.log(`✅ ${banners.length} hero banner oluşturuldu`);
 
-  // ── 15.2 Brands ──
-  const brandList = [
-    { name: 'Hario', description: 'Japon kökenli manuel demleme ekipmanları', sortOrder: 1, isActive: true },
-    { name: 'Chemex', description: 'Klasik cam demleme karafları', sortOrder: 2, isActive: true },
-    { name: 'Aeropress', description: 'Kompakt ve çok yönlü espresso/filtre cihazı', sortOrder: 3, isActive: true },
-    { name: 'Kalita', description: 'Düz tabanlı tutarlı filtre dripleri', sortOrder: 4, isActive: true },
-    { name: 'Baratza', description: 'Profesyonel ev öğütücüleri', sortOrder: 5, isActive: true },
-    { name: 'Acaia', description: 'Hassas dijital baristalık terazileri', sortOrder: 6, isActive: true },
-  ];
-  for (const b of brandList) {
-    const existing = await prisma.brand.findFirst({ where: { name: b.name } });
-    if (!existing) await prisma.brand.create({ data: b });
-  }
-  console.log(`✅ ${brandList.length} marka oluşturuldu`);
+  // ── 15.2 Brands kaldırıldı: Brand modeli silindi (orphan). ──
 
   // ── 15.3 References (Müşteri Yorumları) ──
   const references = [

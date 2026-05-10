@@ -341,14 +341,7 @@ export class CacheManagementService {
       itemsCached += loyaltyConfig.length;
       if (loyaltyConfig.length > 0) warmedGroups.push('loyalty');
 
-      // 6. Cache FAQ items
-      const faqItems = await this.prisma.faqItem.findMany({
-        where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
-      });
-      await this.redis.set('cache:cms:faq:all', faqItems, 3600);
-      itemsCached += faqItems.length;
-      if (faqItems.length > 0) warmedGroups.push('cms');
+      // 6. FAQ caching kaldırıldı — FaqItem modeli silindi (orphan).
 
       // 7. Cache integration settings (non-encrypted only)
       const integrationSettings = await this.prisma.integrationSetting.findMany(
