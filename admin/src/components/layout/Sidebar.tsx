@@ -94,7 +94,8 @@ const menuItems: MenuItem[] = [
       { title: 'Referanslar', path: '/website/references' },
       { title: 'Sayfalar', path: '/website/pages' },
       { title: 'Site Ayarları', path: '/website/site-settings' },
-      { title: 'Başvurular', path: '/website/leads' },
+      // 'Başvurular' (/website/leads) kaldırıldı — /admin/b2b ile duplicate idi.
+      // B2B başvuruları artık tek yerden /admin/b2b'de yönetiliyor.
       { title: 'Franchise', path: '/website/franchise' },
     ],
   },
