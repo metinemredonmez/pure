@@ -90,7 +90,7 @@ const menuItems: MenuItem[] = [
     children: [
       { title: 'Banner\'lar', path: '/website/banners' },
       { title: 'Makineler', path: '/website/machines' },
-      { title: 'Markalar', path: '/website/brands' },
+      // 'Markalar' kaldırıldı — Brand modeli silindi (orphan).
       { title: 'Referanslar', path: '/website/references' },
       { title: 'Sayfalar', path: '/website/pages' },
       { title: 'Site Ayarları', path: '/website/site-settings' },

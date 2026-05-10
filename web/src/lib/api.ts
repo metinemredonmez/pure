@@ -142,7 +142,7 @@ export const getApiBanners = () => fetchAPI<any>('/public/banners')
 export const getApiMachines = () => fetchAPI<any>('/public/machines')
 export const getApiMachineBySlug = (slug: string) => fetchAPI<any>(`/public/machines/${slug}`)
 export const getApiMachinesCompare = (slugs: string) => fetchAPI<any>(`/public/machines/compare?slugs=${slugs}`)
-export const getApiBrands = () => fetchAPI<any>('/public/brands')
+// getApiBrands kaldırıldı — Brand modeli silindi (orphan).
 export const getApiReferences = () => fetchAPI<any>('/public/references')
 export const getApiPage = (slug: string) => fetchAPI<any>(`/public/pages/${slug}`)
 export const getApiSiteSettings = () => fetchAPI<any>('/public/site-settings')

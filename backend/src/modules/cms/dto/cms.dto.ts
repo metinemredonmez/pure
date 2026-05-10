@@ -145,26 +145,7 @@ export class UpdateBlogPostDto {
   seoDescription?: string;
 }
 
-// ══════════════════════════════════════════════
-// FAQ DTOs
-// ══════════════════════════════════════════════
-
-export class CreateFaqDto {
-  @ApiProperty({ example: 'Kahve nasıl saklanmalı?' })
-  @IsString()
-  @MaxLength(500)
-  question: string;
-
-  @ApiProperty({ example: 'Kahveyi serin, kuru ve karanlık bir yerde saklayın.' })
-  @IsString()
-  @MaxLength(5000)
-  answer: string;
-
-  @ApiProperty({ example: 'Genel' })
-  @IsString()
-  @MaxLength(100)
-  category: string;
-}
+// FAQ DTO'ları kaldırıldı — FaqItem modeli silindi (orphan, web'de kullanılmıyordu).
 
 // ══════════════════════════════════════════════
 // SEO DTOs

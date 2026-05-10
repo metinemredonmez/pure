@@ -20,7 +20,7 @@ export const pagePermissions: PagePermission[] = [
   { path: '/reviews', roles: ['ADMIN'] },
   { path: '/shipping', roles: ['ADMIN', 'SALES'] },
   { path: '/blog', roles: ['ADMIN'] },
-  { path: '/faq', roles: ['ADMIN'] },
+  // /faq route kaldırıldı — FaqItem modeli silindi (orphan).
   { path: '/seo', roles: ['ADMIN'] },
   { path: '/loyalty', roles: ['ADMIN'] },
   { path: '/b2b', roles: ['ADMIN', 'SALES'] },
@@ -37,7 +37,7 @@ export const pagePermissions: PagePermission[] = [
   { path: '/settings', roles: ['ADMIN'] },
   { path: '/website/banners', roles: ['ADMIN'] },
   { path: '/website/machines', roles: ['ADMIN'] },
-  { path: '/website/brands', roles: ['ADMIN'] },
+  // /website/brands kaldırıldı — Brand modeli silindi (orphan).
   { path: '/website/references', roles: ['ADMIN'] },
   { path: '/website/pages', roles: ['ADMIN'] },
   { path: '/website/site-settings', roles: ['ADMIN'] },

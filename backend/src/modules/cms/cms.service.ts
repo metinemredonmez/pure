@@ -72,31 +72,8 @@ export class CmsService {
     return { message: 'Post deleted' };
   }
 
-  // ── FAQ ──
-  async findAllFaqs(category?: string) {
-    const where = category ? { category, isActive: true } : { isActive: true };
-    return this.prisma.faqItem.findMany({
-      where,
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  async createFaq(data: {
-    question: string;
-    answer: string;
-    category: string;
-    sortOrder?: number;
-  }) {
-    return this.prisma.faqItem.create({ data });
-  }
-
-  async updateFaq(id: string, data: Record<string, any>) {
-    return this.prisma.faqItem.update({ where: { id }, data });
-  }
-
-  async deleteFaq(id: string) {
-    return this.prisma.faqItem.delete({ where: { id } });
-  }
+  // ── FAQ kaldırıldı: orphan'dı (web'de hiç kullanılmıyordu). ──
+  // /sss sayfası ayrı CmsPage modelini kullanıyor (subscriptionFaq is config tarafında).
 
   // ── SEO ──
   async getSeo(pagePath: string) {

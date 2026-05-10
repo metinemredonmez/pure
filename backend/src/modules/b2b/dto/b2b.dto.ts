@@ -50,6 +50,15 @@ export class CreateLeadDto {
   @IsString()
   @MaxLength(100)
   monthlyConsumption?: string;
+
+  @ApiPropertyOptional({
+    example: 'Otel sektörü, espresso bar açıyoruz...',
+    description: 'Free-form notes from public form (sector + message birleşik)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  notes?: string;
 }
 
 export class UpdateLeadDto {

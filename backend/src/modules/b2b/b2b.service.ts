@@ -14,6 +14,7 @@ export class B2bService {
     phone: string;
     employeeCount?: number;
     monthlyConsumption?: string;
+    notes?: string;
     source?: string;
   }) {
     return this.prisma.b2bLead.create({ data });

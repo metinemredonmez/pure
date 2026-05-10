@@ -33,30 +33,27 @@ export default function B2BForm() {
       return
     }
 
-    // Combine B2B-specific fields into a single structured message body
-    // so it reaches the admin inbox via the shared /public/contact-message
-    // endpoint without requiring a new backend route.
-    const composedMessage = [
-      `Firma: ${company}`,
+    // B2B başvuruları artık doğru endpoint'e gidiyor: /b2b/leads
+    // (eskiden /public/contact-message'a düşüyordu, contact_messages'a karışıyordu).
+    // Sektör + mesaj notes alanında birleşik kayıt edilir; admin /admin/b2b'de görür.
+    const notes = [
       sector && `Sektör: ${sector}`,
-      volume && `Aylık Tüketim: ${volume} kg`,
-      phone && `Telefon: ${phone}`,
-      '',
-      message || '(Mesaj girilmedi)',
+      message && `Mesaj: ${message}`,
     ]
       .filter(Boolean)
-      .join('\n')
+      .join('\n\n')
 
     try {
-      const res = await fetch(`${API_URL}/public/contact-message`, {
+      const res = await fetch(`${API_URL}/b2b/leads`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name,
+          companyName: company,
+          contactName: name,
           email,
-          phone: phone || undefined,
-          subject: `[B2B Teklif Talebi] ${company}`,
-          message: composedMessage,
+          phone: phone || '-', // backend phone required; '-' if not provided
+          monthlyConsumption: volume ? `${volume} kg/ay` : undefined,
+          notes: notes || undefined,
         }),
       })
 

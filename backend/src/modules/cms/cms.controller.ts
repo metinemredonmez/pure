@@ -17,7 +17,6 @@ import { UserRole } from '@prisma/client';
 import {
   CreateBlogPostDto,
   UpdateBlogPostDto,
-  CreateFaqDto,
   UpsertSeoDto,
 } from './dto/cms.dto';
 
@@ -41,12 +40,7 @@ export class CmsController {
     return this.cmsService.findPostBySlug(slug);
   }
 
-  @Public()
-  @Get('faq')
-  @ApiOperation({ summary: 'List FAQs' })
-  findFaqs(@Query('category') category?: string) {
-    return this.cmsService.findAllFaqs(category);
-  }
+  // public/faq endpoint kaldırıldı — FaqItem modeli silindi (orphan).
 
   // ── Admin ──
   @ApiBearerAuth('access-token')
@@ -81,31 +75,7 @@ export class CmsController {
     return this.cmsService.deletePost(id);
   }
 
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Post('admin/faq')
-  @ApiOperation({ summary: 'Create FAQ item (admin)' })
-  createFaq(
-    @Body() data: CreateFaqDto,
-  ) {
-    return this.cmsService.createFaq(data);
-  }
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Put('admin/faq/:id')
-  @ApiOperation({ summary: 'Update FAQ item (admin)' })
-  updateFaq(@Param('id') id: string, @Body() data: any) {
-    return this.cmsService.updateFaq(id, data);
-  }
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Delete('admin/faq/:id')
-  @ApiOperation({ summary: 'Delete FAQ item (admin)' })
-  deleteFaq(@Param('id') id: string) {
-    return this.cmsService.deleteFaq(id);
-  }
+  // FAQ admin endpoint'leri kaldırıldı — FaqItem modeli silindi (orphan).
 
   @ApiBearerAuth('access-token')
   @Roles(UserRole.ADMIN)

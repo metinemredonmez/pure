@@ -220,31 +220,8 @@ export class WebsiteService {
     return { message: 'Machines reordered' };
   }
 
-  // ── Brands ──
-
-  async findActiveBrands() {
-    return this.prisma.brand.findMany({
-      where: { isActive: true },
-      orderBy: { sortOrder: 'asc' },
-    });
-  }
-
-  async findAllBrands() {
-    return this.prisma.brand.findMany({ orderBy: { sortOrder: 'asc' } });
-  }
-
-  async createBrand(data: any) {
-    return this.prisma.brand.create({ data });
-  }
-
-  async updateBrand(id: string, data: any) {
-    return this.prisma.brand.update({ where: { id }, data });
-  }
-
-  async deleteBrand(id: string) {
-    await this.prisma.brand.delete({ where: { id } });
-    return { message: 'Brand deleted' };
-  }
+  // ── Brands kaldırıldı: web'de hiçbir yerde kullanılmıyordu (orphan). ──
+  // Brand modeli ve /admin/website/brands sayfası temizlendi.
 
   // ── References ──
 

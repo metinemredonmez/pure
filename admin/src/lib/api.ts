@@ -443,25 +443,7 @@ export const blogApi = {
   },
 };
 
-// FAQ API
-export const faqApi = {
-  getFaqs: async (category?: string) => {
-    const { data } = await api.get('/faq', { params: { category } });
-    return data;
-  },
-  createFaq: async (faq: Record<string, unknown>) => {
-    const { data } = await api.post('/admin/faq', faq);
-    return data;
-  },
-  updateFaq: async (id: string, faq: Record<string, unknown>) => {
-    const { data } = await api.put(`/admin/faq/${id}`, faq);
-    return data;
-  },
-  deleteFaq: async (id: string) => {
-    const { data } = await api.delete(`/admin/faq/${id}`);
-    return data;
-  },
-};
+// faqApi kaldırıldı — FaqItem modeli silindi (orphan, web'de tüketilmiyordu).
 
 // Loyalty API
 export const loyaltyApi = {
@@ -760,11 +742,7 @@ export const websiteApi = {
   deleteMachine: async (id: string) => { const { data } = await api.delete(`/admin/machines/${id}`); return data; },
   reorderMachines: async (items: { id: string; sortOrder: number }[]) => { const { data } = await api.patch('/admin/machines/reorder', { items }); return data; },
 
-  // Brands
-  getBrands: async () => { const { data } = await api.get('/admin/brands'); return data; },
-  createBrand: async (brand: Record<string, unknown>) => { const { data } = await api.post('/admin/brands', brand); return data; },
-  updateBrand: async (id: string, brand: Record<string, unknown>) => { const { data } = await api.put(`/admin/brands/${id}`, brand); return data; },
-  deleteBrand: async (id: string) => { const { data } = await api.delete(`/admin/brands/${id}`); return data; },
+  // Brand metodları kaldırıldı — Brand modeli silindi (orphan).
 
   // References
   getReferences: async () => { const { data } = await api.get('/admin/references'); return data; },

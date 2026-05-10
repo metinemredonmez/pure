@@ -22,8 +22,6 @@ import {
   ReorderDto,
   CreateMachineDto,
   UpdateMachineDto,
-  CreateBrandDto,
-  UpdateBrandDto,
   CreateReferenceDto,
   UpdateReferenceDto,
   CreatePageDto,
@@ -69,12 +67,7 @@ export class WebsiteController {
     return this.websiteService.findMachineBySlug(slug);
   }
 
-  @Public()
-  @Get('public/brands')
-  @ApiOperation({ summary: 'Get active brands' })
-  getActiveBrands() {
-    return this.websiteService.findActiveBrands();
-  }
+  // public/brands kaldırıldı — Brand modeli silindi (orphan).
 
   @Public()
   @Get('public/references')
@@ -199,39 +192,7 @@ export class WebsiteController {
     return this.websiteService.reorderMachines(dto.items);
   }
 
-  // ── Brands ──
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Get('admin/brands')
-  @ApiOperation({ summary: 'List all brands (admin)' })
-  getAllBrands() {
-    return this.websiteService.findAllBrands();
-  }
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Post('admin/brands')
-  @ApiOperation({ summary: 'Create brand (admin)' })
-  createBrand(@Body() dto: CreateBrandDto) {
-    return this.websiteService.createBrand(dto);
-  }
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Put('admin/brands/:id')
-  @ApiOperation({ summary: 'Update brand (admin)' })
-  updateBrand(@Param('id') id: string, @Body() dto: UpdateBrandDto) {
-    return this.websiteService.updateBrand(id, dto);
-  }
-
-  @ApiBearerAuth('access-token')
-  @Roles(UserRole.ADMIN)
-  @Delete('admin/brands/:id')
-  @ApiOperation({ summary: 'Delete brand (admin)' })
-  deleteBrand(@Param('id') id: string) {
-    return this.websiteService.deleteBrand(id);
-  }
+  // ── Brands kaldırıldı (orphan, web'de kullanılmıyordu) ──
 
   // ── References ──
 

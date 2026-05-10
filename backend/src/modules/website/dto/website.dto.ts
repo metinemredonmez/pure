@@ -84,23 +84,7 @@ export class CreateMachineModuleDto {
   @ApiPropertyOptional() @IsOptional() @IsString() variant?: string;
 }
 
-// ── Brand ──
-
-export class CreateBrandDto {
-  @ApiProperty() @IsString() name: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() logo?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
-  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(0) sortOrder?: number;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
-}
-
-export class UpdateBrandDto {
-  @ApiPropertyOptional() @IsOptional() @IsString() name?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() logo?: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() description?: string;
-  @ApiPropertyOptional() @IsOptional() @Type(() => Number) @IsInt() @Min(0) sortOrder?: number;
-  @ApiPropertyOptional() @IsOptional() @IsBoolean() isActive?: boolean;
-}
+// ── Brand DTO'ları kaldırıldı (orphan model temizliği) ──
 
 // ── Reference ──
 
