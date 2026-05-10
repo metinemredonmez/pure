@@ -70,27 +70,25 @@ async function PageHome() {
   const carouselProducts2 = products.slice(3, 10)
   const carouselProducts3 = products.slice(1, 5)
 
-  // Anasayfada 3 koleksiyon kartı.
-  // Öncelik sırası:
-  //   1. Site Ayarları → "Anasayfa Koleksiyon Kartları" (admin tek yerden yönetir, image+title+subtitle+link)
-  //   2. /admin/collections'tan ilk 3 aktif koleksiyon (eski davranış)
-  //   3. Kategori fallback
-  const settingsCards = (settings.homeCollectionCards || []).filter((c) => c?.image && (c?.title || c?.subtitle))
+  // Anasayfada 3 koleksiyon kartı — TEK KAYNAK: Site Ayarları → "Anasayfa Koleksiyon Kartları".
+  // Admin oradan yönetir (image+title+subtitle+link). Kart eksikse o slot gizlenir.
+  // Eski DB Collections fallback'i kaldırıldı — kafa karışıklığını önlemek için.
+  // (DB Collections hâlâ /collections/[slug] URL'leri için kullanılıyor; ayrı işlev.)
   const settingsCardColors = ['bg-primary-50', 'bg-secondary-50', 'bg-orange-50']
-  const featuredCollections = settingsCards.length === 3
-    ? settingsCards.map((c, i) => ({
-        id: c.id,
-        // CollectionCard3 renders `title` as small eyebrow + `sortDescription` as large heading.
-        title: c.title,
-        description: c.subtitle,
-        sortDescription: c.subtitle,
-        handle: '',
-        cardHref: c.ctaUrl || '/collections/all',
-        color: settingsCardColors[i] || 'bg-primary-50',
-        count: 0,
-        image: { src: resolveImageUrl(c.image), width: 800, height: 600, alt: c.title || '' },
-      }))
-    : (collections.length ? collections.slice(0, 3) : categories.slice(0, 3))
+  const featuredCollections = (settings.homeCollectionCards || [])
+    .filter((c) => c?.image && (c?.title || c?.subtitle))
+    .map((c, i) => ({
+      id: c.id,
+      // CollectionCard3 renders `title` as small eyebrow + `sortDescription` as large heading.
+      title: c.title,
+      description: c.subtitle,
+      sortDescription: c.subtitle,
+      handle: '',
+      cardHref: c.ctaUrl || '/collections/all',
+      color: settingsCardColors[i] || 'bg-primary-50',
+      count: 0,
+      image: { src: resolveImageUrl(c.image), width: 800, height: 600, alt: c.title || '' },
+    }))
 
   // Hero slides: 3 curated Pure Olentia products with REAL product photos
   // Admin can later swap these via website/banners (HeroBanner model)
