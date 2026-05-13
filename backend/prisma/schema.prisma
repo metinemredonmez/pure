@@ -163,8 +163,30 @@ model BlogPost {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime @updatedAt
   category       BlogCategory? @relation(fields: [categoryId], references: [id])
+  comments       BlogComment[]
 
   @@map("blog_posts")
+}
+
+enum BlogCommentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model BlogComment {
+  id        String            @id @default(cuid())
+  postId    String
+  authorName String
+  authorEmail String?
+  body      String
+  status    BlogCommentStatus @default(PENDING)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  post      BlogPost          @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, status])
+  @@map("blog_comments")
 }
 
 model CartItem {

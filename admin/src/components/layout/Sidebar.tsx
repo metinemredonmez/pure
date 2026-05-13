@@ -60,6 +60,7 @@ const menuItems: MenuItem[] = [
     title: 'CMS', icon: <CmsIcon sx={{ fontSize: 20 }} />,
     children: [
       { title: 'Blog Yazıları', path: '/blog' },
+      { title: 'Blog Yorumları', path: '/blog/comments' },
       { title: 'SEO', path: '/seo' },
     ],
   },

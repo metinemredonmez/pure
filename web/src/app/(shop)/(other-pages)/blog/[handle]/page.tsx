@@ -1,14 +1,13 @@
 import { Divider } from '@/components/Divider'
+import BlogCommentSection from '@/components/blog/BlogCommentSection'
 import PostCard1 from '@/components/blog/PostCard1'
 import { getBlogPosts as getStaticBlogPosts, getBlogPostsByHandle } from '@/data/data'
 import { adaptBlogPost } from '@/lib/adapters'
 import { getApiBlogPostBySlug, getApiBlogPosts } from '@/lib/api'
 import Avatar from '@/shared/Avatar/Avatar'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import SocialsList from '@/shared/SocialsList/SocialsList'
 import Tag from '@/shared/Tag'
 import { Badge } from '@/shared/badge'
-import { Textarea } from '@/shared/textarea'
 import { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound } from 'next/navigation'
@@ -145,18 +144,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     )
   }
 
-  const renderCommentForm = () => {
-    return (
-      <div className="mx-auto w-full max-w-(--breakpoint-md) pt-5">
-        <h3 className="text-xl font-semibold text-neutral-800 dark:text-neutral-200">Yorumlar</h3>
-        <form className="mt-5">
-          <Textarea rows={6} name="comment" placeholder="Yorumunuzu yazın..." />
-          <ButtonPrimary className="mt-5">Yorum Gönder</ButtonPrimary>
-        </form>
-      </div>
-    )
-  }
-
   const renderRelatedPosts = () => {
     return (
       <div className="mt-16 bg-neutral-100 py-16 lg:mt-24 lg:py-24 dark:bg-neutral-800">
@@ -194,7 +181,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         {renderTags()}
         <div className="mx-auto w-full max-w-(--breakpoint-md) border-t border-b border-neutral-100 dark:border-neutral-700"></div>
         {renderAuthor()}
-        {renderCommentForm()}
+        <BlogCommentSection slug={handle} />
       </div>
 
       {renderRelatedPosts()}

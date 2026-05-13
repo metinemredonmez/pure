@@ -443,6 +443,21 @@ export const blogApi = {
   },
 };
 
+export const blogCommentsApi = {
+  list: async (params?: { status?: 'PENDING' | 'APPROVED' | 'REJECTED'; page?: number; limit?: number }) => {
+    const { data } = await api.get('/admin/blog-comments', { params });
+    return data;
+  },
+  setStatus: async (id: string, status: 'PENDING' | 'APPROVED' | 'REJECTED') => {
+    const { data } = await api.put(`/admin/blog-comments/${id}/status`, { status });
+    return data;
+  },
+  remove: async (id: string) => {
+    const { data } = await api.delete(`/admin/blog-comments/${id}`);
+    return data;
+  },
+};
+
 // faqApi kaldırıldı — FaqItem modeli silindi (orphan, web'de tüketilmiyordu).
 
 // Loyalty API

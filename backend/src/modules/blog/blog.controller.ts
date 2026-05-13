@@ -116,4 +116,64 @@ export class BlogController {
   removeCategory(@Param('id') id: string) {
     return this.blogService.removeCategory(id);
   }
+
+  // ══════════════════════════════════════
+  // COMMENTS — PUBLIC
+  // ══════════════════════════════════════
+
+  @Public()
+  @Get('public/blog-posts/:slug/comments')
+  @ApiOperation({ summary: 'List approved comments for a blog post' })
+  listComments(@Param('slug') slug: string) {
+    return this.blogService.listApprovedComments(slug);
+  }
+
+  @Public()
+  @Post('public/blog-posts/:slug/comments')
+  @ApiOperation({ summary: 'Submit a comment for a blog post (pending moderation)' })
+  submitComment(
+    @Param('slug') slug: string,
+    @Body() dto: { authorName: string; authorEmail?: string; body: string },
+  ) {
+    return this.blogService.createComment(slug, dto);
+  }
+
+  // ══════════════════════════════════════
+  // COMMENTS — ADMIN
+  // ══════════════════════════════════════
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/blog-comments')
+  @ApiOperation({ summary: 'List blog comments (admin)' })
+  listAllComments(
+    @Query('status') status?: 'PENDING' | 'APPROVED' | 'REJECTED',
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.blogService.listAllComments({
+      status,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    });
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Put('admin/blog-comments/:id/status')
+  @ApiOperation({ summary: 'Update comment status (admin)' })
+  setCommentStatus(
+    @Param('id') id: string,
+    @Body() dto: { status: 'PENDING' | 'APPROVED' | 'REJECTED' },
+  ) {
+    return this.blogService.setCommentStatus(id, dto.status);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/blog-comments/:id')
+  @ApiOperation({ summary: 'Delete comment (admin)' })
+  deleteComment(@Param('id') id: string) {
+    return this.blogService.deleteComment(id);
+  }
 }

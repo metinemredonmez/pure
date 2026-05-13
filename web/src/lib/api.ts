@@ -162,6 +162,17 @@ export const getApiBlogPosts = (params?: { page?: number; limit?: number; catego
 }
 export const getApiBlogPostBySlug = (slug: string) => fetchAPI<any>(`/public/blog-posts/${slug}`)
 export const getApiBlogCategories = () => fetchAPI<any>('/public/blog-categories')
+export const getApiBlogComments = (slug: string) =>
+  fetchAPI<any>(`/public/blog-posts/${slug}/comments`, { revalidate: 0 })
+export const submitBlogComment = (
+  slug: string,
+  data: { authorName: string; authorEmail?: string; body: string },
+) =>
+  fetchAPI<any>(`/public/blog-posts/${slug}/comments`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    revalidate: 0,
+  })
 
 // ============ CATALOG ============
 export const getApiProducts = (params?: Record<string, any>) => {
