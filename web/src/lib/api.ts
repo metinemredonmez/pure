@@ -187,6 +187,19 @@ export const getApiCollections = () => fetchAPI<any>('/collections')
 // ============ PRODUCT REVIEWS ============
 export const getApiProductReviews = (productId: string) => fetchAPI<any>(`/products/${productId}/reviews`)
 export const getApiProductReviewStats = (productId: string) => fetchAPI<any>(`/products/${productId}/reviews/stats`)
+export const submitProductReview = async (
+  productId: string,
+  data: { rating: number; title?: string; comment?: string },
+) => {
+  const token = await getStoredAccessToken()
+  if (!token) return { success: false, statusCode: 401, message: 'Yorum yapmak için giriş yapmalısınız.' }
+  return fetchAPI<any>(`/products/${productId}/reviews`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(data),
+    revalidate: 0,
+  })
+}
 export const apiSubmitReview = (token: string, productId: string, data: any) =>
   fetchAPI<any>(`/products/${productId}/reviews`, { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
 export const apiMarkReviewHelpful = (token: string, reviewId: string) =>

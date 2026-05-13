@@ -325,7 +325,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         </div>
         {renderDetailSection()}
         <Divider />
-        <ProductReviews reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
+        <ProductReviews productId={product.id} reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
         <Divider />
         <SectionSliderProductCard
           heading="Benzer Ürünler"

@@ -16,7 +16,7 @@ const PostCard2: FC<Props> = ({ className, post }) => {
     <div className={`group relative flex justify-between gap-x-8 ${className}`}>
       <div className="flex h-full flex-col py-2">
         <h2 className={`block text-base font-semibold nc-card-title`}>
-          <Link href={'/blog-single'} className="line-clamp-2 capitalize" title={'title'}>
+          <Link href={'/blog/' + handle} className="line-clamp-2 capitalize" title={title}>
             {title}
           </Link>
         </h2>

@@ -176,7 +176,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
       {/* OTHER SECTION */}
       <div className="container flex flex-col gap-y-14 pt-14 pb-24 lg:pb-28">
         <Divider />
-        <ProductReviews reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
+        <ProductReviews productId={product.id} reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
         <Divider />
         <SectionSliderProductCard
           heading="Customers also purchased"
