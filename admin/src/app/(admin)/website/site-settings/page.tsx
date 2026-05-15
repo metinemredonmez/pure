@@ -176,6 +176,20 @@ interface SiteSettingsState {
   b2bHeroSubtitle: string;
   b2bHeroPrimaryCta: string;
   b2bHeroSecondaryCta: string;
+  // Franchise sayfası
+  franchiseHeroBadge: string;
+  franchiseHeroTitle: string;
+  franchiseHeroSubtitle: string;
+  franchiseHeroImage: string;
+  franchisePhone: string;
+  franchiseStats: { id: string; value: string; label: string }[];
+  franchiseBenefits: { id: string; title: string; desc: string; icon: string }[];
+  // Sadakat sayfası
+  loyaltyTiers: { id: string; name: string; emoji: string; points: string; benefits: string[] }[];
+  // Toptan satış sayfası
+  wholesaleSegments: { id: string; icon: string; title: string; desc: string; minOrder: string }[];
+  // Kurumsal hediye sayfası
+  giftSets: { id: string; name: string; desc: string; price: string }[];
   footerMenus: FooterMenuGroup[];
   navMenus: NavMenuItem[];
   megaMenu: MegaMenuGroup[];
@@ -405,6 +419,42 @@ const defaultSettings: SiteSettingsState = {
   b2bHeroSubtitle: 'Ofisiniz, restoranınız, oteliniz veya kafeniz için özel fiyatlarla specialty kahve tedarikçisi.',
   b2bHeroPrimaryCta: 'Teklif Alın',
   b2bHeroSecondaryCta: 'Franchise',
+  franchiseHeroBadge: 'Franchise Fırsatı',
+  franchiseHeroTitle: 'Pure Olentia ile Kendi Kahve Dükkânınızı Açın',
+  franchiseHeroSubtitle: 'Specialty kahve tutkusunu kendi işletmenizle paylaşın. Anahtar teslim konsept, barista eğitimi ve sürekli destek ile kahve sektöründe yerinizi alın.',
+  franchiseHeroImage: '',
+  franchisePhone: '0552 462 29 54',
+  franchiseStats: [
+    { id: 'fs1', value: '₺500K+', label: 'Yatırım Aralığı' },
+    { id: 'fs2', value: '3-6 Ay', label: 'Açılış Süreci' },
+    { id: 'fs3', value: '%100', label: 'Barista Eğitimi' },
+    { id: 'fs4', value: '7/24', label: 'Destek' },
+  ],
+  franchiseBenefits: [
+    { id: 'fb1', title: 'Anahtar Teslim Konsept', desc: 'Mekan tasarımından ekipman seçimine kadar komple çözüm.', icon: 'key' },
+    { id: 'fb2', title: 'Barista Eğitimi', desc: 'SCA standartlarında profesyonel barista eğitimi ve sertifika.', icon: 'award' },
+    { id: 'fb3', title: 'Taze Kavurma Tedarik', desc: 'Merkezi kavurma tesisimizden düzenli taze kahve tedariki.', icon: 'coffee' },
+    { id: 'fb4', title: 'Pazarlama Desteği', desc: 'Dijital pazarlama, sosyal medya ve yerel kampanya desteği.', icon: 'megaphone' },
+    { id: 'fb5', title: 'Operasyon Danışmanlığı', desc: 'Menü mühendisliği, maliyet kontrolü ve iş süreçleri danışmanlığı.', icon: 'analytics' },
+    { id: 'fb6', title: 'Marka Gücü', desc: 'Pure Olentia marka bilinirliği ve sadık müşteri tabanı.', icon: 'award' },
+  ],
+  loyaltyTiers: [
+    { id: 'lt1', name: 'Bronz', emoji: '🥉', points: 'Başlangıç', benefits: ['%5 indirim', 'Doğum günü sürprizi'] },
+    { id: 'lt2', name: 'Gümüş', emoji: '🥈', points: '500+ Puan', benefits: ['%10 indirim', 'Ücretsiz kargo', 'Özel mahsul önce erişim'] },
+    { id: 'lt3', name: 'Altın', emoji: '🥇', points: '2000+ Puan', benefits: ['%15 indirim', 'Ücretsiz kargo', 'Aylık özel hediye', 'Cupping davetleri'] },
+    { id: 'lt4', name: 'Platin', emoji: '💎', points: '5000+ Puan', benefits: ['%20 indirim', 'Ücretsiz hızlı kargo', 'Kişisel barista danışmanı', 'Özel etkinlikler'] },
+  ],
+  wholesaleSegments: [
+    { id: 'ws1', icon: 'coffee', title: 'Kafeler & Specialty Barlar', desc: 'Menünüze özel blend geliştirme, barista eğitimi ve ekipman danışmanlığı dahil.', minOrder: '10 kg/ay' },
+    { id: 'ws2', icon: 'hotel', title: 'Oteller', desc: 'Lobiden odaya kahve servisi için özel paketler.', minOrder: '20 kg/ay' },
+    { id: 'ws3', icon: 'building', title: 'Ofisler & Kurumlar', desc: 'Ofis kahvesi paketleri, makine ve filtre desteği.', minOrder: '5 kg/ay' },
+    { id: 'ws4', icon: 'cart', title: 'Perakende & Online', desc: 'Beyaz etiket / özel ambalaj seçenekleri.', minOrder: 'Görüşmeli' },
+  ],
+  giftSets: [
+    { id: 'gs1', name: 'Klasik Set', desc: 'Türk Kahvesi 100gr + bakır cezve + porselen fincan takımı', price: '₺349' },
+    { id: 'gs2', name: 'Premium Set', desc: '3 farklı menşei kahve (250gr x 3) + demleme rehberi + özel kutu', price: '₺549' },
+    { id: 'gs3', name: 'Lüks Set', desc: 'Single Origin koleksiyon + V60 + dijital tartı + filtre kağıdı', price: '₺899' },
+  ],
   footerMenus: DEFAULT_FOOTER_MENUS,
   navMenus: DEFAULT_NAV_MENUS,
   megaMenu: DEFAULT_MEGA_MENU,
@@ -429,7 +479,7 @@ export default function SiteSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   // Active tab in Site Ayarları (UI only, not persisted)
-  const [activeTab, setActiveTab] = useState<'genel' | 'anasayfa' | 'menuler' | 'abonelik' | 'b2b'>('genel');
+  const [activeTab, setActiveTab] = useState<'genel' | 'anasayfa' | 'menuler' | 'abonelik' | 'b2b' | 'sayfalar'>('genel');
   // Per-card transient link mode; URL itself is the source of truth in settings.homeCollectionCards
   const [cardLinkModes, setCardLinkModes] = useState<LinkMode[]>(['product', 'product', 'product']);
   const [productOpts, setProductOpts] = useState<PickerOption[]>([]);
@@ -535,6 +585,26 @@ export default function SiteSettingsPage() {
         b2bHeroSubtitle: data.b2bHeroSubtitle || defaultSettings.b2bHeroSubtitle,
         b2bHeroPrimaryCta: data.b2bHeroPrimaryCta || defaultSettings.b2bHeroPrimaryCta,
         b2bHeroSecondaryCta: data.b2bHeroSecondaryCta || defaultSettings.b2bHeroSecondaryCta,
+        franchiseHeroBadge: data.franchiseHeroBadge || defaultSettings.franchiseHeroBadge,
+        franchiseHeroTitle: data.franchiseHeroTitle || defaultSettings.franchiseHeroTitle,
+        franchiseHeroSubtitle: data.franchiseHeroSubtitle || defaultSettings.franchiseHeroSubtitle,
+        franchiseHeroImage: data.franchiseHeroImage || '',
+        franchisePhone: data.franchisePhone || defaultSettings.franchisePhone,
+        franchiseStats: Array.isArray(data.franchiseStats) && data.franchiseStats.length
+          ? data.franchiseStats
+          : defaultSettings.franchiseStats,
+        franchiseBenefits: Array.isArray(data.franchiseBenefits) && data.franchiseBenefits.length
+          ? data.franchiseBenefits
+          : defaultSettings.franchiseBenefits,
+        loyaltyTiers: Array.isArray(data.loyaltyTiers) && data.loyaltyTiers.length
+          ? data.loyaltyTiers
+          : defaultSettings.loyaltyTiers,
+        wholesaleSegments: Array.isArray(data.wholesaleSegments) && data.wholesaleSegments.length
+          ? data.wholesaleSegments
+          : defaultSettings.wholesaleSegments,
+        giftSets: Array.isArray(data.giftSets) && data.giftSets.length
+          ? data.giftSets
+          : defaultSettings.giftSets,
         footerMenus: Array.isArray(data.footerMenus) && data.footerMenus.length
           ? data.footerMenus
           : DEFAULT_FOOTER_MENUS,
@@ -620,6 +690,7 @@ export default function SiteSettingsPage() {
           <Tab label="Menüler" value="menuler" />
           <Tab label="Abonelik" value="abonelik" />
           <Tab label="B2B / Kurumsal" value="b2b" />
+          <Tab label="Sayfa İçerikleri" value="sayfalar" />
         </Tabs>
       </Box>
 
@@ -1976,6 +2047,273 @@ export default function SiteSettingsPage() {
         {/* Eski "Yasal Metinler" kartı kaldırıldı — yasal sayfalar artık
             Web Sitesi → Sayfalar (CMS) üzerinden yönetiliyor (kvkk, cerez-politikasi,
             mesafeli-satis, kullanim-kosullari, gizlilik-politikasi). */}
+
+        {/* ═══════════════════════════════════════════════════════
+            SAYFA İÇERİKLERİ — Franchise / Sadakat / Toptan / Hediye
+            ═══════════════════════════════════════════════════════ */}
+
+        {/* Franchise */}
+        {activeTab === 'sayfalar' && (
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Franchise Sayfası (/franchise)"
+              subheader="Hero metinleri, başvuru telefonu, stat kartları ve avantaj kartları"
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+            />
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Hero Üst Etiket" value={settings.franchiseHeroBadge}
+                    onChange={(e) => setSettings({ ...settings, franchiseHeroBadge: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField fullWidth size="small" label="Başvuru Telefonu" value={settings.franchisePhone}
+                    onChange={(e) => setSettings({ ...settings, franchisePhone: e.target.value })}
+                    helperText="Örn: 0552 462 29 54" />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" label="Hero Başlık" value={settings.franchiseHeroTitle}
+                    onChange={(e) => setSettings({ ...settings, franchiseHeroTitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <TextField fullWidth size="small" multiline rows={2} label="Hero Alt Yazı" value={settings.franchiseHeroSubtitle}
+                    onChange={(e) => setSettings({ ...settings, franchiseHeroSubtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Hero Arka Plan Görseli (1920x800px) — boş ise varsayılan kullanılır"
+                    value={settings.franchiseHeroImage}
+                    onChange={(url) => setSettings({ ...settings, franchiseHeroImage: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>Stat Kartları (4 adet önerilir)</Typography>
+                    <Button size="small" startIcon={<AddIcon />}
+                      onClick={() => setSettings({ ...settings, franchiseStats: [...settings.franchiseStats, { id: `fs-${Date.now()}`, value: '', label: '' }] })}
+                    >Yeni Stat</Button>
+                  </Box>
+                </Grid>
+                {settings.franchiseStats.map((s, idx) => (
+                  <Grid key={s.id || idx} size={{ xs: 12 }}>
+                    <Grid container spacing={1}>
+                      <Grid size={{ xs: 5, sm: 4 }}>
+                        <TextField fullWidth size="small" label="Değer" value={s.value}
+                          onChange={(e) => { const arr = [...settings.franchiseStats]; arr[idx] = { ...arr[idx], value: e.target.value }; setSettings({ ...settings, franchiseStats: arr }); }}
+                          placeholder="₺500K+" />
+                      </Grid>
+                      <Grid size={{ xs: 5, sm: 7 }}>
+                        <TextField fullWidth size="small" label="Etiket" value={s.label}
+                          onChange={(e) => { const arr = [...settings.franchiseStats]; arr[idx] = { ...arr[idx], label: e.target.value }; setSettings({ ...settings, franchiseStats: arr }); }}
+                          placeholder="Yatırım Aralığı" />
+                      </Grid>
+                      <Grid size={{ xs: 2, sm: 1 }}>
+                        <Button fullWidth size="small" color="error"
+                          onClick={() => setSettings({ ...settings, franchiseStats: settings.franchiseStats.filter((_, i) => i !== idx) })}
+                        >Sil</Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                ))}
+
+                <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600 }}>Avantaj Kartları</Typography>
+                    <Button size="small" startIcon={<AddIcon />}
+                      onClick={() => setSettings({ ...settings, franchiseBenefits: [...settings.franchiseBenefits, { id: `fb-${Date.now()}`, title: '', desc: '', icon: 'key' }] })}
+                    >Yeni Avantaj</Button>
+                  </Box>
+                </Grid>
+                {settings.franchiseBenefits.map((b, idx) => (
+                  <Grid key={b.id || idx} size={{ xs: 12 }}>
+                    <Grid container spacing={1}>
+                      <Grid size={{ xs: 12, sm: 3 }}>
+                        <TextField fullWidth size="small" label="Başlık" value={b.title}
+                          onChange={(e) => { const arr = [...settings.franchiseBenefits]; arr[idx] = { ...arr[idx], title: e.target.value }; setSettings({ ...settings, franchiseBenefits: arr }); }} />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField fullWidth size="small" label="Açıklama" value={b.desc}
+                          onChange={(e) => { const arr = [...settings.franchiseBenefits]; arr[idx] = { ...arr[idx], desc: e.target.value }; setSettings({ ...settings, franchiseBenefits: arr }); }} />
+                      </Grid>
+                      <Grid size={{ xs: 9, sm: 2 }}>
+                        <TextField fullWidth size="small" select label="İkon" value={b.icon}
+                          onChange={(e) => { const arr = [...settings.franchiseBenefits]; arr[idx] = { ...arr[idx], icon: e.target.value }; setSettings({ ...settings, franchiseBenefits: arr }); }}
+                          slotProps={{ select: { native: true } }}>
+                          <option value="key">Anahtar</option>
+                          <option value="award">Ödül</option>
+                          <option value="coffee">Kahve</option>
+                          <option value="megaphone">Megafon</option>
+                          <option value="analytics">Analiz</option>
+                        </TextField>
+                      </Grid>
+                      <Grid size={{ xs: 3, sm: 1 }}>
+                        <Button fullWidth size="small" color="error"
+                          onClick={() => setSettings({ ...settings, franchiseBenefits: settings.franchiseBenefits.filter((_, i) => i !== idx) })}
+                        >Sil</Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                ))}
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+        )}
+
+        {/* Sadakat */}
+        {activeTab === 'sayfalar' && (
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Sadakat Programı Sayfası (/sadakat)"
+              subheader="Üyelik seviyesi kartları (Bronz/Gümüş/Altın/Platin) — görsel anlatım. Gerçek puan kuralları Sadakat panelinden yönetilir."
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, loyaltyTiers: [...settings.loyaltyTiers, { id: `lt-${Date.now()}`, name: '', emoji: '✨', points: '', benefits: [''] }] })}
+                >Yeni Seviye</Button>
+              }
+            />
+            <CardContent>
+              {settings.loyaltyTiers.map((t, idx) => (
+                <Box key={t.id || idx} sx={{ p: 2, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <TextField fullWidth size="small" label="Ad" value={t.name}
+                        onChange={(e) => { const arr = [...settings.loyaltyTiers]; arr[idx] = { ...arr[idx], name: e.target.value }; setSettings({ ...settings, loyaltyTiers: arr }); }} />
+                    </Grid>
+                    <Grid size={{ xs: 3, sm: 2 }}>
+                      <TextField fullWidth size="small" label="Emoji" value={t.emoji}
+                        onChange={(e) => { const arr = [...settings.loyaltyTiers]; arr[idx] = { ...arr[idx], emoji: e.target.value }; setSettings({ ...settings, loyaltyTiers: arr }); }} />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextField fullWidth size="small" label="Puan Eşiği" value={t.points}
+                        onChange={(e) => { const arr = [...settings.loyaltyTiers]; arr[idx] = { ...arr[idx], points: e.target.value }; setSettings({ ...settings, loyaltyTiers: arr }); }}
+                        placeholder="500+ Puan" />
+                    </Grid>
+                    <Grid size={{ xs: 3, sm: 3 }}>
+                      <Button fullWidth size="small" color="error"
+                        onClick={() => setSettings({ ...settings, loyaltyTiers: settings.loyaltyTiers.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField fullWidth size="small" multiline rows={2} label="Avantajlar (her satır bir madde)"
+                        value={t.benefits.join('\n')}
+                        onChange={(e) => {
+                          const arr = [...settings.loyaltyTiers];
+                          arr[idx] = { ...arr[idx], benefits: e.target.value.split('\n').filter(Boolean) };
+                          setSettings({ ...settings, loyaltyTiers: arr });
+                        }} />
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+        )}
+
+        {/* Toptan Satış */}
+        {activeTab === 'sayfalar' && (
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Toptan Satış Sayfası (/toptan-satis)"
+              subheader="Hedef kitle (segment) kartları"
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, wholesaleSegments: [...settings.wholesaleSegments, { id: `ws-${Date.now()}`, icon: 'coffee', title: '', desc: '', minOrder: '' }] })}
+                >Yeni Segment</Button>
+              }
+            />
+            <CardContent>
+              {settings.wholesaleSegments.map((s, idx) => (
+                <Box key={s.id || idx} sx={{ p: 2, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 12, sm: 4 }}>
+                      <TextField fullWidth size="small" label="Başlık" value={s.title}
+                        onChange={(e) => { const arr = [...settings.wholesaleSegments]; arr[idx] = { ...arr[idx], title: e.target.value }; setSettings({ ...settings, wholesaleSegments: arr }); }} />
+                    </Grid>
+                    <Grid size={{ xs: 8, sm: 4 }}>
+                      <TextField fullWidth size="small" label="Min. Sipariş" value={s.minOrder}
+                        onChange={(e) => { const arr = [...settings.wholesaleSegments]; arr[idx] = { ...arr[idx], minOrder: e.target.value }; setSettings({ ...settings, wholesaleSegments: arr }); }}
+                        placeholder="10 kg/ay" />
+                    </Grid>
+                    <Grid size={{ xs: 8, sm: 3 }}>
+                      <TextField fullWidth size="small" select label="İkon" value={s.icon}
+                        onChange={(e) => { const arr = [...settings.wholesaleSegments]; arr[idx] = { ...arr[idx], icon: e.target.value }; setSettings({ ...settings, wholesaleSegments: arr }); }}
+                        slotProps={{ select: { native: true } }}>
+                        <option value="coffee">Kahve</option>
+                        <option value="hotel">Otel</option>
+                        <option value="building">Bina</option>
+                        <option value="cart">Sepet</option>
+                      </TextField>
+                    </Grid>
+                    <Grid size={{ xs: 4, sm: 1 }}>
+                      <Button fullWidth size="small" color="error"
+                        onClick={() => setSettings({ ...settings, wholesaleSegments: settings.wholesaleSegments.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField fullWidth size="small" multiline rows={2} label="Açıklama" value={s.desc}
+                        onChange={(e) => { const arr = [...settings.wholesaleSegments]; arr[idx] = { ...arr[idx], desc: e.target.value }; setSettings({ ...settings, wholesaleSegments: arr }); }} />
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+        )}
+
+        {/* Kurumsal Hediye */}
+        {activeTab === 'sayfalar' && (
+        <Grid size={{ xs: 12 }}>
+          <Card>
+            <CardHeader
+              title="Kurumsal Hediye Sayfası (/kurumsal-hediye)"
+              subheader="Hediye set kartları"
+              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
+              action={
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setSettings({ ...settings, giftSets: [...settings.giftSets, { id: `gs-${Date.now()}`, name: '', desc: '', price: '' }] })}
+                >Yeni Set</Button>
+              }
+            />
+            <CardContent>
+              {settings.giftSets.map((g, idx) => (
+                <Box key={g.id || idx} sx={{ p: 2, mb: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 8, sm: 5 }}>
+                      <TextField fullWidth size="small" label="Set Adı" value={g.name}
+                        onChange={(e) => { const arr = [...settings.giftSets]; arr[idx] = { ...arr[idx], name: e.target.value }; setSettings({ ...settings, giftSets: arr }); }} />
+                    </Grid>
+                    <Grid size={{ xs: 4, sm: 2 }}>
+                      <TextField fullWidth size="small" label="Fiyat" value={g.price}
+                        onChange={(e) => { const arr = [...settings.giftSets]; arr[idx] = { ...arr[idx], price: e.target.value }; setSettings({ ...settings, giftSets: arr }); }}
+                        placeholder="₺349" />
+                    </Grid>
+                    <Grid size={{ xs: 8, sm: 4 }}>
+                      <TextField fullWidth size="small" label="Açıklama" value={g.desc}
+                        onChange={(e) => { const arr = [...settings.giftSets]; arr[idx] = { ...arr[idx], desc: e.target.value }; setSettings({ ...settings, giftSets: arr }); }} />
+                    </Grid>
+                    <Grid size={{ xs: 4, sm: 1 }}>
+                      <Button fullWidth size="small" color="error"
+                        onClick={() => setSettings({ ...settings, giftSets: settings.giftSets.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                  </Grid>
+                </Box>
+              ))}
+            </CardContent>
+          </Card>
+        </Grid>
+        )}
       </Grid>
     </Box>
   );

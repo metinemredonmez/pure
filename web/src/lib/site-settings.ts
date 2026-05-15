@@ -148,6 +148,20 @@ export interface SiteSettings {
   subscriptionFaqHeading: string
   subscriptionFaq: FaqItem[]
   subscriptionFaqCta: string
+  // Franchise sayfası
+  franchiseHeroBadge: string
+  franchiseHeroTitle: string
+  franchiseHeroSubtitle: string
+  franchiseHeroImage: string
+  franchisePhone: string
+  franchiseStats: { id: string; value: string; label: string }[]
+  franchiseBenefits: { id: string; title: string; desc: string; icon: string }[]
+  // Sadakat sayfası
+  loyaltyTiers: { id: string; name: string; emoji: string; points: string; benefits: string[] }[]
+  // Toptan satış sayfası
+  wholesaleSegments: { id: string; icon: string; title: string; desc: string; minOrder: string }[]
+  // Kurumsal hediye sayfası
+  giftSets: { id: string; name: string; desc: string; price: string }[]
 }
 
 const DEFAULTS: SiteSettings = {
@@ -335,6 +349,42 @@ const DEFAULTS: SiteSettings = {
     { id: 'a3', text: 'Aylık kahve aboneliğinde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
     { id: 'a4', text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
   ],
+  franchiseHeroBadge: 'Franchise Fırsatı',
+  franchiseHeroTitle: 'Pure Olentia ile Kendi Kahve Dükkânınızı Açın',
+  franchiseHeroSubtitle: 'Specialty kahve tutkusunu kendi işletmenizle paylaşın. Anahtar teslim konsept, barista eğitimi ve sürekli destek ile kahve sektöründe yerinizi alın.',
+  franchiseHeroImage: '',
+  franchisePhone: '0552 462 29 54',
+  franchiseStats: [
+    { id: 'fs1', value: '₺500K+', label: 'Yatırım Aralığı' },
+    { id: 'fs2', value: '3-6 Ay', label: 'Açılış Süreci' },
+    { id: 'fs3', value: '%100', label: 'Barista Eğitimi' },
+    { id: 'fs4', value: '7/24', label: 'Destek' },
+  ],
+  franchiseBenefits: [
+    { id: 'fb1', title: 'Anahtar Teslim Konsept', desc: 'Mekan tasarımından ekipman seçimine kadar komple çözüm.', icon: 'key' },
+    { id: 'fb2', title: 'Barista Eğitimi', desc: 'SCA standartlarında profesyonel barista eğitimi ve sertifika.', icon: 'award' },
+    { id: 'fb3', title: 'Taze Kavurma Tedarik', desc: 'Merkezi kavurma tesisimizden düzenli taze kahve tedariki.', icon: 'coffee' },
+    { id: 'fb4', title: 'Pazarlama Desteği', desc: 'Dijital pazarlama, sosyal medya ve yerel kampanya desteği.', icon: 'megaphone' },
+    { id: 'fb5', title: 'Operasyon Danışmanlığı', desc: 'Menü mühendisliği, maliyet kontrolü ve iş süreçleri danışmanlığı.', icon: 'analytics' },
+    { id: 'fb6', title: 'Marka Gücü', desc: 'Pure Olentia marka bilinirliği ve sadık müşteri tabanı.', icon: 'award' },
+  ],
+  loyaltyTiers: [
+    { id: 'lt1', name: 'Bronz', emoji: '🥉', points: 'Başlangıç', benefits: ['%5 indirim', 'Doğum günü sürprizi'] },
+    { id: 'lt2', name: 'Gümüş', emoji: '🥈', points: '500+ Puan', benefits: ['%10 indirim', 'Ücretsiz kargo', 'Özel mahsul önce erişim'] },
+    { id: 'lt3', name: 'Altın', emoji: '🥇', points: '2000+ Puan', benefits: ['%15 indirim', 'Ücretsiz kargo', 'Aylık özel hediye', 'Cupping davetleri'] },
+    { id: 'lt4', name: 'Platin', emoji: '💎', points: '5000+ Puan', benefits: ['%20 indirim', 'Ücretsiz hızlı kargo', 'Kişisel barista danışmanı', 'Özel etkinlikler'] },
+  ],
+  wholesaleSegments: [
+    { id: 'ws1', icon: 'coffee', title: 'Kafeler & Specialty Barlar', desc: 'Menünüze özel blend geliştirme, barista eğitimi ve ekipman danışmanlığı dahil.', minOrder: '10 kg/ay' },
+    { id: 'ws2', icon: 'hotel', title: 'Oteller', desc: 'Lobiden odaya kahve servisi için özel paketler.', minOrder: '20 kg/ay' },
+    { id: 'ws3', icon: 'building', title: 'Ofisler & Kurumlar', desc: 'Ofis kahvesi paketleri, makine ve filtre desteği.', minOrder: '5 kg/ay' },
+    { id: 'ws4', icon: 'cart', title: 'Perakende & Online', desc: 'Beyaz etiket / özel ambalaj seçenekleri.', minOrder: 'Görüşmeli' },
+  ],
+  giftSets: [
+    { id: 'gs1', name: 'Klasik Set', desc: 'Türk Kahvesi 100gr + bakır cezve + porselen fincan takımı', price: '₺349' },
+    { id: 'gs2', name: 'Premium Set', desc: '3 farklı menşei kahve (250gr x 3) + demleme rehberi + özel kutu', price: '₺549' },
+    { id: 'gs3', name: 'Lüks Set', desc: 'Single Origin koleksiyon + V60 + dijital tartı + filtre kağıdı', price: '₺899' },
+  ],
 }
 
 function coerce(value: unknown): string {
@@ -409,6 +459,18 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'homeCollectionCards') {
         if (Array.isArray(incoming)) {
           merged.homeCollectionCards = incoming as HomeCollectionCard[]
+        }
+        continue
+      }
+      if (
+        key === 'franchiseStats' ||
+        key === 'franchiseBenefits' ||
+        key === 'loyaltyTiers' ||
+        key === 'wholesaleSegments' ||
+        key === 'giftSets'
+      ) {
+        if (Array.isArray(incoming) && incoming.length) {
+          ;(merged as any)[key] = incoming
         }
         continue
       }
