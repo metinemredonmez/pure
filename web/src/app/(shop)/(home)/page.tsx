@@ -1,6 +1,7 @@
 import { Divider } from '@/components/Divider'
 import Heading from '@/components/Heading/Heading'
 import SectionCollectionSlider from '@/components/SectionCollectionSlider'
+import SectionGoogleReviews from '@/components/SectionGoogleReviews'
 import SectionHero2 from '@/components/SectionHero/SectionHero2'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionPromo2 from '@/components/SectionPromo2'
@@ -186,6 +187,9 @@ async function PageHome() {
           viewAllLabel={settings.homeViewAllLabel}
           viewAllCaption={settings.homeViewAllCaption}
         />
+
+        {/* Google reviews carousel (data from /public/google-reviews) */}
+        <SectionGoogleReviews />
       </div>
 
       {/* Newsletter — tight spacing, no extra top padding */}
