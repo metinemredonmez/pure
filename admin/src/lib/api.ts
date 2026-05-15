@@ -504,6 +504,17 @@ export const reviewsApi = {
   },
 };
 
+export const googleReviewsApi = {
+  list: async () => {
+    const { data } = await api.get('/admin/google-reviews');
+    return data;
+  },
+  refresh: async () => {
+    const { data } = await api.post('/admin/google-reviews/refresh');
+    return data;
+  },
+};
+
 // B2B API
 export const b2bApi = {
   getLeads: async (params?: { page?: number; limit?: number; status?: string }) => {

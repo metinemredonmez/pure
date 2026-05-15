@@ -10,9 +10,9 @@ import {
 import {
   Star as StarIcon, Check as ApproveIcon, Close as RejectIcon, Delete as DeleteIcon,
   RateReview as ReviewIcon, Google as GoogleIcon, Store as StoreIcon,
-  ThumbUp as HelpfulIcon, FormatQuote as QuoteIcon,
+  ThumbUp as HelpfulIcon, FormatQuote as QuoteIcon, Refresh as RefreshIcon,
 } from '@mui/icons-material';
-import { reviewsApi } from '@/lib/api';
+import { googleReviewsApi, reviewsApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import ExportButton from '@/components/common/ExportButton';
@@ -36,19 +36,8 @@ const statusConfig: Record<string, { label: string; color: 'warning' | 'success'
 
 function formatDate(d: string) { return new Date(d).toLocaleDateString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric' }); }
 
-// Mock Google Reviews (5.0 / 20 yorum - Pure Olentia)
-const GOOGLE_REVIEWS: GoogleReview[] = [
-  { author: 'Mehmet Y.', rating: 5, text: 'Harika kahve! Taze kavrulmus, aromatik ve lezzet dolu. Kesinlikle tavsiye ederim.', time: '2 hafta once' },
-  { author: 'Ayse K.', rating: 5, text: 'Turk kahvesinin en iyisi! Kopugu bile mukemmel. Siparisi hizli geldi.', time: '1 ay once' },
-  { author: 'Ali R.', rating: 5, text: 'Uzun suredir en iyi kahveyi ariyordum, Pure Olentia ile buldum. Ozellikle filtre kahveleri muhtesem.', time: '1 ay once' },
-  { author: 'Fatma S.', rating: 5, text: 'Abonelik sistemi cok pratik, her ay taze kahvem kapida. Kaliteden odun vermiyorlar.', time: '2 ay once' },
-  { author: 'Can D.', rating: 5, text: 'Ofis icin toplu siparis verdik, herkes bayildi. Fiyat-performans orani mukemmel.', time: '2 ay once' },
-  { author: 'Zeynep A.', rating: 5, text: 'Ethiopia Yirgacheffe denedim, meyve notalari inanilmaz. Packaging de cok sik.', time: '3 ay once' },
-  { author: 'Burak T.', rating: 5, text: 'Kargo hizli, paketleme ozenli, kahve taptaze. 5 yildiz hak ediyor.', time: '3 ay once' },
-  { author: 'Selin M.', rating: 5, text: 'Colombia Supremo favori kahvem oldu. Kremsi dokusu ve cikolata notalari harika.', time: '4 ay once' },
-  { author: 'Emre B.', rating: 5, text: 'Kenya AA ile tanistim, asidik yapisi ve meyve aromas cesur ama dengeli.', time: '4 ay once' },
-  { author: 'Deniz K.', rating: 5, text: 'Hediye paketi aldim, sunumu ve kalitesi ile cok begendiler. Tesekkurler Pure Olentia!', time: '5 ay once' },
-];
+// Google reviews now come from backend (/admin/google-reviews → Google Places API + 6h cache).
+// If GOOGLE_PLACES_API_KEY or GOOGLE_PLACE_ID are missing in backend .env, mock data is returned.
 
 export default function ReviewsPage() {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -60,6 +49,31 @@ export default function ReviewsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [tab, setTab] = useState(0);
   const { showSuccess, showError } = useToast();
+  const [googleReviews, setGoogleReviews] = useState<GoogleReview[]>([]);
+  const [googleRating, setGoogleRating] = useState<number>(0);
+  const [googleCount, setGoogleCount] = useState<number>(0);
+  const [googleSource, setGoogleSource] = useState<'live' | 'cache' | 'mock' | ''>('');
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  const fetchGoogleReviews = useCallback(async (refresh = false) => {
+    try {
+      setGoogleLoading(true);
+      const r = refresh ? await googleReviewsApi.refresh() : await googleReviewsApi.list();
+      const d = r.data || r;
+      setGoogleReviews(Array.isArray(d.reviews) ? d.reviews : []);
+      setGoogleRating(typeof d.rating === 'number' ? d.rating : 0);
+      setGoogleCount(typeof d.reviewCount === 'number' ? d.reviewCount : (d.reviews?.length ?? 0));
+      setGoogleSource(d.source || '');
+    } catch {
+      setGoogleReviews([]);
+    } finally {
+      setGoogleLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (tab === 1 && googleReviews.length === 0) fetchGoogleReviews(false);
+  }, [tab, googleReviews.length, fetchGoogleReviews]);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -239,52 +253,107 @@ export default function ReviewsPage() {
               <Avatar sx={{ width: 48, height: 48, bgcolor: '#4CAF5015' }}>
                 <GoogleIcon sx={{ color: '#4CAF50', fontSize: 28 }} />
               </Avatar>
-              <Box>
+              <Box sx={{ flex: 1 }}>
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h5" fontWeight={800}>5.0</Typography>
-                  <Rating value={5} readOnly size="small" />
-                  <Typography variant="body2" color="text.secondary">20 yorum</Typography>
+                  <Typography variant="h5" fontWeight={800}>
+                    {googleRating ? googleRating.toFixed(1) : '—'}
+                  </Typography>
+                  <Rating value={googleRating || 0} readOnly size="small" precision={0.1} />
+                  <Typography variant="body2" color="text.secondary">{googleCount} yorum</Typography>
+                  {googleSource === 'mock' && (
+                    <Chip
+                      label="Mock"
+                      size="small"
+                      color="warning"
+                      sx={{ ml: 1, height: 20, fontSize: 10 }}
+                    />
+                  )}
+                  {googleSource === 'cache' && (
+                    <Chip label="Önbellek" size="small" sx={{ ml: 1, height: 20, fontSize: 10 }} />
+                  )}
+                  {googleSource === 'live' && (
+                    <Chip label="Canlı" size="small" color="success" sx={{ ml: 1, height: 20, fontSize: 10 }} />
+                  )}
                 </Stack>
                 <Typography variant="caption" color="text.secondary">
                   Olentia — Kahve Kavurma Sirketi | Sancaktepe, Istanbul
                 </Typography>
               </Box>
+              <Tooltip title="Google'dan tekrar çek (önbelleği temizler)">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<RefreshIcon />}
+                  onClick={() => fetchGoogleReviews(true)}
+                  disabled={googleLoading}
+                >
+                  Yenile
+                </Button>
+              </Tooltip>
             </Stack>
           </Card>
 
+          {googleSource === 'mock' && (
+            <Box sx={{ mb: 2, p: 1.5, borderRadius: 1, bgcolor: 'warning.main', color: 'warning.contrastText', opacity: 0.9 }}>
+              <Typography variant="caption">
+                Backend .env içinde <code>GOOGLE_PLACES_API_KEY</code> ve <code>GOOGLE_PLACE_ID</code> tanımlı değil — mock veri gösteriliyor.
+              </Typography>
+            </Box>
+          )}
+
           {/* Google Review Cards */}
-          <Grid container spacing={2}>
-            {GOOGLE_REVIEWS.map((gr, i) => (
-              <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
-                <Card sx={{
-                  height: '100%', transition: 'all 0.2s',
-                  '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 20px rgba(76,175,80,0.1)' },
-                }}>
-                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: `${olentiaColors.primary.main}15`, color: olentiaColors.primary.main, fontSize: 14, fontWeight: 700 }}>
-                        {gr.author[0]}
-                      </Avatar>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" fontWeight={600}>{gr.author}</Typography>
-                        <Typography variant="caption" color="text.disabled">{gr.time}</Typography>
-                      </Box>
-                      <GoogleIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
-                    </Stack>
-                    <Rating value={gr.rating} readOnly size="small" sx={{ mb: 1 }} />
-                    <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: 13 }}>
-                      <QuoteIcon sx={{ fontSize: 14, color: 'text.disabled', mr: 0.5, verticalAlign: 'text-top' }} />
-                      {gr.text}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+          {googleLoading ? (
+            <Grid container spacing={2}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card sx={{ p: 2 }}>
+                    <Skeleton variant="rectangular" height={120} />
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : googleReviews.length === 0 ? (
+            <Box sx={{ p: 6, textAlign: 'center' }}>
+              <GoogleIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+              <Typography color="text.secondary">Google yorumu bulunamadı.</Typography>
+            </Box>
+          ) : (
+            <Grid container spacing={2}>
+              {googleReviews.map((gr, i) => (
+                <Grid key={i} size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Card sx={{
+                    height: '100%', transition: 'all 0.2s',
+                    '&:hover': { transform: 'translateY(-2px)', boxShadow: '0 4px 20px rgba(76,175,80,0.1)' },
+                  }}>
+                    <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }}>
+                        <Avatar
+                          src={(gr as any).profilePhoto}
+                          sx={{ width: 32, height: 32, bgcolor: `${olentiaColors.primary.main}15`, color: olentiaColors.primary.main, fontSize: 14, fontWeight: 700 }}
+                        >
+                          {gr.author?.[0]}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" fontWeight={600}>{gr.author}</Typography>
+                          <Typography variant="caption" color="text.disabled">{gr.time}</Typography>
+                        </Box>
+                        <GoogleIcon sx={{ fontSize: 16, color: '#4CAF50' }} />
+                      </Stack>
+                      <Rating value={gr.rating} readOnly size="small" sx={{ mb: 1 }} />
+                      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.5, fontSize: 13 }}>
+                        <QuoteIcon sx={{ fontSize: 14, color: 'text.disabled', mr: 0.5, verticalAlign: 'text-top' }} />
+                        {gr.text}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
 
           <Box sx={{ mt: 3, textAlign: 'center' }}>
             <Typography variant="caption" color="text.disabled">
-              Google yorumlari Google Maps uzerinden otomatik cekilmektedir.
+              Google yorumları Places API üzerinden 6 saatte bir otomatik çekilir. Google sadece son 5 yorumu döner.
             </Typography>
           </Box>
         </Box>

@@ -36,6 +36,7 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 import { CalendarModule } from './modules/calendar/calendar.module';
 import { WebsiteModule } from './modules/website/website.module';
 import { BlogModule } from './modules/blog/blog.module';
+import { GoogleReviewsModule } from './modules/google-reviews/google-reviews.module';
 import { KargonomiModule } from './modules/kargonomi/kargonomi.module';
 import { InvoiceModule } from './modules/invoice/invoice.module';
 
@@ -97,6 +98,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     // Sprint 2 modules
     WebsiteModule,
     BlogModule,
+    GoogleReviewsModule,
     KargonomiModule,
     InvoiceModule,
   ],

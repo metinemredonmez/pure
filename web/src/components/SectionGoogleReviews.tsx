@@ -1,19 +1,22 @@
 'use client'
 
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
+import { getApiGoogleReviews } from '@/lib/api'
 import { ArrowLeft02Icon, ArrowRight02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import type { EmblaOptionsType } from 'embla-carousel'
 import useEmblaCarousel from 'embla-carousel-react'
+import { useEffect, useState } from 'react'
 
 interface GoogleReview {
   author: string
   rating: number
   text: string
   time: string
+  profilePhoto?: string
 }
 
-const REVIEWS: GoogleReview[] = [
+const FALLBACK_REVIEWS: GoogleReview[] = [
   { author: 'Mehmet Y.', rating: 5, text: 'Harika kahve! Taze kavrulmuş, aromatik ve lezzet dolu. Kesinlikle tavsiye ederim.', time: '2 hafta önce' },
   { author: 'Ayşe K.', rating: 5, text: 'Türk kahvesinin en iyisi! Köpüğü bile mükemmel. Siparişi hızlı geldi.', time: '1 ay önce' },
   { author: 'Ali R.', rating: 5, text: 'Uzun süredir en iyi kahveyi arıyordum, Pure Olentia ile buldum. Özellikle filtre kahveleri muhteşem.', time: '1 ay önce' },
@@ -72,6 +75,28 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
 
+  const [reviews, setReviews] = useState<GoogleReview[]>(FALLBACK_REVIEWS)
+  const [aggregateRating, setAggregateRating] = useState<number>(5)
+  const [reviewCount, setReviewCount] = useState<number>(FALLBACK_REVIEWS.length)
+
+  useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      const res = (await getApiGoogleReviews()) as any
+      if (cancelled) return
+      const data = res?.data || res
+      const list: GoogleReview[] = Array.isArray(data?.reviews) ? data.reviews : []
+      if (list.length) {
+        setReviews(list)
+      }
+      if (typeof data?.rating === 'number') setAggregateRating(data.rating)
+      if (typeof data?.reviewCount === 'number') setReviewCount(data.reviewCount)
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   return (
     <div className={`relative ${className}`}>
       {/* Header */}
@@ -87,11 +112,11 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
 
         <div className="flex items-center gap-3 text-sm">
           <div className="flex items-center gap-1.5">
-            <StarRating count={5} />
-            <span className="font-bold text-neutral-900 dark:text-white">5.0</span>
+            <StarRating count={Math.round(aggregateRating)} />
+            <span className="font-bold text-neutral-900 dark:text-white">{aggregateRating.toFixed(1)}</span>
           </div>
           <span className="text-neutral-400">·</span>
-          <span className="text-neutral-600 dark:text-neutral-400">20+ Google yorumu</span>
+          <span className="text-neutral-600 dark:text-neutral-400">{reviewCount}+ Google yorumu</span>
           <span className="text-neutral-400">·</span>
           <a
             href="https://www.google.com/maps/search/?api=1&query=Olentia+Pure+Sancaktepe"
@@ -108,7 +133,7 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
       <div className="relative">
         <div className="overflow-hidden" ref={emblaRef}>
           <div className="flex -ml-4">
-            {REVIEWS.map((r, i) => (
+            {reviews.map((r, i) => (
               <div key={i} className="flex-shrink-0 basis-full pl-4 sm:basis-1/2 lg:basis-1/3">
                 <article className="group relative h-full overflow-hidden rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg dark:border-neutral-700 dark:bg-neutral-800">
                   {/* Google badge */}
