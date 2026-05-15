@@ -2,19 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import {
-  Box, Card, CardContent, Typography, Grid, Button, Dialog, DialogTitle,
+  Box, Card, CardContent, CardHeader, Typography, Grid, Button, Dialog, DialogTitle,
   DialogContent, DialogActions, TextField, Stack, Chip, IconButton,
-  Skeleton, Switch, FormControlLabel, Divider,
+  Skeleton, Switch, FormControlLabel, Divider, Accordion, AccordionSummary, AccordionDetails,
 } from '@mui/material';
 import {
   Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
-  Close as CloseIcon, LocalCafe,
+  Close as CloseIcon, LocalCafe, ExpandMore as ExpandMoreIcon, Save as SaveIcon,
 } from '@mui/icons-material';
-import { subscriptionsApi } from '@/lib/api';
+import { subscriptionsApi, websiteApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 import { useToast } from '@/contexts/ToastContext';
+
+interface IconStep { id: string; title: string; desc: string; icon: string }
+interface FaqItem { id: string; q: string; a: string }
+
+const STEP_ICON_OPTIONS = [
+  { value: 'coffee', label: 'Kahve' },
+  { value: 'package', label: 'Paket' },
+  { value: 'truck', label: 'Kargo' },
+  { value: 'gift', label: 'Hediye' },
+];
+
+const DEFAULT_SUB_STEPS: IconStep[] = [
+  { id: 'st1', title: 'Plan Seçin', desc: 'Size uygun paketi seçin', icon: 'coffee' },
+  { id: 'st2', title: 'Taze Kavrulsun', desc: 'Sipariş üzerine kavrulur', icon: 'package' },
+  { id: 'st3', title: 'Kapınıza Gelsin', desc: 'Ücretsiz hızlı kargo', icon: 'truck' },
+  { id: 'st4', title: 'Her Ay Yeni Lezzet', desc: 'Farklı menşeiler', icon: 'gift' },
+];
+
+const DEFAULT_SUB_FAQ: FaqItem[] = [
+  { id: 'q1', q: 'Aboneliğimi istediğim zaman iptal edebilir miyim?', a: 'Evet, aboneliğinizi dilediğiniz zaman hesabınızdan iptal edebilirsiniz.' },
+];
 
 interface SubPlan {
   id: string;
@@ -47,7 +68,52 @@ export default function SubscriptionPlansPage() {
   const [confirmDelete, setConfirmDelete] = useState<SubPlan | null>(null);
   const { showSuccess, showError } = useToast();
 
-  useEffect(() => { fetchPlans(); }, []);
+  // ── Sayfa Metinleri (eskiden Site Ayarları → Abonelik tab'ındaydı) ──
+  const [pageText, setPageText] = useState({
+    subscriptionHeroBadge: 'Kahve Aboneliği',
+    subscriptionHeroTitle: 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
+    subscriptionHeroSubtitle: 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz.',
+    subscriptionHeroCta: 'Abone Ol',
+    subscriptionHeroImage: '',
+    subscriptionSteps: DEFAULT_SUB_STEPS,
+    subscriptionFaqHeading: 'Sıkça Sorulan Sorular',
+    subscriptionFaq: DEFAULT_SUB_FAQ,
+    subscriptionFaqCta: 'Kahveleri Keşfet',
+  });
+  const [savingText, setSavingText] = useState(false);
+
+  useEffect(() => { fetchPlans(); loadPageText(); }, []);
+
+  const loadPageText = async () => {
+    try {
+      const res = await websiteApi.getSettings();
+      const data = res.data || res || {};
+      setPageText({
+        subscriptionHeroBadge: data.subscriptionHeroBadge || 'Kahve Aboneliği',
+        subscriptionHeroTitle: data.subscriptionHeroTitle || 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
+        subscriptionHeroSubtitle: data.subscriptionHeroSubtitle || 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz.',
+        subscriptionHeroCta: data.subscriptionHeroCta || 'Abone Ol',
+        subscriptionHeroImage: data.subscriptionHeroImage || '',
+        subscriptionSteps: Array.isArray(data.subscriptionSteps) && data.subscriptionSteps.length ? data.subscriptionSteps : DEFAULT_SUB_STEPS,
+        subscriptionFaqHeading: data.subscriptionFaqHeading || 'Sıkça Sorulan Sorular',
+        subscriptionFaq: Array.isArray(data.subscriptionFaq) && data.subscriptionFaq.length ? data.subscriptionFaq : DEFAULT_SUB_FAQ,
+        subscriptionFaqCta: data.subscriptionFaqCta || 'Kahveleri Keşfet',
+      });
+    } catch {}
+  };
+
+  const savePageText = async () => {
+    setSavingText(true);
+    try {
+      await websiteApi.updateMultipleSettings(
+        Object.entries(pageText).map(([key, value]) => ({ key, value }))
+      );
+      showSuccess('Sayfa metinleri kaydedildi');
+    } catch {
+      showError('Kayıt başarısız');
+    }
+    setSavingText(false);
+  };
 
   const fetchPlans = async () => {
     setLoading(true);
@@ -120,9 +186,158 @@ export default function SubscriptionPlansPage() {
       />
 
       <Box sx={{ p: 2, mb: 2, borderRadius: 1, bgcolor: 'action.hover', fontSize: 13 }}>
-        ℹ️ Buradaki planlar <strong>/subscription</strong> sayfasında 3 kart olarak gösterilir. Sıralama: <strong>Sıra alanı</strong> (küçükten büyüğe).
-        Hero başlık, FAQ, arka plan görseli gibi sayfa metinleri ise <strong>Web Sitesi → Site Ayarları → Abonelik</strong> sekmesinden yönetilir.
+        ℹ️ Bu sayfada <strong>/subscription</strong> sayfası için her şey yönetilir:<br />
+        — Aşağıdaki <strong>"Sayfa Metinleri"</strong> bölümünden: hero başlık, alt yazı, badge, CTA butonu, arka plan görseli, "Nasıl Çalışır" 4 ikon kartı, SSS.<br />
+        — Aşağıdaki <strong>3 Paket kartından</strong>: paket adı, açıklama, görseli, fiyatı (sıralama: <strong>Sıra alanı</strong>).<br />
+        — Kahve fiyatları <strong>Ürünler</strong> sayfasından gelir (her gramaj/ürün kendi fiyatı).
       </Box>
+
+      {/* SAYFA METİNLERİ — eskiden Site Ayarları → Abonelik tab'ındaydı */}
+      <Accordion sx={{ mb: 3 }} defaultExpanded={false}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="body1" fontWeight={600}>📝 Sayfa Metinleri (Hero, Adımlar, SSS, Arka Plan Görseli)</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Hero Bölümü</Typography>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth size="small" label="Üst Etiket (badge)" value={pageText.subscriptionHeroBadge}
+                onChange={(e) => setPageText({ ...pageText, subscriptionHeroBadge: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth size="small" label="Buton Metni" value={pageText.subscriptionHeroCta}
+                onChange={(e) => setPageText({ ...pageText, subscriptionHeroCta: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField fullWidth size="small" label="Başlık (HTML — <br /> ile satır kırabilirsiniz)" value={pageText.subscriptionHeroTitle}
+                onChange={(e) => setPageText({ ...pageText, subscriptionHeroTitle: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={pageText.subscriptionHeroSubtitle}
+                onChange={(e) => setPageText({ ...pageText, subscriptionHeroSubtitle: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <ImageUpload
+                label="Hero Arka Plan Görseli (önerilen 1920x800px) — boş ise varsayılan kahveli arka plan"
+                value={pageText.subscriptionHeroImage}
+                onChange={(url) => setPageText({ ...pageText, subscriptionHeroImage: typeof url === 'string' ? url : '' })}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>Nasıl Çalışır? (4 ikon kartı)</Typography>
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setPageText({ ...pageText, subscriptionSteps: [...pageText.subscriptionSteps, { id: `st-${Date.now()}`, title: '', desc: '', icon: 'coffee' }] })}
+                >Yeni Adım</Button>
+              </Stack>
+            </Grid>
+            {pageText.subscriptionSteps.map((s, idx) => (
+              <Grid size={{ xs: 12 }} key={s.id || idx}>
+                <Grid container spacing={1}>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <TextField fullWidth size="small" label="Başlık" value={s.title}
+                      onChange={(e) => {
+                        const arr = [...pageText.subscriptionSteps];
+                        arr[idx] = { ...arr[idx], title: e.target.value };
+                        setPageText({ ...pageText, subscriptionSteps: arr });
+                      }} />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 4 }}>
+                    <TextField fullWidth size="small" label="Açıklama" value={s.desc}
+                      onChange={(e) => {
+                        const arr = [...pageText.subscriptionSteps];
+                        arr[idx] = { ...arr[idx], desc: e.target.value };
+                        setPageText({ ...pageText, subscriptionSteps: arr });
+                      }} />
+                  </Grid>
+                  <Grid size={{ xs: 9, sm: 3 }}>
+                    <TextField select fullWidth size="small" label="İkon" value={s.icon}
+                      onChange={(e) => {
+                        const arr = [...pageText.subscriptionSteps];
+                        arr[idx] = { ...arr[idx], icon: e.target.value };
+                        setPageText({ ...pageText, subscriptionSteps: arr });
+                      }}
+                      slotProps={{ select: { native: true } }}>
+                      {STEP_ICON_OPTIONS.map((o) => (<option key={o.value} value={o.value}>{o.label}</option>))}
+                    </TextField>
+                  </Grid>
+                  <Grid size={{ xs: 3, sm: 1 }}>
+                    <Button fullWidth size="small" color="error"
+                      onClick={() => setPageText({ ...pageText, subscriptionSteps: pageText.subscriptionSteps.filter((_, i) => i !== idx) })}
+                    >Sil</Button>
+                  </Grid>
+                </Grid>
+              </Grid>
+            ))}
+
+            <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>
+
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth size="small" label="SSS Başlığı" value={pageText.subscriptionFaqHeading}
+                onChange={(e) => setPageText({ ...pageText, subscriptionFaqHeading: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth size="small" label="SSS Altı CTA Buton Metni" value={pageText.subscriptionFaqCta}
+                onChange={(e) => setPageText({ ...pageText, subscriptionFaqCta: e.target.value })} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>SSS Soruları</Typography>
+                <Button size="small" startIcon={<AddIcon />}
+                  onClick={() => setPageText({ ...pageText, subscriptionFaq: [...pageText.subscriptionFaq, { id: `fq-${Date.now()}`, q: '', a: '' }] })}
+                >Yeni Soru</Button>
+              </Stack>
+            </Grid>
+            {pageText.subscriptionFaq.map((f, idx) => (
+              <Grid size={{ xs: 12 }} key={f.id || idx}>
+                <Box sx={{ p: 1.5, mb: 1, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 11 }}>
+                      <TextField fullWidth size="small" label="Soru" value={f.q}
+                        onChange={(e) => {
+                          const arr = [...pageText.subscriptionFaq];
+                          arr[idx] = { ...arr[idx], q: e.target.value };
+                          setPageText({ ...pageText, subscriptionFaq: arr });
+                        }} />
+                    </Grid>
+                    <Grid size={{ xs: 1 }}>
+                      <Button fullWidth size="small" color="error"
+                        onClick={() => setPageText({ ...pageText, subscriptionFaq: pageText.subscriptionFaq.filter((_, i) => i !== idx) })}
+                      >Sil</Button>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                      <TextField fullWidth size="small" multiline rows={2} label="Cevap" value={f.a}
+                        onChange={(e) => {
+                          const arr = [...pageText.subscriptionFaq];
+                          arr[idx] = { ...arr[idx], a: e.target.value };
+                          setPageText({ ...pageText, subscriptionFaq: arr });
+                        }} />
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Grid>
+            ))}
+
+            <Grid size={{ xs: 12 }}>
+              <Button
+                variant="contained" startIcon={<SaveIcon />}
+                disabled={savingText}
+                onClick={savePageText}
+                sx={{ bgcolor: olentiaColors.primary.main }}
+              >
+                {savingText ? 'Kaydediliyor...' : 'Sayfa Metinlerini Kaydet'}
+              </Button>
+            </Grid>
+          </Grid>
+        </AccordionDetails>
+      </Accordion>
+
+      <Typography variant="h6" sx={{ mb: 2, mt: 1, fontWeight: 600 }}>3 Paket Kartı</Typography>
 
       {loading ? (
         <Grid container spacing={2}>

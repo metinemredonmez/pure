@@ -1573,13 +1573,36 @@ export default function SiteSettingsPage() {
         </Grid>
         )}
 
-        {/* Abonelik Sayfası — Hero / Adımlar / SSS */}
+        {/* Abonelik Sayfası — TAMAMI artık /subscriptions/plans sayfasından yönetiliyor */}
         {activeTab === 'abonelik' && (
         <Grid size={{ xs: 12 }}>
           <Card>
+            <CardContent>
+              <Box sx={{ p: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>Abonelik sayfası yönetimi taşındı</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  /subscription sayfası için <strong>hero metni, "Nasıl Çalışır" adımları, SSS, arka plan görseli</strong> ve <strong>3 paket kartı</strong> artık tek yerden — <strong>Abonelikler → Abonelik Planları (3 Paket)</strong> sayfasından yönetiliyor.
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => window.location.href = '/subscriptions/plans'}
+                  sx={{ bgcolor: '#D4793F', '&:hover': { bgcolor: '#B66432' } }}
+                >
+                  Abonelik Yönetimine Git →
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+        )}
+
+        {/* Eski Abonelik UI'ı kaldırıldı — ↓ aşağıdaki blok hiç render edilmiyor */}
+        {false && (
+        <Grid size={{ xs: 12 }}>
+          <Card>
             <CardHeader
-              title="/subscription Sayfası — Hero, Adımlar, SSS"
-              subheader='Abonelik sayfasının üst banner metinleri, "Nasıl çalışır?" 4 ikon kartı ve SSS bölümü. Plan kartları ayrı bir yerden (Abonelikler → Planlar), configurator ayrı (Site Ayarları → Abonelik Ayarları) yönetiliyor.'
+              title="(kaldırıldı)"
+              subheader='taşındı'
               titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
             />
             <CardContent>
