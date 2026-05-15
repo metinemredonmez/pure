@@ -224,16 +224,18 @@ export default function SubscriptionPage({
       .catch(() => setProducts([]))
   }, [])
 
-  // PACKAGES + planOverrides (admin'in /subscriptions/plans'tan girdiği görsel/isim/açıklama)
+  // Sadece admin'de oluşturulmuş plan kadar paket göster.
+  // Admin'de 0 plan varsa → site'de paket gözükmez (fallback yok).
   const packages = useMemo<PackageDef[]>(() => {
-    return PACKAGES.map((p, idx) => {
-      const o = planOverrides[idx]
-      if (!o) return p
+    return planOverrides.map((o, idx) => {
+      const base = PACKAGES[idx] || PACKAGES[0]
       return {
-        ...p,
-        name: o.name || p.name,
-        description: o.description || p.description,
-        image: o.image || p.image,
+        ...base,
+        // ID'yi de admin sırasına bağla — gramaj/süre/sıklık kuralları idx'e göre eşleşir
+        id: base.id,
+        name: o.name || base.name,
+        description: o.description || base.description,
+        image: o.image || base.image,
       }
     })
   }, [planOverrides])
@@ -386,6 +388,14 @@ export default function SubscriptionPage({
             Tüketim seviyenize uygun paketi seçin, kahve türünü ve gramajı belirleyin.
           </p>
         </div>
+
+        {packages.length === 0 && (
+          <div className="mt-10 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-12 text-center dark:border-neutral-700 dark:bg-neutral-900">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              Henüz abonelik paketi eklenmedi. Çok yakında!
+            </p>
+          </div>
+        )}
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {packages.map((p) => {
