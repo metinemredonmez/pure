@@ -446,7 +446,7 @@ export default function SiteSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   // Active tab in Site Ayarları (UI only, not persisted)
-  const [activeTab, setActiveTab] = useState<'genel' | 'anasayfa' | 'menuler' | 'abonelik' | 'b2b' | 'sayfalar'>('genel');
+  const [activeTab, setActiveTab] = useState<'genel' | 'anasayfa' | 'menuler' | 'b2b' | 'sayfalar'>('genel');
   // Per-card transient link mode; URL itself is the source of truth in settings.homeCollectionCards
   const [cardLinkModes, setCardLinkModes] = useState<LinkMode[]>(['product', 'product', 'product']);
   const [productOpts, setProductOpts] = useState<PickerOption[]>([]);
@@ -641,7 +641,6 @@ export default function SiteSettingsPage() {
           <Tab label="Genel" value="genel" />
           <Tab label="Anasayfa" value="anasayfa" />
           <Tab label="Menüler" value="menuler" />
-          <Tab label="Abonelik" value="abonelik" />
           <Tab label="B2B / Kurumsal" value="b2b" />
           <Tab label="Sayfa İçerikleri" value="sayfalar" />
         </Tabs>
@@ -1573,28 +1572,7 @@ export default function SiteSettingsPage() {
         </Grid>
         )}
 
-        {/* Abonelik Sayfası — TAMAMI artık /subscriptions/plans sayfasından yönetiliyor */}
-        {activeTab === 'abonelik' && (
-        <Grid size={{ xs: 12 }}>
-          <Card>
-            <CardContent>
-              <Box sx={{ p: 4, textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>Abonelik sayfası yönetimi taşındı</Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                  /subscription sayfası için <strong>hero metni, "Nasıl Çalışır" adımları, SSS, arka plan görseli</strong> ve <strong>3 paket kartı</strong> artık tek yerden — <strong>Abonelikler → Abonelik Planları (3 Paket)</strong> sayfasından yönetiliyor.
-                </Typography>
-                <Button
-                  variant="contained"
-                  onClick={() => window.location.href = '/subscriptions/plans'}
-                  sx={{ bgcolor: '#D4793F', '&:hover': { bgcolor: '#B66432' } }}
-                >
-                  Abonelik Yönetimine Git →
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-        )}
+        {/* Abonelik tab'ı KOMPLE kaldırıldı — yönetim sadece /subscriptions/plans'tan yapılıyor */}
 
         {/* Eski Abonelik UI'ı kaldırıldı — ↓ aşağıdaki blok hiç render edilmiyor */}
         {false && (
