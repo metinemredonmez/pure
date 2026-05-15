@@ -185,6 +185,7 @@ interface SiteSettingsState {
   subscriptionHeroTitle: string;
   subscriptionHeroSubtitle: string;
   subscriptionHeroCta: string;
+  subscriptionHeroImage: string;
   subscriptionSteps: IconStep[];
   subscriptionFaqHeading: string;
   subscriptionFaq: FaqItem[];
@@ -413,6 +414,7 @@ const defaultSettings: SiteSettingsState = {
   subscriptionHeroTitle: 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
   subscriptionHeroSubtitle: 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca taze kahvenizi sabit tutacak şekilde hareket ediyoruz.',
   subscriptionHeroCta: 'Abone Ol',
+  subscriptionHeroImage: '',
   subscriptionSteps: DEFAULT_SUB_STEPS,
   subscriptionFaqHeading: 'Sıkça Sorulan Sorular',
   subscriptionFaq: DEFAULT_SUB_FAQ,
@@ -552,6 +554,7 @@ export default function SiteSettingsPage() {
         subscriptionHeroTitle: data.subscriptionHeroTitle || defaultSettings.subscriptionHeroTitle,
         subscriptionHeroSubtitle: data.subscriptionHeroSubtitle || defaultSettings.subscriptionHeroSubtitle,
         subscriptionHeroCta: data.subscriptionHeroCta || defaultSettings.subscriptionHeroCta,
+        subscriptionHeroImage: data.subscriptionHeroImage || '',
         subscriptionSteps: Array.isArray(data.subscriptionSteps) && data.subscriptionSteps.length
           ? data.subscriptionSteps
           : DEFAULT_SUB_STEPS,
@@ -1841,6 +1844,29 @@ export default function SiteSettingsPage() {
                 <Grid size={{ xs: 12 }}>
                   <TextField fullWidth size="small" multiline rows={2} label="Alt Yazı" value={settings.subscriptionHeroSubtitle}
                     onChange={(e) => setSettings({ ...settings, subscriptionHeroSubtitle: e.target.value })} />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <ImageUpload
+                    label="Hero Arka Plan Görseli (önerilen 1920x800px) — boş bırakılırsa varsayılan kahveli arka plan kullanılır"
+                    value={settings.subscriptionHeroImage}
+                    onChange={(url) => setSettings({ ...settings, subscriptionHeroImage: typeof url === 'string' ? url : '' })}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <Box sx={{ p: 2, borderRadius: 1, bgcolor: 'action.hover', display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      📦 <strong>3 Paket Kartını</strong> (Ev Başlangıç / Düzenli / Mini Ofis) buradan değil,
+                      <strong> Abonelikler → Abonelik Planları</strong> sayfasından yönetin.
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => window.location.href = '/subscriptions/plans'}
+                    >
+                      Planlara Git
+                    </Button>
+                  </Box>
                 </Grid>
 
                 <Grid size={{ xs: 12 }}><Divider sx={{ my: 1 }} /></Grid>

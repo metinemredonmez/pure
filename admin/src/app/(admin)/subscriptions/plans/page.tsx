@@ -179,8 +179,8 @@ export default function SubscriptionPlansPage() {
   return (
     <Box>
       <PageHeader
-        title="Abonelik Planlari"
-        subtitle={`${plans.length} plan`}
+        title="Abonelik Planları (3 Paket)"
+        subtitle={`${plans.length} plan — pureolentia.com/subscription sayfasında 3 kart olarak gösterilir`}
         breadcrumbs={[{ label: 'Abonelikler', href: '/subscriptions' }, { label: 'Planlar' }]}
         action={
           <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}
@@ -189,6 +189,11 @@ export default function SubscriptionPlansPage() {
           </Button>
         }
       />
+
+      <Box sx={{ p: 2, mb: 2, borderRadius: 1, bgcolor: 'action.hover', fontSize: 13 }}>
+        ℹ️ Buradaki planlar <strong>/subscription</strong> sayfasında 3 kart olarak gösterilir. Sıralama: <strong>Sıra alanı</strong> (küçükten büyüğe).
+        Hero başlık, FAQ, arka plan görseli gibi sayfa metinleri ise <strong>Web Sitesi → Site Ayarları → Abonelik</strong> sekmesinden yönetilir.
+      </Box>
 
       {loading ? (
         <Grid container spacing={2}>

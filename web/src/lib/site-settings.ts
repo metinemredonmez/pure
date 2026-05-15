@@ -143,6 +143,7 @@ export interface SiteSettings {
   subscriptionHeroTitle: string
   subscriptionHeroSubtitle: string
   subscriptionHeroCta: string
+  subscriptionHeroImage: string
   subscriptionSteps: IconStep[]
   subscriptionFaqHeading: string
   subscriptionFaq: FaqItem[]
@@ -313,6 +314,7 @@ const DEFAULTS: SiteSettings = {
   subscriptionHeroTitle: 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
   subscriptionHeroSubtitle: 'Kahveleri hafta başında kavurup, ertesi gün kargoya veriyoruz. Seçtiğiniz süre boyunca taze kahvenizi sabit tutacak şekilde hareket ediyoruz.',
   subscriptionHeroCta: 'Abone Ol',
+  subscriptionHeroImage: '',
   subscriptionSteps: [
     { id: 'st1', title: 'Plan Seçin', desc: 'Size uygun paketi seçin', icon: 'coffee' },
     { id: 'st2', title: 'Taze Kavrulsun', desc: 'Sipariş üzerine kavrulur', icon: 'package' },

@@ -47,8 +47,8 @@ const menuItems: MenuItem[] = [
     ],
   },
   { title: 'Abonelikler', icon: <SubscriptionsIcon sx={{ fontSize: 20 }} />, children: [
-    { title: 'Abonelik Listesi', path: '/subscriptions' },
-    { title: 'Planlar', path: '/subscriptions/plans' },
+    { title: 'Müşteri Abonelikleri', path: '/subscriptions' },
+    { title: 'Abonelik Planları (3 Paket)', path: '/subscriptions/plans' },
   ] },
   { title: 'Ödemeler', path: '/payments', icon: <PaymentIcon sx={{ fontSize: 20 }} /> },
   { title: 'Kuponlar', path: '/coupons', icon: <CouponIcon sx={{ fontSize: 20 }} /> },

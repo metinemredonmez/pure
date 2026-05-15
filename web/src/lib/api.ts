@@ -160,6 +160,7 @@ export const getApiBlogPosts = (params?: { page?: number; limit?: number; catego
   if (params?.search) q.set('search', params.search)
   return fetchAPI<any>(`/public/blog-posts${q.toString() ? '?' + q : ''}`)
 }
+export const getApiSubscriptionPlans = () => fetchAPI<any>('/subscription/plans')
 export const getApiGoogleReviews = () => fetchAPI<any>('/public/google-reviews')
 export const getApiBlogPostBySlug = (slug: string) => fetchAPI<any>(`/public/blog-posts/${slug}`)
 export const getApiBlogCategories = () => fetchAPI<any>('/public/blog-categories')

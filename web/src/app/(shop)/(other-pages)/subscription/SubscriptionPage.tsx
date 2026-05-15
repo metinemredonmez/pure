@@ -178,10 +178,13 @@ interface SubscriptionPageProps {
   heroTitle?: string
   heroSubtitle?: string
   heroCta?: string
+  heroImage?: string
   steps?: Array<{ id: string; title: string; desc: string; icon: string }>
   faqHeading?: string
   faq?: Array<{ id: string; q: string; a: string }>
   faqCta?: string
+  /** Admin /subscriptions/plans'tan gelen ad/açıklama/görsel — sıraya göre 3 pakete bind edilir */
+  planOverrides?: Array<{ name?: string; description?: string; image?: string }>
 }
 
 export default function SubscriptionPage({
@@ -189,10 +192,12 @@ export default function SubscriptionPage({
   heroTitle = 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
   heroSubtitle = 'Seçtiğiniz pakete göre, kahveniz belirli aralıklarla taze kavrulmuş olarak kapınıza gelir.',
   heroCta = 'Hemen Başla',
+  heroImage = '',
   steps = [],
   faqHeading = 'Sıkça Sorulan Sorular',
   faq = [],
   faqCta = 'Kahveleri Keşfet',
+  planOverrides = [],
 }: SubscriptionPageProps = {}) {
   const router = useRouter()
   const { addItem } = useCart()
@@ -219,7 +224,21 @@ export default function SubscriptionPage({
       .catch(() => setProducts([]))
   }, [])
 
-  const pkg = useMemo(() => PACKAGES.find((p) => p.id === packageId) || null, [packageId])
+  // PACKAGES + planOverrides (admin'in /subscriptions/plans'tan girdiği görsel/isim/açıklama)
+  const packages = useMemo<PackageDef[]>(() => {
+    return PACKAGES.map((p, idx) => {
+      const o = planOverrides[idx]
+      if (!o) return p
+      return {
+        ...p,
+        name: o.name || p.name,
+        description: o.description || p.description,
+        image: o.image || p.image,
+      }
+    })
+  }, [planOverrides])
+
+  const pkg = useMemo(() => packages.find((p) => p.id === packageId) || null, [packages, packageId])
   const coffeeRule = useMemo(() => (pkg ? pkg.coffees[coffeeKind] : null), [pkg, coffeeKind])
 
   // Paket değişince → kahve türü + gramaj + süre + sıklık defaults
@@ -321,7 +340,7 @@ export default function SubscriptionPage({
       {/* HERO */}
       <div
         className="relative overflow-hidden"
-        style={{ backgroundImage: 'url(/hero/subscription-bg.jpg)', backgroundSize: 'cover', backgroundPosition: 'center' }}
+        style={{ backgroundImage: `url(${heroImage || '/hero/subscription-bg.jpg'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/30" aria-hidden />
         <div className="container relative z-10 py-20 text-center text-white lg:py-28">
@@ -369,7 +388,7 @@ export default function SubscriptionPage({
         </div>
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {PACKAGES.map((p) => {
+          {packages.map((p) => {
             const active = packageId === p.id
             return (
               <div key={p.id} className="group">
