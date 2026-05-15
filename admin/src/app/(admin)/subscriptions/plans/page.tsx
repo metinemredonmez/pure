@@ -16,12 +16,6 @@ import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 import { useToast } from '@/contexts/ToastContext';
 
-interface DurationOption { months: number; label: string }
-interface PeriodOption { weeks: number; label: string }
-interface GrindGroup { kind: string; options: string[] }
-
-interface GramOption { id: string; label: string; grams: number; bags: number }
-
 interface SubPlan {
   id: string;
   name: string;
@@ -34,33 +28,8 @@ interface SubPlan {
   freeShipping: boolean;
   isActive: boolean;
   sortOrder: number;
-  availableDurations?: DurationOption[] | null;
-  availablePeriods?: PeriodOption[] | null;
-  availableGrinds?: GrindGroup[] | null;
-  availableGrams?: GramOption[] | null;
-  defaultGramsId?: string | null;
-  defaultDuration?: number | null;
-  defaultPeriod?: number | null;
   _count?: { subscriptions: number };
 }
-
-const DEFAULT_DURATIONS: DurationOption[] = [
-  { months: 3, label: '3 ay boyunca' },
-  { months: 6, label: '6 ay boyunca' },
-  { months: 12, label: '12 ay boyunca' },
-];
-
-const DEFAULT_PERIODS: PeriodOption[] = [
-  { weeks: 1, label: 'Haftada 1' },
-  { weeks: 2, label: '2 haftada 1' },
-  { weeks: 4, label: 'Ayda 1' },
-];
-
-const DEFAULT_GRINDS: GrindGroup[] = [
-  { kind: 'Türk', options: ['Türk'] },
-  { kind: 'Espresso', options: ['Espresso', 'Moka Pot'] },
-  { kind: 'Filtre', options: ['Filtre', 'French Press', 'Chemex', 'AeroPress'] },
-];
 
 const PLAN_COLORS = ['#D4793F', '#4CAF50', '#42A5F5', '#AB47BC'];
 const formatCurrency = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(n);
@@ -73,43 +42,12 @@ export default function SubscriptionPlansPage() {
   const [form, setForm] = useState({
     name: '', slug: '', description: '', image: '', monthlyWeight: 250,
     priceMonthly: 0, discountPercent: 0, freeShipping: true, isActive: true, sortOrder: 0,
-    availableDurations: DEFAULT_DURATIONS as DurationOption[],
-    availablePeriods: DEFAULT_PERIODS as PeriodOption[],
-    availableGrinds: DEFAULT_GRINDS as GrindGroup[],
-    availableGrams: [] as GramOption[],
-    defaultGramsId: '' as string,
-    defaultDuration: null as number | null,
-    defaultPeriod: null as number | null,
   });
-  const [globalGrams, setGlobalGrams] = useState<GramOption[]>([]);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SubPlan | null>(null);
   const { showSuccess, showError } = useToast();
 
   useEffect(() => { fetchPlans(); }, []);
-
-  // Site Ayarları'ndan global gram listesi (planın availableGrams whitelisti için)
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/public/site-settings`)
-      .then((r) => r.json())
-      .then((res) => {
-        const s = res?.data || res || {};
-        if (Array.isArray(s.subscriptionGrams)) {
-          const norm: GramOption[] = s.subscriptionGrams
-            .map((g: any) => {
-              const grams = Number(g.grams);
-              const bags = Number(g.bags) || 1;
-              if (!grams || grams <= 0) return null;
-              const label = g.label || (grams >= 1000 ? `${bags} x ${grams / 1000} kg` : `${bags} x ${grams} g`);
-              const id = g.id || `${bags}x${grams}`;
-              return { id, label, grams, bags };
-            })
-            .filter(Boolean);
-          setGlobalGrams(norm);
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   const fetchPlans = async () => {
     setLoading(true);
@@ -129,21 +67,12 @@ export default function SubscriptionPlansPage() {
         monthlyWeight: plan.monthlyWeight, priceMonthly: Number(plan.priceMonthly),
         discountPercent: plan.discountPercent, freeShipping: plan.freeShipping,
         isActive: plan.isActive, sortOrder: plan.sortOrder,
-        availableDurations: Array.isArray(plan.availableDurations) && plan.availableDurations.length ? plan.availableDurations : DEFAULT_DURATIONS,
-        availablePeriods: Array.isArray(plan.availablePeriods) && plan.availablePeriods.length ? plan.availablePeriods : DEFAULT_PERIODS,
-        availableGrinds: Array.isArray(plan.availableGrinds) && plan.availableGrinds.length ? plan.availableGrinds : DEFAULT_GRINDS,
-        availableGrams: Array.isArray(plan.availableGrams) ? plan.availableGrams : [],
-        defaultGramsId: plan.defaultGramsId || '',
-        defaultDuration: plan.defaultDuration ?? null,
-        defaultPeriod: plan.defaultPeriod ?? null,
       });
     } else {
       setEditingPlan(null);
       setForm({
         name: '', slug: '', description: '', image: '', monthlyWeight: 250, priceMonthly: 0,
         discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1,
-        availableDurations: DEFAULT_DURATIONS, availablePeriods: DEFAULT_PERIODS, availableGrinds: DEFAULT_GRINDS,
-        availableGrams: [], defaultGramsId: '', defaultDuration: null, defaultPeriod: null,
       });
     }
     setDialogOpen(true);
@@ -305,139 +234,17 @@ export default function SubscriptionPlansPage() {
               <FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} size="small" />} label="Aktif" />
             </Stack>
 
-            <Divider sx={{ my: 1 }} />
+            {/* Aşağıdaki bölümler kaldırıldı (kullanılmıyordu):
+                - "Pre-Selected Değerler" (defaultGramsId / defaultDuration / defaultPeriod)
+                - "İzinli Gönderim Miktarları" (availableGrams)
+                - "Abonelik Süresi / Gönderim Sıklığı / Çekme Derecesi" (availableDurations/Periods/Grinds)
 
-            {/* Plan Varsayılanları — müşteri planı açtığında pre-selected değerler */}
-            <Box sx={{ p: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
-              <Typography variant="body2" fontWeight={600} gutterBottom>
-                Müşteri Bu Planı Açınca Pre-Selected Değerler
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                Plan ilk açıldığında bu seçenekler otomatik dolu gelir. Müşteri istediği gibi değiştirebilir.
-              </Typography>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField select fullWidth size="small" label="Varsayılan Gönderim Miktarı"
-                  SelectProps={{ native: true }}
-                  InputLabelProps={{ shrink: true }}
-                  value={form.defaultGramsId || ''}
-                  onChange={(e) => setForm({ ...form, defaultGramsId: e.target.value })}
-                  helperText="Müşteri planı açtığında ön-seçili miktar">
-                  <option value="">— Seçim yok —</option>
-                  {globalGrams.map((g) => (
-                    <option key={g.id} value={g.id}>{g.label}</option>
-                  ))}
-                </TextField>
-                <TextField select fullWidth size="small" label="Varsayılan Abonelik Süresi"
-                  SelectProps={{ native: true }}
-                  InputLabelProps={{ shrink: true }}
-                  value={form.defaultDuration ?? ''}
-                  onChange={(e) => setForm({ ...form, defaultDuration: e.target.value ? Number(e.target.value) : null })}>
-                  <option value="">— Seçim yok —</option>
-                  {form.availableDurations.map((d) => (
-                    <option key={d.months} value={d.months}>{d.label}</option>
-                  ))}
-                </TextField>
-                <TextField select fullWidth size="small" label="Varsayılan Gönderim Sıklığı"
-                  SelectProps={{ native: true }}
-                  InputLabelProps={{ shrink: true }}
-                  value={form.defaultPeriod ?? ''}
-                  onChange={(e) => setForm({ ...form, defaultPeriod: e.target.value ? Number(e.target.value) : null })}>
-                  <option value="">— Seçim yok —</option>
-                  {form.availablePeriods.map((p) => (
-                    <option key={p.weeks} value={p.weeks}>{p.label}</option>
-                  ))}
-                </TextField>
-              </Stack>
-            </Box>
-
-            {/* İzinli Gramajlar — bu plan için sınırlı seçenek */}
-            <Box>
-              <Typography variant="body2" fontWeight={600} gutterBottom>
-                Bu Plan için İzinli Gönderim Miktarları
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Boş bırakılırsa müşteri tüm Site Ayarları gramajlarından seçebilir. Sadece belirli gramajlara kısıtlamak için aşağıdan seç.
-              </Typography>
-              <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                {globalGrams.map((g) => {
-                  const isSelected = form.availableGrams.some((sg) => sg.id === g.id);
-                  return (
-                    <Chip key={g.id}
-                      label={g.label}
-                      size="small"
-                      color={isSelected ? 'primary' : 'default'}
-                      variant={isSelected ? 'filled' : 'outlined'}
-                      onClick={() => {
-                        const next = isSelected
-                          ? form.availableGrams.filter((sg) => sg.id !== g.id)
-                          : [...form.availableGrams, g];
-                        setForm({ ...form, availableGrams: next });
-                      }}
-                      sx={{ cursor: 'pointer' }}
-                    />
-                  );
-                })}
-                {globalGrams.length === 0 && (
-                  <Typography variant="caption" color="text.secondary">
-                    Site Ayarları → Abonelik → Gramaj Seçenekleri'nden önce ekleme yap.
-                  </Typography>
-                )}
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 1 }} />
-
-            {/* Süre Seçenekleri */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" fontWeight={600}>Abonelik Süresi Seçenekleri</Typography>
-              <Button size="small" onClick={() => setForm({ ...form, availableDurations: [...form.availableDurations, { months: 1, label: 'Yeni Süre' }] })}>+ Ekle</Button>
-            </Stack>
-            {form.availableDurations.map((d, idx) => (
-              <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                <TextField sx={{ flex: 1 }} size="small" label="Etiket" value={d.label}
-                  onChange={(e) => { const arr = [...form.availableDurations]; arr[idx] = { ...arr[idx], label: e.target.value }; setForm({ ...form, availableDurations: arr }); }} />
-                <TextField sx={{ width: 80 }} size="small" type="number" label="Ay" value={d.months}
-                  onChange={(e) => { const arr = [...form.availableDurations]; arr[idx] = { ...arr[idx], months: Number(e.target.value) || 1 }; setForm({ ...form, availableDurations: arr }); }} />
-                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availableDurations: form.availableDurations.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
-            ))}
-
-            <Divider sx={{ my: 1 }} />
-
-            {/* Peryot Seçenekleri */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" fontWeight={600}>Gönderim Sıklığı Seçenekleri</Typography>
-              <Button size="small" onClick={() => setForm({ ...form, availablePeriods: [...form.availablePeriods, { weeks: 1, label: 'Yeni Peryot' }] })}>+ Ekle</Button>
-            </Stack>
-            {form.availablePeriods.map((p, idx) => (
-              <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                <TextField sx={{ flex: 1 }} size="small" label="Etiket" value={p.label}
-                  onChange={(e) => { const arr = [...form.availablePeriods]; arr[idx] = { ...arr[idx], label: e.target.value }; setForm({ ...form, availablePeriods: arr }); }} />
-                <TextField sx={{ width: 80 }} size="small" type="number" label="Hafta" value={p.weeks}
-                  onChange={(e) => { const arr = [...form.availablePeriods]; arr[idx] = { ...arr[idx], weeks: Number(e.target.value) || 1 }; setForm({ ...form, availablePeriods: arr }); }} />
-                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availablePeriods: form.availablePeriods.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
-            ))}
-
-            <Divider sx={{ my: 1 }} />
-
-            {/* Çekme Derecesi */}
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="body2" fontWeight={600}>Çekme Derecesi</Typography>
-              <Button size="small" onClick={() => setForm({ ...form, availableGrinds: [...form.availableGrinds, { kind: 'Yeni', options: [''] }] })}>+ Grup</Button>
-            </Stack>
-            <Typography variant="caption" color="text.secondary">
-              Grup adı plandan otomatik çıkarılan kategoriyle eşleşmeli (Türk/Espresso/Filtre).
-            </Typography>
-            {form.availableGrinds.map((g, idx) => (
-              <Stack key={idx} direction="row" spacing={1} alignItems="center">
-                <TextField sx={{ width: 130 }} size="small" label="Grup" value={g.kind}
-                  onChange={(e) => { const arr = [...form.availableGrinds]; arr[idx] = { ...arr[idx], kind: e.target.value }; setForm({ ...form, availableGrinds: arr }); }} />
-                <TextField sx={{ flex: 1 }} size="small" label="Seçenekler (virgülle ayır)" value={(g.options || []).join(', ')}
-                  onChange={(e) => { const arr = [...form.availableGrinds]; arr[idx] = { ...arr[idx], options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) }; setForm({ ...form, availableGrinds: arr }); }} />
-                <IconButton size="small" color="error" onClick={() => setForm({ ...form, availableGrinds: form.availableGrinds.filter((_, i) => i !== idx) })}><DeleteIcon fontSize="small" /></IconButton>
-              </Stack>
-            ))}
+                Sebep: /subscription sayfası bu alanları HİÇ okumuyor. 3 paketin (Ev Başlangıç/Düzenli/Mini Ofis)
+                gramaj/süre/sıklık matrisi spec'e göre kodda sabit. Bu plan dialog'unda sadece
+                aşağıdaki alanlar gerçekten siteye yansır:
+                  - Plan Adı / Açıklama / Görsel / Aylık Fiyat / Sıra / Aktif
+                  - (sortOrder'a göre /subscription sayfasındaki 3 paketin ad/açıklama/görseli
+                    bu plandan override edilir) */}
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

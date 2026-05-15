@@ -13,11 +13,7 @@ import { websiteApi, productsApi, collectionsApi } from '@/lib/api';
 import PageHeader from '@/components/common/PageHeader';
 import ImageUpload from '@/components/common/ImageUpload';
 
-interface GramOption { id: string; label: string; grams: number; bags: number }
-interface DurationOption { months: number; label: string }
-interface PeriodOption { weeks: number; label: string }
-interface GrindGroup { kind: string; options: string[] }
-interface SubscriptionBasePrices { 'turk-kahvesi': number; 'espresso': number; 'filtre-kahve': number }
+// Kaldırılan tip tanımları (kullanılmıyordu): GramOption, DurationOption, PeriodOption, GrindGroup, SubscriptionBasePrices
 interface FooterMenuItem { label: string; href: string }
 interface FooterMenuGroup { id: string; title: string; items: FooterMenuItem[] }
 interface NavMenuChild { id: string; name: string; href: string; description?: string }
@@ -137,11 +133,9 @@ interface SiteSettingsState {
   linkedin: string;
   youtube: string;
   franchiseBanners: string[];
-  subscriptionGrams: GramOption[];
-  subscriptionBasePrices: SubscriptionBasePrices;
-  subscriptionDurations: DurationOption[];
-  subscriptionPeriods: PeriodOption[];
-  subscriptionGrinds: GrindGroup[];
+  // KALDIRILDI (kullanılmıyordu): subscriptionGrams, subscriptionBasePrices,
+  // subscriptionDurations, subscriptionPeriods, subscriptionGrinds.
+  // /subscription sayfasında 3 paketin matrix'i kodda sabit; bu alanlar HİÇ okunmuyordu.
   // Promo bölümleri (anasayfa)
   promo1Title: string;
   promo1Subtitle: string;
@@ -353,41 +347,14 @@ const DEFAULT_SUB_FAQ: FaqItem[] = [
   { id: 'q4', q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
 ];
 
-const DEFAULT_GRAMS: GramOption[] = [
-  { id: '1x250', label: '1 x 250 g', grams: 250, bags: 1 },
-  { id: '2x250', label: '2 x 250 g', grams: 500, bags: 2 },
-  { id: '3x250', label: '3 x 250 g', grams: 750, bags: 3 },
-  { id: '1x1000', label: '1 x 1 kg', grams: 1000, bags: 1 },
-];
-
-const DEFAULT_DURATIONS: DurationOption[] = [
-  { months: 3, label: '3 ay boyunca' },
-  { months: 6, label: '6 ay boyunca' },
-  { months: 12, label: '12 ay boyunca' },
-];
-
-const DEFAULT_PERIODS: PeriodOption[] = [
-  { weeks: 1, label: 'Haftada 1' },
-  { weeks: 2, label: '2 haftada 1' },
-  { weeks: 4, label: 'Ayda 1' },
-];
-
-const DEFAULT_GRINDS: GrindGroup[] = [
-  { kind: 'Türk', options: ['Türk'] },
-  { kind: 'Espresso', options: ['Espresso', 'Moka Pot'] },
-  { kind: 'Filtre', options: ['Filtre', 'French Press', 'Chemex', 'AeroPress'] },
-];
+// DEFAULT_GRAMS / DEFAULT_DURATIONS / DEFAULT_PERIODS / DEFAULT_GRINDS kaldırıldı (kullanılmıyordu).
 
 const defaultSettings: SiteSettingsState = {
   siteName: '', logo: '', favicon: '',
   phone: '', email: '', address: '', mapLat: '', mapLng: '', workingHours: '',
   facebook: '', instagram: '', twitter: '', linkedin: '', youtube: '',
   franchiseBanners: [],
-  subscriptionGrams: DEFAULT_GRAMS,
-  subscriptionBasePrices: { 'turk-kahvesi': 180, 'espresso': 180, 'filtre-kahve': 200 },
-  subscriptionDurations: DEFAULT_DURATIONS,
-  subscriptionPeriods: DEFAULT_PERIODS,
-  subscriptionGrinds: DEFAULT_GRINDS,
+  // (subscriptionGrams/BasePrices/Durations/Periods/Grinds default'ları kaldırıldı)
   promo1Title: 'Taze kavurma, hızlı teslimat.',
   promo1Subtitle: 'Pure Olentia ile ücretsiz kargo ve abonelik indirimi fırsatı.',
   promo1Cta: 'Kahveleri İncele',
@@ -539,21 +506,7 @@ export default function SiteSettingsPage() {
         linkedin: data.linkedin || '',
         youtube: data.youtube || '',
         franchiseBanners: Array.isArray(data.franchiseBanners) ? data.franchiseBanners : [],
-        subscriptionGrams: Array.isArray(data.subscriptionGrams) && data.subscriptionGrams.length
-          ? data.subscriptionGrams
-          : DEFAULT_GRAMS,
-        subscriptionBasePrices: data.subscriptionBasePrices && typeof data.subscriptionBasePrices === 'object'
-          ? { ...defaultSettings.subscriptionBasePrices, ...data.subscriptionBasePrices }
-          : defaultSettings.subscriptionBasePrices,
-        subscriptionDurations: Array.isArray(data.subscriptionDurations) && data.subscriptionDurations.length
-          ? data.subscriptionDurations
-          : DEFAULT_DURATIONS,
-        subscriptionPeriods: Array.isArray(data.subscriptionPeriods) && data.subscriptionPeriods.length
-          ? data.subscriptionPeriods
-          : DEFAULT_PERIODS,
-        subscriptionGrinds: Array.isArray(data.subscriptionGrinds) && data.subscriptionGrinds.length
-          ? data.subscriptionGrinds
-          : DEFAULT_GRINDS,
+        // subscriptionGrams/BasePrices/Durations/Periods/Grinds field'ları kaldırıldı (kullanılmıyordu)
         promo1Title: data.promo1Title || defaultSettings.promo1Title,
         promo1Subtitle: data.promo1Subtitle || defaultSettings.promo1Subtitle,
         promo1Cta: data.promo1Cta || defaultSettings.promo1Cta,
@@ -819,276 +772,11 @@ export default function SiteSettingsPage() {
         </Grid>
         )}
 
-        {/* Abonelik Ayarlari */}
-        {activeTab === 'abonelik' && (
-        <Grid size={{ xs: 12 }}>
-          <Card>
-            <CardHeader
-              title="Abonelik Ayarlari"
-              subheader="Abonelik sayfasinda (/subscription) gösterilen gramaj seçenekleri ve kategori bazli 250g basina baslangic fiyatlari. Toplam fiyat: baz_fiyat x paket_sayisi x (gramaj/250) x ayda_teslimat x toplam_ay"
-              titleTypographyProps={{ fontSize: 15, fontWeight: 600 }}
-            />
-            <CardContent>
-              <Typography variant="body2" sx={{ mb: 2, fontWeight: 600 }}>Kategori Baz Fiyatlari (₺ / 250g)</Typography>
-              <Grid container spacing={2} sx={{ mb: 3 }}>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField
-                    fullWidth size="small" type="number" label="Turk Kahvesi"
-                    value={settings.subscriptionBasePrices['turk-kahvesi']}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'turk-kahvesi': Number(e.target.value) || 0 }
-                    })}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField
-                    fullWidth size="small" type="number" label="Espresso"
-                    value={settings.subscriptionBasePrices['espresso']}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'espresso': Number(e.target.value) || 0 }
-                    })}
-                  />
-                </Grid>
-                <Grid size={{ xs: 12, sm: 4 }}>
-                  <TextField
-                    fullWidth size="small" type="number" label="Filtre Kahve"
-                    value={settings.subscriptionBasePrices['filtre-kahve']}
-                    onChange={(e) => setSettings({
-                      ...settings,
-                      subscriptionBasePrices: { ...settings.subscriptionBasePrices, 'filtre-kahve': Number(e.target.value) || 0 }
-                    })}
-                  />
-                </Grid>
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>Gramaj Secenekleri</Typography>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    const newOpt: GramOption = { id: `opt-${Date.now()}`, label: 'Yeni Secenek', grams: 250, bags: 1 };
-                    setSettings({ ...settings, subscriptionGrams: [...settings.subscriptionGrams, newOpt] });
-                  }}
-                >
-                  + Ekle
-                </Button>
-              </Box>
-
-              {settings.subscriptionGrams.map((g, idx) => (
-                <Grid container spacing={1} key={g.id || idx} sx={{ mb: 1, alignItems: 'center' }}>
-                  <Grid size={{ xs: 12, sm: 5 }}>
-                    <TextField
-                      fullWidth size="small" label="Etiket (ornek: 2 x 250 g)"
-                      value={g.label}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionGrams];
-                        arr[idx] = { ...arr[idx], label: e.target.value };
-                        setSettings({ ...settings, subscriptionGrams: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <TextField
-                      fullWidth size="small" type="number" label="Gram (tek paket)"
-                      value={g.grams}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionGrams];
-                        arr[idx] = { ...arr[idx], grams: Number(e.target.value) || 0 };
-                        setSettings({ ...settings, subscriptionGrams: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2 }}>
-                    <TextField
-                      fullWidth size="small" type="number" label="Paket"
-                      value={g.bags}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionGrams];
-                        arr[idx] = { ...arr[idx], bags: Number(e.target.value) || 1 };
-                        setSettings({ ...settings, subscriptionGrams: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 2 }}>
-                    <Button
-                      fullWidth color="error" size="small"
-                      onClick={() => {
-                        const arr = settings.subscriptionGrams.filter((_, i) => i !== idx);
-                        setSettings({ ...settings, subscriptionGrams: arr });
-                      }}
-                    >
-                      Sil
-                    </Button>
-                  </Grid>
-                </Grid>
-              ))}
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>Süre Secenekleri</Typography>
-                <Button
-                  size="small"
-                  onClick={() => setSettings({
-                    ...settings,
-                    subscriptionDurations: [...settings.subscriptionDurations, { months: 1, label: 'Yeni Süre' }]
-                  })}
-                >
-                  + Ekle
-                </Button>
-              </Box>
-              {settings.subscriptionDurations.map((d, idx) => (
-                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
-                  <Grid size={{ xs: 12, sm: 7 }}>
-                    <TextField
-                      fullWidth size="small" label="Etiket (ornek: 3 ay boyunca)"
-                      value={d.label}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionDurations];
-                        arr[idx] = { ...arr[idx], label: e.target.value };
-                        setSettings({ ...settings, subscriptionDurations: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <TextField
-                      fullWidth size="small" type="number" label="Ay"
-                      value={d.months}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionDurations];
-                        arr[idx] = { ...arr[idx], months: Number(e.target.value) || 1 };
-                        setSettings({ ...settings, subscriptionDurations: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2 }}>
-                    <Button
-                      fullWidth color="error" size="small"
-                      onClick={() => setSettings({
-                        ...settings,
-                        subscriptionDurations: settings.subscriptionDurations.filter((_, i) => i !== idx)
-                      })}
-                    >
-                      Sil
-                    </Button>
-                  </Grid>
-                </Grid>
-              ))}
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>Peryot Secenekleri</Typography>
-                <Button
-                  size="small"
-                  onClick={() => setSettings({
-                    ...settings,
-                    subscriptionPeriods: [...settings.subscriptionPeriods, { weeks: 1, label: 'Yeni Peryot' }]
-                  })}
-                >
-                  + Ekle
-                </Button>
-              </Box>
-              {settings.subscriptionPeriods.map((p, idx) => (
-                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
-                  <Grid size={{ xs: 12, sm: 7 }}>
-                    <TextField
-                      fullWidth size="small" label="Etiket (ornek: 2 haftada 1)"
-                      value={p.label}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionPeriods];
-                        arr[idx] = { ...arr[idx], label: e.target.value };
-                        setSettings({ ...settings, subscriptionPeriods: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <TextField
-                      fullWidth size="small" type="number" label="Hafta"
-                      value={p.weeks}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionPeriods];
-                        arr[idx] = { ...arr[idx], weeks: Number(e.target.value) || 1 };
-                        setSettings({ ...settings, subscriptionPeriods: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 2 }}>
-                    <Button
-                      fullWidth color="error" size="small"
-                      onClick={() => setSettings({
-                        ...settings,
-                        subscriptionPeriods: settings.subscriptionPeriods.filter((_, i) => i !== idx)
-                      })}
-                    >
-                      Sil
-                    </Button>
-                  </Grid>
-                </Grid>
-              ))}
-
-              <Divider sx={{ my: 2 }} />
-
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                <Typography variant="body2" sx={{ fontWeight: 600 }}>Cekme Derecesi Secenekleri</Typography>
-                <Button
-                  size="small"
-                  onClick={() => setSettings({
-                    ...settings,
-                    subscriptionGrinds: [...settings.subscriptionGrinds, { kind: 'Yeni', options: [''] }]
-                  })}
-                >
-                  + Yeni Grup
-                </Button>
-              </Box>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                Her grup, plan adından cikarilan kategori (Türk/Espresso/Filtre). Ornek: Espresso grubunda "Espresso, Moka Pot" gibi.
-              </Typography>
-              {settings.subscriptionGrinds.map((g, idx) => (
-                <Grid container spacing={1} key={idx} sx={{ mb: 1, alignItems: 'center' }}>
-                  <Grid size={{ xs: 12, sm: 3 }}>
-                    <TextField
-                      fullWidth size="small" label="Grup (Türk/Espresso/Filtre)"
-                      value={g.kind}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionGrinds];
-                        arr[idx] = { ...arr[idx], kind: e.target.value };
-                        setSettings({ ...settings, subscriptionGrinds: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 7 }}>
-                    <TextField
-                      fullWidth size="small" label="Secenekler (virgül ile ayir)"
-                      value={(g.options || []).join(', ')}
-                      onChange={(e) => {
-                        const arr = [...settings.subscriptionGrinds];
-                        arr[idx] = { ...arr[idx], options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) };
-                        setSettings({ ...settings, subscriptionGrinds: arr });
-                      }}
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, sm: 2 }}>
-                    <Button
-                      fullWidth color="error" size="small"
-                      onClick={() => setSettings({
-                        ...settings,
-                        subscriptionGrinds: settings.subscriptionGrinds.filter((_, i) => i !== idx)
-                      })}
-                    >
-                      Sil
-                    </Button>
-                  </Grid>
-                </Grid>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
-        )}
+        {/* Abonelik tab'ında: "Abonelik Ayarları" (baz fiyat + gramaj/süre/peryot/öğütme) kartı kaldırıldı.
+            Sebep: /subscription sayfasında bu alanlar HİÇ kullanılmıyor. 3 paketin (Ev Başlangıç/Düzenli/Mini Ofis)
+            gramaj/süre/sıklık matrisi spec'e göre kodda sabit. Müşteri bu sayfada bir paket seçer, paket içindeki
+            seçenekler kodla belirlenir. Ürün fiyatı ise Ürün/varyasyon fiyatından çekilir (settings.subscriptionBasePrices değil).
+            Hero/Steps/FAQ kartları aşağıda kalıyor — bunlar gerçekten siteye yansıyor. */}
 
         {/* Anasayfa Bölüm Başlıkları */}
         {activeTab === 'anasayfa' && (
