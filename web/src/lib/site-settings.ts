@@ -148,6 +148,8 @@ export interface SiteSettings {
   subscriptionFaqHeading: string
   subscriptionFaq: FaqItem[]
   subscriptionFaqCta: string
+  /** Admin'in /subscriptions/plans → 💰 Süre İndirim Oranları'ndan girdiği indirimler */
+  subscriptionDurationDiscounts: Array<{ months: number; percent: number }>
   // Franchise sayfası
   franchiseHeroBadge: string
   franchiseHeroTitle: string
@@ -343,6 +345,11 @@ const DEFAULTS: SiteSettings = {
     { id: 'q4', q: 'Planları kim düzenliyor?', a: 'Planlar, fiyatlar ve özellikler admin panelden yönetilir, bu sayfada her zaman güncel bilgi görürsünüz.' },
   ],
   subscriptionFaqCta: 'Kahveleri Keşfet',
+  subscriptionDurationDiscounts: [
+    { months: 3, percent: 0 },
+    { months: 6, percent: 5 },
+    { months: 12, percent: 10 },
+  ],
   announcements: [
     { id: 'a1', text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
     { id: 'a2', text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },

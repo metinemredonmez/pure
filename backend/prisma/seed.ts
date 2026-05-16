@@ -817,55 +817,101 @@ async function main() {
   ]);
   console.log(`✅ ${templates.length} email template oluşturuldu`);
 
-  // ── 11. Abonelik Planları ──
+  // ── 11. Abonelik Planları (Spec madde 4) ──
+  // Eski 'starter/coffee-lover/office-mini' planlarını sil → spec'teki 3 plana geç
+  await prisma.subPlan.deleteMany({
+    where: { slug: { in: ['starter', 'coffee-lover', 'office-mini'] } },
+  });
   const plans = await Promise.all([
     prisma.subPlan.upsert({
-      where: { slug: 'starter' },
+      where: { slug: 'ev-baslangic' },
       update: {},
       create: {
-        name: 'Starter',
-        slug: 'starter',
-        description: 'Ayda 500g taze kahve — keşif paketi',
-        monthlyWeight: 500,
-        priceMonthly: 179.90,
-        discountPercent: 10,
+        name: 'Ev Başlangıç Paketi',
+        slug: 'ev-baslangic',
+        description: 'Az tüketimli ev kullanıcıları için',
+        monthlyWeight: 200,
+        priceMonthly: 0, // Spec madde 5: fiyat ürün/varyasyon fiyatından gelir
+        discountPercent: 0,
         freeShipping: true,
         isActive: true,
         sortOrder: 1,
+        // Spec madde 4: Ev Başlangıç — Türk 100/200, Espresso 250, Filtre 250 (1000 YASAK)
+        availableGrams: [
+          { coffee: 'turk', grams: [100, 200] },
+          { coffee: 'espresso', grams: [250] },
+          { coffee: 'filtre', grams: [250] },
+        ] as any,
+        availableDurations: [3, 6] as any,
+        availablePeriods: ['monthly'] as any,
+        availableGrinds: [] as any, // bagMultipliers yok
       },
     }),
     prisma.subPlan.upsert({
-      where: { slug: 'coffee-lover' },
+      where: { slug: 'duzenli-kahve' },
       update: {},
       create: {
-        name: 'Coffee Lover',
-        slug: 'coffee-lover',
-        description: 'Ayda 1kg taze kahve — kahve tutkunu paketi',
+        name: 'Düzenli Kahve Paketi',
+        slug: 'duzenli-kahve',
+        description: 'Evde düzenli kahve tüketen kullanıcılar için',
         monthlyWeight: 1000,
-        priceMonthly: 329.90,
-        discountPercent: 15,
+        priceMonthly: 0,
+        discountPercent: 0,
         freeShipping: true,
         isActive: true,
         sortOrder: 2,
+        // Spec madde 4: Düzenli — Türk 200/1000, Espresso 250/1000, Filtre 250/1000
+        availableGrams: [
+          { coffee: 'turk', grams: [200, 1000] },
+          { coffee: 'espresso', grams: [250, 1000] },
+          { coffee: 'filtre', grams: [250, 1000] },
+        ] as any,
+        availableDurations: [3, 6, 12] as any,
+        availablePeriods: ['monthly', 'biweekly'] as any,
+        availableGrinds: [] as any,
       },
     }),
     prisma.subPlan.upsert({
-      where: { slug: 'office-mini' },
+      where: { slug: 'mini-ofis' },
       update: {},
       create: {
-        name: 'Office Mini',
-        slug: 'office-mini',
-        description: 'Ayda 3kg — küçük ofisler için',
-        monthlyWeight: 3000,
-        priceMonthly: 899.90,
-        discountPercent: 20,
+        name: 'Mini Ofis Paketi',
+        slug: 'mini-ofis',
+        description: 'Küçük ofisler, işletmeler ve düzenli tüketimi yüksek müşteriler için',
+        monthlyWeight: 1000,
+        priceMonthly: 0,
+        discountPercent: 0,
         freeShipping: true,
         isActive: true,
         sortOrder: 3,
+        // Spec madde 4: Mini Ofis — sadece 1000g, kg çarpanlarıyla 1/2/5 adet
+        availableGrams: [
+          { coffee: 'turk', grams: [1000] },
+          { coffee: 'espresso', grams: [1000] },
+          { coffee: 'filtre', grams: [1000] },
+        ] as any,
+        availableDurations: [3, 6, 12] as any,
+        availablePeriods: ['monthly', 'biweekly'] as any,
+        availableGrinds: [1, 2, 5] as any, // bagMultipliers: 1/2/5 kg
       },
     }),
   ]);
-  console.log(`✅ ${plans.length} abonelik planı oluşturuldu`);
+  console.log(`✅ ${plans.length} abonelik planı (spec) oluşturuldu`);
+
+  // ── Süre İndirim Oranları (Spec madde 9) — site-settings'e ──
+  await prisma.siteSettings.upsert({
+    where: { key: 'subscriptionDurationDiscounts' },
+    update: {},
+    create: {
+      key: 'subscriptionDurationDiscounts',
+      value: [
+        { months: 3, percent: 0 },
+        { months: 6, percent: 5 },
+        { months: 12, percent: 10 },
+      ] as any,
+    },
+  });
+  console.log(`✅ Süre indirim oranları (3:%0, 6:%5, 12:%10) eklendi`);
 
   // ── 12. Loyalty Accounts ──
   await prisma.loyaltyAccount.upsert({

@@ -37,6 +37,9 @@ const DEFAULT_SUB_FAQ: FaqItem[] = [
   { id: 'q1', q: 'Aboneliğimi istediğim zaman iptal edebilir miyim?', a: 'Evet, aboneliğinizi dilediğiniz zaman hesabınızdan iptal edebilirsiniz.' },
 ];
 
+type CoffeeKind = 'turk' | 'espresso' | 'filtre';
+interface CoffeeConfig { coffee: CoffeeKind; grams: number[] }
+
 interface SubPlan {
   id: string;
   name: string;
@@ -49,8 +52,18 @@ interface SubPlan {
   freeShipping: boolean;
   isActive: boolean;
   sortOrder: number;
+  availableGrams?: CoffeeConfig[] | null;
+  availableDurations?: any;
+  availablePeriods?: any;
+  availableGrinds?: any;
   _count?: { subscriptions: number };
 }
+
+const COFFEE_KINDS: { id: CoffeeKind; label: string }[] = [
+  { id: 'turk', label: 'Türk Kahvesi' },
+  { id: 'espresso', label: 'Espresso' },
+  { id: 'filtre', label: 'Filtre Kahve' },
+];
 
 const PLAN_COLORS = ['#D4793F', '#4CAF50', '#42A5F5', '#AB47BC'];
 const formatCurrency = (n: number) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(n);
@@ -63,6 +76,11 @@ export default function SubscriptionPlansPage() {
   const [form, setForm] = useState({
     name: '', slug: '', description: '', image: '', monthlyWeight: 250,
     priceMonthly: 0, discountPercent: 0, freeShipping: true, isActive: true, sortOrder: 0,
+    // Per-plan config (spec mantığına göre admin'den yönetilebilir)
+    coffeeConfigs: [] as CoffeeConfig[],   // Hangi kahveler + her birinin gramaj listesi
+    durations: [3, 6] as number[],          // Süre seçenekleri (ay)
+    periods: ['monthly'] as string[],       // 'monthly' | 'biweekly'
+    bagMultipliers: [] as number[],         // Mini Ofis için (1/2/5 kg). Boş → çarpan yok.
   });
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<SubPlan | null>(null);
@@ -133,12 +151,20 @@ export default function SubscriptionPlansPage() {
         monthlyWeight: plan.monthlyWeight, priceMonthly: Number(plan.priceMonthly),
         discountPercent: plan.discountPercent, freeShipping: plan.freeShipping,
         isActive: plan.isActive, sortOrder: plan.sortOrder,
+        coffeeConfigs: Array.isArray(plan.availableGrams) ? plan.availableGrams as CoffeeConfig[] : [],
+        durations: Array.isArray(plan.availableDurations) ? plan.availableDurations as number[] : [3, 6],
+        periods: Array.isArray(plan.availablePeriods) ? plan.availablePeriods as string[] : ['monthly'],
+        bagMultipliers: Array.isArray(plan.availableGrinds) ? plan.availableGrinds as number[] : [],
       });
     } else {
       setEditingPlan(null);
       setForm({
         name: '', slug: '', description: '', image: '', monthlyWeight: 250, priceMonthly: 0,
         discountPercent: 0, freeShipping: true, isActive: true, sortOrder: plans.length + 1,
+        coffeeConfigs: [],
+        durations: [3, 6],
+        periods: ['monthly'],
+        bagMultipliers: [],
       });
     }
     setDialogOpen(true);
@@ -147,18 +173,92 @@ export default function SubscriptionPlansPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Map UI fields to SubPlan JSON columns (reuse existing schema columns).
+      const payload = {
+        name: form.name, slug: form.slug, description: form.description, image: form.image,
+        monthlyWeight: form.monthlyWeight, priceMonthly: form.priceMonthly,
+        discountPercent: form.discountPercent, freeShipping: form.freeShipping,
+        isActive: form.isActive, sortOrder: form.sortOrder,
+        availableGrams: form.coffeeConfigs,         // [{coffee, grams: number[]}]
+        availableDurations: form.durations,          // [3, 6, 12]
+        availablePeriods: form.periods,              // ['monthly', 'biweekly']
+        availableGrinds: form.bagMultipliers,        // [1, 2, 5] Mini Ofis için
+      };
       if (editingPlan) {
-        await subscriptionsApi.updatePlan(editingPlan.id, form);
+        await subscriptionsApi.updatePlan(editingPlan.id, payload);
         showSuccess('Plan guncellendi');
       } else {
         const slug = form.slug || form.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        await subscriptionsApi.createPlan({ ...form, slug });
+        await subscriptionsApi.createPlan({ ...payload, slug });
         showSuccess('Plan olusturuldu');
       }
       setDialogOpen(false);
       fetchPlans();
     } catch { showError('Islem basarisiz'); }
     setSaving(false);
+  };
+
+  // ── Yardımcılar: kahve config'i güncelle ──
+  const toggleCoffee = (coffee: CoffeeKind) => {
+    const exists = form.coffeeConfigs.find((c) => c.coffee === coffee);
+    if (exists) {
+      setForm({ ...form, coffeeConfigs: form.coffeeConfigs.filter((c) => c.coffee !== coffee) });
+    } else {
+      setForm({ ...form, coffeeConfigs: [...form.coffeeConfigs, { coffee, grams: [250] }] });
+    }
+  };
+  const updateCoffeeGrams = (coffee: CoffeeKind, gramsStr: string) => {
+    const grams = gramsStr.split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => Number.isFinite(n) && n > 0);
+    setForm({
+      ...form,
+      coffeeConfigs: form.coffeeConfigs.map((c) => (c.coffee === coffee ? { ...c, grams } : c)),
+    });
+  };
+  const toggleDuration = (months: number) => {
+    setForm({
+      ...form,
+      durations: form.durations.includes(months)
+        ? form.durations.filter((d) => d !== months)
+        : [...form.durations, months].sort((a, b) => a - b),
+    });
+  };
+  const togglePeriod = (period: string) => {
+    setForm({
+      ...form,
+      periods: form.periods.includes(period)
+        ? form.periods.filter((p) => p !== period)
+        : [...form.periods, period],
+    });
+  };
+  const updateBagMultipliers = (str: string) => {
+    const arr = str.split(',').map((s) => parseInt(s.trim(), 10)).filter((n) => Number.isFinite(n) && n > 0);
+    setForm({ ...form, bagMultipliers: arr });
+  };
+
+  // ── Global Süre İndirimleri (site-settings: subscriptionDurationDiscounts) ──
+  const [discounts, setDiscounts] = useState<{ months: number; percent: number }[]>([
+    { months: 3, percent: 0 }, { months: 6, percent: 5 }, { months: 12, percent: 10 },
+  ]);
+  const [savingDiscounts, setSavingDiscounts] = useState(false);
+
+  useEffect(() => {
+    websiteApi.getSettings().then((res) => {
+      const data = res?.data || res || {};
+      if (Array.isArray(data.subscriptionDurationDiscounts) && data.subscriptionDurationDiscounts.length) {
+        setDiscounts(data.subscriptionDurationDiscounts);
+      }
+    }).catch(() => {});
+  }, []);
+
+  const saveDiscounts = async () => {
+    setSavingDiscounts(true);
+    try {
+      await websiteApi.updateMultipleSettings([{ key: 'subscriptionDurationDiscounts', value: discounts }]);
+      showSuccess('İndirim oranları kaydedildi');
+    } catch {
+      showError('Kayıt başarısız');
+    }
+    setSavingDiscounts(false);
   };
 
   const handleDelete = async () => {
@@ -337,6 +437,41 @@ export default function SubscriptionPlansPage() {
         </AccordionDetails>
       </Accordion>
 
+      {/* Süre İndirim Oranları — global */}
+      <Accordion sx={{ mb: 3 }} defaultExpanded={false}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="body1" fontWeight={600}>💰 Süre İndirim Oranları (Spec madde 9)</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
+            Abonelik süresine göre toplam tutardan düşülecek indirim. Tüm paketler için ortak.
+          </Typography>
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            {discounts.map((d, idx) => (
+              <TextField
+                key={d.months}
+                fullWidth size="small" type="number"
+                label={`${d.months} Ay İndirimi (%)`}
+                value={d.percent}
+                onChange={(e) => {
+                  const arr = [...discounts];
+                  arr[idx] = { ...arr[idx], percent: Number(e.target.value) || 0 };
+                  setDiscounts(arr);
+                }}
+                helperText={`örn: ${d.months === 3 ? '0' : d.months === 6 ? '5' : '10'}`}
+              />
+            ))}
+          </Stack>
+          <Box sx={{ mt: 2 }}>
+            <Button variant="contained" startIcon={<SaveIcon />} disabled={savingDiscounts}
+              onClick={saveDiscounts}
+              sx={{ bgcolor: olentiaColors.primary.main }}>
+              {savingDiscounts ? 'Kaydediliyor...' : 'İndirimleri Kaydet'}
+            </Button>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
       <Typography variant="h6" sx={{ mb: 2, mt: 1, fontWeight: 600 }}>3 Paket Kartı</Typography>
 
       {loading ? (
@@ -449,17 +584,109 @@ export default function SubscriptionPlansPage() {
               <FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} size="small" />} label="Aktif" />
             </Stack>
 
-            {/* Aşağıdaki bölümler kaldırıldı (kullanılmıyordu):
-                - "Pre-Selected Değerler" (defaultGramsId / defaultDuration / defaultPeriod)
-                - "İzinli Gönderim Miktarları" (availableGrams)
-                - "Abonelik Süresi / Gönderim Sıklığı / Çekme Derecesi" (availableDurations/Periods/Grinds)
+            <Divider sx={{ my: 1 }} />
 
-                Sebep: /subscription sayfası bu alanları HİÇ okumuyor. 3 paketin (Ev Başlangıç/Düzenli/Mini Ofis)
-                gramaj/süre/sıklık matrisi spec'e göre kodda sabit. Bu plan dialog'unda sadece
-                aşağıdaki alanlar gerçekten siteye yansır:
-                  - Plan Adı / Açıklama / Görsel / Aylık Fiyat / Sıra / Aktif
-                  - (sortOrder'a göre /subscription sayfasındaki 3 paketin ad/açıklama/görseli
-                    bu plandan override edilir) */}
+            {/* PAKET KONFİGÜRASYONU — spec'e göre admin tam kontrol */}
+            <Typography variant="body1" fontWeight={700} sx={{ mt: 1 }}>
+              ☕ Paket Konfigürasyonu (Spec)
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ mb: 1 }}>
+              Bu plan seçildiğinde müşterinin göreceği kahve türü, gramaj, süre ve sıklık seçenekleri.
+              Fiyat <strong>Ürünler</strong> sayfasındaki ürün/varyasyon fiyatından çekilir.
+            </Typography>
+
+            {/* Kahve Türleri + Gramaj */}
+            <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Kahve Türleri & Gramajlar</Typography>
+              <Stack spacing={1.5}>
+                {COFFEE_KINDS.map((ck) => {
+                  const cfg = form.coffeeConfigs.find((c) => c.coffee === ck.id);
+                  const enabled = !!cfg;
+                  return (
+                    <Box key={ck.id}>
+                      <Stack direction="row" alignItems="center" spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Switch size="small" checked={enabled} onChange={() => toggleCoffee(ck.id)} />
+                          }
+                          label={ck.label}
+                          sx={{ minWidth: 180 }}
+                        />
+                        {enabled && (
+                          <TextField
+                            size="small"
+                            label="Gramajlar (virgülle ayır, gram cinsinden)"
+                            placeholder="örn: 100, 200, 1000"
+                            value={cfg!.grams.join(', ')}
+                            onChange={(e) => updateCoffeeGrams(ck.id, e.target.value)}
+                            sx={{ flex: 1 }}
+                            helperText={`Ev Başlangıç: Türk 100,200 / Espresso 250 / Filtre 250 — Düzenli: Türk 200,1000 / Espresso 250,1000 / Filtre 250,1000 — Mini Ofis: hepsi 1000`}
+                          />
+                        )}
+                      </Stack>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+
+            {/* Süre Seçenekleri */}
+            <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Abonelik Süreleri (Ay)</Typography>
+              <Stack direction="row" spacing={1}>
+                {[3, 6, 12].map((m) => (
+                  <Chip
+                    key={m}
+                    label={`${m} Ay`}
+                    color={form.durations.includes(m) ? 'primary' : 'default'}
+                    variant={form.durations.includes(m) ? 'filled' : 'outlined'}
+                    onClick={() => toggleDuration(m)}
+                    sx={{ cursor: 'pointer' }}
+                  />
+                ))}
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Spec: Ev Başlangıç = 3/6 Ay · Düzenli & Mini Ofis = 3/6/12 Ay
+              </Typography>
+            </Box>
+
+            {/* Gönderim Sıklığı */}
+            <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Gönderim Sıklığı</Typography>
+              <Stack direction="row" spacing={1}>
+                <Chip
+                  label="Ayda 1"
+                  color={form.periods.includes('monthly') ? 'primary' : 'default'}
+                  variant={form.periods.includes('monthly') ? 'filled' : 'outlined'}
+                  onClick={() => togglePeriod('monthly')}
+                  sx={{ cursor: 'pointer' }}
+                />
+                <Chip
+                  label="15 Günde 1"
+                  color={form.periods.includes('biweekly') ? 'primary' : 'default'}
+                  variant={form.periods.includes('biweekly') ? 'filled' : 'outlined'}
+                  onClick={() => togglePeriod('biweekly')}
+                  sx={{ cursor: 'pointer' }}
+                />
+              </Stack>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                Spec: Ev Başlangıç sadece Ayda 1 · Düzenli & Mini Ofis ikisi de
+              </Typography>
+            </Box>
+
+            {/* Mini Ofis kg çarpanları */}
+            <Box sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Mini Ofis kg Çarpanları (opsiyonel)</Typography>
+              <TextField
+                fullWidth
+                size="small"
+                label="Çarpanlar (virgülle ayır, kg cinsinden)"
+                placeholder="örn: 1, 2, 5"
+                value={form.bagMultipliers.join(', ')}
+                onChange={(e) => updateBagMultipliers(e.target.value)}
+                helperText="Sadece Mini Ofis paketi için: 1/2/5 kg → 1/2/5 adet 1000g paket. Diğer paketler boş bırakın."
+              />
+            </Box>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>

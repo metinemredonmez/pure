@@ -12,25 +12,46 @@ export const metadata: Metadata = {
 export default async function Page() {
   const settings = await getSiteSettings()
 
-  // Fetch the 3 subscription plans from backend (admin manages name, description, image, sortOrder).
-  // The package RULES (gramaj matrix, durations, frequencies) stay as code constants because they are
-  // business rules defined in the spec, not editorial content.
-  let planOverrides: { name?: string; description?: string; image?: string }[] = []
+  // Fetch all subscription plans from backend. Admin manages EVERYTHING:
+  //   - Editorial: name, description, image, sortOrder
+  //   - Config: coffee types + grams per type, durations, periods, mini-office bag multipliers
+  //   All stored in SubPlan JSON columns (availableGrams / availableDurations / availablePeriods / availableGrinds).
+  let plans: any[] = []
   try {
     const res = (await getApiSubscriptionPlans()) as any
     const list = res?.data?.data || res?.data || []
     if (Array.isArray(list)) {
-      planOverrides = list
+      plans = list
         .filter((p: any) => p.isActive !== false)
         .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-        .slice(0, 3)
         .map((p: any) => ({
+          id: p.slug || p.id,
           name: p.name,
           description: p.description,
           image: p.image ? resolveImageUrl(p.image) : undefined,
+          coffeeConfigs: Array.isArray(p.availableGrams) ? p.availableGrams : [],
+          durations: Array.isArray(p.availableDurations) ? p.availableDurations : [],
+          periods: Array.isArray(p.availablePeriods) ? p.availablePeriods : [],
+          bagMultipliers: Array.isArray(p.availableGrinds) ? p.availableGrinds : [],
         }))
     }
   } catch {}
+
+  // Global süre indirimleri (settings'ten) — varsayılan: 3:%0, 6:%5, 12:%10
+  const durationDiscounts: Record<number, number> = {}
+  const dd = (settings as any).subscriptionDurationDiscounts
+  if (Array.isArray(dd)) {
+    dd.forEach((d: any) => {
+      if (typeof d?.months === 'number' && typeof d?.percent === 'number') {
+        durationDiscounts[d.months] = d.percent
+      }
+    })
+  }
+  if (!Object.keys(durationDiscounts).length) {
+    durationDiscounts[3] = 0
+    durationDiscounts[6] = 5
+    durationDiscounts[12] = 10
+  }
 
   return (
     <SubscriptionPage
@@ -43,7 +64,8 @@ export default async function Page() {
       faqHeading={settings.subscriptionFaqHeading}
       faq={settings.subscriptionFaq}
       faqCta={settings.subscriptionFaqCta}
-      planOverrides={planOverrides}
+      plans={plans}
+      durationDiscounts={durationDiscounts}
     />
   )
 }

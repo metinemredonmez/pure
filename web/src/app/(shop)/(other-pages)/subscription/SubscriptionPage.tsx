@@ -23,7 +23,6 @@ const STEP_ICON_MAP: Record<string, any> = {
 }
 
 type CoffeeKind = 'turk' | 'espresso' | 'filtre'
-type PackageId = 'ev-baslangic' | 'duzenli' | 'mini-ofis'
 type Frequency = 'monthly' | 'biweekly'
 
 interface FrequencyDef {
@@ -34,20 +33,19 @@ interface FrequencyDef {
 
 interface CoffeeRule {
   label: string
-  grams: number[] // izin verilen gramajlar
-  /** Mini Ofis için: her gönderimdeki adet seçenekleri (1, 2, 5 → 1kg, 2kg, 5kg) */
+  grams: number[]
   bagMultipliers?: number[]
 }
 
 interface PackageDef {
-  id: PackageId
+  id: string
   name: string
   description: string
   image: string
-  coffees: Record<CoffeeKind, CoffeeRule>
-  durations: number[] // ay
+  coffees: Partial<Record<CoffeeKind, CoffeeRule>>
+  durations: number[]
   frequencies: FrequencyDef[]
-  isOfficeBag?: boolean // Mini Ofis: kg cinsinden seçim
+  isOfficeBag?: boolean
 }
 
 const COFFEE_KINDS: { id: CoffeeKind; label: string; categorySlugs: string[] }[] = [
@@ -56,57 +54,22 @@ const COFFEE_KINDS: { id: CoffeeKind; label: string; categorySlugs: string[] }[]
   { id: 'filtre', label: 'Filtre Kahve', categorySlugs: ['filtre-kahve', 'filtre'] },
 ]
 
-const PACKAGES: PackageDef[] = [
-  {
-    id: 'ev-baslangic',
-    name: 'Ev Başlangıç Paketi',
-    description: 'Az tüketimli ev kullanıcıları için',
-    image: '/hero/turk-kahvesi-100gr.jpg',
-    coffees: {
-      turk: { label: 'Türk Kahvesi', grams: [100, 200] },
-      espresso: { label: 'Espresso', grams: [250] },
-      filtre: { label: 'Filtre Kahve', grams: [250] },
-    },
-    durations: [3, 6],
-    frequencies: [{ value: 'monthly', label: 'Ayda 1', shipmentsPerMonth: 1 }],
-  },
-  {
-    id: 'duzenli',
-    name: 'Düzenli Kahve Paketi',
-    description: 'Evde düzenli kahve tüketen kullanıcılar için',
-    image: '/hero/brazil-santos.jpg',
-    coffees: {
-      turk: { label: 'Türk Kahvesi', grams: [200, 1000] },
-      espresso: { label: 'Espresso', grams: [250, 1000] },
-      filtre: { label: 'Filtre Kahve', grams: [250, 1000] },
-    },
-    durations: [3, 6, 12],
-    frequencies: [
-      { value: 'monthly', label: 'Ayda 1', shipmentsPerMonth: 1 },
-      { value: 'biweekly', label: '15 Günde 1', shipmentsPerMonth: 2 },
-    ],
-  },
-  {
-    id: 'mini-ofis',
-    name: 'Mini Ofis Paketi',
-    description: 'Küçük ofisler, işletmeler ve düzenli tüketimi yüksek müşteriler için',
-    image: '/hero/hediye-paketi.jpg',
-    isOfficeBag: true,
-    coffees: {
-      turk: { label: 'Türk Kahvesi 1000g', grams: [1000], bagMultipliers: [1, 2, 5] },
-      espresso: { label: 'Espresso 1000g', grams: [1000], bagMultipliers: [1, 2, 5] },
-      filtre: { label: 'Filtre Kahve 1000g', grams: [1000], bagMultipliers: [1, 2, 5] },
-    },
-    durations: [3, 6, 12],
-    frequencies: [
-      { value: 'monthly', label: 'Ayda 1', shipmentsPerMonth: 1 },
-      { value: 'biweekly', label: '15 Günde 1', shipmentsPerMonth: 2 },
-    ],
-  },
-]
+const FREQUENCY_DEFS: Record<Frequency, FrequencyDef> = {
+  monthly: { value: 'monthly', label: 'Ayda 1', shipmentsPerMonth: 1 },
+  biweekly: { value: 'biweekly', label: '15 Günde 1', shipmentsPerMonth: 2 },
+}
 
-/** Süreye göre indirim oranları (%) — spec madde 9 */
-const DURATION_DISCOUNTS: Record<number, number> = { 3: 0, 6: 5, 12: 10 }
+/** Admin'in /subscriptions/plans'tan girdiği plan verisi */
+interface PlanFromAdmin {
+  id: string
+  name?: string
+  description?: string
+  image?: string
+  coffeeConfigs?: Array<{ coffee: CoffeeKind; grams: number[] }>
+  durations?: number[]
+  periods?: string[]
+  bagMultipliers?: number[]
+}
 
 interface ProductLite {
   id: string
@@ -183,8 +146,10 @@ interface SubscriptionPageProps {
   faqHeading?: string
   faq?: Array<{ id: string; q: string; a: string }>
   faqCta?: string
-  /** Admin /subscriptions/plans'tan gelen ad/açıklama/görsel — sıraya göre 3 pakete bind edilir */
-  planOverrides?: Array<{ name?: string; description?: string; image?: string }>
+  /** Admin'den (/subscriptions/plans) gelen plan listesi — her şey buradan */
+  plans?: PlanFromAdmin[]
+  /** Süre indirim oranları (admin'den, /subscriptions/plans → 💰 Süre İndirim Oranları) */
+  durationDiscounts?: Record<number, number>
 }
 
 export default function SubscriptionPage({
@@ -197,7 +162,8 @@ export default function SubscriptionPage({
   faqHeading = 'Sıkça Sorulan Sorular',
   faq = [],
   faqCta = 'Kahveleri Keşfet',
-  planOverrides = [],
+  plans = [],
+  durationDiscounts = { 3: 0, 6: 5, 12: 10 },
 }: SubscriptionPageProps = {}) {
   const router = useRouter()
   const { addItem } = useCart()
@@ -206,7 +172,7 @@ export default function SubscriptionPage({
   const [adding, setAdding] = useState(false)
 
   // Selection state
-  const [packageId, setPackageId] = useState<PackageId | null>(null)
+  const [packageId, setPackageId] = useState<string | null>(null)
   const [coffeeKind, setCoffeeKind] = useState<CoffeeKind>('turk')
   const [grams, setGrams] = useState<number>(200)
   const [bagMultiplier, setBagMultiplier] = useState<number>(1) // mini-ofis için adet
@@ -224,33 +190,58 @@ export default function SubscriptionPage({
       .catch(() => setProducts([]))
   }, [])
 
-  // Sadece admin'de oluşturulmuş plan kadar paket göster.
-  // Admin'de 0 plan varsa → site'de paket gözükmez (fallback yok).
+  // Admin'in plan config'inden PackageDef'leri oluştur
   const packages = useMemo<PackageDef[]>(() => {
-    return planOverrides.map((o, idx) => {
-      const base = PACKAGES[idx] || PACKAGES[0]
-      return {
-        ...base,
-        // ID'yi de admin sırasına bağla — gramaj/süre/sıklık kuralları idx'e göre eşleşir
-        id: base.id,
-        name: o.name || base.name,
-        description: o.description || base.description,
-        image: o.image || base.image,
-      }
-    })
-  }, [planOverrides])
+    return plans
+      .map((p): PackageDef | null => {
+        const cfg = Array.isArray(p.coffeeConfigs) ? p.coffeeConfigs : []
+        if (!cfg.length) return null
+        const bagMultipliers = Array.isArray(p.bagMultipliers) && p.bagMultipliers.length ? p.bagMultipliers : undefined
+        const isOfficeBag = !!bagMultipliers
+        const coffees: Partial<Record<CoffeeKind, CoffeeRule>> = {}
+        cfg.forEach((c) => {
+          if (!c?.coffee || !Array.isArray(c.grams) || !c.grams.length) return
+          const kind = COFFEE_KINDS.find((k) => k.id === c.coffee)
+          if (!kind) return
+          coffees[c.coffee] = {
+            label: isOfficeBag ? `${kind.label} 1000g` : kind.label,
+            grams: c.grams,
+            bagMultipliers: isOfficeBag ? bagMultipliers : undefined,
+          }
+        })
+        if (!Object.keys(coffees).length) return null
+        const durations = Array.isArray(p.durations) && p.durations.length ? p.durations : [3, 6]
+        const periodValues = Array.isArray(p.periods) && p.periods.length ? p.periods : ['monthly']
+        const frequencies = periodValues
+          .map((v) => FREQUENCY_DEFS[v as Frequency])
+          .filter(Boolean) as FrequencyDef[]
+        return {
+          id: p.id,
+          name: p.name || 'Abonelik Paketi',
+          description: p.description || '',
+          image: p.image || '/hero/turk-kahvesi-100gr.jpg',
+          coffees,
+          durations,
+          frequencies: frequencies.length ? frequencies : [FREQUENCY_DEFS.monthly],
+          isOfficeBag,
+        }
+      })
+      .filter((p): p is PackageDef => p !== null)
+  }, [plans])
 
   const pkg = useMemo(() => packages.find((p) => p.id === packageId) || null, [packages, packageId])
-  const coffeeRule = useMemo(() => (pkg ? pkg.coffees[coffeeKind] : null), [pkg, coffeeKind])
+  const coffeeRule = useMemo<CoffeeRule | null>(() => (pkg ? pkg.coffees[coffeeKind] || null : null), [pkg, coffeeKind])
 
   // Paket değişince → kahve türü + gramaj + süre + sıklık defaults
   useEffect(() => {
     if (!pkg) return
-    // İlk kahve türü
     const firstKind = (Object.keys(pkg.coffees) as CoffeeKind[])[0]
+    if (!firstKind) return
+    const firstCoffee = pkg.coffees[firstKind]
+    if (!firstCoffee) return
     setCoffeeKind(firstKind)
-    setBagMultiplier(pkg.coffees[firstKind].bagMultipliers?.[0] ?? 1)
-    setGrams(pkg.coffees[firstKind].grams[0])
+    setBagMultiplier(firstCoffee.bagMultipliers?.[0] ?? 1)
+    setGrams(firstCoffee.grams[0])
     setDuration(pkg.durations[0])
     setFrequency(pkg.frequencies[0].value)
   }, [pkg])
@@ -291,7 +282,7 @@ export default function SubscriptionPage({
 
   const subtotal = useMemo(() => pricePerShipment * totalShipments, [pricePerShipment, totalShipments])
 
-  const discountPercent = DURATION_DISCOUNTS[duration] ?? 0
+  const discountPercent = durationDiscounts[duration] ?? 0
   const discountAmount = useMemo(() => subtotal * (discountPercent / 100), [subtotal, discountPercent])
   const totalPrice = useMemo(() => subtotal - discountAmount, [subtotal, discountAmount])
 
@@ -299,7 +290,7 @@ export default function SubscriptionPage({
     document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  const choosePackage = (id: PackageId) => {
+  const choosePackage = (id: string) => {
     setPackageId(id)
     setTimeout(() => {
       document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -444,7 +435,7 @@ export default function SubscriptionPage({
             <div className="mt-8">
               <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Kahve Türü</label>
               <div className="mt-3 grid grid-cols-3 gap-2">
-                {COFFEE_KINDS.map((k) => {
+                {COFFEE_KINDS.filter((k) => !!pkg.coffees[k.id]).map((k) => {
                   const isActive = coffeeKind === k.id
                   return (
                     <button
