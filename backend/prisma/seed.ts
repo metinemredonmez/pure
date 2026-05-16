@@ -818,9 +818,11 @@ async function main() {
   console.log(`✅ ${templates.length} email template oluşturuldu`);
 
   // ── 11. Abonelik Planları (Spec madde 4) ──
-  // Eski 'starter/coffee-lover/office-mini' planlarını sil → spec'teki 3 plana geç
-  await prisma.subPlan.deleteMany({
+  // Eski 'starter/coffee-lover/office-mini' planları DEAKTİVE (silinmez —
+  // müşteri abonelikleri foreign key ile bağlı).
+  await prisma.subPlan.updateMany({
     where: { slug: { in: ['starter', 'coffee-lover', 'office-mini'] } },
+    data: { isActive: false },
   });
   const plans = await Promise.all([
     prisma.subPlan.upsert({
