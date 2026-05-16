@@ -200,7 +200,7 @@ export default function SubscriptionPlansPage() {
     setSavingConfig(false);
   };
 
-  // ── Helpers ──
+  // ── Helpers — fiyatlar ──
   const updateTurkPrice = (pkgId: string, val: string) => {
     const n = Number(val) || 0;
     setConfig({ ...config, turk: { ...config.turk, prices: { ...config.turk.prices, [pkgId]: n } } });
@@ -212,6 +212,55 @@ export default function SubscriptionPlansPage() {
     if (!newPrices[seriesId]) newPrices[seriesId] = {};
     newPrices[seriesId] = { ...newPrices[seriesId], [pkgId]: n };
     setConfig({ ...config, [coffeeKey]: { ...cfg, prices: newPrices } });
+  };
+
+  // ── Helpers — paket meta (label / name / count / grams) ──
+  const updatePackageMeta = (coffeeKey: 'turk' | 'espresso' | 'filtre', pkgId: string, field: 'label' | 'packageName' | 'count' | 'grams', val: string) => {
+    const cfg = config[coffeeKey];
+    const newPackages = cfg.packages.map((p) => {
+      if (p.id !== pkgId) return p;
+      if (field === 'count' || field === 'grams') {
+        return { ...p, [field]: Number(val) || 0 };
+      }
+      return { ...p, [field]: val };
+    });
+    setConfig({ ...config, [coffeeKey]: { ...cfg, packages: newPackages } });
+  };
+
+  // ── Helpers — Series (Espresso / Filtre) ──
+  const updateSeriesLabel = (coffeeKey: 'espresso' | 'filtre', seriesId: string, val: string) => {
+    const cfg = config[coffeeKey];
+    const newSeries = cfg.series.map((s) => s.id === seriesId ? { ...s, label: val } : s);
+    setConfig({ ...config, [coffeeKey]: { ...cfg, series: newSeries } });
+  };
+  const addSeries = (coffeeKey: 'espresso' | 'filtre') => {
+    const cfg = config[coffeeKey];
+    const newId = `series-${Date.now()}`;
+    setConfig({ ...config, [coffeeKey]: { ...cfg, series: [...cfg.series, { id: newId, label: 'Yeni Seri' }] } });
+  };
+  const removeSeries = (coffeeKey: 'espresso' | 'filtre', seriesId: string) => {
+    const cfg = config[coffeeKey];
+    const newSeries = cfg.series.filter((s) => s.id !== seriesId);
+    const newPrices = { ...cfg.prices };
+    delete newPrices[seriesId];
+    setConfig({ ...config, [coffeeKey]: { ...cfg, series: newSeries, prices: newPrices } });
+  };
+
+  // ── Helpers — Grinds ──
+  const updateGrindLabel = (coffeeKey: 'espresso' | 'filtre', grindId: string, val: string) => {
+    const cfg = config[coffeeKey];
+    const newGrinds = cfg.grinds.map((g) => g.id === grindId ? { ...g, label: val } : g);
+    setConfig({ ...config, [coffeeKey]: { ...cfg, grinds: newGrinds } });
+  };
+  const addGrind = (coffeeKey: 'espresso' | 'filtre') => {
+    const cfg = config[coffeeKey];
+    const newId = `grind-${Date.now()}`;
+    setConfig({ ...config, [coffeeKey]: { ...cfg, grinds: [...cfg.grinds, { id: newId, label: 'Yeni Öğütüm' }] } });
+  };
+  const removeGrind = (coffeeKey: 'espresso' | 'filtre', grindId: string) => {
+    const cfg = config[coffeeKey];
+    const newGrinds = cfg.grinds.filter((g) => g.id !== grindId);
+    setConfig({ ...config, [coffeeKey]: { ...cfg, grinds: newGrinds } });
   };
 
   return (
@@ -421,20 +470,39 @@ export default function SubscriptionPlansPage() {
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
                 Türk Kahvesi'nde ürün serisi yok — sadece paket × fiyat.
               </Typography>
-              <Stack spacing={1.5}>
+              <Stack spacing={2}>
                 {config.turk.packages.map((pkg) => (
-                  <Stack key={pkg.id} direction="row" alignItems="center" spacing={2}
-                    sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" fontWeight={600}>{pkg.label}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Otomatik paket adı: <strong>{pkg.packageName}</strong> · Her gönderim: {pkg.count} × {pkg.grams}g = {pkg.count * pkg.grams}g
-                      </Typography>
-                    </Box>
-                    <TextField size="small" type="number" label="1 Gönderim ₺" sx={{ width: 200 }}
-                      value={config.turk.prices[pkg.id] ?? 0}
-                      onChange={(e) => updateTurkPrice(pkg.id, e.target.value)} />
-                  </Stack>
+                  <Box key={pkg.id} sx={{ p: 2, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                    <Grid container spacing={1.5}>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextField fullWidth size="small" label="Paket Etiketi" value={pkg.label}
+                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'label', e.target.value)} />
+                      </Grid>
+                      <Grid size={{ xs: 12, sm: 4 }}>
+                        <TextField fullWidth size="small" label="Otomatik Paket Adı" value={pkg.packageName}
+                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'packageName', e.target.value)}
+                          helperText="Ev Başlangıç / Düzenli / Mini Ofis" />
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 2 }}>
+                        <TextField fullWidth size="small" type="number" label="Adet" value={pkg.count}
+                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'count', e.target.value)} />
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 2 }}>
+                        <TextField fullWidth size="small" type="number" label="Gramaj (g)" value={pkg.grams}
+                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'grams', e.target.value)} />
+                      </Grid>
+                      <Grid size={{ xs: 12 }}>
+                        <Stack direction="row" alignItems="center" spacing={2}>
+                          <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                            Her gönderim toplamı: {pkg.count * pkg.grams} g
+                          </Typography>
+                          <TextField size="small" type="number" label="1 Gönderim ₺" sx={{ width: 200 }}
+                            value={config.turk.prices[pkg.id] ?? 0}
+                            onChange={(e) => updateTurkPrice(pkg.id, e.target.value)} />
+                        </Stack>
+                      </Grid>
+                    </Grid>
+                  </Box>
                 ))}
               </Stack>
             </Box>
@@ -443,22 +511,99 @@ export default function SubscriptionPlansPage() {
           {/* ESPRESSO / FİLTRE */}
           {(matrixTab === 'espresso' || matrixTab === 'filtre') && (
             <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                {matrixTab === 'espresso' ? 'Espresso' : 'Filtre Kahve'} — her ürün serisi × paket için 1 gönderim fiyatı. Öğütüm seçimi fiyatı etkilemez.
+              {/* Seri (Blend / Single Origin / SO Premium) edit */}
+              <Box sx={{ p: 2, mb: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography variant="body2" fontWeight={600}>Ürün Serileri</Typography>
+                  <Button size="small" startIcon={<AddIcon />} onClick={() => addSeries(matrixTab)}>
+                    Yeni Seri
+                  </Button>
+                </Stack>
+                <Stack spacing={1}>
+                  {config[matrixTab].series.map((s) => (
+                    <Stack key={s.id} direction="row" spacing={1} alignItems="center">
+                      <TextField size="small" label="Seri Adı" sx={{ flex: 1 }}
+                        value={s.label}
+                        onChange={(e) => updateSeriesLabel(matrixTab, s.id, e.target.value)} />
+                      <Button size="small" color="error" onClick={() => removeSeries(matrixTab, s.id)}>
+                        <DeleteIcon fontSize="small" />
+                      </Button>
+                    </Stack>
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Öğütüm edit */}
+              <Box sx={{ p: 2, mb: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                  <Typography variant="body2" fontWeight={600}>Öğütüm Seçenekleri</Typography>
+                  <Button size="small" startIcon={<AddIcon />} onClick={() => addGrind(matrixTab)}>
+                    Yeni Öğütüm
+                  </Button>
+                </Stack>
+                <Stack spacing={1}>
+                  {config[matrixTab].grinds.map((g) => (
+                    <Stack key={g.id} direction="row" spacing={1} alignItems="center">
+                      <TextField size="small" label="Öğütüm Adı" sx={{ flex: 1 }}
+                        value={g.label}
+                        onChange={(e) => updateGrindLabel(matrixTab, g.id, e.target.value)} />
+                      <Button size="small" color="error" onClick={() => removeGrind(matrixTab, g.id)}>
+                        <DeleteIcon fontSize="small" />
+                      </Button>
+                    </Stack>
+                  ))}
+                </Stack>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                  Öğütüm seçimi fiyatı etkilemez — sadece sipariş detayına yazılır.
+                </Typography>
+              </Box>
+
+              {/* Paket meta edit */}
+              <Box sx={{ p: 2, mb: 2, bgcolor: 'action.hover', borderRadius: 1 }}>
+                <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>Paket Tanımları</Typography>
+                <Stack spacing={2}>
+                  {config[matrixTab].packages.map((pkg) => (
+                    <Box key={pkg.id} sx={{ p: 1.5, bgcolor: 'background.paper', borderRadius: 1 }}>
+                      <Grid container spacing={1}>
+                        <Grid size={{ xs: 12, sm: 4 }}>
+                          <TextField fullWidth size="small" label="Paket Etiketi" value={pkg.label}
+                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'label', e.target.value)} />
+                        </Grid>
+                        <Grid size={{ xs: 12, sm: 4 }}>
+                          <TextField fullWidth size="small" label="Otomatik Paket Adı" value={pkg.packageName}
+                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'packageName', e.target.value)} />
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 2 }}>
+                          <TextField fullWidth size="small" type="number" label="Adet" value={pkg.count}
+                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'count', e.target.value)} />
+                        </Grid>
+                        <Grid size={{ xs: 6, sm: 2 }}>
+                          <TextField fullWidth size="small" type="number" label="Gramaj (g)" value={pkg.grams}
+                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'grams', e.target.value)} />
+                        </Grid>
+                      </Grid>
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
+
+              {/* Fiyat matrisi (seri × paket) */}
+              <Typography variant="body2" fontWeight={600} sx={{ mb: 1 }}>
+                Fiyatlar — Seri × Paket (1 Gönderim ₺)
               </Typography>
               {config[matrixTab].series.map((series) => (
                 <Box key={series.id} sx={{ mb: 3 }}>
                   <Typography variant="body2" fontWeight={700} sx={{ mb: 1, color: olentiaColors.primary.main }}>
                     {series.label}
                   </Typography>
-                  <Stack spacing={1.5}>
+                  <Stack spacing={1}>
                     {config[matrixTab].packages.map((pkg) => (
                       <Stack key={pkg.id} direction="row" alignItems="center" spacing={2}
                         sx={{ p: 1.5, border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
                         <Box sx={{ flex: 1 }}>
                           <Typography variant="body2" fontWeight={600}>{pkg.label}</Typography>
                           <Typography variant="caption" color="text.secondary">
-                            Otomatik paket adı: <strong>{pkg.packageName}</strong> · Her gönderim: {pkg.count} × {pkg.grams}g = {pkg.count * pkg.grams}g
+                            {pkg.packageName} · Her gönderim: {pkg.count} × {pkg.grams}g = {pkg.count * pkg.grams}g
                           </Typography>
                         </Box>
                         <TextField size="small" type="number" label="1 Gönderim ₺" sx={{ width: 200 }}
