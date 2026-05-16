@@ -85,6 +85,43 @@ export interface AnnouncementItem {
   cta: string
 }
 
+// ───────────────── Abonelik Konfigürasyonu (spec v2) ─────────────────
+// /subscription sayfası buradan beslenir. Tüm değerler admin'den yönetilir.
+export interface SubscriptionPackageOption {
+  id: string                // örn: 'turk-12x100'
+  label: string             // örn: '100 g x 12 Adet'
+  count: number             // 12
+  grams: number             // 100
+  packageName: string       // 'Ev Başlangıç Paketi' (otomatik atanan ad)
+}
+export interface SubscriptionSeriesOption {
+  id: string                // 'blend' | 'single-origin' | 'single-origin-premium'
+  label: string             // 'Blend' / 'Single Origin' / 'Single Origin Premium'
+}
+export interface SubscriptionGrindOption {
+  id: string                // 'cekirdek' | 'ogutulmus' | 'filtre-aeropress'
+  label: string             // 'Çekirdek — Öğütülmemiş' / 'Öğütülmüş Kahve' / 'Filtre Kahve / Aeropress'
+}
+export interface SubscriptionCoffeeTurkConfig {
+  enabled: boolean
+  packages: SubscriptionPackageOption[]
+  /** packageId → 1 gönderim fiyatı (₺) */
+  prices: Record<string, number>
+}
+export interface SubscriptionCoffeeWithSeriesConfig {
+  enabled: boolean
+  series: SubscriptionSeriesOption[]
+  grinds: SubscriptionGrindOption[]
+  packages: SubscriptionPackageOption[]
+  /** seriesId → packageId → 1 gönderim fiyatı (₺) */
+  prices: Record<string, Record<string, number>>
+}
+export interface SubscriptionConfig {
+  turk: SubscriptionCoffeeTurkConfig
+  espresso: SubscriptionCoffeeWithSeriesConfig
+  filtre: SubscriptionCoffeeWithSeriesConfig
+}
+
 export interface SiteSettings {
   siteName: string
   logo: string
@@ -150,6 +187,8 @@ export interface SiteSettings {
   subscriptionFaqCta: string
   /** Admin'in /subscriptions/plans → 💰 Süre İndirim Oranları'ndan girdiği indirimler */
   subscriptionDurationDiscounts: Array<{ months: number; percent: number }>
+  /** Spec v2: kahve türü bazlı abonelik konfigürasyonu (paketler, seriler, öğütümler, fiyatlar) */
+  subscriptionConfig: SubscriptionConfig
   // Franchise sayfası
   franchiseHeroBadge: string
   franchiseHeroTitle: string
@@ -350,6 +389,61 @@ const DEFAULTS: SiteSettings = {
     { months: 6, percent: 5 },
     { months: 12, percent: 10 },
   ],
+  subscriptionConfig: {
+    turk: {
+      enabled: true,
+      packages: [
+        { id: 'turk-12x100', label: '100 g x 12 Adet', count: 12, grams: 100, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'turk-5x200', label: '200 g x 5 Adet', count: 5, grams: 200, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'turk-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      prices: { 'turk-12x100': 0, 'turk-5x200': 0, 'turk-4x1000': 0 },
+    },
+    espresso: {
+      enabled: true,
+      series: [
+        { id: 'blend', label: 'Blend' },
+        { id: 'single-origin', label: 'Single Origin' },
+        { id: 'single-origin-premium', label: 'Single Origin Premium' },
+      ],
+      grinds: [
+        { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+        { id: 'ogutulmus', label: 'Öğütülmüş Kahve' },
+      ],
+      packages: [
+        { id: 'esp-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'esp-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'esp-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      prices: {
+        'blend': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+        'single-origin': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+        'single-origin-premium': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+      },
+    },
+    filtre: {
+      enabled: true,
+      series: [
+        { id: 'blend', label: 'Blend' },
+        { id: 'single-origin', label: 'Single Origin' },
+        { id: 'single-origin-premium', label: 'Single Origin Premium' },
+      ],
+      grinds: [
+        { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+        { id: 'filtre-aeropress', label: 'Filtre Kahve / Aeropress' },
+      ],
+      packages: [
+        { id: 'flt-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'flt-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'flt-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      prices: {
+        'blend': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+        'single-origin': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+        'single-origin-premium': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+      },
+    },
+  },
   announcements: [
     { id: 'a1', text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
     { id: 'a2', text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },
@@ -466,6 +560,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
       if (key === 'homeCollectionCards') {
         if (Array.isArray(incoming)) {
           merged.homeCollectionCards = incoming as HomeCollectionCard[]
+        }
+        continue
+      }
+      if (key === 'subscriptionConfig') {
+        if (incoming && typeof incoming === 'object') {
+          merged.subscriptionConfig = incoming as SubscriptionConfig
         }
         continue
       }

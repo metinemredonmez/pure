@@ -817,90 +817,15 @@ async function main() {
   ]);
   console.log(`✅ ${templates.length} email template oluşturuldu`);
 
-  // ── 11. Abonelik Planları (Spec madde 4) ──
-  // Eski 'starter/coffee-lover/office-mini' planları DEAKTİVE (silinmez —
-  // müşteri abonelikleri foreign key ile bağlı).
+  // ── 11. Abonelik (Spec v2) ──
+  // Eski SubPlan kayıtlarını deaktive et (yeni sistem SubPlan kullanmıyor;
+  // /subscription sayfası tamamen site-settings.subscriptionConfig'ten besleniyor).
+  // Mevcut müşteri abonelikleri foreign key korumalı olduğu için silinmiyor.
   await prisma.subPlan.updateMany({
-    where: { slug: { in: ['starter', 'coffee-lover', 'office-mini'] } },
+    where: { slug: { in: ['starter', 'coffee-lover', 'office-mini', 'ev-baslangic', 'duzenli-kahve', 'mini-ofis'] } },
     data: { isActive: false },
   });
-  const plans = await Promise.all([
-    prisma.subPlan.upsert({
-      where: { slug: 'ev-baslangic' },
-      update: {},
-      create: {
-        name: 'Ev Başlangıç Paketi',
-        slug: 'ev-baslangic',
-        description: 'Az tüketimli ev kullanıcıları için',
-        monthlyWeight: 200,
-        priceMonthly: 0, // Spec madde 5: fiyat ürün/varyasyon fiyatından gelir
-        discountPercent: 0,
-        freeShipping: true,
-        isActive: true,
-        sortOrder: 1,
-        // Spec madde 4: Ev Başlangıç — Türk 100/200, Espresso 250, Filtre 250 (1000 YASAK)
-        availableGrams: [
-          { coffee: 'turk', grams: [100, 200] },
-          { coffee: 'espresso', grams: [250] },
-          { coffee: 'filtre', grams: [250] },
-        ] as any,
-        availableDurations: [3, 6] as any,
-        availablePeriods: ['monthly'] as any,
-        availableGrinds: [] as any, // bagMultipliers yok
-      },
-    }),
-    prisma.subPlan.upsert({
-      where: { slug: 'duzenli-kahve' },
-      update: {},
-      create: {
-        name: 'Düzenli Kahve Paketi',
-        slug: 'duzenli-kahve',
-        description: 'Evde düzenli kahve tüketen kullanıcılar için',
-        monthlyWeight: 1000,
-        priceMonthly: 0,
-        discountPercent: 0,
-        freeShipping: true,
-        isActive: true,
-        sortOrder: 2,
-        // Spec madde 4: Düzenli — Türk 200/1000, Espresso 250/1000, Filtre 250/1000
-        availableGrams: [
-          { coffee: 'turk', grams: [200, 1000] },
-          { coffee: 'espresso', grams: [250, 1000] },
-          { coffee: 'filtre', grams: [250, 1000] },
-        ] as any,
-        availableDurations: [3, 6, 12] as any,
-        availablePeriods: ['monthly', 'biweekly'] as any,
-        availableGrinds: [] as any,
-      },
-    }),
-    prisma.subPlan.upsert({
-      where: { slug: 'mini-ofis' },
-      update: {},
-      create: {
-        name: 'Mini Ofis Paketi',
-        slug: 'mini-ofis',
-        description: 'Küçük ofisler, işletmeler ve düzenli tüketimi yüksek müşteriler için',
-        monthlyWeight: 1000,
-        priceMonthly: 0,
-        discountPercent: 0,
-        freeShipping: true,
-        isActive: true,
-        sortOrder: 3,
-        // Spec madde 4: Mini Ofis — sadece 1000g, kg çarpanlarıyla 1/2/5 adet
-        availableGrams: [
-          { coffee: 'turk', grams: [1000] },
-          { coffee: 'espresso', grams: [1000] },
-          { coffee: 'filtre', grams: [1000] },
-        ] as any,
-        availableDurations: [3, 6, 12] as any,
-        availablePeriods: ['monthly', 'biweekly'] as any,
-        availableGrinds: [1, 2, 5] as any, // bagMultipliers: 1/2/5 kg
-      },
-    }),
-  ]);
-  console.log(`✅ ${plans.length} abonelik planı (spec) oluşturuldu`);
-
-  // ── Süre İndirim Oranları (Spec madde 9) — site-settings'e ──
+  // Süre İndirim Oranları (Spec madde 12) — site-settings'e
   await prisma.siteSettings.upsert({
     where: { key: 'subscriptionDurationDiscounts' },
     update: {},
@@ -913,7 +838,71 @@ async function main() {
       ] as any,
     },
   });
-  console.log(`✅ Süre indirim oranları (3:%0, 6:%5, 12:%10) eklendi`);
+
+  // Spec v2: subscriptionConfig — kahve türü × seri × öğütüm × paket × fiyat
+  await prisma.siteSettings.upsert({
+    where: { key: 'subscriptionConfig' },
+    update: {},
+    create: {
+      key: 'subscriptionConfig',
+      value: {
+        turk: {
+          enabled: true,
+          packages: [
+            { id: 'turk-12x100', label: '100 g x 12 Adet', count: 12, grams: 100, packageName: 'Ev Başlangıç Paketi' },
+            { id: 'turk-5x200', label: '200 g x 5 Adet', count: 5, grams: 200, packageName: 'Düzenli Kahve Paketi' },
+            { id: 'turk-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+          ],
+          prices: { 'turk-12x100': 0, 'turk-5x200': 0, 'turk-4x1000': 0 },
+        },
+        espresso: {
+          enabled: true,
+          series: [
+            { id: 'blend', label: 'Blend' },
+            { id: 'single-origin', label: 'Single Origin' },
+            { id: 'single-origin-premium', label: 'Single Origin Premium' },
+          ],
+          grinds: [
+            { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+            { id: 'ogutulmus', label: 'Öğütülmüş Kahve' },
+          ],
+          packages: [
+            { id: 'esp-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+            { id: 'esp-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+            { id: 'esp-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+          ],
+          prices: {
+            'blend': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+            'single-origin': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+            'single-origin-premium': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
+          },
+        },
+        filtre: {
+          enabled: true,
+          series: [
+            { id: 'blend', label: 'Blend' },
+            { id: 'single-origin', label: 'Single Origin' },
+            { id: 'single-origin-premium', label: 'Single Origin Premium' },
+          ],
+          grinds: [
+            { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+            { id: 'filtre-aeropress', label: 'Filtre Kahve / Aeropress' },
+          ],
+          packages: [
+            { id: 'flt-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+            { id: 'flt-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+            { id: 'flt-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+          ],
+          prices: {
+            'blend': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+            'single-origin': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+            'single-origin-premium': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
+          },
+        },
+      } as any,
+    },
+  });
+  console.log(`✅ Abonelik konfigürasyonu seed'lendi (Spec v2 — admin fiyat matrisinden yönetilir)`);
 
   // ── 12. Loyalty Accounts ──
   await prisma.loyaltyAccount.upsert({

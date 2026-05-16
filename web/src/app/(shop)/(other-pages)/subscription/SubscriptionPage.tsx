@@ -3,17 +3,13 @@
 import { useCart } from '@/contexts/CartContext'
 import { Coffee01Icon, DeliveryTruck01Icon, GiftIcon, PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import toast from 'react-hot-toast'
-
-/* ──────────────────────────────────────────────────────────────
-   CONFIG — Pure Olentia Abonelik Sistemi
-   Spec birebir uygulanmıştır.
-   ────────────────────────────────────────────────────────────── */
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+import type {
+  SubscriptionConfig,
+  SubscriptionPackageOption,
+} from '@/lib/site-settings'
 
 const STEP_ICON_MAP: Record<string, any> = {
   coffee: Coffee01Icon,
@@ -23,66 +19,12 @@ const STEP_ICON_MAP: Record<string, any> = {
 }
 
 type CoffeeKind = 'turk' | 'espresso' | 'filtre'
-type Frequency = 'monthly' | 'biweekly'
 
-interface FrequencyDef {
-  value: Frequency
-  label: string
-  shipmentsPerMonth: number
+const COFFEE_LABELS: Record<CoffeeKind, string> = {
+  turk: 'Türk Kahvesi',
+  espresso: 'Espresso',
+  filtre: 'Filtre Kahve',
 }
-
-interface CoffeeRule {
-  label: string
-  grams: number[]
-  bagMultipliers?: number[]
-}
-
-interface PackageDef {
-  id: string
-  name: string
-  description: string
-  image: string
-  coffees: Partial<Record<CoffeeKind, CoffeeRule>>
-  durations: number[]
-  frequencies: FrequencyDef[]
-  isOfficeBag?: boolean
-}
-
-const COFFEE_KINDS: { id: CoffeeKind; label: string; categorySlugs: string[] }[] = [
-  { id: 'turk', label: 'Türk Kahvesi', categorySlugs: ['turk-kahvesi', 'turk'] },
-  { id: 'espresso', label: 'Espresso', categorySlugs: ['espresso'] },
-  { id: 'filtre', label: 'Filtre Kahve', categorySlugs: ['filtre-kahve', 'filtre'] },
-]
-
-const FREQUENCY_DEFS: Record<Frequency, FrequencyDef> = {
-  monthly: { value: 'monthly', label: 'Ayda 1', shipmentsPerMonth: 1 },
-  biweekly: { value: 'biweekly', label: '15 Günde 1', shipmentsPerMonth: 2 },
-}
-
-/** Admin'in /subscriptions/plans'tan girdiği plan verisi */
-interface PlanFromAdmin {
-  id: string
-  name?: string
-  description?: string
-  image?: string
-  coffeeConfigs?: Array<{ coffee: CoffeeKind; grams: number[] }>
-  durations?: number[]
-  periods?: string[]
-  bagMultipliers?: number[]
-}
-
-interface ProductLite {
-  id: string
-  name: string
-  slug: string
-  price: number | string
-  weight?: number | null
-  category?: { slug?: string } | null
-}
-
-/* ──────────────────────────────────────────────────────────────
-   HELPERS
-   ────────────────────────────────────────────────────────────── */
 
 function formatPrice(v: number) {
   return `₺${v.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -91,50 +33,6 @@ function formatPrice(v: number) {
 function formatGrams(g: number) {
   return g >= 1000 ? `${(g / 1000).toFixed(g % 1000 === 0 ? 0 : 1)} kg` : `${g} g`
 }
-
-function parsePrice(p: number | string | undefined | null): number {
-  if (p == null) return 0
-  if (typeof p === 'number') return p
-  const n = parseFloat(p)
-  return Number.isFinite(n) ? n : 0
-}
-
-/** "1000g", "1 kg", "1000 g", "1kg" → 1000 */
-function extractWeightFromText(text: string): number | null {
-  if (!text) return null
-  const t = text.toLowerCase().replace(/\s+/g, '')
-  const kg = t.match(/(\d+(?:[.,]\d+)?)kg/)
-  if (kg) return Math.round(parseFloat(kg[1].replace(',', '.')) * 1000)
-  const g = t.match(/(\d+)g(r|ram)?/)
-  if (g) return parseInt(g[1], 10)
-  return null
-}
-
-/** Ürün listesinden (kahve türü, gramaj) → birim fiyat bul. */
-function findUnitPrice(
-  products: ProductLite[],
-  kind: CoffeeKind,
-  grams: number,
-): { price: number; productName: string | null } {
-  const kindDef = COFFEE_KINDS.find((k) => k.id === kind)
-  if (!kindDef) return { price: 0, productName: null }
-  const inCategory = products.filter((p) => {
-    const slug = (p.category?.slug || '').toLowerCase()
-    return kindDef.categorySlugs.includes(slug)
-  })
-  // Önce product.weight tam eşleşme
-  let match = inCategory.find((p) => Number(p.weight) === grams)
-  // Sonra isimde gramaj geçeni bul
-  if (!match) {
-    match = inCategory.find((p) => extractWeightFromText(p.name) === grams)
-  }
-  if (match) return { price: parsePrice(match.price), productName: match.name }
-  return { price: 0, productName: null }
-}
-
-/* ──────────────────────────────────────────────────────────────
-   COMPONENT
-   ────────────────────────────────────────────────────────────── */
 
 interface SubscriptionPageProps {
   heroBadge?: string
@@ -146,215 +44,177 @@ interface SubscriptionPageProps {
   faqHeading?: string
   faq?: Array<{ id: string; q: string; a: string }>
   faqCta?: string
-  /** Admin'den (/subscriptions/plans) gelen plan listesi — her şey buradan */
-  plans?: PlanFromAdmin[]
-  /** Süre indirim oranları (admin'den, /subscriptions/plans → 💰 Süre İndirim Oranları) */
+  config: SubscriptionConfig
   durationDiscounts?: Record<number, number>
 }
 
 export default function SubscriptionPage({
   heroBadge = 'Kahve Aboneliği',
   heroTitle = 'Taze Kavrulmuş Kahve <br /> ile Kapınıza Geliyoruz',
-  heroSubtitle = 'Seçtiğiniz pakete göre, kahveniz belirli aralıklarla taze kavrulmuş olarak kapınıza gelir.',
+  heroSubtitle = 'Kahve türünüzü seçin, paket içeriğini belirleyin — kahveniz her ay kapınızda.',
   heroCta = 'Hemen Başla',
   heroImage = '',
   steps = [],
   faqHeading = 'Sıkça Sorulan Sorular',
   faq = [],
   faqCta = 'Kahveleri Keşfet',
-  plans = [],
+  config,
   durationDiscounts = { 3: 0, 6: 5, 12: 10 },
-}: SubscriptionPageProps = {}) {
+}: SubscriptionPageProps) {
   const router = useRouter()
   const { addItem } = useCart()
-
-  const [products, setProducts] = useState<ProductLite[]>([])
   const [adding, setAdding] = useState(false)
 
-  // Selection state
+  // ───── 1. Kahve Türü ─────
+  const [coffee, setCoffee] = useState<CoffeeKind | null>(null)
+  // ───── 2. (Espresso/Filtre) Ürün Serisi ─────
+  const [seriesId, setSeriesId] = useState<string | null>(null)
+  // ───── 3. (Espresso/Filtre) Öğütüm ─────
+  const [grindId, setGrindId] = useState<string | null>(null)
+  // ───── 4. Paket ─────
   const [packageId, setPackageId] = useState<string | null>(null)
-  const [coffeeKind, setCoffeeKind] = useState<CoffeeKind>('turk')
-  const [grams, setGrams] = useState<number>(200)
-  const [bagMultiplier, setBagMultiplier] = useState<number>(1) // mini-ofis için adet
+  // ───── 5. Süre ─────
   const [duration, setDuration] = useState<number>(3)
-  const [frequency, setFrequency] = useState<Frequency>('monthly')
 
-  // Ürünleri çek — fiyat kaynağı
+  // Kahve değişince diğer seçimler sıfırla
   useEffect(() => {
-    fetch(`${API_URL}/products?limit=200`)
-      .then((r) => r.json())
-      .then((res) => {
-        const list = res?.data?.data || res?.data || []
-        setProducts(Array.isArray(list) ? list : [])
-      })
-      .catch(() => setProducts([]))
-  }, [])
+    if (!coffee) return
+    setSeriesId(null)
+    setGrindId(null)
+    setPackageId(null)
+    setDuration(3)
+    if (coffee === 'turk' && config.turk?.packages?.length) {
+      // Türk: ne seri ne öğütüm, paket sıralı seçim için boş bırakılır
+    } else if ((coffee === 'espresso' || coffee === 'filtre')) {
+      const cfg = coffee === 'espresso' ? config.espresso : config.filtre
+      if (cfg?.series?.length) setSeriesId(cfg.series[0].id)
+      if (cfg?.grinds?.length) setGrindId(cfg.grinds[0].id)
+    }
+  }, [coffee, config])
 
-  // Admin'in plan config'inden PackageDef'leri oluştur
-  const packages = useMemo<PackageDef[]>(() => {
-    return plans
-      .map((p): PackageDef | null => {
-        const cfg = Array.isArray(p.coffeeConfigs) ? p.coffeeConfigs : []
-        if (!cfg.length) return null
-        const bagMultipliers = Array.isArray(p.bagMultipliers) && p.bagMultipliers.length ? p.bagMultipliers : undefined
-        const isOfficeBag = !!bagMultipliers
-        const coffees: Partial<Record<CoffeeKind, CoffeeRule>> = {}
-        cfg.forEach((c) => {
-          if (!c?.coffee || !Array.isArray(c.grams) || !c.grams.length) return
-          const kind = COFFEE_KINDS.find((k) => k.id === c.coffee)
-          if (!kind) return
-          coffees[c.coffee] = {
-            label: isOfficeBag ? `${kind.label} 1000g` : kind.label,
-            grams: c.grams,
-            bagMultipliers: isOfficeBag ? bagMultipliers : undefined,
-          }
-        })
-        if (!Object.keys(coffees).length) return null
-        const durations = Array.isArray(p.durations) && p.durations.length ? p.durations : [3, 6]
-        const periodValues = Array.isArray(p.periods) && p.periods.length ? p.periods : ['monthly']
-        const frequencies = periodValues
-          .map((v) => FREQUENCY_DEFS[v as Frequency])
-          .filter(Boolean) as FrequencyDef[]
-        return {
-          id: p.id,
-          name: p.name || 'Abonelik Paketi',
-          description: p.description || '',
-          image: p.image || '/hero/turk-kahvesi-100gr.jpg',
-          coffees,
-          durations,
-          frequencies: frequencies.length ? frequencies : [FREQUENCY_DEFS.monthly],
-          isOfficeBag,
-        }
-      })
-      .filter((p): p is PackageDef => p !== null)
-  }, [plans])
+  // Mevcut paket listesi
+  const packages: SubscriptionPackageOption[] = useMemo(() => {
+    if (!coffee) return []
+    if (coffee === 'turk') return config.turk?.packages || []
+    if (coffee === 'espresso') return config.espresso?.packages || []
+    if (coffee === 'filtre') return config.filtre?.packages || []
+    return []
+  }, [coffee, config])
 
-  const pkg = useMemo(() => packages.find((p) => p.id === packageId) || null, [packages, packageId])
-  const coffeeRule = useMemo<CoffeeRule | null>(() => (pkg ? pkg.coffees[coffeeKind] || null : null), [pkg, coffeeKind])
+  // 1 gönderim fiyatı (admin'den)
+  const perShipmentPrice = useMemo(() => {
+    if (!coffee || !packageId) return 0
+    if (coffee === 'turk') {
+      return Number(config.turk?.prices?.[packageId]) || 0
+    }
+    if (!seriesId) return 0
+    if (coffee === 'espresso') {
+      return Number(config.espresso?.prices?.[seriesId]?.[packageId]) || 0
+    }
+    if (coffee === 'filtre') {
+      return Number(config.filtre?.prices?.[seriesId]?.[packageId]) || 0
+    }
+    return 0
+  }, [coffee, packageId, seriesId, config])
 
-  // Paket değişince → kahve türü + gramaj + süre + sıklık defaults
-  useEffect(() => {
-    if (!pkg) return
-    const firstKind = (Object.keys(pkg.coffees) as CoffeeKind[])[0]
-    if (!firstKind) return
-    const firstCoffee = pkg.coffees[firstKind]
-    if (!firstCoffee) return
-    setCoffeeKind(firstKind)
-    setBagMultiplier(firstCoffee.bagMultipliers?.[0] ?? 1)
-    setGrams(firstCoffee.grams[0])
-    setDuration(pkg.durations[0])
-    setFrequency(pkg.frequencies[0].value)
-  }, [pkg])
+  const selectedPackage = useMemo(() => packages.find((p) => p.id === packageId) || null, [packages, packageId])
+  const selectedSeries = useMemo(() => {
+    if (coffee === 'espresso') return config.espresso?.series.find((s) => s.id === seriesId) || null
+    if (coffee === 'filtre') return config.filtre?.series.find((s) => s.id === seriesId) || null
+    return null
+  }, [coffee, seriesId, config])
+  const selectedGrind = useMemo(() => {
+    if (coffee === 'espresso') return config.espresso?.grinds.find((g) => g.id === grindId) || null
+    if (coffee === 'filtre') return config.filtre?.grinds.find((g) => g.id === grindId) || null
+    return null
+  }, [coffee, grindId, config])
 
-  // Kahve türü değişince → gramaj + adet sıfırla
-  useEffect(() => {
-    if (!coffeeRule) return
-    setGrams(coffeeRule.grams[0])
-    setBagMultiplier(coffeeRule.bagMultipliers?.[0] ?? 1)
-  }, [coffeeKind, coffeeRule])
-
-  // Süre paket içinde geçerli mi kontrol — değilse ilk seçeneğe çek
-  useEffect(() => {
-    if (!pkg) return
-    if (!pkg.durations.includes(duration)) setDuration(pkg.durations[0])
-    if (!pkg.frequencies.find((f) => f.value === frequency)) setFrequency(pkg.frequencies[0].value)
-  }, [pkg, duration, frequency])
-
-  /* ─── HESAPLAMALAR ─── */
-
-  const frequencyDef = useMemo(() => {
-    return pkg?.frequencies.find((f) => f.value === frequency) || { value: 'monthly' as Frequency, label: 'Ayda 1', shipmentsPerMonth: 1 }
-  }, [pkg, frequency])
-
-  const totalShipments = useMemo(() => duration * frequencyDef.shipmentsPerMonth, [duration, frequencyDef])
-
-  // (kahve türü, gramaj) için birim fiyat
-  const unitPriceInfo = useMemo(() => findUnitPrice(products, coffeeKind, grams), [products, coffeeKind, grams])
-  const unitPrice = unitPriceInfo.price
-
-  // Her gönderimdeki adet (mini-ofis için bagMultiplier, diğerleri için 1)
-  const bagsPerShipment = useMemo(() => (pkg?.isOfficeBag ? bagMultiplier : 1), [pkg, bagMultiplier])
-
-  const perShipmentGrams = useMemo(() => grams * bagsPerShipment, [grams, bagsPerShipment])
-  const totalGrams = useMemo(() => perShipmentGrams * totalShipments, [perShipmentGrams, totalShipments])
-
-  const pricePerShipment = useMemo(() => unitPrice * bagsPerShipment, [unitPrice, bagsPerShipment])
-
-  const subtotal = useMemo(() => pricePerShipment * totalShipments, [pricePerShipment, totalShipments])
-
+  // Hesaplamalar
+  const totalShipments = duration
+  const subtotal = perShipmentPrice * totalShipments
   const discountPercent = durationDiscounts[duration] ?? 0
-  const discountAmount = useMemo(() => subtotal * (discountPercent / 100), [subtotal, discountPercent])
-  const totalPrice = useMemo(() => subtotal - discountAmount, [subtotal, discountAmount])
+  const discountAmount = (subtotal * discountPercent) / 100
+  const totalPrice = subtotal - discountAmount
+  const perShipmentGrams = selectedPackage ? selectedPackage.count * selectedPackage.grams : 0
+  const totalGrams = perShipmentGrams * totalShipments
 
-  const scrollToPlans = () => {
-    document.getElementById('abonelik-planlari')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }
+  const packageName = selectedPackage?.packageName || ''
 
-  const choosePackage = (id: string) => {
-    setPackageId(id)
-    setTimeout(() => {
-      document.getElementById('configurator')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 60)
-  }
+  const canSubmit = !!coffee && !!packageId && perShipmentPrice > 0 && (coffee === 'turk' || (!!seriesId && !!grindId))
 
-  const addToCart = () => {
-    if (!pkg || !coffeeRule) return
-    if (unitPrice <= 0) {
-      toast.error('Bu kahve türü/gramaj için ürün fiyatı bulunamadı. Lütfen başka bir seçim yapın.')
+  const handleAddToCart = async () => {
+    if (!canSubmit || !selectedPackage) {
+      toast.error('Lütfen tüm seçimleri tamamlayın')
       return
     }
-    const kindLabel = COFFEE_KINDS.find((k) => k.id === coffeeKind)?.label || ''
-    const periodLabel = frequencyDef.label
-    const bagsLabel = pkg.isOfficeBag ? `${bagMultiplier} × ${formatGrams(grams)}` : formatGrams(grams)
-
     setAdding(true)
-    addItem({
-      productId: `sub-${pkg.id}-${coffeeKind}-${grams}g-x${bagsPerShipment}-${duration}m-${frequency}`,
-      name: `${pkg.name} · ${kindLabel} · ${bagsLabel} · ${duration} ay · ${periodLabel} · ${totalShipments} teslimat`,
-      handle: 'subscription',
-      price: totalPrice,
-      quantity: 1,
-      size: bagsLabel,
-      image: pkg.image,
-    })
-
-    toast.success(`Abonelik sepete eklendi — ${formatPrice(totalPrice)}`, { duration: 2500 })
-    setTimeout(() => {
-      setAdding(false)
-      setPackageId(null)
+    try {
+      const productName = `${packageName} — ${COFFEE_LABELS[coffee!]}${selectedSeries ? ' / ' + selectedSeries.label : ''} — ${selectedPackage.label}`
+      const meta = {
+        type: 'subscription' as const,
+        coffee: coffee!,
+        coffeeLabel: COFFEE_LABELS[coffee!],
+        series: selectedSeries?.label || null,
+        grind: selectedGrind?.label || null,
+        packageId: selectedPackage.id,
+        packageLabel: selectedPackage.label,
+        packageName: selectedPackage.packageName,
+        count: selectedPackage.count,
+        grams: selectedPackage.grams,
+        duration,
+        totalShipments,
+        perShipmentPrice,
+        discountPercent,
+        totalPrice,
+      }
+      await addItem({
+        id: `sub-${coffee}-${seriesId || 'none'}-${grindId || 'none'}-${packageId}-${duration}`,
+        name: productName,
+        price: totalPrice,
+        quantity: 1,
+        image: '',
+        slug: 'subscription',
+        meta,
+      } as any)
+      toast.success('Abonelik sepete eklendi')
       router.push('/cart')
-    }, 700)
+    } catch (e) {
+      toast.error('Sepete eklenemedi')
+    } finally {
+      setAdding(false)
+    }
   }
 
-  /* ─── RENDER ─── */
+  const heroBg = heroImage || '/hero/subscription-bg.jpg'
 
   return (
-    <div className="overflow-x-hidden pb-24 lg:pb-32">
+    <div className="pb-24 lg:pb-32">
       {/* HERO */}
       <div
-        className="relative overflow-hidden"
-        style={{ backgroundImage: `url(${heroImage || '/hero/subscription-bg.jpg'})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+        className="relative overflow-hidden pb-20"
+        style={{ backgroundImage: `url(${heroBg})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/30" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/55 to-black/40" aria-hidden />
         <div className="container relative z-10 py-20 text-center text-white lg:py-28">
           <span className="inline-block rounded-full bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wider uppercase backdrop-blur-sm">
             {heroBadge}
           </span>
           <h1
-            className="mx-auto mt-6 max-w-3xl text-3xl font-bold sm:text-4xl lg:text-5xl leading-tight"
+            className="mx-auto mt-6 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl"
             dangerouslySetInnerHTML={{ __html: heroTitle }}
           />
           <p className="mx-auto mt-5 max-w-xl text-white/70 text-sm sm:text-base">{heroSubtitle}</p>
           <button
-            onClick={scrollToPlans}
-            className="mt-10 inline-flex items-center justify-center rounded-full bg-white px-12 py-4 text-sm font-semibold uppercase tracking-widest text-neutral-900 shadow-lg transition hover:bg-neutral-100 hover:shadow-xl"
+            type="button"
+            onClick={() => document.getElementById('abonelik-secimi')?.scrollIntoView({ behavior: 'smooth' })}
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-white px-8 py-3 text-sm font-semibold text-neutral-900 shadow-lg transition hover:bg-neutral-100"
           >
             {heroCta}
           </button>
         </div>
       </div>
 
-      {/* How it works — admin-managed */}
+      {/* Steps */}
       {steps.length > 0 && (
         <div className="container relative z-10 -mt-10 lg:-mt-12">
           <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
@@ -371,257 +231,269 @@ export default function SubscriptionPage({
         </div>
       )}
 
-      {/* PAKET KARTLARI */}
-      <div id="abonelik-planlari" className="container mt-20 scroll-mt-10">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">Paket Seçin</h2>
-          <p className="mt-3 text-sm text-neutral-500">
-            Tüketim seviyenize uygun paketi seçin, kahve türünü ve gramajı belirleyin.
+      {/* SEÇİM AKIŞI */}
+      <div id="abonelik-secimi" className="container mt-20 scroll-mt-10">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">Aboneliğinizi Oluşturun</h2>
+          <p className="mt-3 text-center text-sm text-neutral-500">
+            Önce kahve türünü seçin — sonraki adımlar kahve türüne göre değişir.
           </p>
-        </div>
 
-        {packages.length === 0 && (
-          <div className="mt-10 rounded-2xl border border-dashed border-neutral-300 bg-neutral-50 p-12 text-center dark:border-neutral-700 dark:bg-neutral-900">
-            <p className="text-sm text-neutral-600 dark:text-neutral-400">
-              Henüz abonelik paketi eklenmedi. Çok yakında!
-            </p>
-          </div>
-        )}
-
-        <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {packages.map((p) => {
-            const active = packageId === p.id
-            return (
-              <div key={p.id} className="group">
-                <div
-                  className={`relative aspect-square overflow-hidden rounded-3xl bg-neutral-100 shadow-sm transition-shadow group-hover:shadow-xl dark:bg-neutral-800 ${
-                    active ? 'ring-2 ring-primary-700' : ''
-                  }`}
-                  style={{
-                    backgroundImage: `url(${p.image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                />
-                <div className="mt-4">
-                  <h3 className="text-lg font-bold text-neutral-900 dark:text-white">{p.name}</h3>
-                  <p className="mt-1 text-xs text-neutral-500">{p.description}</p>
+          {/* 1. Kahve Türü */}
+          <div className="mt-10">
+            <Label step="1" text="Kahve Türü" />
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {(['turk', 'espresso', 'filtre'] as CoffeeKind[]).map((k) => {
+                const enabled =
+                  k === 'turk' ? config.turk?.enabled !== false :
+                  k === 'espresso' ? config.espresso?.enabled !== false :
+                  config.filtre?.enabled !== false
+                if (!enabled) return null
+                const active = coffee === k
+                return (
                   <button
-                    onClick={() => choosePackage(p.id)}
-                    className={`mt-3 flex w-full items-center justify-between border-b-2 py-2 text-sm font-semibold transition ${
+                    key={k}
+                    onClick={() => setCoffee(k)}
+                    className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
                       active
-                        ? 'border-primary-700 text-primary-700'
-                        : 'border-neutral-900 text-neutral-900 hover:border-primary-700 hover:text-primary-700 dark:border-white dark:text-white'
+                        ? 'border-primary-700 bg-primary-700 text-white'
+                        : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
                     }`}
                   >
-                    <span>{active ? 'Seçildi' : 'Seç'}</span>
-                    <span className={`transition ${active ? 'rotate-45' : ''}`}>+</span>
+                    {COFFEE_LABELS[k]}
                   </button>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+                )
+              })}
+            </div>
+          </div>
 
-      {/* CONFIGURATOR */}
-      {pkg && coffeeRule && (
-        <div id="configurator" className="container mt-16 scroll-mt-10">
-          <div className="mx-auto max-w-2xl">
-            <h2 className="text-3xl font-bold text-neutral-900 dark:text-white sm:text-4xl">{pkg.name}</h2>
-            <p className="mt-2 text-sm text-neutral-500">{pkg.description}</p>
-
-            {/* KAHVE TÜRÜ */}
+          {/* 2. Espresso/Filtre — Ürün Serisi */}
+          {coffee && coffee !== 'turk' && (
             <div className="mt-8">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Kahve Türü</label>
-              <div className="mt-3 grid grid-cols-3 gap-2">
-                {COFFEE_KINDS.filter((k) => !!pkg.coffees[k.id]).map((k) => {
-                  const isActive = coffeeKind === k.id
+              <Label step="2" text="Ürün Serisi" />
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {(coffee === 'espresso' ? config.espresso.series : config.filtre.series).map((s) => {
+                  const active = seriesId === s.id
                   return (
                     <button
-                      key={k.id}
-                      onClick={() => setCoffeeKind(k.id)}
+                      key={s.id}
+                      onClick={() => setSeriesId(s.id)}
                       className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
-                        isActive
+                        active
                           ? 'border-primary-700 bg-primary-700 text-white'
                           : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
                       }`}
                     >
-                      {k.label}
+                      {s.label}
                     </button>
                   )
                 })}
               </div>
             </div>
+          )}
 
-            {/* GRAMAJ / Mini Ofis için adet */}
-            <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {pkg.isOfficeBag && coffeeRule.bagMultipliers ? (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Her Gönderimde Miktar</label>
-                  <select
-                    value={bagMultiplier}
-                    onChange={(e) => setBagMultiplier(Number(e.target.value))}
-                    className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
-                  >
-                    {coffeeRule.bagMultipliers.map((m) => (
-                      <option key={m} value={m}>
-                        {m} kg ({m} × 1000 g)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              ) : (
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Her Gönderimdeki Gramaj</label>
-                  <select
-                    value={grams}
-                    onChange={(e) => setGrams(Number(e.target.value))}
-                    className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
-                  >
-                    {coffeeRule.grams.map((g) => (
-                      <option key={g} value={g}>
-                        {formatGrams(g)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Abonelik Süresi</label>
-                <select
-                  value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
-                  className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
-                >
-                  {pkg.durations.map((d) => (
-                    <option key={d} value={d}>
-                      {d} Ay
-                    </option>
-                  ))}
-                </select>
+          {/* 3. Espresso: Öğütüm (paket öncesi). Filtre: Paket (öğütüm sonra) */}
+          {coffee === 'espresso' && seriesId && (
+            <div className="mt-8">
+              <Label step="3" text="Öğütüm Şekli" />
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {config.espresso.grinds.map((g) => {
+                  const active = grindId === g.id
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => setGrindId(g.id)}
+                      className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
+                        active
+                          ? 'border-primary-700 bg-primary-700 text-white'
+                          : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  )
+                })}
               </div>
             </div>
+          )}
 
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-widest text-neutral-500">Gönderim Sıklığı</label>
-                <select
-                  value={frequency}
-                  onChange={(e) => setFrequency(e.target.value as Frequency)}
-                  className="mt-2 w-full border-b-2 border-neutral-900 bg-transparent py-2 text-sm font-medium focus:outline-none dark:border-white dark:text-white"
-                >
-                  {pkg.frequencies.map((f) => (
-                    <option key={f.value} value={f.value}>
-                      {f.label}
-                    </option>
-                  ))}
-                </select>
+          {/* 4. Paket Seçimi */}
+          {((coffee === 'turk') ||
+            (coffee === 'espresso' && seriesId && grindId) ||
+            (coffee === 'filtre' && seriesId)) && (
+            <div className="mt-8">
+              <Label step={coffee === 'turk' ? '2' : coffee === 'espresso' ? '4' : '3'} text="Paket Seçimi" />
+              <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+                {packages.map((p) => {
+                  const active = packageId === p.id
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setPackageId(p.id)}
+                      className={`rounded-2xl border p-4 text-left transition ${
+                        active
+                          ? 'border-primary-700 bg-primary-50 dark:bg-primary-900/20'
+                          : 'border-neutral-300 bg-white hover:border-primary-700 dark:border-neutral-600 dark:bg-neutral-800'
+                      }`}
+                    >
+                      <p className="text-xs font-bold uppercase tracking-widest text-primary-700">
+                        {p.packageName}
+                      </p>
+                      <p className="mt-2 text-base font-semibold text-neutral-900 dark:text-white">
+                        {p.label}
+                      </p>
+                      <p className="mt-1 text-xs text-neutral-500">
+                        Her gönderimde {p.count} × {formatGrams(p.grams)} = {formatGrams(p.count * p.grams)}
+                      </p>
+                    </button>
+                  )
+                })}
               </div>
             </div>
+          )}
 
-            {/* AÇIKLAMA */}
-            <p className="mt-6 rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
-              Seçtiğiniz gramaj, <strong>her gönderimde</strong> adresinize teslim edilecek kahve miktarını ifade eder.
-              Abonelik süreniz ve gönderim sıklığınıza göre toplam gönderim adedi otomatik hesaplanır.
-            </p>
+          {/* Filtre Kahve: Öğütüm (paketin SONRASI) */}
+          {coffee === 'filtre' && seriesId && packageId && (
+            <div className="mt-8">
+              <Label step="4" text="Öğütüm Şekli" />
+              <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {config.filtre.grinds.map((g) => {
+                  const active = grindId === g.id
+                  return (
+                    <button
+                      key={g.id}
+                      onClick={() => setGrindId(g.id)}
+                      className={`rounded-xl border px-3 py-2.5 text-sm font-medium transition ${
+                        active
+                          ? 'border-primary-700 bg-primary-700 text-white'
+                          : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
+                      }`}
+                    >
+                      {g.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
-            {/* SİPARİŞ ÖZETİ */}
+          {/* 5. Abonelik Süresi */}
+          {packageId && (coffee === 'turk' || (seriesId && grindId)) && (
+            <div className="mt-8">
+              <Label step={coffee === 'turk' ? '3' : '5'} text="Abonelik Süresi" />
+              <div className="mt-3 grid grid-cols-3 gap-2">
+                {[3, 6, 12].map((d) => {
+                  const active = duration === d
+                  const discount = durationDiscounts[d] ?? 0
+                  return (
+                    <button
+                      key={d}
+                      onClick={() => setDuration(d)}
+                      className={`rounded-xl border px-3 py-3 text-sm font-medium transition ${
+                        active
+                          ? 'border-primary-700 bg-primary-700 text-white'
+                          : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
+                      }`}
+                    >
+                      <div>{d} Ay</div>
+                      {discount > 0 && (
+                        <div className={`mt-1 text-[10px] ${active ? 'text-white/80' : 'text-emerald-600'}`}>
+                          %{discount} indirim
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* AÇIKLAMA */}
+          <p className="mt-8 rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
+            Seçtiğiniz paket içeriği, <strong>her gönderimde</strong> adresinize teslim edilecek kahve miktarını ifade eder.
+            Abonelik süreniz boyunca kahveniz ayda 1 kez düzenli olarak gönderilir.
+          </p>
+
+          {/* SİPARİŞ ÖZETİ */}
+          {selectedPackage && (coffee === 'turk' || (seriesId && grindId)) && (
             <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-700/40 dark:bg-amber-900/20">
               <div className="border-b border-amber-200/60 px-4 py-2.5 dark:border-amber-700/30">
                 <p className="text-xs font-bold uppercase tracking-widest text-amber-800 dark:text-amber-300">
                   📦 Sipariş Özeti
                 </p>
               </div>
-              <div className="divide-y divide-amber-200/40 px-4 dark:divide-amber-700/20">
-                <Row label="Paket" value={pkg.name} />
-                <Row label="Kahve türü" value={COFFEE_KINDS.find((k) => k.id === coffeeKind)?.label || ''} />
-                <Row
-                  label="Her gönderimde"
-                  value={pkg.isOfficeBag ? `${bagMultiplier} × ${formatGrams(grams)} = ${formatGrams(perShipmentGrams)}` : formatGrams(perShipmentGrams)}
-                />
-                <Row label="Abonelik süresi" value={`${duration} ay`} />
-                <Row label="Gönderim sıklığı" value={frequencyDef.label} />
-                <Row label="Toplam gönderim" value={`${totalShipments} adet`} />
-                <Row label="Toplam kahve" value={formatGrams(totalGrams)} />
-                <Row label="Gönderim başı fiyat" value={unitPrice > 0 ? formatPrice(pricePerShipment) : '—'} />
-                {discountPercent > 0 && (
-                  <Row
-                    label={`Abonelik indirimi (%${discountPercent})`}
-                    value={`− ${formatPrice(discountAmount)}`}
-                    accent="green"
-                  />
-                )}
-                <div className="flex items-center justify-between py-3">
-                  <span className="text-xs font-bold uppercase tracking-wider text-amber-800 dark:text-amber-300">
+              <div className="px-4 py-4 text-sm">
+                <Row label="Seçilen Paket" value={packageName} />
+                <Row label="Kahve Türü" value={COFFEE_LABELS[coffee!]} />
+                {selectedSeries && <Row label="Ürün Serisi" value={selectedSeries.label} />}
+                {selectedGrind && <Row label="Öğütüm Şekli" value={selectedGrind.label} />}
+                <Row label="Her Gönderimde" value={`${selectedPackage.count} adet ${formatGrams(selectedPackage.grams)}`} />
+                <Row label="Her Gönderimde Toplam" value={formatGrams(perShipmentGrams)} />
+                <Row label="Abonelik Süresi" value={`${duration} Ay`} />
+                <Row label="Toplam Gönderim" value={`${totalShipments} adet`} />
+                <Row label="Toplam Kahve Miktarı" value={formatGrams(totalGrams)} />
+                <Row label="Gönderim Başı Fiyat" value={perShipmentPrice > 0 ? formatPrice(perShipmentPrice) : '—'} />
+                {discountPercent > 0 && <Row label="Abonelik İndirimi" value={`%${discountPercent}`} />}
+                <div className="mt-3 flex items-center justify-between border-t border-amber-200/60 pt-3 dark:border-amber-700/30">
+                  <span className="text-sm font-bold uppercase tracking-widest text-amber-900 dark:text-amber-200">
                     Toplam Abonelik Tutarı
                   </span>
-                  <span className="text-base font-bold text-amber-900 dark:text-amber-100">
-                    {unitPrice > 0 ? formatPrice(totalPrice) : 'Fiyat alınamadı'}
+                  <span className="text-xl font-bold text-amber-900 dark:text-amber-200">
+                    {perShipmentPrice > 0 ? formatPrice(totalPrice) : 'Fiyat alınamadı'}
                   </span>
                 </div>
+                {perShipmentPrice <= 0 && (
+                  <p className="mt-3 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
+                    ⚠️ Bu kombinasyon için fiyat tanımlı değil. Admin Panel → Abonelikler → Abonelik Planları → Fiyat Matrisi
+                    bölümünden fiyatı girilebilir.
+                  </p>
+                )}
               </div>
-              {unitPrice <= 0 && (
-                <div className="border-t border-amber-200/60 bg-red-50 px-4 py-2.5 text-xs text-red-700 dark:border-amber-700/30 dark:bg-red-900/20 dark:text-red-300">
-                  ⚠️ Bu kombinasyon için ürün fiyatı bulunamadı. Lütfen başka bir kahve türü veya gramaj seçin.
-                </div>
-              )}
+              <div className="px-4 pb-4">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={!canSubmit || adding}
+                  className={`w-full rounded-xl py-3 text-sm font-bold transition ${
+                    canSubmit && !adding
+                      ? 'bg-neutral-900 text-white hover:bg-neutral-800'
+                      : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
+                  }`}
+                >
+                  {adding ? 'Sepete ekleniyor...' : canSubmit ? 'Abone Ol & Sepete Ekle' : 'Eksik Seçim'}
+                </button>
+              </div>
             </div>
-
-            <button
-              onClick={addToCart}
-              disabled={adding || unitPrice <= 0}
-              className={`mt-6 w-full rounded-2xl py-4 text-sm font-semibold uppercase tracking-widest text-white shadow-md transition hover:shadow-xl ${
-                adding
-                  ? 'bg-green-600'
-                  : unitPrice <= 0
-                    ? 'bg-neutral-400 cursor-not-allowed'
-                    : 'bg-primary-700 hover:bg-primary-800'
-              }`}
-            >
-              {adding
-                ? '✓ Sepete Eklendi'
-                : unitPrice <= 0
-                  ? 'Ürün bulunamadı'
-                  : `Sepete Ekle · ${formatPrice(totalPrice)}`}
-            </button>
-
-            <button
-              onClick={() => setPackageId(null)}
-              className="mt-4 w-full text-center text-xs text-neutral-400 hover:text-neutral-600"
-            >
-              Vazgeç
-            </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
-      {/* FAQ */}
+      {/* SSS */}
       {faq.length > 0 && (
         <div className="container mt-24">
-          <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white">{faqHeading}</h2>
-          <div className="mx-auto mt-10 max-w-2xl space-y-4">
-            {faq.map((item) => (
-              <details key={item.id} className="group rounded-2xl border border-neutral-200 dark:border-neutral-700">
-                <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-sm font-semibold text-neutral-900 dark:text-white">
-                  {item.q}
-                  <svg className="h-4 w-4 shrink-0 transition group-open:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                  </svg>
-                </summary>
-                <div className="px-6 pb-4 text-sm text-neutral-500 dark:text-neutral-400">{item.a}</div>
-              </details>
-            ))}
-          </div>
-
-          <div className="mt-10 text-center">
-            <Link
-              href="/collections/all"
-              className="inline-flex items-center gap-2 rounded-full bg-primary-700 px-8 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-800"
-            >
-              {faqCta}
-            </Link>
+          <div className="mx-auto max-w-2xl">
+            <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">
+              {faqHeading}
+            </h2>
+            <div className="mt-8 divide-y divide-neutral-200 dark:divide-neutral-700">
+              {faq.map((f) => (
+                <details key={f.id} className="group py-4">
+                  <summary className="flex cursor-pointer items-center justify-between text-sm font-semibold text-neutral-900 dark:text-white">
+                    {f.q}
+                    <span className="ml-4 text-xl transition-transform group-open:rotate-45">+</span>
+                  </summary>
+                  <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-300">{f.a}</p>
+                </details>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <a
+                href="/collections/all"
+                className="inline-flex items-center justify-center rounded-full border border-neutral-300 px-6 py-2.5 text-sm font-medium text-neutral-700 transition hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:text-neutral-200"
+              >
+                {faqCta}
+              </a>
+            </div>
           </div>
         </div>
       )}
@@ -629,27 +501,22 @@ export default function SubscriptionPage({
   )
 }
 
-function Row({
-  label,
-  value,
-  accent,
-}: {
-  label: string
-  value: string
-  accent?: 'green'
-}) {
+function Label({ step, text }: { step: string; text: string }) {
   return (
-    <div className="flex justify-between py-2 text-xs">
-      <span className="text-amber-900/70 dark:text-amber-200/70">{label}:</span>
-      <span
-        className={`font-semibold ${
-          accent === 'green'
-            ? 'text-emerald-700 dark:text-emerald-300'
-            : 'text-amber-900 dark:text-amber-100'
-        }`}
-      >
-        {value}
+    <div className="flex items-center gap-2">
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary-700 text-xs font-bold text-white">
+        {step}
       </span>
+      <label className="text-sm font-semibold uppercase tracking-wider text-neutral-900 dark:text-white">{text}</label>
+    </div>
+  )
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-1.5">
+      <span className="text-neutral-600 dark:text-neutral-300">{label}</span>
+      <span className="font-semibold text-neutral-900 dark:text-white">{value}</span>
     </div>
   )
 }
