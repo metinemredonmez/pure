@@ -840,69 +840,73 @@ async function main() {
   });
 
   // Spec v2: subscriptionConfig — kahve türü × seri × öğütüm × paket × fiyat
+  // Placeholder fiyatlar: gerçekçi orta segment specialty kahve ortalamaları.
+  // Sen admin paneldne istediğin gibi değiştirebilirsin.
+  const subscriptionConfigSeed: any = {
+    turk: {
+      enabled: true,
+      packages: [
+        { id: 'turk-12x100', label: '100 g x 12 Adet', count: 12, grams: 100, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'turk-5x200', label: '200 g x 5 Adet', count: 5, grams: 200, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'turk-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      // Türk Kahvesi placeholder fiyatları (1 gönderim)
+      prices: { 'turk-12x100': 1200, 'turk-5x200': 900, 'turk-4x1000': 3200 },
+    },
+    espresso: {
+      enabled: true,
+      series: [
+        { id: 'blend', label: 'Blend' },
+        { id: 'single-origin', label: 'Single Origin' },
+        { id: 'single-origin-premium', label: 'Single Origin Premium' },
+      ],
+      grinds: [
+        { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+        { id: 'ogutulmus', label: 'Öğütülmüş Kahve' },
+      ],
+      packages: [
+        { id: 'esp-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'esp-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'esp-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      prices: {
+        // Blend (en uygun fiyat)
+        'blend': { 'esp-4x250': 1000, 'esp-2x1000': 1700, 'esp-4x1000': 3400 },
+        // Single Origin
+        'single-origin': { 'esp-4x250': 1250, 'esp-2x1000': 2100, 'esp-4x1000': 4200 },
+        // Single Origin Premium
+        'single-origin-premium': { 'esp-4x250': 1500, 'esp-2x1000': 2500, 'esp-4x1000': 5000 },
+      },
+    },
+    filtre: {
+      enabled: true,
+      series: [
+        { id: 'blend', label: 'Blend' },
+        { id: 'single-origin', label: 'Single Origin' },
+        { id: 'single-origin-premium', label: 'Single Origin Premium' },
+      ],
+      grinds: [
+        { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
+        { id: 'filtre-aeropress', label: 'Filtre Kahve / Aeropress' },
+      ],
+      packages: [
+        { id: 'flt-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
+        { id: 'flt-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
+        { id: 'flt-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
+      ],
+      prices: {
+        'blend': { 'flt-4x250': 950, 'flt-2x1000': 1600, 'flt-4x1000': 3200 },
+        'single-origin': { 'flt-4x250': 1200, 'flt-2x1000': 2000, 'flt-4x1000': 4000 },
+        'single-origin-premium': { 'flt-4x250': 1400, 'flt-2x1000': 2400, 'flt-4x1000': 4800 },
+      },
+    },
+  };
   await prisma.siteSettings.upsert({
     where: { key: 'subscriptionConfig' },
-    update: {},
-    create: {
-      key: 'subscriptionConfig',
-      value: {
-        turk: {
-          enabled: true,
-          packages: [
-            { id: 'turk-12x100', label: '100 g x 12 Adet', count: 12, grams: 100, packageName: 'Ev Başlangıç Paketi' },
-            { id: 'turk-5x200', label: '200 g x 5 Adet', count: 5, grams: 200, packageName: 'Düzenli Kahve Paketi' },
-            { id: 'turk-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
-          ],
-          prices: { 'turk-12x100': 0, 'turk-5x200': 0, 'turk-4x1000': 0 },
-        },
-        espresso: {
-          enabled: true,
-          series: [
-            { id: 'blend', label: 'Blend' },
-            { id: 'single-origin', label: 'Single Origin' },
-            { id: 'single-origin-premium', label: 'Single Origin Premium' },
-          ],
-          grinds: [
-            { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
-            { id: 'ogutulmus', label: 'Öğütülmüş Kahve' },
-          ],
-          packages: [
-            { id: 'esp-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
-            { id: 'esp-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
-            { id: 'esp-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
-          ],
-          prices: {
-            'blend': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
-            'single-origin': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
-            'single-origin-premium': { 'esp-4x250': 0, 'esp-2x1000': 0, 'esp-4x1000': 0 },
-          },
-        },
-        filtre: {
-          enabled: true,
-          series: [
-            { id: 'blend', label: 'Blend' },
-            { id: 'single-origin', label: 'Single Origin' },
-            { id: 'single-origin-premium', label: 'Single Origin Premium' },
-          ],
-          grinds: [
-            { id: 'cekirdek', label: 'Çekirdek — Öğütülmemiş' },
-            { id: 'filtre-aeropress', label: 'Filtre Kahve / Aeropress' },
-          ],
-          packages: [
-            { id: 'flt-4x250', label: '250 g x 4 Adet', count: 4, grams: 250, packageName: 'Ev Başlangıç Paketi' },
-            { id: 'flt-2x1000', label: '1000 g x 2 Adet', count: 2, grams: 1000, packageName: 'Düzenli Kahve Paketi' },
-            { id: 'flt-4x1000', label: '1000 g x 4 Adet', count: 4, grams: 1000, packageName: 'Mini Ofis Paketi' },
-          ],
-          prices: {
-            'blend': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
-            'single-origin': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
-            'single-origin-premium': { 'flt-4x250': 0, 'flt-2x1000': 0, 'flt-4x1000': 0 },
-          },
-        },
-      } as any,
-    },
+    update: { value: subscriptionConfigSeed }, // re-seed'de fiyatlar refresh olur
+    create: { key: 'subscriptionConfig', value: subscriptionConfigSeed },
   });
-  console.log(`✅ Abonelik konfigürasyonu seed'lendi (Spec v2 — admin fiyat matrisinden yönetilir)`);
+  console.log(`✅ Abonelik konfigürasyonu seed'lendi (21 kombinasyon × placeholder ₺)`);
 
   // ── 12. Loyalty Accounts ──
   await prisma.loyaltyAccount.upsert({
