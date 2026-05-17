@@ -1,7 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
-import { apiValidateCoupon } from '@/lib/api'
+import { apiValidateCoupon, getApiSiteSettings } from '@/lib/api'
 import Prices from '@/components/Prices'
 import Breadcrumb from '@/shared/Breadcrumb'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
@@ -9,7 +9,7 @@ import { Coffee01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import Information from './Information'
 
@@ -18,11 +18,25 @@ export default function CheckoutContent() {
   const [couponInput, setCouponInput] = useState('')
   const [applying, setApplying] = useState(false)
 
-  const freeShippingThreshold = 300
-  const baseShipping = subtotal >= freeShippingThreshold ? 0 : 29.90
+  // Admin → Ayarlar'dan KDV oranı + ücretsiz kargo eşiği + kargo ücreti
+  const [kdvRate, setKdvRate] = useState(0.10)
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(300)
+  const [shippingFee, setShippingFee] = useState(29.90)
+  useEffect(() => {
+    getApiSiteSettings().then((res: any) => {
+      const data = res?.data || res || {}
+      const tax = Number(data.taxRate)
+      if (Number.isFinite(tax) && tax >= 0 && tax <= 100) setKdvRate(tax / 100)
+      const fst = Number(data.freeShippingThreshold)
+      if (Number.isFinite(fst) && fst >= 0) setFreeShippingThreshold(fst)
+      const sc = Number(data.shippingCost)
+      if (Number.isFinite(sc) && sc >= 0) setShippingFee(sc)
+    }).catch(() => {})
+  }, [])
+
+  const baseShipping = subtotal >= freeShippingThreshold ? 0 : shippingFee
   const shippingCost = coupon?.freeShipping ? 0 : baseShipping
   const discount = coupon?.discount || 0
-  const kdvRate = 0.10
   const kdvAmount = Math.max(subtotal - discount, 0) * kdvRate
   const total = Math.max(subtotal - discount, 0) + shippingCost + kdvAmount
 

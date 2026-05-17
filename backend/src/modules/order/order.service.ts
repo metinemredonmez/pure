@@ -179,15 +179,32 @@ export class OrderService {
           }
         }
 
-        const freeShippingThreshold = this.config.get<number>(
-          'order.freeShippingThreshold',
-          500,
-        );
-        const defaultShippingCost = this.config.get<number>(
-          'order.defaultShippingCost',
-          39.9,
-        );
-        const taxRate = this.config.get<number>('order.taxRate', 0.2);
+        // Admin'in /admin/settings sayfasından girdiği değerleri site_settings'ten oku.
+        // Yoksa env / hardcoded varsayılana düş.
+        const siteSettings = await tx.siteSettings.findMany({
+          where: { key: { in: ['taxRate', 'freeShippingThreshold', 'shippingCost'] } },
+        });
+        const settingsMap: Record<string, any> = {};
+        siteSettings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+        // Admin'de taxRate "% cinsinden" (örn 1, 10, 20). 0-100 arası beklenir; >1 ise /100.
+        let taxRate = this.config.get<number>('order.taxRate', 0.2);
+        if (settingsMap.taxRate != null) {
+          const n = Number(settingsMap.taxRate);
+          if (Number.isFinite(n) && n >= 0) {
+            taxRate = n > 1 ? n / 100 : n;
+          }
+        }
+        let freeShippingThreshold = this.config.get<number>('order.freeShippingThreshold', 500);
+        if (settingsMap.freeShippingThreshold != null) {
+          const n = Number(settingsMap.freeShippingThreshold);
+          if (Number.isFinite(n) && n >= 0) freeShippingThreshold = n;
+        }
+        let defaultShippingCost = this.config.get<number>('order.defaultShippingCost', 39.9);
+        if (settingsMap.shippingCost != null) {
+          const n = Number(settingsMap.shippingCost);
+          if (Number.isFinite(n) && n >= 0) defaultShippingCost = n;
+        }
 
         const shippingCost =
           subtotal >= freeShippingThreshold ? 0 : defaultShippingCost;

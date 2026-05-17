@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { getApiSiteSettings } from '@/lib/api'
 import Breadcrumb from '@/shared/Breadcrumb'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { CheckIcon } from '@heroicons/react/24/outline'
@@ -8,13 +9,29 @@ import { Coffee01Icon, PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 export default function CartPageContent() {
   const { items, subtotal, removeItem, updateQuantity, isHydrated } = useCart()
 
-  const freeShippingThreshold = 300
-  const shippingCost = subtotal >= freeShippingThreshold ? 0 : 29.90
-  const kdvRate = 0.10
+  // Admin → Ayarlar'dan KDV oranı (% cinsinden), ücretsiz kargo eşiği ve kargo ücreti
+  const [kdvRate, setKdvRate] = useState(0.10)
+  const [freeShippingThreshold, setFreeShippingThreshold] = useState(300)
+  const [shippingFee, setShippingFee] = useState(29.90)
+  useEffect(() => {
+    getApiSiteSettings().then((res: any) => {
+      const data = res?.data || res || {}
+      // taxRate admin'de "% cinsinden" (örn 1, 10, 18, 20). 0–100 arası beklenir.
+      const tax = Number(data.taxRate)
+      if (Number.isFinite(tax) && tax >= 0 && tax <= 100) setKdvRate(tax / 100)
+      const fst = Number(data.freeShippingThreshold)
+      if (Number.isFinite(fst) && fst >= 0) setFreeShippingThreshold(fst)
+      const sc = Number(data.shippingCost)
+      if (Number.isFinite(sc) && sc >= 0) setShippingFee(sc)
+    }).catch(() => {})
+  }, [])
+
+  const shippingCost = subtotal >= freeShippingThreshold ? 0 : shippingFee
   const kdvAmount = subtotal * kdvRate
   const total = subtotal + shippingCost + kdvAmount
 
