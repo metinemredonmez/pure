@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   description: 'Pure Olentia kahve aboneliği. Taze kavrulmuş specialty kahve her ay kapınızda.',
 }
 
+// Admin'in değişikliği anında siteye yansısın diye cache kapalı
+export const revalidate = 0
+
 export default async function Page() {
   const settings = await getSiteSettings()
 

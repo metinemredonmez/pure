@@ -145,7 +145,8 @@ export const getApiMachinesCompare = (slugs: string) => fetchAPI<any>(`/public/m
 // getApiBrands kaldırıldı — Brand modeli silindi (orphan).
 export const getApiReferences = () => fetchAPI<any>('/public/references')
 export const getApiPage = (slug: string) => fetchAPI<any>(`/public/pages/${slug}`)
-export const getApiSiteSettings = () => fetchAPI<any>('/public/site-settings')
+// Admin-edited content — kısa cache (10 sn) ki anlık güncellemeler hızla yansısın
+export const getApiSiteSettings = () => fetchAPI<any>('/public/site-settings', { revalidate: 10 })
 export const submitFranchiseApplication = (data: any) =>
   fetchAPI<any>('/public/franchise-application', { method: 'POST', body: JSON.stringify(data), revalidate: 0 })
 export const submitContactMessage = (data: { name: string; email: string; message: string; phone?: string; subject?: string }) =>
