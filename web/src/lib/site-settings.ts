@@ -569,6 +569,12 @@ export async function getSiteSettings(): Promise<SiteSettings> {
         }
         continue
       }
+      if (key === 'subscriptionDurationDiscounts') {
+        if (Array.isArray(incoming) && incoming.length) {
+          merged.subscriptionDurationDiscounts = incoming as Array<{ months: number; percent: number }>
+        }
+        continue
+      }
       if (
         key === 'franchiseStats' ||
         key === 'franchiseBenefits' ||
