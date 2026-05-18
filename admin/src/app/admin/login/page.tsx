@@ -132,8 +132,9 @@ function LoginForm() {
             content: '""',
             position: 'absolute',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'linear-gradient(135deg, rgba(11,11,11,0.85) 0%, rgba(11,11,11,0.6) 50%, rgba(212,121,63,0.15) 100%)',
-            backdropFilter: 'blur(2px)',
+            // Daha az opak overlay — fotoğraf daha net görünür
+            background: 'linear-gradient(135deg, rgba(11,11,11,0.55) 0%, rgba(11,11,11,0.35) 50%, rgba(212,121,63,0.10) 100%)',
+            // Blur kaldırıldı; fotoğraf sharp kalsın
             zIndex: 0,
           },
         }}>
