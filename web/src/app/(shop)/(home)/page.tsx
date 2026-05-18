@@ -129,19 +129,46 @@ async function PageHome() {
     if (s) bySlug[s] = p
   })
 
+  // Banner title'a göre ürün eşleştirme (admin ctaUrl boş bıraktıysa otomatik bul)
+  const findProductByTitle = (title: string): any | null => {
+    if (!title) return null
+    const norm = (s: string) => s.toLowerCase().replace(/ı/g, 'i').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/[^a-z0-9 ]/g, '').trim()
+    const n = norm(title)
+    // 1) exact slug match
+    const exact = products.find((p: any) => norm(p.handle || p.slug || '') === n.replace(/ /g, '-'))
+    if (exact) return exact
+    // 2) name contains all words
+    const words = n.split(/\s+/).filter(Boolean)
+    const partial = products.find((p: any) => {
+      const pn = norm(p.title || p.name || '')
+      return words.every((w: string) => pn.includes(w))
+    })
+    return partial || null
+  }
+
   // Prefer admin-managed HeroBanner records; fall back to curated HERO_CONFIG
   const heroSlides = backendBanners.length
     ? backendBanners
         .filter((b: any) => b?.image)
         .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
-        .map((b: any) => ({
-          id: b.id,
-          imageUrl: resolveImageUrl(b.image),
-          heading: b.title || 'Pure Olentia',
-          subHeading: b.subtitle || '',
-          btnText: b.ctaText || 'İncele',
-          btnHref: b.ctaUrl || '/collections/all',
-        }))
+        .map((b: any) => {
+          // Banner'ın ctaUrl alanı boşsa title'dan otomatik ürün bul.
+          // Hâlâ bulamazsa /collections/all'a düşer.
+          let href = b.ctaUrl
+          if (!href) {
+            const matched = findProductByTitle(b.title || '')
+            if (matched) href = `/products/${matched.handle || matched.slug}`
+            else href = '/collections/all'
+          }
+          return {
+            id: b.id,
+            imageUrl: resolveImageUrl(b.image),
+            heading: b.title || 'Pure Olentia',
+            subHeading: b.subtitle || '',
+            btnText: b.ctaText || 'İncele',
+            btnHref: href,
+          }
+        })
     : HERO_CONFIG.map((h) => {
         const slug = h.slugs.find((s) => bySlug[s]) || h.fallbackSlug
         const p = bySlug[slug]

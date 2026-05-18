@@ -9,6 +9,7 @@ import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import clsx from 'clsx'
 import Image from 'next/image'
+import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
 import { useSwipeable } from 'react-swipeable'
 import { useInterval } from 'react-use'
@@ -170,7 +171,11 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         </div>
 
         <div className="relative -z-10 flex-1/2 lg:pr-10">
-          <div className="relative aspect-square w-full max-w-[40rem] overflow-hidden rounded-3xl fade--animation__image select-none shadow-lg">
+          <Link
+            href={item.btnHref || '#'}
+            className="relative block aspect-square w-full max-w-[40rem] overflow-hidden rounded-3xl fade--animation__image select-none shadow-lg transition hover:opacity-95"
+            aria-label={item.heading}
+          >
             <Image
               sizes="(max-width: 768px) 100vw, 60vw"
               className="object-cover"
@@ -179,7 +184,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
               fill
               priority
             />
-          </div>
+          </Link>
         </div>
       </div>
     )
