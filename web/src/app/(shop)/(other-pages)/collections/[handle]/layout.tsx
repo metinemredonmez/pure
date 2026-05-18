@@ -99,8 +99,11 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
       {/* Hero banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
         <div className="container py-16 text-center lg:py-20">
-          <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 uppercase backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
-            Pure Olentia Koleksiyon
+          {/* Turkce locale'de CSS uppercase "i" -> "İ" (noktalı) yapar.
+              Olentia İngilizce marka adı, OLENTIA (noktasız) görünmeli.
+              Çözüm: text-transform yerine doğrudan büyük harf yaz. */}
+          <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
+            PURE OLENTIA KOLEKSIYON
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 sm:text-5xl dark:text-white">
             {displayTitle}

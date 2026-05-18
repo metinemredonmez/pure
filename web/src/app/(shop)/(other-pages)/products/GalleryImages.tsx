@@ -119,16 +119,14 @@ const GalleryImages = ({ images, gridType = 'grid1', className }: Props) => {
         {gridType === 'grid5' && <HeaderGalleryGrid5 images={images} handleOpenDialog={handleOpenDialog} />}
       </div>
 
-      {/* Dialog for full-screen image gallery */}
+      {/* Dialog for image lightbox — orta boy, full-screen değil */}
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
-        {/* The backdrop, rendered as a fixed sibling to the panel container */}
-        <DialogBackdrop className="fixed inset-0 bg-black" />
+        <DialogBackdrop className="fixed inset-0 bg-black/85 backdrop-blur-sm" />
 
-        {/* Full-screen container to center the panel */}
-        <div className="fixed inset-0 flex w-screen items-center justify-center">
+        <div className="fixed inset-0 flex items-center justify-center p-4 sm:p-8">
           <DialogPanel
             transition
-            className="relative mx-auto aspect-[3/2] max-h-full w-full max-w-7xl flex-1 transition data-closed:opacity-0"
+            className="relative mx-auto aspect-square w-full max-w-xl transition data-closed:opacity-0 sm:max-w-2xl"
           >
             <EmblaCarousel images={images} option={{ startIndex, slidesToScroll: 1 }} />
           </DialogPanel>
