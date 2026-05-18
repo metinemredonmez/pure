@@ -348,6 +348,17 @@ const lightThemeOptions: ThemeOptions = {
     MuiListItemIcon: {
       styleOverrides: { root: { color: '#6B7280', minWidth: 36 } }, // orta koyu gri
     },
+    // Tablo satır hover'ı dark theme'den miras kalan koyu rengi kullanıyordu — light için override
+    MuiTableRow: {
+      styleOverrides: {
+        root: { '&:hover': { backgroundColor: `${olentiaLightColors.background.hover} !important` } },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: { borderBottom: `1px solid ${olentiaLightColors.border}`, padding: '12px 16px' },
+      },
+    },
   },
 };
 
