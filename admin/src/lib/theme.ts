@@ -330,6 +330,24 @@ const lightThemeOptions: ThemeOptions = {
     MuiMenu: {
       styleOverrides: { paper: { backgroundColor: '#FFFFFF' } },
     },
+    // Light theme'de sidebar item'ları için belirgin renkler — gri/soluk gözükmesin
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 7, marginBottom: 2, padding: '8px 10px',
+          color: '#374151', // koyu gri — sidebar yazısı net görünür
+          '&:hover': { backgroundColor: olentiaLightColors.background.hover, color: '#111827' },
+          '&.Mui-selected': {
+            backgroundColor: `rgba(212,121,63,0.12)`, color: olentiaColors.primary.main,
+            '& .MuiListItemIcon-root': { color: olentiaColors.primary.main },
+            '&:hover': { backgroundColor: `rgba(212,121,63,0.18)` },
+          },
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: { root: { color: '#6B7280', minWidth: 36 } }, // orta koyu gri
+    },
   },
 };
 
