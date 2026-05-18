@@ -27,6 +27,7 @@ interface Notification {
   title: string;
   message: string;
   type: string;
+  link?: string | null;
   isRead: boolean;
   createdAt: string;
 }
@@ -469,8 +470,24 @@ export default function Header({ sidebarOpen, onMenuClick }: HeaderProps) {
           </Box>
           <Divider />
           {notifications.length > 0 ? notifications.map((n) => (
-            <MenuItem key={n.id} onClick={() => { handleMarkRead(n.id); handleNotifMenuClose(); }}
-              sx={{ py: 1.5, opacity: n.isRead ? 0.6 : 1, alignItems: 'flex-start', gap: 1.5 }}>
+            <MenuItem key={n.id} onClick={() => {
+              handleMarkRead(n.id);
+              handleNotifMenuClose();
+              // Bildirim tipine göre default navigasyon — link yoksa fallback
+              if (n.link) {
+                router.push(n.link);
+              } else {
+                const fallbackByType: Record<string, string> = {
+                  ORDER: '/orders',
+                  PAYMENT: '/payments',
+                  USER: '/users',
+                  ALERT: '/products', // stok uyarısı ürünlere
+                };
+                const target = fallbackByType[n.type];
+                if (target) router.push(target);
+              }
+            }}
+              sx={{ py: 1.5, opacity: n.isRead ? 0.6 : 1, alignItems: 'flex-start', gap: 1.5, cursor: 'pointer' }}>
               <Box sx={{ mt: 0.3 }}>{notifIcons[n.type] || <DotIcon sx={{ fontSize: 18, color: 'text.secondary' }} />}</Box>
               <Box sx={{ flex: 1 }}>
                 <Typography variant="body2" fontWeight={n.isRead ? 400 : 600}>{n.title}</Typography>

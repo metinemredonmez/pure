@@ -20,7 +20,7 @@ import {
   LanguageOutlined as WebsiteIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
-import { olentiaColors } from '@/lib/theme';
+import { olentiaColors, olentiaLightColors } from '@/lib/theme';
 import { canAccessPage, UserRole } from '@/lib/permissions';
 
 const DRAWER_WIDTH = 260;
@@ -119,6 +119,9 @@ export default function Sidebar({ open, onClose, onToggle }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
   const userRole = (user?.role as UserRole) || 'CUSTOMER';
 
+  // Theme'e göre renk paleti (dark/light)
+  const c = theme.palette.mode === 'light' ? olentiaLightColors : olentiaColors;
+
   // Filter menu items based on role
   const filteredMenuItems = menuItems
     .map((item) => {
@@ -153,22 +156,22 @@ export default function Sidebar({ open, onClose, onToggle }: SidebarProps) {
     children?.some((child) => pathname === child.path);
 
   const drawerContent = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: olentiaColors.background.sidebar }}>
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: c.background.sidebar }}>
       {/* Logo */}
       <Box sx={{ px: 2.5, py: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', minHeight: 64 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <Box component="img" src="/images/logo.png" alt="Olentia" sx={{ width: 32, height: 32, borderRadius: '6px', objectFit: 'contain' }} />
           <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: 15, color: olentiaColors.text.primary, lineHeight: 1.2 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: 15, color: c.text.primary, lineHeight: 1.2 }}>
               Olentia
             </Typography>
-            <Typography sx={{ fontSize: 11, color: olentiaColors.text.secondary, lineHeight: 1 }}>
+            <Typography sx={{ fontSize: 11, color: c.text.secondary, lineHeight: 1 }}>
               Admin
             </Typography>
           </Box>
         </Box>
         {!isMobile && (
-          <IconButton onClick={onToggle} size="small" sx={{ color: olentiaColors.text.secondary }}>
+          <IconButton onClick={onToggle} size="small" sx={{ color: c.text.secondary }}>
             <ChevronLeft sx={{ fontSize: 18 }} />
           </IconButton>
         )}
@@ -205,7 +208,7 @@ export default function Sidebar({ open, onClose, onToggle }: SidebarProps) {
                         >
                           <Box sx={{
                             width: 4, height: 4, borderRadius: '50%', mr: 1.5, flexShrink: 0,
-                            bgcolor: isActive(child.path) ? olentiaColors.primary.main : olentiaColors.text.disabled,
+                            bgcolor: isActive(child.path) ? c.primary.main : c.text.disabled,
                           }} />
                           <ListItemText
                             primary={child.title}
@@ -226,16 +229,16 @@ export default function Sidebar({ open, onClose, onToggle }: SidebarProps) {
       <Box sx={{ p: 2 }}>
         <Box sx={{
           display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, borderRadius: '7px',
-          bgcolor: olentiaColors.background.hover,
+          bgcolor: c.background.hover,
         }}>
-          <Avatar sx={{ width: 34, height: 34, bgcolor: olentiaColors.primary.main, fontSize: 14 }}>
+          <Avatar sx={{ width: 34, height: 34, bgcolor: c.primary.main, fontSize: 14 }}>
             {user?.firstName?.[0] || user?.email?.[0]?.toUpperCase()}
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography sx={{ fontWeight: 600, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : user?.email}
             </Typography>
-            <Typography sx={{ fontSize: 11, color: olentiaColors.text.secondary }}>Admin</Typography>
+            <Typography sx={{ fontSize: 11, color: c.text.secondary }}>Admin</Typography>
           </Box>
         </Box>
       </Box>
