@@ -116,8 +116,12 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
           </div>
         </div>
 
-        {/* RIGHT: Home (destination) */}
-        <div className="relative z-10 hidden shrink-0 items-center gap-x-2 pl-3 sm:flex">
+        {/* RIGHT: Home (destination) — Sipariş Takibi'ne link */}
+        <Link
+          href="/siparis-takibi"
+          className="relative z-10 hidden shrink-0 items-center gap-x-2 pl-3 transition hover:opacity-80 sm:flex"
+          title="Sipariş Takibi"
+        >
           <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-white/50 lg:inline">
             Kapınızda
           </span>
@@ -148,7 +152,7 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
               <path d="M28 19 L30 20" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
             </g>
           </svg>
-        </div>
+        </Link>
 
         {/* Scooter with coffee — rides to house, delivers, returns */}
         <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden>
