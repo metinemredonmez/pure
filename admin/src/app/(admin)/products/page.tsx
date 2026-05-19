@@ -325,6 +325,28 @@ export default function ProductsPage() {
               <MenuItem value="ARCHIVED">Arşiv</MenuItem>
             </Select>
           </FormControl>
+          <FormControl size="small" sx={{ minWidth: 200 }}>
+            <InputLabel>Sırala</InputLabel>
+            <Select
+              value={`${sortBy}-${sortOrder}`}
+              label="Sırala"
+              onChange={(e) => {
+                const [field, order] = (e.target.value as string).split('-');
+                setSortBy(field);
+                setSortOrder(order as 'asc' | 'desc');
+              }}
+            >
+              <MenuItem value="createdAt-desc">En Yeni</MenuItem>
+              <MenuItem value="createdAt-asc">En Eski</MenuItem>
+              <MenuItem value="name-asc">İsme Göre (A-Z)</MenuItem>
+              <MenuItem value="name-desc">İsme Göre (Z-A)</MenuItem>
+              <MenuItem value="price-asc">Fiyat (Düşük → Yüksek)</MenuItem>
+              <MenuItem value="price-desc">Fiyat (Yüksek → Düşük)</MenuItem>
+              <MenuItem value="stock-asc">Stok (Az → Çok)</MenuItem>
+              <MenuItem value="stock-desc">Stok (Çok → Az)</MenuItem>
+              <MenuItem value="status-asc">Duruma Göre</MenuItem>
+            </Select>
+          </FormControl>
         </Stack>
       </Card>
 

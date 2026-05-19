@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Patch,
+  Delete,
   Param,
   Body,
   Query,
@@ -72,5 +73,14 @@ export class AdminUserController {
     @CurrentUser('id') adminId: string,
   ) {
     return this.userService.adminBanUser(id, dto.banned, dto.reason, adminId);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete user permanently (admin)' })
+  deleteUser(
+    @Param('id') id: string,
+    @CurrentUser('id') adminId: string,
+  ) {
+    return this.userService.adminDeleteUser(id, adminId);
   }
 }

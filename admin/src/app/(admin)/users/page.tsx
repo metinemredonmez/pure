@@ -49,6 +49,7 @@ import {
   Business as BusinessIcon,
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
+  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import { usersApi } from '@/lib/api';
 import { User, UserRole } from '@/types';
@@ -89,6 +90,7 @@ export default function UsersPage() {
   // Dialog state
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [newRole, setNewRole] = useState<string>('');
   const [banReason, setBanReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -191,6 +193,22 @@ export default function UsersPage() {
       fetchUsers();
     } catch (err) {
       setError('İşlem sırasında bir hata oluştu');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!selectedUser) return;
+    setActionLoading(true);
+    try {
+      await usersApi.deleteUser(selectedUser.id);
+      setSuccess('Kullanıcı kalıcı olarak silindi');
+      setDeleteDialogOpen(false);
+      fetchUsers();
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || 'Silme işlemi başarısız';
+      setError(typeof msg === 'string' ? msg : 'Silme işlemi başarısız');
     } finally {
       setActionLoading(false);
     }
@@ -357,6 +375,28 @@ export default function UsersPage() {
                   <MenuItem value="USER">Kullanıcı</MenuItem>
                   <MenuItem value="ADMIN">Admin</MenuItem>
                   <MenuItem value="PARTNER">Partner</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Sırala</InputLabel>
+                <Select
+                  value={`${sortBy}-${sortOrder}`}
+                  label="Sırala"
+                  onChange={(e) => {
+                    const [field, order] = (e.target.value as string).split('-');
+                    setSortBy(field);
+                    setSortOrder(order as 'asc' | 'desc');
+                  }}
+                >
+                  <MenuItem value="createdAt-desc">En Yeni Kayıt</MenuItem>
+                  <MenuItem value="createdAt-asc">En Eski Kayıt</MenuItem>
+                  <MenuItem value="firstName-asc">İsme Göre (A-Z)</MenuItem>
+                  <MenuItem value="firstName-desc">İsme Göre (Z-A)</MenuItem>
+                  <MenuItem value="orderCount-desc">Sipariş (Çok → Az)</MenuItem>
+                  <MenuItem value="orderCount-asc">Sipariş (Az → Çok)</MenuItem>
+                  <MenuItem value="role-asc">Role Göre</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -551,6 +591,19 @@ export default function UsersPage() {
           </ListItemIcon>
           {selectedUser?.isActive ? 'Engelle' : 'Engeli Kaldır'}
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setDeleteDialogOpen(true);
+            handleMenuClose();
+          }}
+          disabled={selectedUser?.role === 'ADMIN'}
+          sx={{ color: 'error.main' }}
+        >
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" color="error" />
+          </ListItemIcon>
+          Kalıcı Sil
+        </MenuItem>
       </Menu>
 
       {/* Role Change Dialog */}
@@ -581,6 +634,48 @@ export default function UsersPage() {
             disabled={actionLoading}
           >
             {actionLoading ? <CircularProgress size={20} /> : 'Kaydet'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Dialog — kalıcı silme */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle sx={{ color: 'error.main' }}>
+          Kullanıcıyı Kalıcı Olarak Sil
+        </DialogTitle>
+        <DialogContent sx={{ minWidth: 380 }}>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            <strong>Bu işlem geri alınamaz.</strong>
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            <strong>{selectedUser?.email}</strong> hesabını silmek üzeresin. Tüm verileri
+            (siparişler, adresler, sadakat puanları, abonelikler, yorumlar) kalıcı olarak
+            silinecek.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            Onay için aşağıya kullanıcının e-posta adresini yaz:
+          </Typography>
+          <TextField
+            fullWidth
+            sx={{ mt: 1 }}
+            placeholder={selectedUser?.email}
+            value={banReason}
+            onChange={(e) => setBanReason(e.target.value)}
+            autoFocus
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => { setDeleteDialogOpen(false); setBanReason(''); }}>
+            İptal
+          </Button>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={handleDelete}
+            disabled={actionLoading || banReason !== selectedUser?.email}
+            startIcon={!actionLoading ? <DeleteIcon /> : undefined}
+          >
+            {actionLoading ? <CircularProgress size={20} /> : 'Kalıcı Sil'}
           </Button>
         </DialogActions>
       </Dialog>

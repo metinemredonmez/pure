@@ -177,6 +177,10 @@ export const usersApi = {
     });
     return data;
   },
+  deleteUser: async (id: string) => {
+    const { data } = await api.delete(`/admin/users/${id}`);
+    return data;
+  },
 };
 
 // Orders API

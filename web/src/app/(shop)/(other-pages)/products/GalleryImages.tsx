@@ -366,13 +366,16 @@ const HeaderGalleryGrid5 = ({
 }) => {
   if (!images.length) return null
 
+  // En fazla 6 thumbnail göster (ilk büyük resim hariç)
+  const thumbs = images.slice(1, 7).filter(Boolean)
+
   return (
     <>
-      <div className="relative">
-        <div className="aspect-w-16 relative aspect-h-16" onClick={() => handleOpenDialog(0)}>
+      <div className="relative cursor-pointer" onClick={() => handleOpenDialog(0)}>
+        <div className="aspect-w-16 relative aspect-h-16">
           <Image
             fill
-            sizes="(max-width: 640px) 100vw, 33vw"
+            sizes="(max-width: 640px) 100vw, 50vw"
             src={images[0]}
             className="w-full rounded-2xl object-cover transition-[filter] hover:brightness-95"
             alt=""
@@ -380,29 +383,28 @@ const HeaderGalleryGrid5 = ({
           />
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:mt-6 sm:gap-6">
-        {images.slice(1).map((image, index) => {
-          if (!image) {
-            return null
-          }
-          return (
-            <div
+      {thumbs.length > 0 && (
+        <div className="mt-3 grid grid-cols-4 gap-2 sm:mt-4 sm:gap-3">
+          {thumbs.map((image, index) => (
+            <button
+              type="button"
               key={index}
-              className="aspect-w-11 relative aspect-h-16 xl:aspect-w-10 2xl:aspect-w-11"
+              aria-label={`Görsel ${index + 2}`}
+              className="aspect-w-1 aspect-h-1 relative overflow-hidden rounded-xl"
               onClick={() => handleOpenDialog(index + 1)}
             >
               <Image
-                sizes="(max-width: 640px) 100vw, 33vw"
+                sizes="(max-width: 640px) 25vw, 12vw"
                 fill
                 src={image}
-                className="w-full rounded-2xl object-cover transition-[filter] hover:brightness-95"
+                className="w-full object-cover transition-[filter] hover:brightness-95"
                 alt=""
-                priority
+                loading="lazy"
               />
-            </div>
-          )
-        })}
-      </div>
+            </button>
+          ))}
+        </div>
+      )}
     </>
   )
 }

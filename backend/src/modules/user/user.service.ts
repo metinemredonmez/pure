@@ -571,4 +571,28 @@ export class UserService {
       })),
     };
   }
+
+  /**
+   * Admin: kullanıcıyı kalıcı olarak sil
+   * - Kendini silemez
+   * - Diğer admin'leri silemez
+   * - Prisma cascade ile address/order/review/subscription/wishlist vb. user FK'sı olan
+   *   kayıtlar (Cascade onDelete tanımlıysa) otomatik temizlenir
+   */
+  async adminDeleteUser(userId: string, adminId: string) {
+    if (userId === adminId) {
+      throw new ForbiddenException('Kendinizi silemezsiniz');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı');
+
+    if (user.role === 'ADMIN') {
+      throw new ForbiddenException('Admin kullanıcıları silemezsiniz');
+    }
+
+    await this.prisma.user.delete({ where: { id: userId } });
+
+    return { success: true, message: 'Kullanıcı silindi' };
+  }
 }
