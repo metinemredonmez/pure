@@ -137,46 +137,48 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     return (
       <div
         className={clsx(
-          'fade--animation relative grid items-center gap-8 overflow-hidden bg-[#F5EDE4] px-6 py-10 sm:gap-10 sm:px-10 sm:py-12 lg:grid-cols-2 lg:px-16 lg:py-14',
-          isActive ? 'grid' : 'hidden'
+          'fade--animation relative bg-[#F5EDE4]',
+          isActive ? 'block' : 'hidden'
         )}
         key={index}
       >
-        {/* SOL: metin */}
-        <div className="relative flex max-w-xl flex-col items-start fade--animation__left">
-          <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
-            {item.subHeading}
-          </span>
-          <h2
-            className="mt-3 text-2xl font-bold text-neutral-900 fade--animation__heading sm:mt-4 sm:text-3xl md:text-4xl xl:text-[2.75rem] xl:leading-[1.15]"
-            dangerouslySetInnerHTML={{ __html: item.heading }}
-          />
-
-          <ButtonPrimary
-            className="mt-6 fade--animation__button sm:mt-8"
-            href={item.btnHref || '#'}
-          >
-            <span className="me-2">{item.btnText}</span>
-            <HugeiconsIcon icon={Search01Icon} size={18} />
-          </ButtonPrimary>
-        </div>
-
-        {/* SAĞ: orta boy kare görsel */}
-        <div className="relative">
-          <Link
-            href={item.btnHref || '#'}
-            className="relative mx-auto block aspect-square w-full max-w-[320px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[360px] lg:max-w-[400px]"
-            aria-label={item.heading}
-          >
-            <Image
-              sizes="(max-width: 640px) 320px, (max-width: 1024px) 360px, 400px"
-              className="object-cover"
-              src={item.imageUrl}
-              alt={item.heading}
-              fill
-              priority
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-8 py-14 sm:gap-14 sm:px-12 sm:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
+          {/* SOL: metin */}
+          <div className="relative flex max-w-xl flex-col items-start fade--animation__left">
+            <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
+              {item.subHeading}
+            </span>
+            <h2
+              className="mt-4 text-3xl font-bold text-neutral-900 fade--animation__heading sm:mt-5 sm:text-4xl md:text-[2.5rem] xl:text-5xl xl:leading-[1.1]"
+              dangerouslySetInnerHTML={{ __html: item.heading }}
             />
-          </Link>
+
+            <ButtonPrimary
+              className="mt-7 fade--animation__button sm:mt-9"
+              href={item.btnHref || '#'}
+            >
+              <span className="me-2">{item.btnText}</span>
+              <HugeiconsIcon icon={Search01Icon} size={18} />
+            </ButtonPrimary>
+          </div>
+
+          {/* SAĞ: kare görsel */}
+          <div className="relative">
+            <Link
+              href={item.btnHref || '#'}
+              className="relative mx-auto block aspect-square w-full max-w-[360px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[400px] lg:max-w-[440px]"
+              aria-label={item.heading}
+            >
+              <Image
+                sizes="(max-width: 640px) 360px, (max-width: 1024px) 400px, 440px"
+                className="object-cover"
+                src={item.imageUrl}
+                alt={item.heading}
+                fill
+                priority
+              />
+            </Link>
+          </div>
         </div>
       </div>
     )
