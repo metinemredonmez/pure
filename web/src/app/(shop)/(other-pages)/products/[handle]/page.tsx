@@ -1,3 +1,9 @@
+// Bu sayfayı SSR olarak çalıştır — backend silinen ürünler için cache'lenmiş
+// eski HTML serve etmesin. Brazil Santos vb. silinen slug'lar için her zaman
+// taze backend kontrolü + notFound() çağrısı.
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import AccordionInfo from '@/components/AccordionInfo'
 import { Divider } from '@/components/Divider'
 import LikeButton from '@/components/LikeButton'
