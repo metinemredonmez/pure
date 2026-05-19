@@ -1,5 +1,5 @@
 import { getSiteSettings } from '@/lib/site-settings'
-import { Location01Icon, CallIcon, MailOpen01Icon, ChatQuestion01Icon } from '@hugeicons/core-free-icons'
+import { Location01Icon, CallIcon, MailOpen01Icon, ChatQuestion01Icon, ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { Metadata } from 'next'
 import ContactForm from './ContactForm'
@@ -12,10 +12,21 @@ export const metadata: Metadata = {
 const PageContact = async () => {
   const settings = await getSiteSettings()
 
-  const mapSrc =
-    settings.mapLat && settings.mapLng
-      ? `https://maps.google.com/maps?q=${settings.mapLat},${settings.mapLng}&z=15&output=embed`
-      : `https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`
+  // Map embed: önce adres ile (yer adı çözümlemesi daha güvenilir),
+  // adres yoksa lat/lng fallback. Sadece koordinat embed'de "Yer bilgileri yüklenemedi" çıkıyor.
+  const mapQuery = settings.address
+    ? encodeURIComponent(settings.address)
+    : settings.mapLat && settings.mapLng
+      ? `${settings.mapLat},${settings.mapLng}`
+      : 'Pure+Olentia'
+  const mapSrc = `https://maps.google.com/maps?q=${mapQuery}&z=16&output=embed`
+
+  // "Haritalarda Aç" linki — yeni sekmede tam Google Maps
+  const mapsOpenUrl = settings.address
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.address)}`
+    : settings.mapLat && settings.mapLng
+      ? `https://www.google.com/maps/search/?api=1&query=${settings.mapLat},${settings.mapLng}`
+      : 'https://www.google.com/maps/search/Pure+Olentia'
 
   return (
     <div className="pb-24 lg:pb-32">
@@ -126,17 +137,26 @@ const PageContact = async () => {
 
             {/* Right: Map */}
             <div className="flex flex-col gap-6">
-              <div className="flex-1 overflow-hidden rounded-3xl">
+              <div className="relative flex-1 overflow-hidden rounded-3xl">
                 <iframe
                   src={mapSrc}
                   width="100%"
                   height="100%"
-                  style={{ minHeight: 350, border: 0, filter: 'saturate(0.3) contrast(1.2) brightness(0.75)' }}
+                  style={{ minHeight: 350, border: 0 }}
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   className="rounded-3xl"
                 />
+                <a
+                  href={mapsOpenUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-xs font-semibold text-neutral-900 shadow-lg transition hover:bg-neutral-100"
+                >
+                  <HugeiconsIcon icon={ArrowUpRight01Icon} size={14} color="currentColor" strokeWidth={2} />
+                  Haritalarda Aç
+                </a>
               </div>
               {/* Quick CTA */}
               <div className="rounded-2xl bg-gradient-to-r from-primary-700 to-primary-900 p-6 text-white">

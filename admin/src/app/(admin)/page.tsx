@@ -177,18 +177,9 @@ export default function DashboardPage() {
       { id: '4', orderNumber: 'OLN-2026-004', status: 'PENDING', totalAmount: 179.90, createdAt: new Date(Date.now() - 345600000).toISOString(), user: { email: 'zeynep@test.com', firstName: 'Zeynep', lastName: 'Arslan' } },
       { id: '5', orderNumber: 'OLN-2026-005', status: 'DELIVERED', totalAmount: 349.80, createdAt: new Date(Date.now() - 432000000).toISOString(), user: { email: 'murat@test.com', firstName: 'Murat', lastName: 'Çelik' } },
     ]);
-    setTopProducts(prev => prev.length > 0 ? prev : [
-      { name: 'Ethiopia Yirgacheffe', totalSold: 142, revenue: 35407 },
-      { name: 'Colombia Supremo', totalSold: 98, revenue: 19404 },
-      { name: 'Kenya AA', totalSold: 76, revenue: 22724 },
-      { name: 'Guatemala Antigua', totalSold: 65, revenue: 16185 },
-      { name: 'Brazil Santos', totalSold: 54, revenue: 10746 },
-    ]);
-    setLowStock(prev => prev.length > 0 ? prev : [
-      { id: '1', name: 'Sumatra Mandheling', sku: 'OLP-SUM-250', stock: 3 },
-      { id: '2', name: 'Jamaica Blue Mountain', sku: 'OLP-JAM-250', stock: 1 },
-      { id: '3', name: 'Hawaii Kona', sku: 'OLP-HAW-250', stock: 0 },
-    ]);
+    // Mock data kaldırıldı — backend gerçek veri döndürmüyorsa boş hâl gösterilsin.
+    // Önceden Velora template'inden kalmış "Brazil Santos" gibi gerçek olmayan ürünler
+    // dashboard'da satılmış gibi görünüyordu.
     setCustomerInsights(prev => prev || { total: 867, verified: 743, withOrders: 412, conversionRate: 47.5, repeatCustomers: 189, repeatRate: 45.9, avgOrderValue: 287, topCustomers: [] });
 
     // Fallback demo data for empty charts

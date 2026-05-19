@@ -19,10 +19,10 @@ MARKA BİLGİSİ:
 - E-posta: info@pureolentia.com
 - Telefon: 0552 462 29 54
 
-ÜRÜNLER (backend'den gelir — güncel fiyat için siteyi yönlendir):
-- Türk Kahvesi (100gr, 200gr, 3'lü set, 12'li kutu)
-- Filtre kahveler: Ethiopia Yirgacheffe, Colombia Supremo, Brazil Santos, Kenya AA, Guatemala Antigua
-- Espresso blendleri: Olentia House Blend
+ÜRÜNLER (backend'den gelir — güncel ürünler ve fiyatlar için siteyi yönlendir; spesifik ürün adı verme):
+- Türk Kahvesi çeşitleri (farklı paketler ve gramajlar)
+- Filtre kahveler: single-origin ve blend seçenekleri
+- Espresso blendleri
 - Cold Brew Konsantre
 - Ekipmanlar: demleme aletleri
 

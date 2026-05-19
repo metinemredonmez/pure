@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 const FALLBACK_SLIDES = [
-  { src: '/hero/brazil-santos.jpg', alt: 'Pure Olentia Mağaza' },
   { src: '/hero/turk-kahvesi-200gr.jpg', alt: 'Pure Olentia Mağaza' },
+  { src: '/hero/turk-kahvesi-100gr.jpg', alt: 'Pure Olentia Mağaza' },
   { src: '/hero/hediye-paketi.jpg', alt: 'Pure Olentia Mağaza' },
 ]
 

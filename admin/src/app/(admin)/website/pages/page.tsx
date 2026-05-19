@@ -61,7 +61,7 @@ const SUPPORT_PAGE_TEMPLATES: Array<{
     seoDescription: 'Specialty kahve demleme ekipmanları rehberi.',
     content: `<h2>Kahve Ekipmanları Rehberi</h2>
 <p>Her demleme yönteminin kendine özgü bir dili vardır. Doğru ekipmanla kahvenizin karakterini ortaya çıkarabilirsiniz.</p>
-<p><img src="/hero/brazil-santos.jpg" alt="Brazil Santos" style="width:100%;border-radius:16px;margin:16px 0"/></p>
+<p><img src="/hero/turk-kahvesi-200gr.jpg" alt="Pure Olentia kahve" style="width:100%;border-radius:16px;margin:16px 0"/></p>
 <h3>Filtre Kahve Ekipmanları</h3>
 <ul>
   <li><strong>Hario V60:</strong> Aromayı öne çıkaran koni filtre. Hafif kavrumlar için ideal.</li>

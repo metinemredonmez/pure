@@ -777,22 +777,6 @@ export function getCart(id: string) {
           alt: 'Colombia Supremo kahve paketi',
         },
       },
-      {
-        id: '3',
-        name: 'Brazil Santos',
-        handle: 'brazil-santos',
-        price: 129,
-        color: 'Orta-Koyu Kavurma',
-        inStock: true,
-        size: '1kg',
-        quantity: 1,
-        image: {
-          src: productImage3.src,
-          width: productImage3.width,
-          height: productImage3.height,
-          alt: 'Brazil Santos kahve paketi',
-        },
-      },
     ],
   }
 }
@@ -1371,108 +1355,6 @@ export async function getProducts() {
         {
           name: 'Gramaj',
           value: 'S',
-        },
-      ],
-    },
-    {
-      id: 'gid://1003',
-      title: 'Brazil Santos',
-      handle: 'brazil-santos',
-      createdAt: '2025-05-08T11:15:00-04:00',
-      vendor: 'UrbanTrend',
-      price: 65,
-      featuredImage: {
-        src: productImage3.src,
-        width: productImage3.width,
-        height: productImage3.height,
-        alt: 'Brazil Santos',
-      },
-      images: [
-        {
-          src: productImage3.src,
-          width: productImage3.width,
-          height: productImage3.height,
-          alt: 'Brazil Santos',
-        },
-        {
-          src: productImage3_1.src,
-          width: productImage3_1.width,
-          height: productImage3_1.height,
-          alt: 'Brazil Santos',
-        },
-        {
-          src: productImage3_2.src,
-          width: productImage3_2.width,
-          height: productImage3_2.height,
-          alt: 'Brazil Santos',
-        },
-        {
-          src: productImage3_3.src,
-          width: productImage3_3.width,
-          height: productImage3_3.height,
-          alt: 'Brazil Santos',
-        },
-      ],
-      reviewNumber: 120,
-      rating: 4.3,
-      status: 'Yeni Mahsul',
-      options: [
-        {
-          name: 'Kavurma',
-          optionValues: [
-            {
-              name: 'Light Blue',
-              swatch: {
-                color: '#ADD8E6',
-                image: null,
-              },
-            },
-            {
-              name: 'Dark Blue',
-              swatch: {
-                color: '#00008B',
-                image: null,
-              },
-            },
-            {
-              name: 'Koyu Kavurma',
-              swatch: {
-                color: '#000000',
-                image: null,
-              },
-            },
-          ],
-        },
-        {
-          name: 'Gramaj',
-          optionValues: [
-            {
-              swatch: null,
-              name: 'S',
-            },
-            {
-              swatch: null,
-              name: '500g',
-            },
-            {
-              swatch: null,
-              name: '1kg',
-            },
-            {
-              swatch: null,
-              name: '2kg',
-            },
-          ],
-        },
-      ],
-      selectedOptions: [
-        {
-          name: 'Kavurma',
-          value: 'Light Blue',
-        },
-        {
-          name: 'Gramaj',
-          value: 'M',
         },
       ],
     },

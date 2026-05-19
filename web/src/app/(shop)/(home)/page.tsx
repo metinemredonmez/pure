@@ -108,13 +108,6 @@ async function PageHome() {
       imageUrl: '/hero/turk-kahvesi-100gr.jpg',
     },
     {
-      slugs: ['brazil-santos'],
-      fallbackSlug: 'brazil-santos',
-      title: 'Brazil Vila Boa — Filtre Kahve',
-      subHeading: 'Brezilya menşeili filtre kahve',
-      imageUrl: '/hero/brazil-santos.jpg',
-    },
-    {
       slugs: ['turk-kahvesi-200gr', 'turk-kahvesi-geleneksel'],
       fallbackSlug: 'turk-kahvesi-200gr',
       title: 'Türk Kahvesi 200gr',
