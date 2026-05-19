@@ -137,7 +137,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     return (
       <div
         className={clsx(
-          'fade--animation relative flex flex-col gap-10 overflow-hidden py-14 px-6 sm:py-20 sm:px-12 lg:flex-row lg:items-center lg:px-20',
+          'fade--animation relative flex flex-col gap-6 overflow-hidden py-8 px-6 sm:py-10 sm:gap-8 sm:px-10 lg:flex-row lg:items-center lg:px-14',
           isActive ? 'flex' : 'hidden'
         )}
         key={index}
@@ -155,25 +155,25 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
 
         {/* DOTS - removed */}
 
-        <div className="relative flex max-w-5xl flex-1/2 flex-col items-start fade--animation__left">
-          <span className="block text-sm font-medium text-neutral-700 fade--animation__subheading md:text-base">
+        <div className="relative flex max-w-3xl flex-1/2 flex-col items-start fade--animation__left">
+          <span className="block text-sm font-medium text-neutral-700 fade--animation__subheading">
             {item.subHeading}
           </span>
           <h2
-            className="mt-3 text-2xl font-semibold text-neutral-900 fade--animation__heading sm:mt-4 sm:text-3xl md:text-4xl xl:text-5xl xl:leading-[1.15]"
+            className="mt-2 text-2xl font-semibold text-neutral-900 fade--animation__heading sm:mt-3 sm:text-3xl md:text-4xl xl:leading-[1.15]"
             dangerouslySetInnerHTML={{ __html: item.heading }}
           />
 
-          <ButtonPrimary className="mt-6 fade--animation__button sm:mt-10" href={item.btnHref || '#'}>
+          <ButtonPrimary className="mt-5 fade--animation__button sm:mt-7" href={item.btnHref || '#'}>
             <span className="me-2">{item.btnText}</span>
             <HugeiconsIcon icon={Search01Icon} size={20} />
           </ButtonPrimary>
         </div>
 
-        <div className="relative -z-10 flex-1/2 lg:pr-10">
+        <div className="relative -z-10 flex-1/2 lg:pr-6">
           <Link
             href={item.btnHref || '#'}
-            className="relative block aspect-square w-full max-w-[40rem] overflow-hidden rounded-3xl fade--animation__image select-none shadow-lg transition hover:opacity-95"
+            className="relative mx-auto block aspect-square w-full max-w-[24rem] overflow-hidden rounded-3xl fade--animation__image select-none shadow-lg transition hover:opacity-95 lg:max-w-[26rem]"
             aria-label={item.heading}
           >
             <Image
