@@ -156,10 +156,25 @@ async function PageHome() {
     return partial || null
   }
 
+  // Backend'den gelen banner'ların CTA URL'leri geçerli mi kontrol et.
+  // Admin panel /products/SLUG yazmış ama SLUG backend'de yoksa banner
+  // kullanıcıyı 404'e yönlendirir → bu banner'ı tamamen gizle.
+  const validProductSlugs = new Set<string>(
+    products.map((p: any) => (p.handle || p.slug) as string).filter(Boolean),
+  )
+  const isValidBannerCta = (ctaUrl: string | null | undefined): boolean => {
+    if (!ctaUrl) return true // boş ctaUrl title-match veya /collections/all fallback alır
+    const u = ctaUrl.replace(/^https?:\/\/[^/]+/i, '')
+    const m = u.match(/^\/products\/([^?#/]+)/i)
+    if (!m) return true // /products/SLUG değilse karışmayalım
+    return validProductSlugs.has(m[1])
+  }
+
   // Prefer admin-managed HeroBanner records; fall back to curated HERO_CONFIG
   const heroSlides = backendBanners.length
     ? backendBanners
         .filter((b: any) => b?.image)
+        .filter((b: any) => isValidBannerCta(b?.ctaUrl)) // ❶ geçersiz CTA'lı banner'ları gizle
         .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
         .map((b: any) => {
           // Banner'ın ctaUrl alanı boşsa title'dan otomatik ürün bul.
