@@ -76,6 +76,22 @@ async function PageHome() {
   // Eski DB Collections fallback'i kaldırıldı — kafa karışıklığını önlemek için.
   // (DB Collections hâlâ /collections/[slug] URL'leri için kullanılıyor; ayrı işlev.)
   const settingsCardColors = ['bg-primary-50', 'bg-secondary-50', 'bg-orange-50']
+
+  // "Hepsini Gör" / koleksiyon kartı CTA URL'ini güvenli hale getir:
+  // - Boşsa → /collections/all
+  // - Tam URL ise → host çıkar, relatif yap
+  // - Specific ürüne işaret ediyorsa (`/products/SLUG`) → "Hepsini Gör" anlamsız, /collections/all
+  // - `/products` (slug yok) → bu route mevcut değil, /collections/all'a yönlendir
+  // - Diğer relatif route'lar (örn. /collections/X, /abonelik) olduğu gibi korunur
+  const normalizeListingCta = (raw: string | null | undefined): string => {
+    if (!raw) return '/collections/all'
+    let u = raw.trim().replace(/^https?:\/\/[^/]+/i, '')
+    if (!u || u === '/') return '/collections/all'
+    if (u === '/products' || u.startsWith('/products?')) return '/collections/all'
+    if (/^\/products\/[^?]+/i.test(u)) return '/collections/all'
+    return u
+  }
+
   const featuredCollections = (settings.homeCollectionCards || [])
     .filter((c) => c?.image && (c?.title || c?.subtitle))
     .map((c, i) => ({
@@ -85,7 +101,7 @@ async function PageHome() {
       description: c.subtitle,
       sortDescription: c.subtitle,
       handle: '',
-      cardHref: c.ctaUrl || '/collections/all',
+      cardHref: normalizeListingCta(c.ctaUrl),
       color: settingsCardColors[i] || 'bg-primary-50',
       count: 0,
       image: { src: resolveImageUrl(c.image), width: 800, height: 600, alt: c.title || '' },

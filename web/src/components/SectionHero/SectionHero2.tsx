@@ -156,15 +156,15 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         {/* DOTS - removed */}
 
         <div className="relative flex max-w-5xl flex-1/2 flex-col items-start fade--animation__left">
-          <span className="block text-base font-medium text-neutral-700 fade--animation__subheading md:text-xl">
+          <span className="block text-sm font-medium text-neutral-700 fade--animation__subheading md:text-base">
             {item.subHeading}
           </span>
           <h2
-            className="mt-5 text-4xl font-semibold text-neutral-900 fade--animation__heading sm:mt-6 md:text-5xl xl:text-6xl xl:leading-[1.2] 2xl:text-7xl"
+            className="mt-3 text-2xl font-semibold text-neutral-900 fade--animation__heading sm:mt-4 sm:text-3xl md:text-4xl xl:text-5xl xl:leading-[1.15]"
             dangerouslySetInnerHTML={{ __html: item.heading }}
           />
 
-          <ButtonPrimary className="mt-10 fade--animation__button sm:mt-20" href={item.btnHref || '#'}>
+          <ButtonPrimary className="mt-6 fade--animation__button sm:mt-10" href={item.btnHref || '#'}>
             <span className="me-2">{item.btnText}</span>
             <HugeiconsIcon icon={Search01Icon} size={20} />
           </ButtonPrimary>
