@@ -117,17 +117,18 @@ async function PageHome() {
     imageUrl: string // real Pure Olentia product photo
   }> = [
     {
-      slugs: ['turk-kahvesi-100gr', 'turk-kahvesi-geleneksel'],
-      fallbackSlug: 'turk-kahvesi-100gr',
-      title: 'Türk Kahvesi 100gr',
-      subHeading: 'Taş değirmenden gelen lezzet — 100gr tekli',
+      // Backend slug 'turk-kahvesi-100g' (sondaki 'g', 'gr' değil)
+      slugs: ['turk-kahvesi-100g', 'turk-kahvesi-100gr', 'turk-kahvesi-geleneksel'],
+      fallbackSlug: 'turk-kahvesi-100g',
+      title: 'Türk Kahvesi 100g',
+      subHeading: 'Taş değirmenden gelen lezzet — 100g tekli',
       imageUrl: '/hero/turk-kahvesi-100gr.jpg',
     },
     {
-      slugs: ['turk-kahvesi-200gr', 'turk-kahvesi-geleneksel'],
-      fallbackSlug: 'turk-kahvesi-200gr',
-      title: 'Türk Kahvesi 200gr',
-      subHeading: 'Geleneksel 200gr paket',
+      slugs: ['turk-kahvesi-200g', 'turk-kahvesi-200gr', 'turk-kahvesi-geleneksel'],
+      fallbackSlug: 'turk-kahvesi-200g',
+      title: 'Türk Kahvesi 200g',
+      subHeading: 'Geleneksel 200g paket',
       imageUrl: '/hero/turk-kahvesi-200gr.jpg',
     },
   ]
