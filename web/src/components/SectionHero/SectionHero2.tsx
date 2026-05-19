@@ -137,39 +137,39 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     return (
       <div
         className={clsx(
-          'fade--animation relative grid items-center gap-5 overflow-hidden bg-[#F5EDE4] px-6 py-6 sm:gap-8 sm:px-8 sm:py-8 lg:grid-cols-2 lg:px-12',
+          'fade--animation relative grid items-center gap-8 overflow-hidden bg-[#F5EDE4] px-6 py-10 sm:gap-10 sm:px-10 sm:py-12 lg:grid-cols-2 lg:px-16 lg:py-14',
           isActive ? 'grid' : 'hidden'
         )}
         key={index}
       >
-        {/* SOL: kompakt metin */}
-        <div className="relative flex max-w-md flex-col items-start fade--animation__left">
-          <span className="block text-[11px] font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-xs">
+        {/* SOL: metin */}
+        <div className="relative flex max-w-xl flex-col items-start fade--animation__left">
+          <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
             {item.subHeading}
           </span>
           <h2
-            className="mt-2 text-xl font-bold text-neutral-900 fade--animation__heading sm:mt-3 sm:text-2xl md:text-3xl"
+            className="mt-3 text-2xl font-bold text-neutral-900 fade--animation__heading sm:mt-4 sm:text-3xl md:text-4xl xl:text-[2.75rem] xl:leading-[1.15]"
             dangerouslySetInnerHTML={{ __html: item.heading }}
           />
 
           <ButtonPrimary
-            className="mt-4 !px-5 !py-2 !text-sm fade--animation__button sm:mt-5"
+            className="mt-6 fade--animation__button sm:mt-8"
             href={item.btnHref || '#'}
           >
             <span className="me-2">{item.btnText}</span>
-            <HugeiconsIcon icon={Search01Icon} size={16} />
+            <HugeiconsIcon icon={Search01Icon} size={18} />
           </ButtonPrimary>
         </div>
 
-        {/* SAĞ: sabit küçük kare görsel */}
+        {/* SAĞ: orta boy kare görsel */}
         <div className="relative">
           <Link
             href={item.btnHref || '#'}
-            className="relative mx-auto block aspect-square w-full max-w-[260px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[300px]"
+            className="relative mx-auto block aspect-square w-full max-w-[320px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[360px] lg:max-w-[400px]"
             aria-label={item.heading}
           >
             <Image
-              sizes="300px"
+              sizes="(max-width: 640px) 320px, (max-width: 1024px) 360px, 400px"
               className="object-cover"
               src={item.imageUrl}
               alt={item.heading}
