@@ -74,8 +74,11 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
     }
   } catch (e) {}
 
+  // Backend'de ürün yoksa direkt 404 — data.ts demo fallback'i artık
+  // KULLANMA (Brazil Santos vb. silinmiş ürünlere rastgele başka ürün
+  // göstermesin diye).
   if (!product) {
-    product = await getProductDetailByHandle(handle)
+    return notFound()
   }
   if (!relatedProducts.length) {
     relatedProducts = (await getProducts()).slice(2, 8)

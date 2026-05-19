@@ -142,7 +142,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         )}
         key={index}
       >
-        <div className="mx-auto grid max-w-6xl items-center gap-10 px-8 py-14 sm:gap-14 sm:px-12 sm:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-6 px-8 py-14 sm:gap-8 sm:px-12 sm:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
           {/* SOL: metin */}
           <div className="relative flex max-w-xl flex-col items-start fade--animation__left">
             <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
