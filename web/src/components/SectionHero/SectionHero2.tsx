@@ -137,47 +137,39 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
     return (
       <div
         className={clsx(
-          'fade--animation relative flex flex-col gap-6 overflow-hidden py-8 px-6 sm:py-10 sm:gap-8 sm:px-10 lg:flex-row lg:items-center lg:px-14',
-          isActive ? 'flex' : 'hidden'
+          'fade--animation relative grid items-center gap-5 overflow-hidden bg-[#F5EDE4] px-6 py-6 sm:gap-8 sm:px-8 sm:py-8 lg:grid-cols-2 lg:px-12',
+          isActive ? 'grid' : 'hidden'
         )}
         key={index}
       >
-        {/* BG — full width, edge to edge */}
-        <div className="absolute inset-0 -z-10 bg-[#F5EDE4]">
-          <Image
-            fill
-            sizes="100vw"
-            className="absolute h-full w-full object-contain"
-            src={backgroundLineSvg}
-            alt="hero"
-          />
-        </div>
-
-        {/* DOTS - removed */}
-
-        <div className="relative flex max-w-3xl flex-1/2 flex-col items-start fade--animation__left">
-          <span className="block text-sm font-medium text-neutral-700 fade--animation__subheading">
+        {/* SOL: kompakt metin */}
+        <div className="relative flex max-w-md flex-col items-start fade--animation__left">
+          <span className="block text-[11px] font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-xs">
             {item.subHeading}
           </span>
           <h2
-            className="mt-2 text-2xl font-semibold text-neutral-900 fade--animation__heading sm:mt-3 sm:text-3xl md:text-4xl xl:leading-[1.15]"
+            className="mt-2 text-xl font-bold text-neutral-900 fade--animation__heading sm:mt-3 sm:text-2xl md:text-3xl"
             dangerouslySetInnerHTML={{ __html: item.heading }}
           />
 
-          <ButtonPrimary className="mt-5 fade--animation__button sm:mt-7" href={item.btnHref || '#'}>
+          <ButtonPrimary
+            className="mt-4 !px-5 !py-2 !text-sm fade--animation__button sm:mt-5"
+            href={item.btnHref || '#'}
+          >
             <span className="me-2">{item.btnText}</span>
-            <HugeiconsIcon icon={Search01Icon} size={20} />
+            <HugeiconsIcon icon={Search01Icon} size={16} />
           </ButtonPrimary>
         </div>
 
-        <div className="relative -z-10 flex-1/2 lg:pr-6">
+        {/* SAĞ: sabit küçük kare görsel */}
+        <div className="relative">
           <Link
             href={item.btnHref || '#'}
-            className="relative mx-auto block aspect-square w-full max-w-[24rem] overflow-hidden rounded-3xl fade--animation__image select-none shadow-lg transition hover:opacity-95 lg:max-w-[26rem]"
+            className="relative mx-auto block aspect-square w-full max-w-[260px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[300px]"
             aria-label={item.heading}
           >
             <Image
-              sizes="(max-width: 768px) 100vw, 60vw"
+              sizes="300px"
               className="object-cover"
               src={item.imageUrl}
               alt={item.heading}
