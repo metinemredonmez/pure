@@ -370,23 +370,20 @@ const HeaderGalleryGrid5 = ({
   const thumbs = images.slice(1, 6).filter(Boolean)
 
   return (
-    <div className="mx-auto w-full max-w-md lg:max-w-lg">
-      {/* Ana resim — max yükseklik 480px, kare aspect ama overflow değil */}
+    <div className="mx-auto w-full max-w-[340px] sm:max-w-[400px]">
+      {/* Ana resim — sabit kare, en fazla 400px */}
       <div
-        className="relative cursor-pointer overflow-hidden rounded-2xl"
+        className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl"
         onClick={() => handleOpenDialog(0)}
-        style={{ maxHeight: 480 }}
       >
-        <div className="aspect-square relative">
-          <Image
-            fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
-            src={images[0]}
-            className="object-cover transition-[filter] hover:brightness-95"
-            alt=""
-            priority
-          />
-        </div>
+        <Image
+          fill
+          sizes="(max-width: 640px) 340px, 400px"
+          src={images[0]}
+          className="object-cover transition-[filter] hover:brightness-95"
+          alt=""
+          priority
+        />
       </div>
       {thumbs.length > 0 && (
         <div className="mt-2 grid grid-cols-5 gap-1.5 sm:mt-3 sm:gap-2">
@@ -399,7 +396,7 @@ const HeaderGalleryGrid5 = ({
               onClick={() => handleOpenDialog(index + 1)}
             >
               <Image
-                sizes="(max-width: 640px) 20vw, 96px"
+                sizes="80px"
                 fill
                 src={image}
                 className="object-cover transition-[filter] hover:brightness-95"
