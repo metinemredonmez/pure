@@ -40,3 +40,4 @@ npm-debug.log*
 .env.staging
 *.env.production
 *.env.development
+.claude/worktrees/
