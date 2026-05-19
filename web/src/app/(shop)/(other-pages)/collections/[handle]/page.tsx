@@ -41,6 +41,10 @@ export default async function Page({
   if (filters.search) apiQuery.search = String(filters.search)
 
   let products: any[] = []
+  // "all" handle dışında ise specific kategori sayfası → boş kategori için
+  // BAŞKA kategoriyi gösterme. Türk Kahvesi olan ürünler Espresso sayfasına
+  // sızmasın.
+  const isSpecificCategory = !!apiQuery.category
 
   try {
     // Fetch with filters
@@ -49,21 +53,15 @@ export default async function Page({
     if (Array.isArray(prodData) && prodData.length) {
       products = prodData.map((p: any, i: number) => adaptProduct(p, i))
     }
-
-    // If category filter returned 0 results, try without category
-    if (!products.length && apiQuery.category) {
-      delete apiQuery.category
-      const fallbackRes = (await getApiProducts(apiQuery)) as any
-      const fallbackData = fallbackRes?.data?.data || fallbackRes?.data || []
-      if (Array.isArray(fallbackData) && fallbackData.length) {
-        products = fallbackData.map((p: any, i: number) => adaptProduct(p, i))
-      }
-    }
   } catch (e) {}
 
-  // Fallback to static data if API returned nothing
-  if (!products.length) {
-    products = await getProducts()
+  // Sadece "all" sayfası boş gelirse data.ts'ten demo göster (geçici).
+  // Specific kategori sayfası (espresso, filtre-kahve, vs.) boşsa BOŞ hâl
+  // göstersin — yanlış ürün karıştırmasın.
+  if (!products.length && !isSpecificCategory) {
+    try {
+      products = await getProducts()
+    } catch {}
   }
 
   return (
