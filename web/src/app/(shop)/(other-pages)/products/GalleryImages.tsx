@@ -366,38 +366,43 @@ const HeaderGalleryGrid5 = ({
 }) => {
   if (!images.length) return null
 
-  // En fazla 6 thumbnail göster (ilk büyük resim hariç)
-  const thumbs = images.slice(1, 7).filter(Boolean)
+  // En fazla 5 thumbnail göster (ilk büyük resim hariç)
+  const thumbs = images.slice(1, 6).filter(Boolean)
 
   return (
-    <>
-      <div className="relative cursor-pointer" onClick={() => handleOpenDialog(0)}>
-        <div className="aspect-w-16 relative aspect-h-16">
+    <div className="mx-auto w-full max-w-md lg:max-w-lg">
+      {/* Ana resim — max yükseklik 480px, kare aspect ama overflow değil */}
+      <div
+        className="relative cursor-pointer overflow-hidden rounded-2xl"
+        onClick={() => handleOpenDialog(0)}
+        style={{ maxHeight: 480 }}
+      >
+        <div className="aspect-square relative">
           <Image
             fill
-            sizes="(max-width: 640px) 100vw, 50vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 480px"
             src={images[0]}
-            className="w-full rounded-2xl object-cover transition-[filter] hover:brightness-95"
+            className="object-cover transition-[filter] hover:brightness-95"
             alt=""
             priority
           />
         </div>
       </div>
       {thumbs.length > 0 && (
-        <div className="mt-3 grid grid-cols-4 gap-2 sm:mt-4 sm:gap-3">
+        <div className="mt-2 grid grid-cols-5 gap-1.5 sm:mt-3 sm:gap-2">
           {thumbs.map((image, index) => (
             <button
               type="button"
               key={index}
               aria-label={`Görsel ${index + 2}`}
-              className="aspect-w-1 aspect-h-1 relative overflow-hidden rounded-xl"
+              className="relative aspect-square overflow-hidden rounded-lg"
               onClick={() => handleOpenDialog(index + 1)}
             >
               <Image
-                sizes="(max-width: 640px) 25vw, 12vw"
+                sizes="(max-width: 640px) 20vw, 96px"
                 fill
                 src={image}
-                className="w-full object-cover transition-[filter] hover:brightness-95"
+                className="object-cover transition-[filter] hover:brightness-95"
                 alt=""
                 loading="lazy"
               />
@@ -405,7 +410,7 @@ const HeaderGalleryGrid5 = ({
           ))}
         </div>
       )}
-    </>
+    </div>
   )
 }
 
