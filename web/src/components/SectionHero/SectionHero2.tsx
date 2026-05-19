@@ -162,15 +162,15 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
             </ButtonPrimary>
           </div>
 
-          {/* SAĞ: kare görsel */}
+          {/* SAĞ: kare görsel (screenshot'taki büyüklük) */}
           <div className="relative">
             <Link
               href={item.btnHref || '#'}
-              className="relative mx-auto block aspect-square w-full max-w-[360px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[400px] lg:max-w-[440px]"
+              className="relative mx-auto block aspect-square w-full max-w-[480px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[540px] lg:max-w-[580px]"
               aria-label={item.heading}
             >
               <Image
-                sizes="(max-width: 640px) 360px, (max-width: 1024px) 400px, 440px"
+                sizes="(max-width: 640px) 480px, (max-width: 1024px) 540px, 580px"
                 className="object-cover"
                 src={item.imageUrl}
                 alt={item.heading}
