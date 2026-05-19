@@ -54,6 +54,11 @@ const nextConfig = {
       { source: '/sipariş-takibi', destination: '/siparis-takibi', permanent: true },
       { source: '/ödeme-teslimat', destination: '/odeme-teslimat', permanent: true },
       { source: '/toptan-satış', destination: '/toptan-satis', permanent: true },
+      // Silinmiş Velora dummy ürünleri → /collections/all (301 — Google index'den
+      // de kademeli olarak kaldırır, kullanıcı hiç 404 görmez)
+      { source: '/products/brazil-santos', destination: '/collections/all', permanent: true },
+      { source: '/products/brazil-vila-boa', destination: '/collections/all', permanent: true },
+      { source: '/products/brazil-vila-boa-espresso-cekirdek', destination: '/collections/all', permanent: true },
     ]
   },
   async headers() {
