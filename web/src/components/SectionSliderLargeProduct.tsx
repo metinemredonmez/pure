@@ -54,7 +54,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
           {products.map((product) => (
             <div
               key={product.id}
-              className="embla__slide basis-full ps-5 sm:basis-2/3 sm:ps-8 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3"
+              className="embla__slide basis-4/5 ps-4 sm:basis-1/2 sm:ps-6 lg:basis-1/3 xl:basis-1/4"
             >
               <ProductCardLarge product={product} />
             </div>
@@ -62,10 +62,10 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
 
           <Link
             href={'/collections/all'}
-            className="group relative block embla__slide basis-full ps-5 sm:basis-2/3 sm:ps-8 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3"
+            className="group relative block embla__slide basis-4/5 ps-4 sm:basis-1/2 sm:ps-6 lg:basis-1/3 xl:basis-1/4"
           >
-            <div className="relative h-[410px] overflow-hidden rounded-2xl">
-              <div className="h-[410px] bg-black/5 dark:bg-neutral-800"></div>
+            <div className="relative h-[300px] overflow-hidden rounded-2xl">
+              <div className="h-[300px] bg-black/5 dark:bg-neutral-800"></div>
               <div className="absolute inset-x-10 inset-y-6 flex flex-col items-center justify-center">
                 <div className="relative flex items-center justify-center">
                   <span className="text-xl font-semibold">{viewAllLabel}</span>

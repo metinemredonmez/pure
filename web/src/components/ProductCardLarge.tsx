@@ -20,43 +20,43 @@ const ProductCardLarge: FC<Props> = ({ className, product }) => {
       <div className="relative flex flex-col">
         {images?.[0] && (
           <NcImage
-            containerClassName="aspect-square bg-neutral-100 rounded-xl overflow-hidden relative"
+            containerClassName="aspect-[4/3] bg-neutral-100 rounded-xl overflow-hidden relative"
             className="rounded-xl object-cover"
             fill
             src={images?.[0]}
             alt=""
-            sizes="400px"
+            sizes="(max-width: 640px) 100vw, 360px"
           />
         )}
-        <div className="mt-2 grid grid-cols-3 gap-x-2">
+        <div className="mt-2 grid grid-cols-3 gap-x-1.5 sm:gap-x-2">
           {images?.[1] && (
             <NcImage
-              containerClassName="w-full h-20 sm:h-24 rounded-lg overflow-hidden relative"
+              containerClassName="w-full h-14 sm:h-16 rounded-lg overflow-hidden relative"
               className="rounded-lg object-cover"
               src={images[1]}
               alt={images[1].alt}
               fill
-              sizes="150px"
+              sizes="120px"
             />
           )}
           {images?.[2] && (
             <NcImage
-              containerClassName="w-full h-20 sm:h-24 rounded-lg overflow-hidden relative"
+              containerClassName="w-full h-14 sm:h-16 rounded-lg overflow-hidden relative"
               className="rounded-lg object-cover"
               src={images[2]}
               alt={images[2].alt}
-              sizes="150px"
+              sizes="120px"
               fill
             />
           )}
           {images?.[3] && (
             <NcImage
-              containerClassName="w-full h-20 sm:h-24 rounded-lg overflow-hidden relative"
+              containerClassName="w-full h-14 sm:h-16 rounded-lg overflow-hidden relative"
               className="rounded-lg object-cover"
               src={images[3]}
               alt={images[3].alt}
               fill
-              sizes="150px"
+              sizes="120px"
             />
           )}
         </div>
