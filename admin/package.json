@@ -17,7 +17,7 @@
     "apexcharts": "^5.10.4",
     "axios": "^1.13.6",
     "date-fns": "^4.1.0",
-    "js-cookie": "^3.0.5",
+    "js-cookie": "^3.0.7",
     "next": "16.2.0",
     "react": "19.2.4",
     "react-apexcharts": "^2.1.0",
