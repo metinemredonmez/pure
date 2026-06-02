@@ -170,11 +170,24 @@ async function PageHome() {
     return validProductSlugs.has(m[1])
   }
 
+  // Banner image'ının geçerli/yüklenebilir olup olmadığını kontrol et.
+  // Admin upload'u silinmiş veya bozuksa (boş, relative-olmayan path) banner'ı
+  // gizle ki kırık görsel gösterilmesin → statik HERO_CONFIG fallback devreye girer.
+  const isValidBannerImage = (img: any): boolean => {
+    if (!img || typeof img !== 'string') return false
+    const u = resolveImageUrl(img)
+    // resolve sonrası tam http(s) URL veya /uploads ile başlamalı (site-root relative değil)
+    return !!u && (/^https?:\/\//i.test(u) || u.startsWith('/uploads/'))
+  }
+
+  // Geçerli görselli + geçerli CTA'lı banner'lar
+  const validBanners = backendBanners
+    .filter((b: any) => isValidBannerImage(b?.image))
+    .filter((b: any) => isValidBannerCta(b?.ctaUrl))
+
   // Prefer admin-managed HeroBanner records; fall back to curated HERO_CONFIG
-  const heroSlides = backendBanners.length
-    ? backendBanners
-        .filter((b: any) => b?.image)
-        .filter((b: any) => isValidBannerCta(b?.ctaUrl)) // ❶ geçersiz CTA'lı banner'ları gizle
+  const heroSlides = validBanners.length
+    ? validBanners
         .sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
         .map((b: any) => {
           // Banner'ın ctaUrl alanı boşsa title'dan otomatik ürün bul.
