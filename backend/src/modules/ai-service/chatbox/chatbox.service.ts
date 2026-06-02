@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../prisma/prisma.service';
+import OpenAI from 'openai';
 
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -16,6 +17,7 @@ export interface ChatResponse {
 @Injectable()
 export class ChatboxService {
   private readonly logger = new Logger(ChatboxService.name);
+  private openai: OpenAI | null = null;
 
   // Sistem prompt'u — Olentia Pure kahve asistanı
   private readonly systemPrompt = `Sen Olentia Pure'un AI kahve asistanısın.
@@ -37,7 +39,21 @@ Kurallar:
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
-  ) {}
+  ) {
+    const apiKey = this.configService.get<string>('OPENAI_API_KEY');
+    if (apiKey) {
+      this.openai = new OpenAI({ apiKey });
+      this.logger.log('OpenAI client initialized (model: ' + this.getModel() + ')');
+    } else {
+      this.logger.warn(
+        'OPENAI_API_KEY missing — chatbox will fallback to rule-based responses',
+      );
+    }
+  }
+
+  private getModel(): string {
+    return this.configService.get<string>('OPENAI_MODEL') || 'gpt-4o-mini';
+  }
 
   /**
    * Chatbox: Sitenin sağ tarafında açılan AI asistan
@@ -56,15 +72,18 @@ Kurallar:
     // Konuşma geçmişini getir
     const history = await this.getSessionHistory(sessionId);
 
-    // TODO: Phase 2 - LangChain entegrasyonu
-    // const chain = new ConversationChain({
-    //   llm: new ChatOpenAI({ modelName: 'gpt-4' }),
-    //   memory: new BufferMemory(),
-    //   prompt: this.systemPrompt,
-    // });
-
-    // Phase 1: Kural tabanlı basit yanıtlar
-    const response = this.generateResponse(message, history);
+    // OpenAI varsa LLM'i kullan, yoksa rule-based fallback
+    let response: string;
+    if (this.openai) {
+      try {
+        response = await this.generateLLMResponse(message, history);
+      } catch (e: any) {
+        this.logger.error(`OpenAI error, fallback to rules: ${e?.message}`);
+        response = this.generateResponse(message, history);
+      }
+    } else {
+      response = this.generateResponse(message, history);
+    }
 
     // Mesajları kaydet
     await this.saveMessage(sessionId, 'user', message, userId);
@@ -74,6 +93,39 @@ Kurallar:
       message: response,
       sessionId,
     };
+  }
+
+  /**
+   * OpenAI Chat Completions ile yanıt üret.
+   * Son 10 mesajı context olarak gönderir, system prompt ile kalite kontrol.
+   */
+  private async generateLLMResponse(
+    message: string,
+    history: ChatMessage[],
+  ): Promise<string> {
+    if (!this.openai) throw new Error('OpenAI client not initialized');
+
+    // Son 10 mesajı al (token sınırı için)
+    const recent = history.slice(-10);
+    const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = [
+      { role: 'system', content: this.systemPrompt },
+      ...recent.map((m) => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
+      { role: 'user', content: message },
+    ];
+
+    const completion = await this.openai.chat.completions.create({
+      model: this.getModel(),
+      messages,
+      temperature: 0.7,
+      max_tokens: 500,
+    });
+
+    const reply = completion.choices?.[0]?.message?.content?.trim();
+    if (!reply) throw new Error('Empty response from OpenAI');
+    return reply;
   }
 
   /**

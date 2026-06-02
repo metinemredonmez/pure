@@ -166,11 +166,11 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
           <div className="relative">
             <Link
               href={item.btnHref || '#'}
-              className="relative mx-auto block aspect-square w-full max-w-[480px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[540px] lg:max-w-[580px]"
+              className="relative mx-auto block aspect-square w-full max-w-[540px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[620px] lg:max-w-[680px]"
               aria-label={item.heading}
             >
               <Image
-                sizes="(max-width: 640px) 480px, (max-width: 1024px) 540px, 580px"
+                sizes="(max-width: 640px) 540px, (max-width: 1024px) 620px, 680px"
                 className="object-cover"
                 src={item.imageUrl}
                 alt={item.heading}

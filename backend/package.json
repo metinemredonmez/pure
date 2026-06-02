@@ -61,6 +61,7 @@
     "ioredis": "^5.10.1",
     "minio": "^8.0.7",
     "nodemailer": "^8.0.3",
+    "openai": "^6.38.0",
     "otplib": "^13.4.0",
     "passport": "^0.7.0",
     "passport-apple": "^2.0.2",
