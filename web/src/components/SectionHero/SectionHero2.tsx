@@ -142,9 +142,9 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         )}
         key={index}
       >
-        <div className="mx-auto grid max-w-6xl items-center gap-6 px-8 py-14 sm:gap-8 sm:px-12 sm:py-16 lg:grid-cols-2 lg:px-20 lg:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-6 px-3 py-10 sm:gap-8 sm:px-8 sm:py-16 lg:grid-cols-2 lg:px-16 lg:py-20">
           {/* SOL: metin */}
-          <div className="relative flex max-w-xl flex-col items-start fade--animation__left">
+          <div className="relative flex max-w-xl flex-col items-start fade--animation__left px-3 sm:px-0">
             <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
               {item.subHeading}
             </span>
@@ -162,15 +162,15 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
             </ButtonPrimary>
           </div>
 
-          {/* SAĞ: kare görsel (screenshot'taki büyüklük) */}
+          {/* SAĞ: kare görsel — mobile'da viewport'a yakın, desktop'ta büyük */}
           <div className="relative">
             <Link
               href={item.btnHref || '#'}
-              className="relative mx-auto block aspect-square w-full max-w-[540px] overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[620px] lg:max-w-[680px]"
+              className="relative mx-auto block aspect-square w-full overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[640px] lg:max-w-[760px] xl:max-w-[820px]"
               aria-label={item.heading}
             >
               <Image
-                sizes="(max-width: 640px) 540px, (max-width: 1024px) 620px, 680px"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 640px, 820px"
                 className="object-cover"
                 src={item.imageUrl}
                 alt={item.heading}
