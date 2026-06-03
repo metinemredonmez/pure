@@ -176,6 +176,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
                 alt={item.heading}
                 fill
                 priority
+                unoptimized
               />
             </Link>
           </div>
