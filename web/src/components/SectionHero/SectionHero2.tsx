@@ -142,7 +142,7 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
         )}
         key={index}
       >
-        <div className="mx-auto grid max-w-7xl items-center gap-6 px-3 py-10 sm:gap-8 sm:px-8 sm:py-16 lg:grid-cols-2 lg:px-16 lg:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-6 px-3 py-10 sm:gap-8 sm:px-8 sm:py-16 lg:grid-cols-[0.85fr_1.15fr] lg:px-12 lg:py-20">
           {/* SOL: metin */}
           <div className="relative flex max-w-xl flex-col items-start fade--animation__left px-3 sm:px-0">
             <span className="block text-xs font-medium uppercase tracking-widest text-neutral-500 fade--animation__subheading sm:text-sm">
@@ -162,15 +162,15 @@ const SectionHero2: FC<Props> = ({ className = '', slides }) => {
             </ButtonPrimary>
           </div>
 
-          {/* SAĞ: görsel — dikey oran (4:5), yukarı-aşağı daha uzun + geniş */}
+          {/* SAĞ: görsel — geniş kolon + büyük, dikey oran (4:5) */}
           <div className="relative">
             <Link
               href={item.btnHref || '#'}
-              className="relative mx-auto block aspect-[4/5] w-full overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[600px] lg:max-w-[720px] xl:max-w-[800px]"
+              className="relative mx-auto block aspect-[4/5] w-full overflow-hidden rounded-2xl fade--animation__image select-none shadow-md transition hover:opacity-95 sm:max-w-[680px] lg:max-w-[900px] xl:max-w-[1040px]"
               aria-label={item.heading}
             >
               <Image
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 600px, 800px"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 680px, 1040px"
                 className="object-cover"
                 src={item.imageUrl}
                 alt={item.heading}
