@@ -591,8 +591,33 @@ export class UserService {
       throw new ForbiddenException('Admin kullanıcıları silemezsiniz');
     }
 
-    await this.prisma.user.delete({ where: { id: userId } });
+    // Soft-delete: sipariş/finansal kayıtları koru, kullanıcıyı pasifleştir ve
+    // kişisel verilerini anonimleştir. Hard-delete, Order/Subscription gibi
+    // ilişkiler yüzünden foreign-key hatası verir ve satış geçmişini yok eder.
+    await this.prisma.$transaction([
+      this.prisma.refreshToken.deleteMany({ where: { userId } }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          isActive: false,
+          email: `deleted+${userId}@deleted.local`,
+          passwordHash: null,
+          firstName: 'Silinmiş',
+          lastName: 'Kullanıcı',
+          phone: null,
+          address: null,
+          city: null,
+          district: null,
+          postalCode: null,
+          avatar: null,
+          providerId: null,
+          appleId: null,
+          emailVerified: false,
+          marketingConsent: false,
+        },
+      }),
+    ]);
 
-    return { success: true, message: 'Kullanıcı silindi' };
+    return { success: true, message: 'Kullanıcı silindi (pasifleştirildi ve anonimleştirildi)' };
   }
 }
