@@ -37,8 +37,10 @@ export default function CheckoutContent() {
   const baseShipping = subtotal >= freeShippingThreshold ? 0 : shippingFee
   const shippingCost = coupon?.freeShipping ? 0 : baseShipping
   const discount = coupon?.discount || 0
-  const kdvAmount = Math.max(subtotal - discount, 0) * kdvRate
-  const total = Math.max(subtotal - discount, 0) + shippingCost + kdvAmount
+  // Fiyatlar KDV DAHİL: KDV üstüne eklenmez, fiyatın içindeki KDV tutarı gösterilir.
+  const net = Math.max(subtotal - discount, 0)
+  const kdvAmount = net - net / (1 + kdvRate)
+  const total = net + shippingCost
 
   const handleApplyCoupon = async () => {
     const code = couponInput.trim().toUpperCase()
@@ -212,7 +214,7 @@ export default function CheckoutContent() {
               </span>
             </div>
             <div className="flex justify-between py-2.5">
-              <span>KDV (%{(kdvRate * 100).toFixed(0)})</span>
+              <span>KDV (%{(kdvRate * 100).toFixed(0)} dahil)</span>
               <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                 ₺{kdvAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>

@@ -32,8 +32,9 @@ export default function CartPageContent() {
   }, [])
 
   const shippingCost = subtotal >= freeShippingThreshold ? 0 : shippingFee
-  const kdvAmount = subtotal * kdvRate
-  const total = subtotal + shippingCost + kdvAmount
+  // Fiyatlar KDV DAHİL: KDV üstüne eklenmez, fiyatın içindeki KDV tutarı gösterilir.
+  const kdvAmount = subtotal - subtotal / (1 + kdvRate)
+  const total = subtotal + shippingCost
 
   if (!isHydrated) {
     return (
@@ -178,7 +179,7 @@ export default function CartPageContent() {
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>KDV (%{(kdvRate * 100).toFixed(0)})</span>
+                  <span>KDV (%{(kdvRate * 100).toFixed(0)} dahil)</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ₺{kdvAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>

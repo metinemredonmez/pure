@@ -187,12 +187,13 @@ export class OrderService {
         const settingsMap: Record<string, any> = {};
         siteSettings.forEach((s) => { settingsMap[s.key] = s.value; });
 
-        // Admin'de taxRate "% cinsinden" (örn 1, 10, 20). 0-100 arası beklenir; >1 ise /100.
+        // Admin'de taxRate "% cinsinden" tutulur (örn 1, 10, 20). >=1 ise /100.
+        // Not: "1" değeri %1 demektir (%100 DEĞİL) — eski >1 kontrolü 1'i %100 sanıp toplamı ikiye katlıyordu.
         let taxRate = this.config.get<number>('order.taxRate', 0.2);
         if (settingsMap.taxRate != null) {
           const n = Number(settingsMap.taxRate);
           if (Number.isFinite(n) && n >= 0) {
-            taxRate = n > 1 ? n / 100 : n;
+            taxRate = n >= 1 ? n / 100 : n;
           }
         }
         let freeShippingThreshold = this.config.get<number>('order.freeShippingThreshold', 500);
@@ -208,8 +209,11 @@ export class OrderService {
 
         const shippingCost =
           subtotal >= freeShippingThreshold ? 0 : defaultShippingCost;
-        const tax = (subtotal - discount) * taxRate;
-        const total = subtotal - discount + shippingCost + tax;
+        // Fiyatlar KDV DAHİL: KDV üstüne EKLENMEZ. `tax` sadece fiyatın içindeki
+        // KDV tutarı (bilgi amaçlı). Toplam = ara toplam - indirim + kargo.
+        const netAfterDiscount = Math.max(subtotal - discount, 0);
+        const tax = netAfterDiscount - netAfterDiscount / (1 + taxRate);
+        const total = netAfterDiscount + shippingCost;
 
         // Generate unique order number using timestamp + random suffix (race-safe)
         const timestamp = Date.now().toString(36).toUpperCase();
