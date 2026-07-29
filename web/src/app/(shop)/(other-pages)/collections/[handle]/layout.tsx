@@ -101,24 +101,18 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
         {/* Arka plan görseli — şeffaf (soluk), yazı okunur kalır */}
         <Image
-          src="/hero/cms-default-bg.jpg"
+          src="/hero/subscription-bg.jpg"
           alt=""
           fill
           priority
           sizes="100vw"
           className="pointer-events-none object-cover object-center"
         />
-        {/* Sadece alt kenarda beyaza yumuşak geçiş (altındaki ürün alanına kaynasın) */}
+        {/* Koyu görselin üstüne yazı okunsun diye koyu örtü (beyaz geçiş kaldırıldı) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-neutral-900"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/55"
         />
-        {/* Boş arka planı dolduran yumuşak dekoratif şekiller */}
-        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-12 -left-10 h-48 w-48 rounded-full bg-amber-300/25 blur-3xl" />
-          <div className="absolute -bottom-16 right-0 h-56 w-56 rounded-full bg-orange-300/25 blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-200/20 blur-3xl" />
-        </div>
         <div className="relative container py-8 text-center lg:py-12">
           {/* Turkce locale'de CSS uppercase "i" -> "İ" (noktalı) yapar.
               Olentia İngilizce marka adı, OLENTIA (noktasız) görünmeli.
@@ -126,14 +120,14 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
           <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
             PURE OLENTIA KOLEKSIYON
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 [text-shadow:0_2px_16px_rgba(255,255,255,0.85)] sm:text-5xl dark:text-white dark:[text-shadow:0_2px_16px_rgba(0,0,0,0.6)]">
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-white [text-shadow:0_2px_14px_rgba(0,0,0,0.6)] sm:text-5xl">
             {displayTitle}
           </h1>
           {description && (
-            <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">{description}</p>
+            <p className="mx-auto mt-4 max-w-xl text-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">{description}</p>
           )}
           {!description && (
-            <p className="mx-auto mt-4 max-w-xl text-neutral-600 dark:text-neutral-400">
+            <p className="mx-auto mt-4 max-w-xl text-white/90 [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
               Pure Olentia kahve koleksiyonunu keşfedin. Taze kavrulmuş specialty kahveler.
             </p>
           )}
