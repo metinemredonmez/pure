@@ -82,21 +82,36 @@ export function adaptProduct(product: any, index: number = 0) {
       ]
     : []
 
-  // Variants → Gramaj options (unique weights, ascending)
-  // Only show gramaj selector if product actually has variants with different weights.
+  // Gramaj seçeneği SADECE Filtre Kahve ve Espresso kategorilerinde gösterilir.
+  // Türk Kahvesi ve diğer kategorilerde gramaj seçici çıkmaz (sabit paket satılır).
+  const GRAMAJ_CATEGORIES = ['filtre-kahve', 'espresso']
+  const categorySlug = product.category?.slug || ''
+
+  // Variants → Gramaj options (unique weights, ascending) + her gramajın fiyatı.
   // Bundle products (e.g. "12'li Kutu") have no weight variants and shouldn't show selector.
   const gramajOptions = (() => {
+    if (!GRAMAJ_CATEGORIES.includes(categorySlug)) return []
     const variants = product.variants as any[] | undefined
     if (!variants?.length) return []
-    const weights = [...new Set(variants.map((v) => v.weight).filter(Boolean))].sort(
-      (a: any, b: any) => Number(a) - Number(b)
-    )
+    const byWeight = new Map<number, any>()
+    for (const v of variants) {
+      const w = Number(v.weight)
+      if (w && !byWeight.has(w)) byWeight.set(w, v)
+    }
+    const weights = [...byWeight.keys()].sort((a, b) => a - b)
     if (weights.length === 0) return []
     if (weights.length === 1 && variants.length === 1) return [] // single variant = no choice
-    return weights.map((w: any) => ({
-      name: Number(w) >= 1000 ? `${Number(w) / 1000}kg` : `${w}g`,
-      swatch: null,
-    }))
+    return weights.map((w) => {
+      const v = byWeight.get(w)
+      return {
+        name: w >= 1000 ? `${w / 1000}kg` : `${w}g`,
+        swatch: null,
+        // Fiyatlı gramaj için ek alanlar (buy-box tarafından kullanılır)
+        priceAmount: parseFloat(v?.price) || 0,
+        variantId: v?.id as string | undefined,
+        weight: w,
+      }
+    })
   })()
 
   const roastName =
