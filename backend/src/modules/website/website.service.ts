@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
@@ -92,6 +92,73 @@ export class WebsiteService {
   async deleteContactMessage(id: string) {
     await this.prisma.contactMessage.delete({ where: { id } });
     return { success: true };
+  }
+
+  // ══════════════════════════════════════
+  // NEWSLETTER (Bülten aboneliği)
+  // ══════════════════════════════════════
+
+  async subscribeNewsletter(data: { email: string; name?: string; source?: string }) {
+    const email = (data.email || '').trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      throw new BadRequestException('Geçerli bir e-posta adresi girin');
+    }
+    await this.prisma.newsletterSubscriber.upsert({
+      where: { email },
+      update: { status: 'active', unsubscribedAt: null, ...(data.name ? { name: data.name } : {}) },
+      create: { email, name: data.name, source: data.source || 'web-footer' },
+    });
+    return { success: true, message: 'Bülten aboneliğiniz oluşturuldu.' };
+  }
+
+  async findNewsletterSubscribers(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }) {
+    const take = params?.limit || 50;
+    const skip = params?.page ? (params.page - 1) * take : 0;
+    const where: any = {};
+    if (params?.status && params.status !== 'all') where.status = params.status;
+    if (params?.search) where.email = { contains: params.search, mode: 'insensitive' };
+
+    const [data, total, activeCount] = await Promise.all([
+      this.prisma.newsletterSubscriber.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+      }),
+      this.prisma.newsletterSubscriber.count({ where }),
+      this.prisma.newsletterSubscriber.count({ where: { status: 'active' } }),
+    ]);
+
+    return { data, total, activeCount, page: params?.page || 1, limit: take };
+  }
+
+  async addNewsletterSubscriber(data: { email: string; name?: string }) {
+    return this.subscribeNewsletter({ ...data, source: 'admin-manual' });
+  }
+
+  async deleteNewsletterSubscriber(id: string) {
+    await this.prisma.newsletterSubscriber.delete({ where: { id } });
+    return { success: true };
+  }
+
+  /** Tüm aboneleri CSV metni olarak döndür (dışa aktarım). */
+  async exportNewsletterSubscribers() {
+    const rows = await this.prisma.newsletterSubscriber.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+    const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = 'email,name,status,source,createdAt';
+    const lines = rows.map((r) =>
+      [r.email, r.name || '', r.status, r.source || '', r.createdAt.toISOString()]
+        .map(esc)
+        .join(','),
+    );
+    return [header, ...lines].join('\n');
   }
 
   // ── Hero Banners ──

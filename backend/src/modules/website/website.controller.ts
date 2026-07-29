@@ -28,6 +28,7 @@ import {
   UpdatePageDto,
   UpdateSiteSettingsDto,
   CreateContactMessageDto,
+  SubscribeNewsletterDto,
 } from './dto/website.dto';
 
 @ApiTags('Website')
@@ -102,6 +103,57 @@ export class WebsiteController {
   @ApiOperation({ summary: 'Submit contact form message' })
   submitContactMessage(@Body() dto: CreateContactMessageDto) {
     return this.websiteService.submitContactMessage(dto);
+  }
+
+  // ── Newsletter (Bülten) ──
+
+  @Public()
+  @Post('public/newsletter')
+  @ApiOperation({ summary: 'Subscribe to newsletter (public)' })
+  subscribeNewsletter(@Body() dto: SubscribeNewsletterDto) {
+    return this.websiteService.subscribeNewsletter(dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/newsletter')
+  @ApiOperation({ summary: 'List newsletter subscribers (admin)' })
+  getNewsletterSubscribers(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+  ) {
+    return this.websiteService.findNewsletterSubscribers({
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+      search,
+      status,
+    });
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Get('admin/newsletter/export')
+  @ApiOperation({ summary: 'Export newsletter subscribers as CSV (admin)' })
+  exportNewsletterSubscribers() {
+    return this.websiteService.exportNewsletterSubscribers();
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Post('admin/newsletter')
+  @ApiOperation({ summary: 'Add newsletter subscriber manually (admin)' })
+  addNewsletterSubscriber(@Body() dto: SubscribeNewsletterDto) {
+    return this.websiteService.addNewsletterSubscriber(dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/newsletter/:id')
+  @ApiOperation({ summary: 'Delete newsletter subscriber (admin)' })
+  deleteNewsletterSubscriber(@Param('id') id: string) {
+    return this.websiteService.deleteNewsletterSubscriber(id);
   }
 
   // ══════════════════════════════════════

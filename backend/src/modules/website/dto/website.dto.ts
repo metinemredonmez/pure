@@ -172,3 +172,9 @@ export class CreateContactMessageDto {
   @ApiPropertyOptional() @IsOptional() @IsString() phone?: string;
   @ApiPropertyOptional() @IsOptional() @IsString() subject?: string;
 }
+
+export class SubscribeNewsletterDto {
+  @ApiProperty({ example: 'ahmet@email.com' }) @IsString() email: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() name?: string;
+  @ApiPropertyOptional({ description: 'web-footer | admin-manual | checkout' }) @IsOptional() @IsString() source?: string;
+}

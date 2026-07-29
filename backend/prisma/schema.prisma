@@ -1064,6 +1064,20 @@ model SystemSetting {
   @@map("system_settings")
 }
 
+model NewsletterSubscriber {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  status         String    @default("active") // active | unsubscribed
+  source         String?   // web-footer | admin-manual | checkout
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  unsubscribedAt DateTime?
+
+  @@index([status])
+  @@map("newsletter_subscribers")
+}
+
 model UploadedFile {
   id           String   @id @default(cuid())
   filename     String

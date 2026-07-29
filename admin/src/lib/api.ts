@@ -798,6 +798,12 @@ export const websiteApi = {
   getContactMessage: async (id: string) => { const { data } = await api.get(`/admin/contact-messages/${id}`); return data; },
   deleteContactMessage: async (id: string) => { const { data } = await api.delete(`/admin/contact-messages/${id}`); return data; },
 
+  // Newsletter (Bülten)
+  getNewsletterSubscribers: async (params?: { page?: number; limit?: number; search?: string; status?: string }) => { const { data } = await api.get('/admin/newsletter', { params }); return data; },
+  addNewsletterSubscriber: async (payload: { email: string; name?: string }) => { const { data } = await api.post('/admin/newsletter', payload); return data; },
+  deleteNewsletterSubscriber: async (id: string) => { const { data } = await api.delete(`/admin/newsletter/${id}`); return data; },
+  exportNewsletterSubscribers: async () => { const { data } = await api.get('/admin/newsletter/export'); return data as string; },
+
   // Site Settings
   getSettings: async () => { const { data } = await api.get('/admin/site-settings'); return data; },
   updateSetting: async (key: string, value: unknown) => { const { data } = await api.put('/admin/site-settings', { key, value }); return data; },

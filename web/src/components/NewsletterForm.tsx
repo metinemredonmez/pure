@@ -24,15 +24,10 @@ export default function NewsletterForm() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/public/contact-message`, {
+      const res = await fetch(`${API_URL}/public/newsletter`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: 'Bülten Abonesi',
-          email,
-          subject: '[Bülten Aboneliği]',
-          message: `${email} bülten aboneliği talep etti.`,
-        }),
+        body: JSON.stringify({ email, source: 'web-footer' }),
       })
 
       if (res.ok) {

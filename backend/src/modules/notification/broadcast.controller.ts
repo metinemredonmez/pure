@@ -7,7 +7,7 @@ import { BroadcastService } from './broadcast.service';
 import type { BroadcastAudience, BroadcastChannel } from './broadcast.service';
 
 class SendBroadcastDto {
-  @IsIn(['ALL', 'CUSTOMERS', 'SUBSCRIBERS', 'MANUAL'])
+  @IsIn(['ALL', 'CUSTOMERS', 'SUBSCRIBERS', 'NEWSLETTER', 'MANUAL'])
   audience!: BroadcastAudience;
 
   @IsIn(['EMAIL', 'PUSH'])
@@ -26,7 +26,7 @@ class SendBroadcastDto {
 }
 
 class PreviewDto {
-  @IsIn(['ALL', 'CUSTOMERS', 'SUBSCRIBERS', 'MANUAL'])
+  @IsIn(['ALL', 'CUSTOMERS', 'SUBSCRIBERS', 'NEWSLETTER', 'MANUAL'])
   audience!: BroadcastAudience;
 
   @IsOptional()

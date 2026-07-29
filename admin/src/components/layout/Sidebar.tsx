@@ -18,6 +18,7 @@ import {
   IntegrationInstructionsOutlined as IntegrationIcon,
   CalendarMonthOutlined as CalendarIcon,
   LanguageOutlined as WebsiteIcon,
+  MarkEmailReadOutlined as NewsletterIcon,
 } from '@mui/icons-material';
 import { useAuth } from '@/contexts/AuthContext';
 import { olentiaColors, olentiaLightColors } from '@/lib/theme';
@@ -69,6 +70,7 @@ const menuItems: MenuItem[] = [
   { title: 'Partnerler', path: '/partners', icon: <PartnerIcon sx={{ fontSize: 20 }} /> },
   { title: 'Bildirimler', path: '/notifications', icon: <NotifIcon sx={{ fontSize: 20 }} /> },
   { title: 'Toplu Mesaj', path: '/broadcasts', icon: <NotifIcon sx={{ fontSize: 20 }} /> },
+  { title: 'Bülten', path: '/newsletter', icon: <NewsletterIcon sx={{ fontSize: 20 }} /> },
   {
     title: 'Raporlar', icon: <ReportsIcon sx={{ fontSize: 20 }} />,
     children: [

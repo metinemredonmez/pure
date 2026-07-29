@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from './notification.service';
 
-export type BroadcastAudience = 'ALL' | 'CUSTOMERS' | 'SUBSCRIBERS' | 'MANUAL';
+export type BroadcastAudience = 'ALL' | 'CUSTOMERS' | 'SUBSCRIBERS' | 'NEWSLETTER' | 'MANUAL';
 export type BroadcastChannel = 'EMAIL' | 'PUSH';
 
 export interface BroadcastPayload {
@@ -85,6 +85,14 @@ export class BroadcastService {
         select: { id: true, email: true },
       });
       return users.filter((u) => !!u.email).map((u) => ({ email: u.email, id: u.id }));
+    }
+
+    if (payload.audience === 'NEWSLETTER') {
+      const subs = await this.prisma.newsletterSubscriber.findMany({
+        where: { status: 'active' },
+        select: { id: true, email: true },
+      });
+      return subs.filter((s) => !!s.email).map((s) => ({ email: s.email, id: s.id }));
     }
 
     // ALL
