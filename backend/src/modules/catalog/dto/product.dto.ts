@@ -145,3 +145,45 @@ export class CreateVariantDto {
   @IsInt()
   stock?: number;
 }
+
+// Admin varyant editörü için — id varsa güncelle, yoksa ekle. sku/name yoksa üretilir.
+export class VariantInputDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  sku?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ description: 'GrindType enum: WHOLE_BEAN|FRENCH_PRESS|V60|FILTER|ESPRESSO|TURKISH' })
+  @IsOptional()
+  @IsString()
+  grindType?: string;
+
+  @ApiProperty({ example: 250 })
+  @IsInt()
+  weight: number;
+
+  @ApiProperty({ example: 149.9 })
+  @IsNumber()
+  price: number;
+
+  @ApiPropertyOptional({ default: 0 })
+  @IsOptional()
+  @IsInt()
+  stock?: number;
+}
+
+export class SaveVariantsDto {
+  @ApiProperty({ type: [VariantInputDto] })
+  @IsArray()
+  variants: VariantInputDto[];
+}

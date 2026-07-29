@@ -14,6 +14,7 @@ import {
   CreateProductDto,
   UpdateProductDto,
   CreateVariantDto,
+  SaveVariantsDto,
 } from './dto/product.dto';
 import { CreateCategoryDto, CreateCollectionDto } from './dto/catalog.dto';
 import { PaginationDto } from '../../common/pipes/pagination.pipe';
@@ -104,6 +105,14 @@ export class CatalogController {
   @ApiOperation({ summary: 'Add product variant (admin)' })
   addVariant(@Param('id') id: string, @Body() dto: CreateVariantDto) {
     return this.catalogService.addVariant(id, dto);
+  }
+
+  @ApiBearerAuth('access-token')
+  @Roles(UserRole.ADMIN)
+  @Put('admin/products/:id/variants')
+  @ApiOperation({ summary: 'Replace product variants — öğütme×gramaj×fiyat (admin)' })
+  saveVariants(@Param('id') id: string, @Body() dto: SaveVariantsDto) {
+    return this.catalogService.saveVariants(id, dto.variants);
   }
 
   @ApiBearerAuth('access-token')

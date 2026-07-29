@@ -220,6 +220,74 @@ export class CatalogService {
   }
 
   /**
+   * Admin varyant editörü: gelen listeye göre varyantları ekle/güncelle; listede
+   * olmayan mevcut varyantları SİLMEZ, isActive=false yapar (sipariş/sepet FK'sı
+   * korunur — OrderItem.variant Restrict). id varsa güncelle, yoksa oluştur.
+   */
+  async saveVariants(productId: string, variants: any[]) {
+    const product = await this.findById(productId);
+    const existing = await this.prisma.productVariant.findMany({
+      where: { productId },
+    });
+    const incomingIds = new Set(
+      (variants || []).filter((v) => v.id).map((v) => v.id),
+    );
+
+    const VALID_GRINDS = [
+      'WHOLE_BEAN', 'FRENCH_PRESS', 'V60', 'FILTER', 'ESPRESSO', 'TURKISH',
+    ];
+    const GRIND_LABELS: Record<string, string> = {
+      WHOLE_BEAN: 'Çekirdek', FRENCH_PRESS: 'French Press', V60: 'V60',
+      FILTER: 'Filtre', ESPRESSO: 'Espresso', TURKISH: 'Türk Kahvesi',
+    };
+    const normGrind = (g?: string) =>
+      g && VALID_GRINDS.includes(g) ? g : null;
+
+    await this.prisma.$transaction(async (tx) => {
+      // Listede olmayan mevcut varyantları pasifleştir (silme yok)
+      for (const ex of existing) {
+        if (!incomingIds.has(ex.id) && ex.isActive) {
+          await tx.productVariant.update({
+            where: { id: ex.id },
+            data: { isActive: false },
+          });
+        }
+      }
+      for (const v of variants || []) {
+        const grind = normGrind(v.grindType);
+        const gLabel = grind ? GRIND_LABELS[grind] : '';
+        const name =
+          (typeof v.name === 'string' && v.name.trim()) ||
+          `${v.weight}g${gLabel ? ' - ' + gLabel : ''}`;
+        const data: any = {
+          name,
+          grindType: grind,
+          weight: Number(v.weight),
+          price: Number(v.price),
+          stock: Number(v.stock) || 0,
+          isActive: true,
+        };
+        if (v.id) {
+          await tx.productVariant.update({ where: { id: v.id }, data });
+        } else {
+          const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+          const sku =
+            (typeof v.sku === 'string' && v.sku.trim()) ||
+            `${product.sku}-${v.weight}-${grind || 'STD'}-${rand}`;
+          await tx.productVariant.create({
+            data: { productId, sku, ...data },
+          });
+        }
+      }
+    });
+
+    return this.prisma.productVariant.findMany({
+      where: { productId, isActive: true },
+      orderBy: [{ weight: 'asc' }],
+    });
+  }
+
+  /**
    * Update stock with atomic increment/decrement
    * Use positive delta to add stock, negative to remove
    */
