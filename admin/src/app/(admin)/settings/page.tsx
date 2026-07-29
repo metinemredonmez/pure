@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { Save as SaveIcon, RestoreOutlined } from '@mui/icons-material';
 import { websiteApi } from '@/lib/api';
+import { NumberField } from '@/components/NumberField';
 import { olentiaColors } from '@/lib/theme';
 
 interface SiteSettings {
@@ -194,10 +195,10 @@ export default function SettingsPage() {
               <Typography variant="subtitle1" fontWeight={700} sx={{ mb: 2 }}>Ödeme & Kargo</Typography>
               <Stack spacing={2}>
                 <TextField fullWidth label="Para Birimi" value={settings.currency} size="small" disabled />
-                <TextField fullWidth type="number" label="KDV Oranı (%)" value={settings.taxRate} onChange={(e) => update('taxRate', Number(e.target.value))} size="small" />
-                <TextField fullWidth type="number" label="Ücretsiz Kargo Limiti (₺)" value={settings.freeShippingThreshold} onChange={(e) => update('freeShippingThreshold', Number(e.target.value))} size="small" />
-                <TextField fullWidth type="number" label="Kargo Ücreti (₺)" value={settings.shippingCost} onChange={(e) => update('shippingCost', Number(e.target.value))} size="small" />
-                <TextField fullWidth type="number" label="Düşük Stok Eşiği" value={settings.lowStockThreshold} onChange={(e) => update('lowStockThreshold', Number(e.target.value))} size="small" />
+                <NumberField fullWidth label="KDV Oranı (%)" value={settings.taxRate} onValueChange={(v) => update('taxRate', v)} size="small" />
+                <NumberField fullWidth label="Ücretsiz Kargo Limiti (₺)" value={settings.freeShippingThreshold} onValueChange={(v) => update('freeShippingThreshold', v)} size="small" />
+                <NumberField fullWidth label="Kargo Ücreti (₺)" value={settings.shippingCost} onValueChange={(v) => update('shippingCost', v)} size="small" />
+                <NumberField fullWidth label="Düşük Stok Eşiği" value={settings.lowStockThreshold} onValueChange={(v) => update('lowStockThreshold', v)} size="small" />
               </Stack>
             </CardContent>
           </Card>
