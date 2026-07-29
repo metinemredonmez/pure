@@ -54,9 +54,11 @@ export default function NewsletterPage() {
         limit: rowsPerPage,
         search: search || undefined,
       });
-      setRows(res.data || []);
-      setTotal(res.total || 0);
-      setActiveCount(res.activeCount ?? 0);
+      // API cevabı { success, data: { data:[...], total, activeCount }, timestamp } zarfında gelir.
+      const result = (res?.data ?? res) as { data?: Subscriber[]; total?: number; activeCount?: number };
+      setRows(Array.isArray(result?.data) ? result.data : []);
+      setTotal(result?.total || 0);
+      setActiveCount(result?.activeCount ?? 0);
     } catch {
       showToast('Aboneler yüklenemedi', 'error');
     } finally {
@@ -104,7 +106,8 @@ export default function NewsletterPage() {
 
   const handleExport = async () => {
     try {
-      const csv = await websiteApi.exportNewsletterSubscribers();
+      const raw = await websiteApi.exportNewsletterSubscribers();
+      const csv = typeof raw === 'string' ? raw : ((raw as { data?: string })?.data ?? '');
       const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
