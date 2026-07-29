@@ -18,13 +18,14 @@ import {
 import PageHeader from '@/components/common/PageHeader';
 import { api } from '@/lib/api';
 
-type Audience = 'ALL' | 'CUSTOMERS' | 'SUBSCRIBERS' | 'MANUAL';
+type Audience = 'ALL' | 'CUSTOMERS' | 'SUBSCRIBERS' | 'NEWSLETTER' | 'MANUAL';
 type Channel = 'EMAIL' | 'PUSH';
 
 const AUDIENCE_LABELS: Record<Audience, string> = {
   ALL: 'Tüm Kullanıcılar',
   CUSTOMERS: 'Müşteriler (sipariş vermiş)',
   SUBSCRIBERS: 'Aboneler (aktif abonelik)',
+  NEWSLETTER: 'Bülten Aboneleri',
   MANUAL: 'Manuel Liste',
 };
 
