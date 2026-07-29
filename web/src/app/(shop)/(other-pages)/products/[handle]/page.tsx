@@ -12,6 +12,7 @@ import Prices from '@/components/Prices'
 import ProductColorOptions from '@/components/ProductForm/ProductColorOptions'
 import ProductForm from '@/components/ProductForm/ProductForm'
 import ProductSizeOptions from '@/components/ProductForm/ProductSizeOptions'
+import ProductBuyBox from '@/components/ProductForm/ProductBuyBox'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
 import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data'
@@ -141,8 +142,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
               </p>
             )}
             <div className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2.5 sm:gap-x-6">
-              <Prices contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold" price={price || 0} />
-              <div className="hidden h-7 border-l border-neutral-300 sm:block dark:border-neutral-700"></div>
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {reviewNumber > 0 && (
                   <>
@@ -178,31 +177,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
             )}
           </div>
 
-          <ProductForm product={product}>
-            <fieldset className="flex flex-col gap-y-10">
-              <div className="flex flex-col gap-y-8">
-                <ProductColorOptions options={options} defaultColor={colorSelected} />
-                <ProductSizeOptions options={options} defaultSize={sizeSelected} />
-              </div>
-
-              <div className="flex gap-x-3.5">
-                <div className="flex items-center justify-center rounded-full bg-neutral-100/70 px-2 py-3 sm:p-3.5 dark:bg-neutral-800/70">
-                  <NcInputNumber name="quantity" defaultValue={1} />
-                </div>
-
-                <ButtonPrimary className="flex-1" type="submit">
-                  <HugeiconsIcon
-                    icon={ShoppingBag03Icon}
-                    size={20}
-                    color="currentColor"
-                    className="hidden sm:block"
-                    strokeWidth={1.5}
-                  />
-                  <span className="text-base/6 font-normal sm:ml-2.5">Sepete Ekle</span>
-                </ButtonPrimary>
-              </div>
-            </fieldset>
-          </ProductForm>
+          <ProductBuyBox product={product} />
 
           <Divider />
 
