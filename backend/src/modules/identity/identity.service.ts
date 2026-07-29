@@ -54,8 +54,50 @@ export class IdentityService {
       },
     });
 
+    // Kayıt bildirimleri: üyeye hoş geldin + admin'e yeni üye haberi.
+    // Kayıt akışını bloklamasın diye await edilmiyor; hatalar yutulur.
+    void this.sendRegistrationEmails(user).catch(() => undefined);
+
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     return { user: this.sanitizeUser(user), ...tokens };
+  }
+
+  /** Yeni kayıt sonrası bilgilendirme e-postaları (üye + admin). */
+  private async sendRegistrationEmails(user: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string | null;
+  }) {
+    const fullName = `${user.firstName} ${user.lastName}`.trim();
+
+    // 1) Üyeye hoş geldin
+    await this.notificationService.sendEmail(
+      user.email,
+      "Pure Olentia'ya Hoş Geldiniz ☕",
+      `<div style="font-family:Arial,sans-serif;line-height:1.6">
+        <h2>Hoş geldiniz, ${fullName}!</h2>
+        <p>Pure Olentia üyeliğiniz başarıyla oluşturuldu. Artık siparişlerinizi takip edebilir, abonelik ve sadakat avantajlarından yararlanabilirsiniz.</p>
+        <p>Keyifli alışverişler dileriz.</p>
+      </div>`,
+    );
+
+    // 2) Admin'e yeni üye bildirimi
+    const adminEmail = this.configService.get<string>('smtp.user');
+    if (adminEmail) {
+      await this.notificationService.sendEmail(
+        adminEmail,
+        `Yeni üye kaydı: ${fullName}`,
+        `<div style="font-family:Arial,sans-serif;line-height:1.6">
+          <h3>Yeni üye kaydı</h3>
+          <ul>
+            <li><b>Ad Soyad:</b> ${fullName}</li>
+            <li><b>E-posta:</b> ${user.email}</li>
+            ${user.phone ? `<li><b>Telefon:</b> ${user.phone}</li>` : ''}
+          </ul>
+        </div>`,
+      );
+    }
   }
 
   // ── Login (email + password + optional MFA) ──
