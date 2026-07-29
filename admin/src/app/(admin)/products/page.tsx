@@ -88,6 +88,10 @@ export default function ProductsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  // Varyantlar (öğütme × gramaj × fiyat) — admin editörü
+  const [variants, setVariants] = useState<
+    { id?: string; grindType: string; weight: number; price: number; stock: number }[]
+  >([]);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('createdAt');
@@ -159,6 +163,15 @@ export default function ProductsPage() {
         brewGuide: product.brewGuide || '',
         altitude: product.altitude || '', process: product.process || '', categoryId: product.category?.id || '',
       });
+      setVariants(
+        ((product.variants as any[]) || []).map((v) => ({
+          id: v.id,
+          grindType: v.grindType || '',
+          weight: Number(v.weight) || 0,
+          price: Number(v.price) || 0,
+          stock: Number(v.stock) || 0,
+        })),
+      );
     } else {
       setEditingProduct(null);
       setForm({
@@ -167,6 +180,7 @@ export default function ProductsPage() {
         isFeatured: false, origin: '', roastLevel: '', weight: 0,
         aromaProfile: '', brewGuide: '', altitude: '', process: '', categoryId: '',
       });
+      setVariants([]);
     }
     setDialogOpen(true);
   };
@@ -211,10 +225,25 @@ export default function ProductsPage() {
         isFeatured: form.isFeatured,
         images: form.imageUrls.map((url: string) => ({ url, alt: form.name })),
       };
+      let productId = editingProduct?.id as string | undefined;
       if (editingProduct) {
         await productsApi.updateProduct(editingProduct.id, payload);
       } else {
-        await productsApi.createProduct(payload);
+        const res: any = await productsApi.createProduct(payload);
+        productId = res?.data?.id || res?.id || res?.data?.data?.id;
+      }
+      // Varyantları (öğütme × gramaj × fiyat) kaydet — geçerli olanlar
+      if (productId) {
+        const cleanVariants = variants
+          .filter((v) => Number(v.weight) > 0 && Number(v.price) > 0)
+          .map((v) => ({
+            id: v.id,
+            grindType: v.grindType || undefined,
+            weight: Number(v.weight),
+            price: Number(v.price),
+            stock: Number(v.stock) || 0,
+          }));
+        await productsApi.saveVariants(productId, cleanVariants);
       }
       setDialogOpen(false);
       fetchProducts();
@@ -570,6 +599,69 @@ export default function ProductsPage() {
             <Grid size={{ xs: 6, md: 4 }}>
               <TextField fullWidth type="number" label="Stok" value={form.stock || ""} onChange={(e) => setForm({ ...form, stock: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0 }} />
             </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Divider sx={{ my: 1 }} />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
+                <Typography variant="subtitle2">Varyantlar (Öğütme × Gramaj × Fiyat)</Typography>
+                <Button
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={() => setVariants([...variants, { grindType: '', weight: 0, price: 0, stock: 0 }])}
+                >
+                  Varyant Ekle
+                </Button>
+              </Box>
+              <Typography variant="caption" color="text.secondary">
+                Boş bırakırsanız ürün tek fiyattan satılır. Sitede öğütme/gramaj seçilince fiyat bu varyantlara göre değişir.
+                Öğütmesi olan varyant ekleyince sitede &quot;Öğütme&quot; seçici çıkar.
+              </Typography>
+              <Stack spacing={1} sx={{ mt: 1.5 }}>
+                {variants.map((v, idx) => (
+                  <Stack key={idx} direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems={{ sm: 'center' }}>
+                    <FormControl size="small" sx={{ minWidth: 150, flex: 1 }}>
+                      <InputLabel>Öğütme</InputLabel>
+                      <Select
+                        value={v.grindType}
+                        label="Öğütme"
+                        onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, grindType: e.target.value } : x)))}
+                      >
+                        <MenuItem value="">Genel / Yok</MenuItem>
+                        <MenuItem value="WHOLE_BEAN">Çekirdek (öğütülmemiş)</MenuItem>
+                        <MenuItem value="FRENCH_PRESS">French Press</MenuItem>
+                        <MenuItem value="V60">V60</MenuItem>
+                        <MenuItem value="FILTER">Filtre</MenuItem>
+                        <MenuItem value="ESPRESSO">Espresso</MenuItem>
+                        <MenuItem value="TURKISH">Türk Kahvesi</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <TextField
+                      size="small" type="number" label="Gramaj (g)" sx={{ width: { xs: '100%', sm: 120 } }}
+                      value={v.weight || ''} inputProps={{ min: 0 }}
+                      onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, weight: e.target.value === '' ? 0 : Number(e.target.value) } : x)))}
+                    />
+                    <TextField
+                      size="small" type="number" label="Fiyat (₺)" sx={{ width: { xs: '100%', sm: 120 } }}
+                      value={v.price || ''} inputProps={{ min: 0, step: '0.01' }}
+                      onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, price: e.target.value === '' ? 0 : Number(e.target.value) } : x)))}
+                    />
+                    <TextField
+                      size="small" type="number" label="Stok" sx={{ width: { xs: '100%', sm: 100 } }}
+                      value={v.stock || ''} inputProps={{ min: 0 }}
+                      onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, stock: e.target.value === '' ? 0 : Number(e.target.value) } : x)))}
+                    />
+                    <IconButton size="small" color="error" onClick={() => setVariants(variants.filter((_, i) => i !== idx))}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
+                ))}
+                {variants.length === 0 && (
+                  <Typography variant="caption" color="text.secondary" sx={{ py: 0.5 }}>
+                    Henüz varyant yok. &quot;Varyant Ekle&quot; ile öğütme/gramaj/fiyat girin.
+                  </Typography>
+                )}
+              </Stack>
+            </Grid>
+
             <Grid size={{ xs: 12 }}>
               <Box>
                 <Typography variant="subtitle2" gutterBottom>Ürün Görselleri</Typography>

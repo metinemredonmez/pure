@@ -305,6 +305,10 @@ export const productsApi = {
     const { data } = await api.post(`/admin/products/${productId}/variants`, variant);
     return data;
   },
+  saveVariants: async (productId: string, variants: Record<string, unknown>[]) => {
+    const { data } = await api.put(`/admin/products/${productId}/variants`, { variants });
+    return data;
+  },
 };
 
 // Categories API
