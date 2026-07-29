@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Card, CardContent, CardHeader, Typography, Grid, Button, TextField, Stack,
   Divider, Accordion, AccordionSummary, AccordionDetails, Tabs, Tab,
@@ -428,14 +429,14 @@ export default function SubscriptionPlansPage() {
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             {discounts.map((d, idx) => (
-              <TextField
+              <NumberField
                 key={d.months}
-                fullWidth size="small" type="number"
+                fullWidth size="small"
                 label={`${d.months} Ay İndirimi (%)`}
                 value={d.percent}
-                onChange={(e) => {
+                onValueChange={(v) => {
                   const arr = [...discounts];
-                  arr[idx] = { ...arr[idx], percent: Number(e.target.value) || 0 };
+                  arr[idx] = { ...arr[idx], percent: v || 0 };
                   setDiscounts(arr);
                 }}
               />
@@ -484,21 +485,21 @@ export default function SubscriptionPlansPage() {
                           helperText="Ev Başlangıç / Düzenli / Mini Ofis" />
                       </Grid>
                       <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextField fullWidth size="small" type="number" label="Adet" value={pkg.count}
-                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'count', e.target.value)} />
+                        <NumberField fullWidth size="small" label="Adet" value={pkg.count}
+                          onValueChange={(v) => updatePackageMeta('turk', pkg.id, 'count', String(v))} />
                       </Grid>
                       <Grid size={{ xs: 6, sm: 2 }}>
-                        <TextField fullWidth size="small" type="number" label="Gramaj (g)" value={pkg.grams}
-                          onChange={(e) => updatePackageMeta('turk', pkg.id, 'grams', e.target.value)} />
+                        <NumberField fullWidth size="small" label="Gramaj (g)" value={pkg.grams}
+                          onValueChange={(v) => updatePackageMeta('turk', pkg.id, 'grams', String(v))} />
                       </Grid>
                       <Grid size={{ xs: 12 }}>
                         <Stack direction="row" alignItems="center" spacing={2}>
                           <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
                             Her gönderim toplamı: {pkg.count * pkg.grams} g
                           </Typography>
-                          <TextField size="small" type="number" label="1 Gönderim ₺" sx={{ width: 200 }}
+                          <NumberField size="small" label="1 Gönderim ₺" sx={{ width: 200 }}
                             value={config.turk.prices[pkg.id] ?? 0}
-                            onChange={(e) => updateTurkPrice(pkg.id, e.target.value)} />
+                            onValueChange={(v) => updateTurkPrice(pkg.id, String(v))} />
                         </Stack>
                       </Grid>
                     </Grid>
@@ -574,12 +575,12 @@ export default function SubscriptionPlansPage() {
                             onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'packageName', e.target.value)} />
                         </Grid>
                         <Grid size={{ xs: 6, sm: 2 }}>
-                          <TextField fullWidth size="small" type="number" label="Adet" value={pkg.count}
-                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'count', e.target.value)} />
+                          <NumberField fullWidth size="small" label="Adet" value={pkg.count}
+                            onValueChange={(v) => updatePackageMeta(matrixTab, pkg.id, 'count', String(v))} />
                         </Grid>
                         <Grid size={{ xs: 6, sm: 2 }}>
-                          <TextField fullWidth size="small" type="number" label="Gramaj (g)" value={pkg.grams}
-                            onChange={(e) => updatePackageMeta(matrixTab, pkg.id, 'grams', e.target.value)} />
+                          <NumberField fullWidth size="small" label="Gramaj (g)" value={pkg.grams}
+                            onValueChange={(v) => updatePackageMeta(matrixTab, pkg.id, 'grams', String(v))} />
                         </Grid>
                       </Grid>
                     </Box>
@@ -606,9 +607,9 @@ export default function SubscriptionPlansPage() {
                             {pkg.packageName} · Her gönderim: {pkg.count} × {pkg.grams}g = {pkg.count * pkg.grams}g
                           </Typography>
                         </Box>
-                        <TextField size="small" type="number" label="1 Gönderim ₺" sx={{ width: 200 }}
+                        <NumberField size="small" label="1 Gönderim ₺" sx={{ width: 200 }}
                           value={config[matrixTab].prices[series.id]?.[pkg.id] ?? 0}
-                          onChange={(e) => updateWithSeriesPrice(matrixTab, series.id, pkg.id, e.target.value)} />
+                          onValueChange={(v) => updateWithSeriesPrice(matrixTab, series.id, pkg.id, String(v))} />
                       </Stack>
                     ))}
                   </Stack>

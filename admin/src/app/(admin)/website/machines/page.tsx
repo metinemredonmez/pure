@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Chip, IconButton, TextField, Dialog, DialogTitle,
@@ -245,16 +246,16 @@ export default function MachinesPage() {
                 onChange={(e) => setForm({ ...form, capacity: e.target.value })} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField fullWidth label="Min Bardak/Gun" type="number" size="small" value={form.dailyCupMin}
-                onChange={(e) => setForm({ ...form, dailyCupMin: Number(e.target.value) })} />
+              <NumberField fullWidth label="Min Bardak/Gun" size="small" value={form.dailyCupMin}
+                onValueChange={(v) => setForm({ ...form, dailyCupMin: v })} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField fullWidth label="Max Bardak/Gun" type="number" size="small" value={form.dailyCupMax}
-                onChange={(e) => setForm({ ...form, dailyCupMax: Number(e.target.value) })} />
+              <NumberField fullWidth label="Max Bardak/Gun" size="small" value={form.dailyCupMax}
+                onValueChange={(v) => setForm({ ...form, dailyCupMax: v })} />
             </Grid>
             <Grid size={{ xs: 12, md: 3 }}>
-              <TextField fullWidth label="Icecek Cesidi" type="number" size="small" value={form.drinkCount}
-                onChange={(e) => setForm({ ...form, drinkCount: Number(e.target.value) })} />
+              <NumberField fullWidth label="Icecek Cesidi" size="small" value={form.drinkCount}
+                onValueChange={(v) => setForm({ ...form, drinkCount: v })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <TextField fullWidth label="Ozellikler (virgullu)" size="small" value={form.features}
@@ -281,16 +282,16 @@ export default function MachinesPage() {
                       onChange={(e) => updateModule(idx, 'name', e.target.value)} />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
-                    <TextField fullWidth label="Genislik (mm)" type="number" size="small" value={mod.width}
-                      onChange={(e) => updateModule(idx, 'width', Number(e.target.value))} />
+                    <NumberField fullWidth label="Genislik (mm)" size="small" value={mod.width}
+                      onValueChange={(v) => updateModule(idx, 'width', v)} />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
-                    <TextField fullWidth label="Yukseklik (mm)" type="number" size="small" value={mod.height}
-                      onChange={(e) => updateModule(idx, 'height', Number(e.target.value))} />
+                    <NumberField fullWidth label="Yukseklik (mm)" size="small" value={mod.height}
+                      onValueChange={(v) => updateModule(idx, 'height', v)} />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
-                    <TextField fullWidth label="Derinlik (mm)" type="number" size="small" value={mod.depth}
-                      onChange={(e) => updateModule(idx, 'depth', Number(e.target.value))} />
+                    <NumberField fullWidth label="Derinlik (mm)" size="small" value={mod.depth}
+                      onValueChange={(v) => updateModule(idx, 'depth', v)} />
                   </Grid>
                   <Grid size={{ xs: 2 }}>
                     <TextField fullWidth label="Varyant" size="small" value={mod.variant}

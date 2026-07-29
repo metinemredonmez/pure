@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, CardContent, Table, TableBody, TableCell, TableContainer,
   TableHead, TableRow, TablePagination, TableSortLabel, Chip, Select, MenuItem, FormControl,
@@ -333,14 +334,14 @@ export default function ShippingPage() {
                 </FormControl>
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField fullWidth size="small" type="number" label="Ucretsiz Kargo Esigi (TL)"
+                <NumberField fullWidth size="small" label="Ucretsiz Kargo Esigi (TL)"
                   value={settings.freeShippingThreshold}
-                  onChange={(e) => setSettings({ ...settings, freeShippingThreshold: Number(e.target.value) })} />
+                  onValueChange={(v) => setSettings({ ...settings, freeShippingThreshold: v })} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField fullWidth size="small" type="number" label="Maks. Agirlik (kg)"
+                <NumberField fullWidth size="small" label="Maks. Agirlik (kg)"
                   value={settings.maxWeight}
-                  onChange={(e) => setSettings({ ...settings, maxWeight: Number(e.target.value) })} />
+                  onValueChange={(v) => setSettings({ ...settings, maxWeight: v })} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth size="small">

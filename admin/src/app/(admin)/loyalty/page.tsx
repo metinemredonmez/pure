@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, CardContent, Grid, Table, TableBody, TableCell,
   TableContainer, TableHead, TableRow, Chip, Skeleton, Stack, Avatar,
@@ -477,12 +478,11 @@ export default function LoyaltyPage() {
             </Box>
 
             {/* Points Amount */}
-            <TextField
+            <NumberField
               fullWidth
-              type="number"
               label="Puan Miktari"
-              value={adjustPoints || ''}
-              onChange={(e) => setAdjustPoints(Math.abs(Number(e.target.value)))}
+              value={adjustPoints}
+              onValueChange={(v) => setAdjustPoints(Math.abs(v))}
               size="small"
               slotProps={{ input: { inputProps: { min: 1 } } }}
               helperText={adjustPoints > 0 ? (

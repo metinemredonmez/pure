@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, TablePagination, TableSortLabel, Chip, IconButton, TextField, InputAdornment, Select,
@@ -276,8 +277,8 @@ export default function PaymentsPage() {
         <DialogTitle><Typography variant="h6" fontWeight={700}>İade İşlemi</Typography></DialogTitle>
         <DialogContent>
           <Stack spacing={2} sx={{ mt: 1 }}>
-            <TextField fullWidth type="number" label="İade Tutarı (₺)" value={refundAmount}
-              onChange={(e) => setRefundAmount(Number(e.target.value))}
+            <NumberField fullWidth label="İade Tutarı (₺)" value={refundAmount}
+              onValueChange={(v) => setRefundAmount(v)}
               helperText={`Maksimum: ${formatCurrency(refundDialog?.amount || 0)}`} />
             <TextField fullWidth multiline rows={2} label="İade Sebebi" value={refundReason}
               onChange={(e) => setRefundReason(e.target.value)} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, CardContent, Grid, Chip, Skeleton, Button, Dialog,
   DialogTitle, DialogContent, DialogActions, TextField, IconButton, Divider,
@@ -234,14 +235,14 @@ export default function PricingPage() {
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               placeholder="orn: 10+ Adet Indirimi"
               helperText="Bos birakirsaniz otomatik olusturulur" />
-            <TextField fullWidth type="number" label="Minimum Adet" value={form.minQuantity} size="small"
-              onChange={(e) => setForm({ ...form, minQuantity: Number(e.target.value) })}
+            <NumberField fullWidth label="Minimum Adet" value={form.minQuantity} size="small"
+              onValueChange={(v) => setForm({ ...form, minQuantity: v })}
               helperText="Indirimin basladigi minimum urun adedi" />
-            <TextField fullWidth type="number" label="Maksimum Adet (0 = sinirsiz)" value={form.maxQuantity} size="small"
-              onChange={(e) => setForm({ ...form, maxQuantity: Number(e.target.value) })}
+            <NumberField fullWidth label="Maksimum Adet (0 = sinirsiz)" value={form.maxQuantity} size="small"
+              onValueChange={(v) => setForm({ ...form, maxQuantity: v })}
               helperText="0 birakirsaniz ust limit olmaz" />
-            <TextField fullWidth type="number" label="Indirim Yuzdesi (%)" value={form.discountPercent} size="small"
-              onChange={(e) => setForm({ ...form, discountPercent: Number(e.target.value) })}
+            <NumberField fullWidth label="Indirim Yuzdesi (%)" value={form.discountPercent} size="small"
+              onValueChange={(v) => setForm({ ...form, discountPercent: v })}
               helperText="Sepet toplamindan dusulecek yuzde" />
           </Stack>
         </DialogContent>

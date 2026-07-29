@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, Chip, IconButton, TextField, Dialog, DialogTitle,
@@ -440,8 +441,8 @@ export default function BannersPage() {
               </Button>
             </Grid>
             <Grid size={{ xs: 12 }}>
-              <TextField fullWidth label="Sıralama (küçük numara önce gösterilir)" type="number" size="small" value={form.sortOrder}
-                onChange={(e) => setForm({ ...form, sortOrder: Number(e.target.value) })} />
+              <NumberField fullWidth label="Sıralama (küçük numara önce gösterilir)" size="small" value={form.sortOrder}
+                onValueChange={(v) => setForm({ ...form, sortOrder: v })} />
             </Grid>
             <Grid size={{ xs: 12 }}>
               <FormControlLabel

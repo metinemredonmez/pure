@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback } from 'react';
+import { NumberField } from '@/components/NumberField';
 import { Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Chip, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Divider, Skeleton, Stack, Grid, Tooltip, FormControl, InputLabel, Select, MenuItem, Switch, FormControlLabel } from '@mui/material';
 import { Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon, LocalOffer as CouponIcon, Close as CloseIcon } from '@mui/icons-material';
 import { couponsApi } from '@/lib/api';
@@ -113,10 +114,10 @@ export default function CouponsPage() {
             <Grid size={{ xs: 8 }}><TextField fullWidth label="Kupon Kodu" value={form.code} onChange={(e) => setForm({...form, code: e.target.value.toUpperCase()})} /></Grid>
             <Grid size={{ xs: 4 }}><FormControl fullWidth><InputLabel>Tip</InputLabel><Select value={form.type} label="Tip" onChange={(e) => setForm({...form, type: e.target.value})}><MenuItem value="percentage">Yüzde</MenuItem><MenuItem value="fixed">Sabit Tutar</MenuItem><MenuItem value="free_shipping">Ücretsiz Kargo</MenuItem></Select></FormControl></Grid>
             <Grid size={{ xs: 12 }}><TextField fullWidth label="Açıklama" value={form.description} onChange={(e) => setForm({...form, description: e.target.value})} size="small" /></Grid>
-            <Grid size={{ xs: 6 }}><TextField fullWidth type="number" label={form.type === 'percentage' ? 'İndirim (%)' : 'İndirim (₺)'} value={form.value} onChange={(e) => setForm({...form, value: Number(e.target.value)})} /></Grid>
-            <Grid size={{ xs: 6 }}><TextField fullWidth type="number" label="Min. Sipariş (₺)" value={form.minOrderAmount} onChange={(e) => setForm({...form, minOrderAmount: Number(e.target.value)})} /></Grid>
-            <Grid size={{ xs: 6 }}><TextField fullWidth type="number" label="Maks. İndirim (₺)" value={form.maxDiscount} onChange={(e) => setForm({...form, maxDiscount: Number(e.target.value)})} /></Grid>
-            <Grid size={{ xs: 6 }}><TextField fullWidth type="number" label="Maks. Kullanım" value={form.maxUses} onChange={(e) => setForm({...form, maxUses: Number(e.target.value)})} /></Grid>
+            <Grid size={{ xs: 6 }}><NumberField fullWidth label={form.type === 'percentage' ? 'İndirim (%)' : 'İndirim (₺)'} value={form.value} onValueChange={(v) => setForm({...form, value: v})} /></Grid>
+            <Grid size={{ xs: 6 }}><NumberField fullWidth label="Min. Sipariş (₺)" value={form.minOrderAmount} onValueChange={(v) => setForm({...form, minOrderAmount: v})} /></Grid>
+            <Grid size={{ xs: 6 }}><NumberField fullWidth label="Maks. İndirim (₺)" value={form.maxDiscount} onValueChange={(v) => setForm({...form, maxDiscount: v})} /></Grid>
+            <Grid size={{ xs: 6 }}><NumberField fullWidth label="Maks. Kullanım" value={form.maxUses} onValueChange={(v) => setForm({...form, maxUses: v})} /></Grid>
             <Grid size={{ xs: 6 }}><TextField fullWidth type="date" label="Başlangıç" value={form.startsAt} onChange={(e) => setForm({...form, startsAt: e.target.value})} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
             <Grid size={{ xs: 6 }}><TextField fullWidth type="date" label="Bitiş" value={form.expiresAt} onChange={(e) => setForm({...form, expiresAt: e.target.value})} slotProps={{ inputLabel: { shrink: true } }} /></Grid>
             <Grid size={{ xs: 12 }}><FormControlLabel control={<Switch checked={form.isActive} onChange={(e) => setForm({...form, isActive: e.target.checked})} />} label="Aktif" /></Grid>
