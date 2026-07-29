@@ -106,11 +106,12 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
           fill
           priority
           sizes="100vw"
-          className="pointer-events-none object-cover object-center opacity-25 dark:opacity-15"
+          className="pointer-events-none object-cover object-center"
         />
+        {/* Sadece alt kenarda beyaza yumuşak geçiş (altındaki ürün alanına kaynasın) */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/70 via-white/55 to-white/80 dark:from-neutral-900/70 dark:via-neutral-900/55 dark:to-neutral-900/85"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white dark:to-neutral-900"
         />
         {/* Boş arka planı dolduran yumuşak dekoratif şekiller */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
@@ -125,7 +126,7 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
           <span className="inline-block rounded-full bg-white/70 px-4 py-1.5 text-xs font-medium tracking-wider text-primary-800 backdrop-blur-sm dark:bg-neutral-900/60 dark:text-primary-300">
             PURE OLENTIA KOLEKSIYON
           </span>
-          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 sm:text-5xl dark:text-white">
+          <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-bold text-neutral-900 [text-shadow:0_2px_16px_rgba(255,255,255,0.85)] sm:text-5xl dark:text-white dark:[text-shadow:0_2px_16px_rgba(0,0,0,0.6)]">
             {displayTitle}
           </h1>
           {description && (
