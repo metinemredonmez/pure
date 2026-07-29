@@ -98,7 +98,13 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
     <div>
       {/* Hero banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
-        <div className="container py-16 text-center lg:py-20">
+        {/* Boş arka planı dolduran yumuşak dekoratif şekiller */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="absolute -top-12 -left-10 h-48 w-48 rounded-full bg-amber-300/25 blur-3xl" />
+          <div className="absolute -bottom-16 right-0 h-56 w-56 rounded-full bg-orange-300/25 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary-200/20 blur-3xl" />
+        </div>
+        <div className="relative container py-8 text-center lg:py-12">
           {/* Turkce locale'de CSS uppercase "i" -> "İ" (noktalı) yapar.
               Olentia İngilizce marka adı, OLENTIA (noktasız) görünmeli.
               Çözüm: text-transform yerine doğrudan büyük harf yaz. */}
@@ -119,9 +125,9 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
         </div>
       </div>
 
-      <div className="container flex flex-col gap-y-20 py-12 sm:gap-y-20 lg:gap-y-28 lg:py-16">
+      <div className="container flex flex-col gap-y-16 py-6 sm:gap-y-16 lg:gap-y-24 lg:py-8">
         <div>
-          <div className="mt-8 lg:mt-12">{children}</div>
+          <div className="mt-2 lg:mt-4">{children}</div>
         </div>
 
         <Divider />

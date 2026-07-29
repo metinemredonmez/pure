@@ -105,6 +105,12 @@ export default async function Page({
 
       <Divider className="mt-8" />
 
+      {products.length > 0 && (
+        <p className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">
+          <span className="font-semibold text-neutral-800 dark:text-neutral-200">{products.length}</span> ürün listeleniyor
+        </p>
+      )}
+
       {products.length > 0 ? (
         <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((produc) => (
