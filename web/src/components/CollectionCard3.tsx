@@ -49,9 +49,10 @@ const CollectionCard3: FC<Props> = ({ className = '', collection, ctaLabel = 'He
           </div>
         )}
 
-        {/* Altta ortada: buton */}
+        {/* Altta ortada: buton (kendisi de linktir — z-10 ile üstte olduğu için
+            görünmez kart katmanı buraya ulaşamıyordu, artık buton doğrudan gidiyor) */}
         <div className="relative z-10">
-          <Button color="light" className="!py-2 !px-6 !text-sm [--btn-border:white]/0">
+          <Button href={linkHref} color="light" className="!py-2 !px-6 !text-sm [--btn-border:white]/0">
             {ctaLabel}
           </Button>
         </div>
