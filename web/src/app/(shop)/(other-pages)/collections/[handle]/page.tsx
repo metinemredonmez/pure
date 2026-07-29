@@ -1,6 +1,7 @@
 import { Divider } from '@/components/Divider'
 import { FilterSortByMenuListBox } from '@/components/FilterSortByMenu'
 import ProductCard from '@/components/ProductCard'
+import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
 import { getProducts } from '@/data/data'
 import { getApiProducts, getApiCategories } from '@/lib/api'
 import { adaptProduct } from '@/lib/adapters'
@@ -73,7 +74,19 @@ export default async function Page({
 
   return (
     <main>
-      <div className="flex flex-wrap items-center gap-2.5">
+      {/* Öne çıkanlar şeridi — sadece "Tümü" sayfasında, boşluğu doldurur */}
+      {handle === 'all' && products.length > 3 && (
+        <div className="mb-12">
+          <SectionSliderLargeProduct
+            heading="Öne Çıkanlar"
+            headingDim="Sizin için seçtiklerimiz"
+            products={products.slice(0, 8)}
+          />
+          <Divider className="mt-14" />
+        </div>
+      )}
+
+      <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2.5 border-b border-neutral-100 bg-white/85 py-3 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/85">
         {/* Kategoriler — admin'deki gerçek kategorilerle, aktif olan vurgulu */}
         <nav className="flex flex-wrap items-center gap-2">
           <a
@@ -102,8 +115,6 @@ export default async function Page({
         </nav>
         <FilterSortByMenuListBox className="ml-auto" />
       </div>
-
-      <Divider className="mt-8" />
 
       {products.length > 0 && (
         <p className="mt-6 text-sm text-neutral-500 dark:text-neutral-400">

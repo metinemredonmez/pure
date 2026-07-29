@@ -82,16 +82,16 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
 
   return (
     <>
-      <div className={`product-card relative flex flex-col bg-transparent ${className}`}>
+      <div className={`product-card group/card relative flex flex-col bg-transparent transition-all duration-300 hover:-translate-y-1 ${className}`}>
         <Link href={'/products/' + handle} className="absolute inset-0"></Link>
 
-        <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 dark:bg-neutral-300">
+        <div className="group relative z-1 shrink-0 overflow-hidden rounded-3xl bg-neutral-50 shadow-sm transition-shadow duration-300 group-hover/card:shadow-2xl dark:bg-neutral-300">
           <Link href={'/products/' + handle} className="block">
             {featuredImage?.src && (
               <NcImage
                 containerClassName="flex aspect-w-11 aspect-h-12 w-full h-0"
                 src={featuredImage}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover/card:scale-105"
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 40vw"
                 alt={handle}
@@ -105,7 +105,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
 
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
           <div>
-            <h2 className="nc-ProductCard__title text-base font-semibold transition-colors">{title}</h2>
+            <h2 className="nc-ProductCard__title text-base font-semibold transition-colors group-hover/card:text-primary-700 dark:group-hover/card:text-primary-400">{title}</h2>
           </div>
 
           <div className="flex items-end justify-between">
