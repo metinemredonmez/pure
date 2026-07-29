@@ -32,17 +32,37 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
   const title = (p.title as string) || 'Ürün'
   const basePrice = Number(p.price) || 0
 
+  const variants = (p.variants || []) as any[]
   const kavurmaValues = (p.options?.find((o: any) => o.name === 'Kavurma')?.optionValues || []) as any[]
+  const grindValues = (p.options?.find((o: any) => o.name === 'Öğütme')?.optionValues || []) as any[]
   const gramajValues = (p.options?.find((o: any) => o.name === 'Gramaj')?.optionValues || []) as GramajValue[]
 
   const [color, setColor] = useState<string>(kavurmaValues[0]?.name || '')
+  const [grind, setGrind] = useState<string>(grindValues[0]?.value || '')
   const [size, setSize] = useState<string>(gramajValues[0]?.name || '')
   const [quantity, setQuantity] = useState<number>(1)
 
   const activeGramaj = gramajValues.find((g) => g.name === size)
+  const selectedWeight = activeGramaj?.weight
+  // (öğütme + gramaj) kombinasyonuna göre doğru varyant → fiyatı ondan al
+  const activeVariant =
+    variants.find(
+      (v) =>
+        (!grind || v.grindType === grind) &&
+        (selectedWeight == null || Number(v.weight) === selectedWeight),
+    ) ||
+    (selectedWeight != null
+      ? variants.find((v) => Number(v.weight) === selectedWeight)
+      : undefined) ||
+    null
+  const variantPrice = activeVariant ? parseFloat(activeVariant.price) : 0
   const activePrice =
-    activeGramaj?.priceAmount && activeGramaj.priceAmount > 0 ? activeGramaj.priceAmount : basePrice
-  const activeVariantId = activeGramaj?.variantId
+    variantPrice > 0
+      ? variantPrice
+      : activeGramaj?.priceAmount && activeGramaj.priceAmount > 0
+        ? activeGramaj.priceAmount
+        : basePrice
+  const activeVariantId = activeVariant?.id || activeGramaj?.variantId
 
   const handleAdd = () => {
     addItem({
@@ -118,6 +138,36 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
         </Headless.Field>
       )}
 
+      {/* Öğütme */}
+      {grindValues.length > 0 && (
+        <Headless.Field>
+          <Headless.RadioGroup value={grind} onChange={setGrind} aria-label="Öğütme">
+            <Headless.Label className="block text-sm font-medium">Öğütme</Headless.Label>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {grindValues.map((g) => {
+                const isActive = g.value === grind
+                return (
+                  <Headless.Radio
+                    key={g.value}
+                    value={g.value}
+                    as="button"
+                    type="button"
+                    className={clsx(
+                      'rounded-full border px-4 py-2 text-sm font-medium transition',
+                      isActive
+                        ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300'
+                    )}
+                  >
+                    {g.name}
+                  </Headless.Radio>
+                )
+              })}
+            </div>
+          </Headless.RadioGroup>
+        </Headless.Field>
+      )}
+
       {/* Gramaj — fiyatlı */}
       {gramajValues.length > 0 && (
         <Headless.Field>
@@ -140,7 +190,9 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
                     )}
                   >
                     <span>{g.name}</span>
-                    {g.priceAmount ? <span className="text-xs opacity-80">{fmt(g.priceAmount)}</span> : null}
+                    {grindValues.length === 0 && g.priceAmount ? (
+                      <span className="text-xs opacity-80">{fmt(g.priceAmount)}</span>
+                    ) : null}
                   </Headless.Radio>
                 )
               })}

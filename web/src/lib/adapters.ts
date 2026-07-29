@@ -114,6 +114,18 @@ export function adaptProduct(product: any, index: number = 0) {
     })
   })()
 
+  // Öğütme (grind) seçenekleri — varyantlarda birden fazla farklı grindType varsa göster.
+  const GRIND_LABELS: Record<string, string> = {
+    WHOLE_BEAN: 'Çekirdek', FRENCH_PRESS: 'French Press', V60: 'V60',
+    FILTER: 'Filtre', ESPRESSO: 'Espresso', TURKISH: 'Türk Kahvesi',
+  }
+  const grindOptions = (() => {
+    const variants = (product.variants as any[]) || []
+    const grinds = [...new Set(variants.map((v) => v.grindType).filter(Boolean))] as string[]
+    if (grinds.length < 2) return [] // 0 veya 1 öğütme → seçime gerek yok
+    return grinds.map((g) => ({ name: GRIND_LABELS[g] || g, value: g, swatch: null }))
+  })()
+
   const roastName =
     roastLevel === 'LIGHT' ? 'Acik Kavurma' :
     roastLevel === 'DARK' ? 'Koyu Kavurma' :
@@ -135,10 +147,12 @@ export function adaptProduct(product: any, index: number = 0) {
     // bundle products (e.g. "12'li Kutu") won't show a gramaj selector.
     options: [
       ...(kavurmaOptions.length ? [{ name: 'Kavurma', optionValues: kavurmaOptions }] : []),
+      ...(grindOptions.length ? [{ name: 'Öğütme', optionValues: grindOptions }] : []),
       ...(gramajOptions.length ? [{ name: 'Gramaj', optionValues: gramajOptions }] : []),
     ],
     selectedOptions: [
       ...(kavurmaOptions.length ? [{ name: 'Kavurma', value: roastName }] : []),
+      ...(grindOptions.length ? [{ name: 'Öğütme', value: (grindOptions[0] as any).value }] : []),
       ...(gramajOptions.length ? [{ name: 'Gramaj', value: gramajOptions[0].name }] : []),
     ],
     // Extra coffee fields
