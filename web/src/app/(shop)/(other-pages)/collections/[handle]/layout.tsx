@@ -5,6 +5,7 @@ import { getCollectionByHandle, getProducts } from '@/data/data'
 import { getApiCategories, getApiCollections, getApiProducts } from '@/lib/api'
 import { adaptProduct } from '@/lib/adapters'
 import { Metadata } from 'next'
+import Image from 'next/image'
 import React from 'react'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
@@ -98,6 +99,19 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
     <div>
       {/* Hero banner */}
       <div className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-amber-50 to-orange-50 dark:from-primary-900/20 dark:via-amber-900/10 dark:to-orange-900/10">
+        {/* Arka plan görseli — şeffaf (soluk), yazı okunur kalır */}
+        <Image
+          src="/hero/cms-default-bg.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="pointer-events-none object-cover object-center opacity-25 dark:opacity-15"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/70 via-white/55 to-white/80 dark:from-neutral-900/70 dark:via-neutral-900/55 dark:to-neutral-900/85"
+        />
         {/* Boş arka planı dolduran yumuşak dekoratif şekiller */}
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute -top-12 -left-10 h-48 w-48 rounded-full bg-amber-300/25 blur-3xl" />
