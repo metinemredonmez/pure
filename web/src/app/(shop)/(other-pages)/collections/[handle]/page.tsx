@@ -73,31 +73,25 @@ export default async function Page({
   return (
     <main>
       <div className="sticky top-0 z-30 flex flex-wrap items-center gap-2.5 border-b border-neutral-100 bg-white/85 py-3 backdrop-blur-md dark:border-neutral-800 dark:bg-neutral-900/85">
-        {/* Kategoriler — admin'deki gerçek kategorilerle, aktif olan vurgulu */}
-        <nav className="flex flex-wrap items-center gap-2">
-          <a
-            href="/collections/all"
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              handle === 'all'
-                ? 'bg-primary-700 text-white'
-                : 'ring-1 ring-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:ring-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900'
-            }`}
-          >
-            Tümü
-          </a>
-          {categories.map((c) => (
-            <a
-              key={c.slug}
-              href={`/collections/${c.slug}`}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                handle === c.slug
-                  ? 'bg-primary-700 text-white'
-                  : 'ring-1 ring-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:ring-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900'
-              }`}
-            >
-              {c.name}
-            </a>
-          ))}
+        {/* Kategoriler — admin'deki gerçek kategoriler, aktif olan ince alt-çizgiyle */}
+        <nav className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          {[{ slug: 'all', name: 'Tümü' }, ...categories].map((c) => {
+            const active = handle === c.slug
+            const href = c.slug === 'all' ? '/collections/all' : `/collections/${c.slug}`
+            return (
+              <a
+                key={c.slug}
+                href={href}
+                className={`relative pb-1.5 text-sm font-medium transition-colors after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-full after:transition-all ${
+                  active
+                    ? 'text-primary-700 after:bg-primary-700 dark:text-primary-400 dark:after:bg-primary-400'
+                    : 'text-neutral-500 after:bg-transparent hover:text-neutral-900 hover:after:bg-neutral-300 dark:text-neutral-400 dark:hover:text-white'
+                }`}
+              >
+                {c.name}
+              </a>
+            )
+          })}
         </nav>
         <FilterSortByMenuListBox className="ml-auto" />
       </div>
@@ -110,8 +104,14 @@ export default async function Page({
 
       {products.length > 0 ? (
         <div className="mt-8 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:mt-10 lg:grid-cols-3 xl:grid-cols-4">
-          {products.map((produc) => (
-            <ProductCard data={produc} key={produc.id} />
+          {products.map((produc, i) => (
+            <div
+              key={produc.id}
+              className="nc-fade-in-up"
+              style={{ animationDelay: `${Math.min(i, 10) * 55}ms` }}
+            >
+              <ProductCard data={produc} />
+            </div>
           ))}
         </div>
       ) : (

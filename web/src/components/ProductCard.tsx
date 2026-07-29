@@ -22,6 +22,20 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
   const { title, price, status, rating, options, handle, selectedOptions, reviewNumber, images, featuredImage } = data
   const color = selectedOptions?.find((option) => option.name === 'Kavurma')?.value
 
+  // Varyant fiyatlarından "başlangıç fiyatı" (gramajı olan ürünlerde ₺X'ten başlayan)
+  const variantPrices = (((data as any).variants || []) as any[])
+    .map((v) => parseFloat(v?.price))
+    .filter((n) => Number.isFinite(n) && n > 0)
+  const minPrice = variantPrices.length ? Math.min(...variantPrices) : price ?? 0
+  const hasPriceRange = variantPrices.length > 1 && Math.min(...variantPrices) !== Math.max(...variantPrices)
+  // Kavurma / menşei mini bilgisi
+  const roastLevel = (data as any).roastLevel
+  const roastLabel =
+    roastLevel === 'LIGHT' ? 'Açık Kavurma' :
+    roastLevel === 'DARK' ? 'Koyu Kavurma' :
+    roastLevel === 'MEDIUM' ? 'Orta Kavurma' : ''
+  const origin = (data as any).origin as string | undefined
+
   const { open: openAside, setProductQuickViewHandle } = useAside()
 
   const renderColorOptions = () => {
@@ -106,10 +120,20 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
         <div className="space-y-4 px-2.5 pt-5 pb-2.5">
           <div>
             <h2 className="nc-ProductCard__title text-base font-semibold transition-colors group-hover/card:text-primary-700 dark:group-hover/card:text-primary-400">{title}</h2>
+            {(roastLabel || origin) && (
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                {[roastLabel, origin].filter(Boolean).join(' · ')}
+              </p>
+            )}
           </div>
 
           <div className="flex items-end justify-between">
-            <Prices price={price ?? 1} />
+            <div className="flex items-baseline gap-1.5">
+              <Prices price={hasPriceRange ? minPrice : price ?? 1} />
+              {hasPriceRange && (
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">’ten başlayan</span>
+              )}
+            </div>
             {(reviewNumber ?? 0) > 0 && (
               <div className="mb-0.5 flex items-center">
                 <StarIcon className="h-5 w-5 pb-px text-amber-400" />
