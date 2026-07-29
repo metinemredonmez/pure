@@ -1,6 +1,5 @@
 import { Divider } from '@/components/Divider'
 import { FilterSortByMenuListBox } from '@/components/FilterSortByMenu'
-import { FiltersMenuTabs } from '@/components/FiltersMenu'
 import ProductCard from '@/components/ProductCard'
 import { getProducts } from '@/data/data'
 import { getApiProducts, getApiCategories } from '@/lib/api'
@@ -31,14 +30,22 @@ export default async function Page({
     apiQuery.category = handle
   }
 
-  // Read filter params from URL
-  if (filters.roastLevel) apiQuery.roastLevel = String(filters.roastLevel)
-  if (filters.weight) apiQuery.weight = String(filters.weight)
-  if (filters.minPrice) apiQuery.minPrice = String(filters.minPrice)
-  if (filters.maxPrice) apiQuery.maxPrice = String(filters.maxPrice)
+  // Read sort + search params from URL (Kavurma/Gramaj/Fiyat filtreleri kaldırıldı)
   if (filters.sortBy) apiQuery.sortBy = String(filters.sortBy)
   if (filters.sortOrder) apiQuery.sortOrder = String(filters.sortOrder)
   if (filters.search) apiQuery.search = String(filters.search)
+
+  // Kategori listesi — admin'deki gerçek kategoriler (uyumlu olması için)
+  let categories: { slug: string; name: string }[] = []
+  try {
+    const catRes = (await getApiCategories()) as any
+    const cats = catRes?.data || []
+    if (Array.isArray(cats)) {
+      categories = cats
+        .filter((c: any) => c?.slug && c?.name)
+        .map((c: any) => ({ slug: c.slug, name: c.name }))
+    }
+  } catch (e) {}
 
   let products: any[] = []
   // "all" handle dışında ise specific kategori sayfası → boş kategori için
@@ -67,7 +74,32 @@ export default async function Page({
   return (
     <main>
       <div className="flex flex-wrap items-center gap-2.5">
-        <FiltersMenuTabs />
+        {/* Kategoriler — admin'deki gerçek kategorilerle, aktif olan vurgulu */}
+        <nav className="flex flex-wrap items-center gap-2">
+          <a
+            href="/collections/all"
+            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+              handle === 'all'
+                ? 'bg-primary-700 text-white'
+                : 'ring-1 ring-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:ring-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900'
+            }`}
+          >
+            Tümü
+          </a>
+          {categories.map((c) => (
+            <a
+              key={c.slug}
+              href={`/collections/${c.slug}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                handle === c.slug
+                  ? 'bg-primary-700 text-white'
+                  : 'ring-1 ring-neutral-300 text-neutral-700 hover:bg-neutral-50 dark:ring-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900'
+              }`}
+            >
+              {c.name}
+            </a>
+          ))}
+        </nav>
         <FilterSortByMenuListBox className="ml-auto" />
       </div>
 
