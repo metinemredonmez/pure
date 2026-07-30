@@ -12,9 +12,10 @@ import { MngCarrier } from './carriers/mng.carrier';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { OpsModule } from '../ops/ops.module';
 import { IdentityModule } from '../identity/identity.module';
+import { OrderModule } from '../order/order.module';
 
 @Module({
-  imports: [PrismaModule, OpsModule, IdentityModule],
+  imports: [PrismaModule, OpsModule, IdentityModule, OrderModule],
   controllers: [
     AdminShippingController,
     UserShippingController,

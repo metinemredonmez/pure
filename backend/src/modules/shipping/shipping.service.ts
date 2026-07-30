@@ -4,11 +4,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ShippingCarrier, ShipmentStatus, OrderStatus } from '@prisma/client';
 import { YurticiCarrier } from './carriers/yurtici.carrier';
 import { ArasCarrier } from './carriers/aras.carrier';
 import { MngCarrier } from './carriers/mng.carrier';
+import { OrderService } from '../order/order.service';
 import {
   CarrierInterface,
   ShipmentRequest,
@@ -23,7 +25,64 @@ export class ShippingService {
     private yurticiCarrier: YurticiCarrier,
     private arasCarrier: ArasCarrier,
     private mngCarrier: MngCarrier,
+    private orderService: OrderService,
   ) {}
+
+  // ══════════════════════════════════════════════
+  // OTOMATIK DURUM SORGU (POLL)
+  // ══════════════════════════════════════════════
+
+  /**
+   * Aktif gönderileri periyodik olarak kargo firmasından sorgular; durum
+   * değişince ShipmentRecord + Order güncellenir (teslimde müşteriye otomatik
+   * "teslim edildi" maili updateShipmentStatus -> orderService.updateStatus ile).
+   * NOT: carrier.getStatus şu an MOCK; Yurtiçi gerçek API'si carrier dosyasına
+   * eklendiğinde otomatik teslim/durum çekme bu poll ile devreye girer.
+   */
+  @Cron('0 */2 * * *', { name: 'shipment-status-poll' })
+  async pollActiveShipments() {
+    let shipments: any[] = [];
+    try {
+      shipments = await this.prisma.shipmentRecord.findMany({
+        where: {
+          status: {
+            in: [
+              ShipmentStatus.SHIPPED,
+              ShipmentStatus.IN_TRANSIT,
+              ShipmentStatus.OUT_FOR_DELIVERY,
+            ],
+          },
+        },
+        take: 100,
+      });
+    } catch (e) {
+      this.logger.error(`Gönderi poll sorgusu başarısız: ${String(e)}`);
+      return;
+    }
+
+    let updated = 0;
+    for (const shipment of shipments) {
+      if (!shipment.trackingNumber) continue;
+      try {
+        const carrier = this.getCarrier(shipment.carrier);
+        const result: any = await carrier.getStatus(shipment.trackingNumber);
+        const raw = result?.status || result?.currentStatus || result?.state;
+        if (!raw) continue;
+        const newStatus = this.mapCarrierStatus(String(raw));
+        if (newStatus !== shipment.status) {
+          await this.updateShipmentStatus(shipment.id, newStatus);
+          updated++;
+        }
+      } catch (e) {
+        this.logger.error(
+          `Gönderi durum sorgusu başarısız (${shipment.trackingNumber}): ${String(e)}`,
+        );
+      }
+    }
+    if (updated > 0) {
+      this.logger.log(`Kargo poll: ${updated} gönderi durumu güncellendi`);
+    }
+  }
 
   // ══════════════════════════════════════════════
   // LIST SHIPMENTS (ADMIN)
@@ -751,10 +810,21 @@ export class ShippingService {
       }
 
       if (orderStatus) {
-        await this.prisma.order.update({
+        // Sipariş durumunu OrderService üzerinden güncelle → statusHistory kaydı
+        // + müşteriye otomatik mail (ör. DELIVERED "teslim edildi"). Aynı duruma
+        // tekrar geçişte mail/gürültü olmasın diye farklıysa güncelle.
+        const order = await this.prisma.order.findUnique({
           where: { id: shipment.orderId },
-          data: { status: orderStatus },
+          select: { status: true },
         });
+        if (order && order.status !== orderStatus) {
+          await this.orderService.updateStatus(
+            shipment.orderId,
+            orderStatus,
+            undefined,
+            'Kargo durumu güncellendi (otomatik)',
+          );
+        }
       }
     }
   }
