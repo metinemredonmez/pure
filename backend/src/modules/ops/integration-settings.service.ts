@@ -1,10 +1,15 @@
-import { Injectable, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  Logger,
+  OnModuleInit,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { EncryptionService } from '../../common/services/encryption.service';
 import { IntegrationGroup } from '@prisma/client';
 
 @Injectable()
-export class IntegrationSettingsService {
+export class IntegrationSettingsService implements OnModuleInit {
   private readonly logger = new Logger(IntegrationSettingsService.name);
 
   // Cache for frequently accessed settings
@@ -15,6 +20,19 @@ export class IntegrationSettingsService {
     private prisma: PrismaService,
     private encryption: EncryptionService,
   ) {}
+
+  /**
+   * Açılışta varsayılan ayar anahtarlarını tohumla (idempotent — mevcut
+   * DEĞERLERİ ezmez, yalnız eksik anahtarları ekler). Böylece yeni entegrasyon
+   * alanları (ör. Kargonomi) deploy sonrası admin panelde otomatik görünür.
+   */
+  async onModuleInit() {
+    try {
+      await this.seedDefaults();
+    } catch (e) {
+      this.logger.error(`Integration settings seed (boot) başarısız: ${String(e)}`);
+    }
+  }
 
   // ══════════════════════════════════════════════
   // PUBLIC GETTERS (for services)
