@@ -1,6 +1,7 @@
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
 import { Metadata } from 'next'
+import ClearCartOnSuccess from './ClearCartOnSuccess'
 
 export const metadata: Metadata = {
   title: 'Odeme Basarili',
@@ -10,6 +11,8 @@ export const metadata: Metadata = {
 export default function PaymentSuccessPage() {
   return (
     <main className="container py-16 lg:py-24">
+      {/* Ödeme başarıyla döndü — sepet yalnızca burada temizlenir */}
+      <ClearCartOnSuccess />
       <div className="mx-auto max-w-2xl rounded-3xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-8 text-center shadow-sm">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-2xl font-semibold text-emerald-700">
           +

@@ -509,7 +509,9 @@ const PaymentMethod = ({
           const iframeUrl = checkoutRes?.data?.iframeUrl || checkoutRes?.iframeUrl
           if (!iframeUrl) throw new Error(checkoutRes?.message || 'Odeme oturumu baslatilamadi')
 
-          clearCart()
+          // KRİTİK: Sepeti burada TEMİZLEME. Ödeme onaylanana kadar ürünler sepette
+          // kalmalı — müşteri PayTR'den ödemeden/iptalle dönerse sepeti kaybetmesin.
+          // Sepet yalnızca /odeme/basarili sayfasında (ödeme başarıyla dönünce) temizlenir.
           window.location.href = iframeUrl
         } catch (error: any) {
           const msg = String(error?.message || '')
