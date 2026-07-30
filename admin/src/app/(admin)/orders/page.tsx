@@ -128,7 +128,7 @@ const ORDER_STATUSES = [
 ];
 
 const statusConfig: Record<string, { label: string; color: 'default' | 'primary' | 'secondary' | 'error' | 'info' | 'success' | 'warning' }> = {
-  PENDING: { label: 'Beklemede', color: 'warning' },
+  PENDING: { label: 'Ödeme Bekleniyor', color: 'warning' },
   CONFIRMED: { label: 'Onaylandı', color: 'info' },
   PREPARING: { label: 'Hazırlanıyor', color: 'primary' },
   SHIPPED: { label: 'Kargoda', color: 'secondary' },

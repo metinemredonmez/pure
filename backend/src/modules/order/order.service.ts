@@ -9,14 +9,97 @@ import {
   PaginationDto,
   PaginatedResult,
 } from '../../common/pipes/pagination.pipe';
-import { OrderStatus } from '@prisma/client';
+import { OrderStatus, PaymentMethod } from '@prisma/client';
+import { PaymentService } from '../payment/payment.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
+    private payment: PaymentService,
   ) {}
+
+  /**
+   * Üyeliksiz (misafir) checkout. E-postadan misafir müşteriyi bul/oluştur,
+   * adres + sipariş oluştur, PayTR ödeme oturumunu başlat. Login gerektirmez.
+   */
+  async createGuestCheckout(
+    data: {
+      email: string;
+      firstName: string;
+      lastName: string;
+      phone: string;
+      line1: string;
+      line2?: string;
+      city: string;
+      district: string;
+      postalCode?: string;
+      couponCode?: string;
+      note?: string;
+      method?: PaymentMethod;
+      items: { productId: string; variantId?: string; quantity?: number }[];
+    },
+    userIp?: string,
+  ) {
+    const email = String(data.email || '').trim().toLowerCase();
+    if (!email) throw new BadRequestException('E-posta adresi gerekli');
+
+    // Misafir müşteriyi bul veya oluştur (şifresiz — passwordHash nullable).
+    // E-posta zaten kayıtlıysa sipariş o hesaba bağlanır; müşteri giriş yapınca
+    // siparişlerinde görür.
+    let user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          firstName: (data.firstName || 'Misafir').trim(),
+          lastName: (data.lastName || '').trim(),
+          phone: data.phone?.trim() || null,
+          role: 'CUSTOMER',
+          provider: 'LOCAL',
+          emailVerified: false,
+        },
+      });
+    }
+
+    const address = await this.prisma.address.create({
+      data: {
+        userId: user.id,
+        title: 'Teslimat',
+        firstName: (data.firstName || '').trim(),
+        lastName: (data.lastName || '').trim(),
+        phone: (data.phone || '').trim(),
+        line1: (data.line1 || '').trim(),
+        line2: data.line2?.trim() || null,
+        city: (data.city || '').trim(),
+        district: (data.district || '').trim(),
+        postalCode: (data.postalCode || '').trim(),
+        country: 'TR',
+        isDefault: true,
+      },
+    });
+
+    const order = await this.create(user.id, {
+      addressId: address.id,
+      couponCode: data.couponCode,
+      note: data.note,
+      items: data.items,
+    });
+
+    const method = data.method || PaymentMethod.CREDIT_CARD;
+    const session: any = await this.payment.createCheckoutSession(
+      order.id,
+      method,
+      userIp,
+    );
+
+    return {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      ...session,
+    };
+  }
 
   async create(
     userId: string,

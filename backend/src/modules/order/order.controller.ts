@@ -6,6 +6,7 @@ import {
   Body,
   Param,
   Query,
+  Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { OrderService } from './order.service';
@@ -14,7 +15,11 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { UserRole } from '@prisma/client';
-import { CreateOrderDto, UpdateOrderStatusDto } from './dto/order.dto';
+import {
+  CreateOrderDto,
+  CreateGuestOrderDto,
+  UpdateOrderStatusDto,
+} from './dto/order.dto';
 
 @ApiTags('Orders')
 @ApiBearerAuth('access-token')
@@ -32,6 +37,19 @@ export class OrderController {
     @Query('email') email: string,
   ) {
     return this.orderService.trackPublic(orderNumber, email);
+  }
+
+  // ── Guest checkout (no auth) ──
+
+  @Public()
+  @Post('public/checkout/guest')
+  @ApiOperation({ summary: 'Üyeliksiz sipariş + PayTR oturumu (misafir)' })
+  createGuest(@Body() dto: CreateGuestOrderDto, @Req() req: any) {
+    const forwardedFor = String(req.headers?.['x-forwarded-for'] || '')
+      .split(',')[0]
+      .trim();
+    const userIp = forwardedFor || req.ip || req.socket?.remoteAddress;
+    return this.orderService.createGuestCheckout(dto, userIp);
   }
 
   // ── Customer endpoints ──
