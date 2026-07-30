@@ -51,6 +51,7 @@ import {
   DeleteOutline as DeleteIcon,
 } from '@mui/icons-material';
 import { ordersApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 import { olentiaColors } from '@/lib/theme';
 import PageHeader from '@/components/common/PageHeader';
 import ExportButton from '@/components/common/ExportButton';
@@ -169,6 +170,8 @@ function formatDate(date: string) {
 }
 
 export default function OrdersPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN'; // iptal/iade/silme yalnızca ADMIN
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
@@ -494,18 +497,20 @@ export default function OrdersPage() {
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        {!CANCELLABLE_BLOCKED.includes(order.status) && (
+                        {isAdmin && !CANCELLABLE_BLOCKED.includes(order.status) && (
                           <Tooltip title="Siparişi İptal Et">
                             <IconButton size="small" color="warning" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setCancelReason(''); setCancelDialogOpen(true); }}>
                               <CancelIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
                         )}
-                        <Tooltip title="Siparişi Sil">
-                          <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setDeleteDialogOpen(true); }}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                        {isAdmin && (
+                          <Tooltip title="Siparişi Sil">
+                            <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setDeleteDialogOpen(true); }}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}

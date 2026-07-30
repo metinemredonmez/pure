@@ -166,6 +166,17 @@ export const usersApi = {
     const { data } = await api.get('/admin/users/stats');
     return data;
   },
+  createUser: async (payload: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    role?: string;
+    phone?: string;
+  }) => {
+    const { data } = await api.post('/admin/users', payload);
+    return data;
+  },
   updateRole: async (id: string, role: string) => {
     const { data } = await api.patch(`/admin/users/${id}/role`, { role });
     return data;

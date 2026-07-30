@@ -50,6 +50,7 @@ import {
   FilterList as FilterIcon,
   Refresh as RefreshIcon,
   Delete as DeleteIcon,
+  PersonAddAlt1 as AddUserIcon,
 } from '@mui/icons-material';
 import { usersApi } from '@/lib/api';
 import { User, UserRole } from '@/types';
@@ -91,6 +92,8 @@ export default function UsersPage() {
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [banDialogOpen, setBanDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [newUser, setNewUser] = useState({ email: '', firstName: '', lastName: '', password: '', role: 'SUPPORT', phone: '' });
   const [newRole, setNewRole] = useState<string>('');
   const [banReason, setBanReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -169,6 +172,25 @@ export default function UsersPage() {
       fetchUsers();
     } catch (err) {
       setError('Rol güncellenirken bir hata oluştu');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newUser.email || !newUser.firstName || !newUser.password) {
+      setError('E-posta, ad ve şifre zorunlu');
+      return;
+    }
+    setActionLoading(true);
+    try {
+      await usersApi.createUser(newUser);
+      setSuccess('Panel kullanıcısı oluşturuldu');
+      setCreateDialogOpen(false);
+      setNewUser({ email: '', firstName: '', lastName: '', password: '', role: 'SUPPORT', phone: '' });
+      fetchUsers();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || 'Kullanıcı oluşturulamadı');
     } finally {
       setActionLoading(false);
     }
@@ -266,6 +288,9 @@ export default function UsersPage() {
               ]}
               filename="kullanicilar"
             />
+            <Button variant="contained" startIcon={<AddUserIcon />} onClick={() => setCreateDialogOpen(true)}>
+              Kullanıcı Ekle
+            </Button>
             <Tooltip title="Yenile">
               <IconButton onClick={fetchUsers} disabled={isLoading}>
                 <RefreshIcon />
@@ -620,8 +645,10 @@ export default function UsersPage() {
               label="Yeni Rol"
               onChange={(e) => setNewRole(e.target.value)}
             >
-              <MenuItem value="USER">Kullanıcı</MenuItem>
-              <MenuItem value="ADMIN">Admin</MenuItem>
+              <MenuItem value="CUSTOMER">Müşteri</MenuItem>
+              <MenuItem value="SUPPORT">Destek (sadece durum)</MenuItem>
+              <MenuItem value="SALES">Satış (sadece durum)</MenuItem>
+              <MenuItem value="ADMIN">Admin (tam yetki)</MenuItem>
               <MenuItem value="PARTNER">Partner</MenuItem>
             </Select>
           </FormControl>
@@ -634,6 +661,39 @@ export default function UsersPage() {
             disabled={actionLoading}
           >
             {actionLoading ? <CircularProgress size={20} /> : 'Kaydet'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Panel Kullanıcısı Oluştur */}
+      <Dialog open={createDialogOpen} onClose={() => setCreateDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Panel Kullanıcısı Ekle</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Destek/Satış rolü yalnızca sipariş durumunu değiştirebilir; iptal, iade ve silme yalnızca Admin'e açıktır.
+          </Typography>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField label="E-posta" type="email" size="small" fullWidth value={newUser.email} onChange={(e) => setNewUser({ ...newUser, email: e.target.value })} />
+            <Stack direction="row" spacing={2}>
+              <TextField label="Ad" size="small" fullWidth value={newUser.firstName} onChange={(e) => setNewUser({ ...newUser, firstName: e.target.value })} />
+              <TextField label="Soyad" size="small" fullWidth value={newUser.lastName} onChange={(e) => setNewUser({ ...newUser, lastName: e.target.value })} />
+            </Stack>
+            <TextField label="Şifre (en az 6)" type="password" size="small" fullWidth value={newUser.password} onChange={(e) => setNewUser({ ...newUser, password: e.target.value })} />
+            <TextField label="Telefon (opsiyonel)" size="small" fullWidth value={newUser.phone} onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })} />
+            <FormControl fullWidth size="small">
+              <InputLabel>Rol</InputLabel>
+              <Select value={newUser.role} label="Rol" onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}>
+                <MenuItem value="SUPPORT">Destek (sadece durum değiştirir)</MenuItem>
+                <MenuItem value="SALES">Satış (sadece durum değiştirir)</MenuItem>
+                <MenuItem value="ADMIN">Admin (tam yetki)</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setCreateDialogOpen(false)}>İptal</Button>
+          <Button variant="contained" onClick={handleCreateUser} disabled={actionLoading}>
+            {actionLoading ? <CircularProgress size={20} /> : 'Oluştur'}
           </Button>
         </DialogActions>
       </Dialog>

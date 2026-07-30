@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserRole, Prisma } from '@prisma/client';
 
@@ -457,6 +463,58 @@ export class UserService {
       ...user,
       totalSpent: totalSpent._sum.total || 0,
     };
+  }
+
+  /**
+   * Admin panel kullanıcısı oluşturur (ADMIN / SUPPORT / SALES).
+   * SUPPORT & SALES: sipariş durumu değiştirebilir ama iptal/iade/silme yapamaz
+   * (yetki uçlarda @Roles ile kısıtlıdır).
+   */
+  async adminCreateUser(data: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+    role?: string;
+    phone?: string;
+  }) {
+    const email = data.email.trim().toLowerCase();
+    const existing = await this.prisma.user.findUnique({ where: { email } });
+    if (existing) {
+      throw new BadRequestException('Bu e-posta zaten kayıtlı');
+    }
+    const PANEL_ROLES: UserRole[] = [
+      UserRole.ADMIN,
+      UserRole.SUPPORT,
+      UserRole.SALES,
+    ];
+    const role =
+      data.role && PANEL_ROLES.includes(data.role as UserRole)
+        ? (data.role as UserRole)
+        : UserRole.SUPPORT;
+    if (!data.password || data.password.length < 6) {
+      throw new BadRequestException('Şifre en az 6 karakter olmalı');
+    }
+    const passwordHash = await bcrypt.hash(data.password, 12);
+    return this.prisma.user.create({
+      data: {
+        email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone || null,
+        role,
+        passwordHash,
+        emailVerified: true,
+        provider: 'LOCAL',
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+      },
+    });
   }
 
   async adminUpdateRole(userId: string, role: string, adminId: string) {

@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Delete,
   Param,
@@ -21,6 +22,7 @@ import {
   AdminUserQueryDto,
   AdminUpdateRoleDto,
   AdminBanUserDto,
+  AdminCreateUserDto,
 } from './dto/user.dto';
 
 @ApiTags('Admin - Users')
@@ -47,6 +49,12 @@ export class AdminUserController {
   @ApiOperation({ summary: 'Get user statistics (admin)' })
   getStats() {
     return this.userService.adminGetUserStats();
+  }
+
+  @Post()
+  @ApiOperation({ summary: 'Create panel user (admin) — ADMIN/SUPPORT/SALES' })
+  createUser(@Body() dto: AdminCreateUserDto) {
+    return this.userService.adminCreateUser(dto);
   }
 
   @Get(':id')

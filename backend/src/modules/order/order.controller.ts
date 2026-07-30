@@ -77,22 +77,24 @@ export class OrderController {
   }
 
   // ── Admin endpoints ──
+  // Görüntüleme + durum değiştirme: ADMIN + SUPPORT + SALES.
+  // İptal / iade / silme: yalnızca ADMIN (aşağıda).
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPPORT, UserRole.SALES)
   @Get('admin/orders')
   @ApiOperation({ summary: 'List all orders (admin)' })
   findAll(@Query() query: PaginationDto) {
     return this.orderService.findAll(query);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPPORT, UserRole.SALES)
   @Get('admin/orders/:id')
   @ApiOperation({ summary: 'Get order details (admin - bypasses ownership)' })
   findOneAdmin(@Param('id') id: string) {
     return this.orderService.findById(id);
   }
 
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.SUPPORT, UserRole.SALES)
   @Patch('admin/orders/:id/status')
   @ApiOperation({ summary: 'Update order status (admin)' })
   updateStatus(

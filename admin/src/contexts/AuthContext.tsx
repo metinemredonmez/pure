@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.getMe();
       const userData = response.data || response; // handle wrapped response
       // Only allow staff roles
-      if (!['ADMIN', 'SALES', 'PARTNER'].includes(userData.role)) {
+      if (!['ADMIN', 'SALES', 'SUPPORT', 'PARTNER'].includes(userData.role)) {
         Cookies.remove('accessToken');
         Cookies.remove('refreshToken');
         setUser(null);
@@ -77,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     // Only allow staff roles (ADMIN, SALES, PARTNER)
-    if (!['ADMIN', 'SALES', 'PARTNER'].includes(result.user.role)) {
+    if (!['ADMIN', 'SALES', 'SUPPORT', 'PARTNER'].includes(result.user.role)) {
       throw new Error('Bu panele erişim yetkiniz yok');
     }
 

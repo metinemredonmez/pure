@@ -4,6 +4,8 @@ import {
   IsOptional,
   IsBoolean,
   IsNumber,
+  IsEmail,
+  IsIn,
   MaxLength,
   MinLength,
   IsDateString,
@@ -188,6 +190,41 @@ export class AdminUpdateRoleDto {
   @ApiProperty({ example: 'ADMIN', enum: ['CUSTOMER', 'ADMIN', 'SALES', 'SUPPORT', 'PARTNER'] })
   @IsString()
   role: string;
+}
+
+export class AdminCreateUserDto {
+  @ApiProperty({ example: 'personel@olentia.com' })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({ example: 'Ahmet' })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(100)
+  firstName: string;
+
+  @ApiProperty({ example: 'Yılmaz' })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  lastName: string;
+
+  @ApiProperty({ example: 'gizli123', minLength: 6 })
+  @IsString()
+  @MinLength(6)
+  @MaxLength(100)
+  password: string;
+
+  @ApiPropertyOptional({ enum: ['ADMIN', 'SUPPORT', 'SALES'], default: 'SUPPORT' })
+  @IsOptional()
+  @IsIn(['ADMIN', 'SUPPORT', 'SALES'])
+  role?: string;
+
+  @ApiPropertyOptional({ example: '05001234567' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  phone?: string;
 }
 
 export class AdminBanUserDto {
