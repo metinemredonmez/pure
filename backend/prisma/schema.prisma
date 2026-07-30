@@ -600,6 +600,9 @@ model Order {
   createdAt       DateTime             @default(now())
   updatedAt       DateTime @updatedAt
   paidAt          DateTime?
+  // Ödenmemiş (PENDING) sipariş hatırlatma maili takibi (gün-aşırı)
+  reminderCount   Int                  @default(0)
+  lastReminderAt  DateTime?
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   address         Address              @relation(fields: [addressId], references: [id])

@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { IntegrationSettingsService } from './integration-settings.service';
 import { CacheManagementService } from './cache-management.service';
 import { CronJobService } from './cron-job.service';
+import { AbandonedOrderService } from './abandoned-order.service';
 
 // Controllers
 import { IntegrationSettingsController } from './integration-settings.controller';
@@ -20,12 +21,14 @@ import { OpsQueueProcessor } from './queues/ops-queue.processor';
 import { CommonModule } from '../../common/common.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { IdentityModule } from '../identity/identity.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
   imports: [
     CommonModule,
     PrismaModule,
     IdentityModule,
+    NotificationModule,
 
     // Schedule Module (for @Cron decorators)
     ScheduleModule.forRoot(),
@@ -65,6 +68,7 @@ import { IdentityModule } from '../identity/identity.module';
     IntegrationSettingsService,
     CacheManagementService,
     CronJobService,
+    AbandonedOrderService,
     OpsQueueProcessor,
   ],
   exports: [IntegrationSettingsService, CacheManagementService, CronJobService],
