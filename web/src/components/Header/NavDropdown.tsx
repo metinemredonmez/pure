@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { TNavigationItem } from '@/data/navigation'
 import Link from 'next/link'
+import TransLabel from '@/components/TransLabel'
 
 interface NavDropdownProps {
   item: TNavigationItem
@@ -57,7 +58,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
         href={item.href || '/'}
         className="text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
       >
-        {item.name}
+        <TransLabel tr={item.name} />
       </Link>
     )
   }
@@ -70,7 +71,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
         href={item.href || '/'}
         className="flex items-center gap-1 text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
       >
-        {item.name}
+        <TransLabel tr={item.name} />
         <svg className={`h-3 w-3 transition-transform ${open ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
@@ -97,7 +98,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
                     {icon}
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-neutral-900 dark:text-white">{child.name}</div>
+                    <div className="text-sm font-semibold text-neutral-900 dark:text-white"><TransLabel tr={child.name} /></div>
                     {child.description && (
                       <div className="text-xs text-neutral-500 dark:text-neutral-400">{child.description}</div>
                     )}
@@ -110,7 +111,7 @@ export default function NavDropdown({ item }: NavDropdownProps) {
                   onClick={() => setOpen(false)}
                   className="block px-4 py-2.5 text-sm text-neutral-700 transition hover:bg-primary-50 hover:text-primary-700 dark:text-neutral-300 dark:hover:bg-primary-900/20 dark:hover:text-primary-400"
                 >
-                  {child.name}
+                  <TransLabel tr={child.name} />
                 </Link>
               )
             })}

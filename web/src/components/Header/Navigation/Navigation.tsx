@@ -5,6 +5,7 @@ import { Link } from '@/shared/link'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import clsx from 'clsx'
 import { FC } from 'react'
+import TransLabel from '@/components/TransLabel'
 
 const Lv1MenuItem = ({ menuItem }: { menuItem: TNavigationItem }) => {
   return (
@@ -12,7 +13,7 @@ const Lv1MenuItem = ({ menuItem }: { menuItem: TNavigationItem }) => {
       className="flex items-center self-center rounded-full px-4 py-2.5 text-sm font-medium text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900 lg:text-[15px] xl:px-5 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
       href={menuItem.href || '#'}
     >
-      {menuItem.name}
+      <TransLabel tr={menuItem.name} />
       {menuItem.children?.length && (
         <ChevronDownIcon className="-mr-1 ml-1 h-4 w-4 text-neutral-400" aria-hidden="true" />
       )}
@@ -28,7 +29,7 @@ const MegaMenu = ({ menuItem, collection }: { menuItem: TNavigationItem; collect
           className="font-normal text-neutral-600 hover:text-black dark:text-neutral-400 dark:hover:text-white"
           href={item.href || '#'}
         >
-          {item.name}
+          <TransLabel tr={item.name} />
         </Link>
       </li>
     )
@@ -46,7 +47,7 @@ const MegaMenu = ({ menuItem, collection }: { menuItem: TNavigationItem; collect
                 <div className="grid flex-1 grid-cols-4 gap-6 pr-6 xl:gap-8 xl:pr-20">
                   {menuItem.children?.map((menuChild, index) => (
                     <div key={index}>
-                      <p className="font-medium text-neutral-900 dark:text-neutral-200">{menuChild.name}</p>
+                      <p className="font-medium text-neutral-900 dark:text-neutral-200"><TransLabel tr={menuChild.name} /></p>
                       <ul className="mt-4 grid space-y-4">{menuChild.children?.map(renderNavlink)}</ul>
                     </div>
                   ))}
@@ -70,7 +71,7 @@ const DropdownMenu = ({ menuItem }: { menuItem: TNavigationItem }) => {
         className="flex items-center rounded-md px-4 py-2 font-normal text-neutral-600 hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
         href={menuItem.href || '#'}
       >
-        {menuItem.name}
+        <TransLabel tr={menuItem.name} />
         {menuItem.children?.length && <ChevronDownIcon className="ml-2 h-4 w-4 text-neutral-500" aria-hidden="true" />}
       </Link>
     )

@@ -7,6 +7,7 @@ import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
 import CurrencyDropdown from './CurrencyDropdown'
 import LanguageToggle from './LanguageToggle'
+import TransLabel from '@/components/TransLabel'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
 import NavDropdown from './NavDropdown'
 import SearchBtnPopover from './SearchBtnPopover'
@@ -43,7 +44,7 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
                     href={item.href || '/'}
                     className="text-sm font-medium text-neutral-700 hover:text-primary-600 dark:text-neutral-300 dark:hover:text-primary-400"
                   >
-                    {item.name}
+                    <TransLabel tr={item.name} />
                   </Link>
                 )
               )}
