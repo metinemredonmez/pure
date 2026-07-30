@@ -603,6 +603,8 @@ model Order {
   // Ödenmemiş (PENDING) sipariş hatırlatma maili takibi (gün-aşırı)
   reminderCount   Int                  @default(0)
   lastReminderAt  DateTime?
+  // Kargonomi gönderi eşleştirmesi (webhook shipment.updated -> sipariş)
+  kargonomiShipmentId Int?
   items           OrderItem[]
   statusHistory   OrderStatusHistory[]
   address         Address              @relation(fields: [addressId], references: [id])

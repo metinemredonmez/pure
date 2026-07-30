@@ -221,8 +221,10 @@ export class KargonomiService {
    * POST /confirm-shipping-price
    */
   async confirmShipping(dto: ConfirmShippingDto) {
+    // Doküman: alan adı shipping_provider_id. Uyumluluk için ikisini de gönderiyoruz.
     return this.postFormData('/confirm-shipping-price', {
       shipment_id: dto.shipment_id,
+      shipping_provider_id: dto.provider_id,
       provider_id: dto.provider_id,
     });
   }
@@ -295,6 +297,40 @@ export class KargonomiService {
    */
   async getCities(stateId: number) {
     return this.request('GET', `/cities/${stateId}`);
+  }
+
+  /**
+   * İl (state) ve ilçe (city) adından Kargonomi state_id/city_id çözer.
+   * Yanıt yapısı dokümanda örneklenmediği için alan adları savunmacı okunur
+   * (id + name/text/title/il/ilce). Bulunamazsa null döner.
+   */
+  async resolveLocationIds(
+    stateName: string,
+    cityName?: string,
+  ): Promise<{ stateId: number | null; cityId: number | null; raw?: any }> {
+    const norm = (s: any) =>
+      String(s || '')
+        .toLocaleLowerCase('tr-TR')
+        .trim();
+    const pickList = (res: any): any[] =>
+      Array.isArray(res) ? res : res?.data || res?.states || res?.cities || [];
+    const nameOf = (o: any) => o?.name ?? o?.text ?? o?.title ?? o?.il ?? o?.ilce ?? o?.city ?? o?.sehir;
+    const idOf = (o: any) => o?.id ?? o?.value ?? o?.state_id ?? o?.city_id;
+
+    const statesRes = await this.getStates();
+    const states = pickList(statesRes);
+    const state = states.find((s) => norm(nameOf(s)) === norm(stateName));
+    const stateId = state ? Number(idOf(state)) : null;
+    if (!stateId) return { stateId: null, cityId: null, raw: statesRes };
+
+    let cityId: number | null = null;
+    if (cityName) {
+      const citiesRes = await this.getCities(stateId);
+      const cities = pickList(citiesRes);
+      const city = cities.find((c) => norm(nameOf(c)) === norm(cityName));
+      cityId = city ? Number(idOf(city)) : null;
+    }
+    return { stateId, cityId };
   }
 
   // ══════════════════════════════════════════════

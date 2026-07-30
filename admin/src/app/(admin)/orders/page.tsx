@@ -88,6 +88,8 @@ interface Order {
   note?: string;
   createdAt: string;
   updatedAt: string;
+  trackingNumber?: string;
+  kargonomiShipmentId?: number | null;
   user?: {
     id: string;
     email: string;
@@ -297,6 +299,18 @@ export default function OrdersPage() {
     }
   };
 
+  const handleShipKargonomi = async (order: Order) => {
+    if (!window.confirm(`${order.orderNumber} siparişi Kargonomi ile kargoya verilsin mi? (En ucuz firma otomatik seçilir, bakiyeden düşer)`)) return;
+    try {
+      const res = await ordersApi.shipViaKargonomi(order.id);
+      const r = res?.data || res;
+      alert(`Gönderi oluşturuldu (Kargonomi #${r?.shipmentId || '?'}).${r?.trackingCode ? ' Takip: ' + r.trackingCode : ' Takip no webhook ile gelecek.'}`);
+      fetchOrders();
+    } catch (error: any) {
+      alert(error?.response?.data?.message || 'Kargonomi gönderisi oluşturulamadı');
+    }
+  };
+
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       setPage(0);
@@ -497,6 +511,13 @@ export default function OrdersPage() {
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
+                        {isAdmin && !order.kargonomiShipmentId && ['PAID', 'CONFIRMED', 'PREPARING'].includes(order.status) && (
+                          <Tooltip title="Kargonomi ile Gönder">
+                            <IconButton size="small" color="primary" onClick={(e) => { e.stopPropagation(); handleShipKargonomi(order); }}>
+                              <ShippingIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                         {isAdmin && !CANCELLABLE_BLOCKED.includes(order.status) && (
                           <Tooltip title="Siparişi İptal Et">
                             <IconButton size="small" color="warning" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setCancelReason(''); setCancelDialogOpen(true); }}>

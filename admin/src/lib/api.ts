@@ -221,6 +221,10 @@ export const ordersApi = {
     const { data } = await api.post(`/admin/orders/${id}/cancel`, { reason });
     return data;
   },
+  shipViaKargonomi: async (id: string) => {
+    const { data } = await api.post(`/admin/kargonomi/ship-order/${id}`);
+    return data;
+  },
   deleteOrder: async (id: string) => {
     const { data } = await api.delete(`/admin/orders/${id}`);
     return data;

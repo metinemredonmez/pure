@@ -31,6 +31,7 @@ import { RolesGuard } from '../identity/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Public } from '../../common/decorators/public.decorator';
 import { KargonomiService } from './kargonomi.service';
+import { KargonomiOrderService } from './kargonomi-order.service';
 import {
   CreateKargonomiShipmentDto,
   UpdateKargonomiShipmentDto,
@@ -49,7 +50,17 @@ import {
 @Roles('ADMIN')
 @Controller('admin/kargonomi')
 export class AdminKargonomiController {
-  constructor(private readonly kargonomiService: KargonomiService) {}
+  constructor(
+    private readonly kargonomiService: KargonomiService,
+    private readonly kargonomiOrderService: KargonomiOrderService,
+  ) {}
+
+  /** Bir siparişi Kargonomi ile kargoya ver (create → fiyat → onay → SHIPPED) */
+  @Post('ship-order/:orderId')
+  @ApiOperation({ summary: 'Siparişi Kargonomi ile kargoya ver' })
+  async shipOrder(@Param('orderId') orderId: string) {
+    return this.kargonomiOrderService.shipOrder(orderId);
+  }
 
   /** List all shipments from Kargonomi (paginated) */
   @Get('shipments')
@@ -165,7 +176,10 @@ export class AdminKargonomiController {
 export class KargonomiWebhookController {
   private readonly logger = new Logger(KargonomiWebhookController.name);
 
-  constructor(private readonly kargonomiService: KargonomiService) {}
+  constructor(
+    private readonly kargonomiService: KargonomiService,
+    private readonly kargonomiOrderService: KargonomiOrderService,
+  ) {}
 
   /**
    * Receive Kargonomi webhook events.
@@ -194,10 +208,14 @@ export class KargonomiWebhookController {
       throw new BadRequestException('Invalid webhook signature');
     }
 
-    this.logger.log(`Kargonomi webhook received: ${body.event}`);
+    this.logger.log(`Kargonomi webhook received: ${(body as any)?.meta?.webhook?.event_type || body.event}`);
 
-    // Process the webhook event
-    // Extend this switch as needed for different event types
-    return { success: true, event: body.event };
+    // shipment.updated → siparişi güncelle (durum/takip no + teslim maili)
+    try {
+      await this.kargonomiOrderService.handleWebhookEvent(body);
+    } catch (e) {
+      this.logger.error(`Kargonomi webhook işlenemedi: ${String(e)}`);
+    }
+    return { success: true };
   }
 }
