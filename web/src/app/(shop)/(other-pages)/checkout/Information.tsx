@@ -2,16 +2,22 @@
 
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
-import { apiCreateAddress, apiCreateCheckoutSession, apiCreateOrder, apiGetAddresses, getStoredAccessToken } from '@/lib/api'
+import {
+  apiCreateAddress,
+  apiCreateCheckoutSession,
+  apiCreateGuestCheckout,
+  apiCreateOrder,
+  apiGetAddresses,
+  getStoredAccessToken,
+} from '@/lib/api'
 import { useCart, type CartItem } from '@/contexts/CartContext'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
-import { DescriptionDetails, DescriptionList, DescriptionTerm } from '@/shared/description-list'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
-import { Subheading } from '@/shared/heading'
 import { Input } from '@/shared/input'
 import { Radio, RadioField, RadioGroup } from '@/shared/radio'
 import { Select } from '@/shared/select'
 import {
+  CheckmarkCircle02Icon,
   CreditCardIcon,
   CreditCardPosIcon,
   InternetIcon,
@@ -41,17 +47,39 @@ const TR_PROVINCES = [
   'Tekirdağ', 'Tokat', 'Trabzon', 'Tunceli', 'Uşak', 'Van', 'Yalova', 'Yozgat', 'Zonguldak',
 ]
 
+// Sepet satırlarını backend sipariş kalemine çevir. Yalnızca gerçek DB varyant
+// id'si gönderilir; sentetik satır kimliği ("250g__Orta") backend'de
+// "variant not found" yapar. Eski kayıtlarda dbVariantId yoksa cuid görünümlü
+// variantId'yi kullan.
+function buildOrderItems(cartItems: CartItem[]) {
+  return cartItems.map((item) => {
+    const legacyId =
+      item.variantId && !item.variantId.includes('__') && item.variantId.length >= 20
+        ? item.variantId
+        : undefined
+    return {
+      productId: item.productId,
+      variantId: item.dbVariantId || legacyId,
+      quantity: item.quantity,
+    }
+  })
+}
+
 const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
   const [prefillReady, setPrefillReady] = useState(false)
-  const { items, clearCart, coupon, removeCoupon } = useCart()
+  // null = kontrol ediliyor, true = üye, false = misafir
+  const [isMember, setIsMember] = useState<boolean | null>(null)
+  const [memberLabel, setMemberLabel] = useState('')
+  // Misafir "Üyeliksiz devam et" seçti mi
+  const [guestChosen, setGuestChosen] = useState(false)
+  const { items, coupon, removeCoupon } = useCart()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // 1. Önce localStorage'dan kullanıcı profil bilgilerini doldur
-    //    (kayıt sırasında girdiği veya /account'tan güncellediği veriler)
+    // 1. localStorage kullanıcı profilinden ön-doldur
     try {
       const rawUser = localStorage.getItem('pureolentia_user')
       if (rawUser) {
@@ -61,7 +89,6 @@ const Information = () => {
           phone: user?.phone || '',
           'first-name': user?.firstName || '',
           'last-name': user?.lastName || '',
-          // /account formundan gelen adres bilgileri
           address: user?.address || '',
           city: user?.city || '',
           'state-province': user?.district || '',
@@ -72,19 +99,27 @@ const Information = () => {
       }
     } catch {}
 
-    // 2. Backend'den de en son kullanılan/default adresi yükle (üstüne yazar)
-    //    İlk siparişten sonra Address tablosunda kayıt olur, bir sonraki sefer otomatik dolar.
+    // 2. Üyelik durumunu + backend adresini yükle
     ;(async () => {
       try {
         const token = await getStoredAccessToken()
         if (!token) {
-          setPrefillReady(true) // misafir kullanıcı, async yüklenecek bir şey yok
+          setIsMember(false)
+          setPrefillReady(true)
           return
         }
+        setIsMember(true)
+        try {
+          const rawUser = localStorage.getItem('pureolentia_user')
+          if (rawUser) {
+            const u = JSON.parse(rawUser)
+            setMemberLabel(u?.email || `${u?.firstName || ''} ${u?.lastName || ''}`.trim())
+          }
+        } catch {}
+
         const res: any = await apiGetAddresses(token)
         const addresses: any[] = res?.data?.data || res?.data || res || []
         if (Array.isArray(addresses) && addresses.length > 0) {
-          // Default address önce, yoksa en son oluşturulan
           const def =
             addresses.find((a: any) => a.isDefault) ||
             [...addresses].sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]
@@ -103,7 +138,9 @@ const Information = () => {
             }))
           }
         }
-      } catch {}
+      } catch {
+        setIsMember((prev) => (prev === null ? false : prev))
+      }
       setPrefillReady(true)
     })()
   }, [])
@@ -115,13 +152,68 @@ const Information = () => {
     }, 80)
   }
 
+  // Adım özetleri (kapalı adımda gösterilir)
+  const contactSummary = [checkoutData.email, checkoutData.phone].filter(Boolean).join(' · ')
+  const addressSummary = [
+    `${checkoutData['first-name'] || ''} ${checkoutData['last-name'] || ''}`.trim(),
+    checkoutData.address,
+    [checkoutData['state-province'], checkoutData.city].filter(Boolean).join('/'),
+  ]
+    .filter(Boolean)
+    .join(', ')
+
   return (
     <div className="space-y-6 sm:space-y-8">
+      {/* ── Üye / Misafir seçimi ── */}
+      {isMember === false && !guestChosen && (
+        <div className="rounded-xl border border-primary-200 bg-primary-50/60 p-5 dark:border-primary-900/40 dark:bg-primary-900/10">
+          <h3 className="text-base font-semibold">Nasıl devam etmek istersiniz?</h3>
+          <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
+            Zaten üye misiniz? Giriş yaparak adres ve sipariş geçmişinize erişebilirsiniz. Dilerseniz üyeliksiz de devam edebilirsiniz.
+          </p>
+          <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
+            <ButtonPrimary
+              className="sm:min-w-44"
+              onClick={() => {
+                window.location.href = '/login?redirect=/checkout'
+              }}
+            >
+              Giriş Yap
+            </ButtonPrimary>
+            <ButtonThird onClick={() => setGuestChosen(true)}>Üyeliksiz Devam Et</ButtonThird>
+          </div>
+        </div>
+      )}
+
+      {isMember === true && (
+        <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 dark:border-emerald-900/40 dark:bg-emerald-900/15">
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} size={22} className="shrink-0 text-emerald-600" />
+          <p className="text-sm text-emerald-800 dark:text-emerald-300">
+            Üye olarak devam ediyorsunuz{memberLabel ? <> — <span className="font-semibold">{memberLabel}</span></> : ''}.
+          </p>
+        </div>
+      )}
+
+      {isMember === false && guestChosen && (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-3.5 dark:border-neutral-700 dark:bg-neutral-800/60">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">Üyeliksiz devam ediyorsunuz.</p>
+          <button
+            type="button"
+            className="text-sm font-medium underline"
+            onClick={() => {
+              window.location.href = '/login?redirect=/checkout'
+            }}
+          >
+            Giriş yap
+          </button>
+        </div>
+      )}
+
       <div id="ContactInfo" className="scroll-mt-5 rounded-xl border">
         <TabHeader
           title="İletişim Bilgileri"
           icon={UserCircle02Icon}
-          value=""
+          value={tabActive !== 'ContactInfo' ? contactSummary : ''}
           onClickChange={() => {
             setTabActive('ContactInfo')
             handleScrollToEl('ContactInfo')
@@ -130,6 +222,7 @@ const Information = () => {
         <div className={clsx('border-t px-4 py-7 sm:px-6', tabActive !== 'ContactInfo' && 'invisible hidden')}>
           <ContactInfo
             initialValues={checkoutData}
+            isMember={isMember === true}
             onSave={(values) => setCheckoutData((current) => ({ ...current, ...values }))}
             onClose={() => {
               setTabActive('ShippingAddress')
@@ -143,7 +236,7 @@ const Information = () => {
         <TabHeader
           title="Teslimat Adresi"
           icon={Route02Icon}
-          value=""
+          value={tabActive !== 'ShippingAddress' ? addressSummary : ''}
           onClickChange={() => {
             setTabActive('ShippingAddress')
             handleScrollToEl('ShippingAddress')
@@ -180,9 +273,17 @@ const Information = () => {
           <PaymentMethod
             checkoutData={checkoutData}
             cartItems={items}
-            clearCart={clearCart}
+            isMember={isMember === true}
             couponCode={coupon?.code}
             onCouponInvalid={removeCoupon}
+            onEditContact={() => {
+              setTabActive('ContactInfo')
+              handleScrollToEl('ContactInfo')
+            }}
+            onEditShipping={() => {
+              setTabActive('ShippingAddress')
+              handleScrollToEl('ShippingAddress')
+            }}
             onClose={() => {
               setTabActive('ShippingAddress')
               handleScrollToEl('ShippingAddress')
@@ -208,12 +309,12 @@ const TabHeader = ({
   return (
     <div className="flex flex-col items-start gap-5 p-5 sm:flex-row sm:p-6">
       <HugeiconsIcon icon={icon} size={24} className="sm:mt-1.5" />
-      <div className="sm:pl-3">
+      <div className="min-w-0 sm:pl-3">
         <h3 className="flex items-center gap-3 text-neutral-700 dark:text-neutral-400">
           <span className="tracking-tight uppercase">{title}</span>
-          <HugeiconsIcon icon={Tick02Icon} size={24} className="mb-1 text-primary-500" />
+          {value ? <HugeiconsIcon icon={Tick02Icon} size={22} className="mb-1 text-emerald-500" /> : null}
         </h3>
-        <div className="mt-1 text-sm font-semibold">{value}</div>
+        {value ? <div className="mt-1 truncate text-sm font-semibold">{value}</div> : null}
       </div>
       <button
         className="rounded-lg bg-neutral-50 px-4 py-2 text-sm font-medium hover:bg-neutral-100 sm:ml-auto dark:bg-neutral-800 dark:hover:bg-neutral-700"
@@ -226,7 +327,17 @@ const TabHeader = ({
   )
 }
 
-const ContactInfo = ({ initialValues, onClose, onSave }: { initialValues: Record<string, any>; onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
+const ContactInfo = ({
+  initialValues,
+  isMember,
+  onClose,
+  onSave,
+}: {
+  initialValues: Record<string, any>
+  isMember: boolean
+  onClose: () => void
+  onSave: (values: Record<string, any>) => void
+}) => {
   return (
     <form
       action="#"
@@ -242,12 +353,14 @@ const ContactInfo = ({ initialValues, onClose, onSave }: { initialValues: Record
         <FieldGroup className="mt-0!">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h3 className="text-lg font-semibold">İletişim Bilgileri</h3>
-            <p className="text-sm">
-              Hesabınız yok mu?{` `}
-              <Link href="/login" className="font-medium underline">
-                Giris Yap
-              </Link>
-            </p>
+            {!isMember && (
+              <p className="text-sm">
+                Hesabınız var mı?{` `}
+                <Link href="/login?redirect=/checkout" className="font-medium underline">
+                  Giriş Yap
+                </Link>
+              </p>
+            )}
           </div>
           <Field className="max-w-lg">
             <Label>Telefon Numarası</Label>
@@ -266,7 +379,7 @@ const ContactInfo = ({ initialValues, onClose, onSave }: { initialValues: Record
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-4">
-            <ButtonPrimary type="submit">Teslimat Adresine Geç</ButtonPrimary>
+            <ButtonPrimary type="submit">Onayla ve Devam Et</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               İptal
             </ButtonThird>
@@ -372,7 +485,7 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-6">
-            <ButtonPrimary type="submit">Ödeme Yöntemine Geç</ButtonPrimary>
+            <ButtonPrimary type="submit">Adresi Onayla ve Devam Et</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
               İptal
             </ButtonThird>
@@ -387,19 +500,33 @@ const PaymentMethod = ({
   onClose,
   checkoutData,
   cartItems,
-  clearCart,
+  isMember,
   couponCode,
   onCouponInvalid,
+  onEditContact,
+  onEditShipping,
 }: {
   onClose: () => void
   checkoutData: Record<string, any>
   cartItems: CartItem[]
-  clearCart: () => void
+  isMember: boolean
   couponCode?: string
   onCouponInvalid?: () => void
+  onEditContact: () => void
+  onEditShipping: () => void
 }) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
   const [submitting, setSubmitting] = useState(false)
+
+  const firstName = String(checkoutData['first-name'] || '').trim()
+  const lastName = String(checkoutData['last-name'] || '').trim()
+  const phone = String(checkoutData.phone || '').trim()
+  const email = String(checkoutData.email || '').trim()
+  const address = String(checkoutData.address || '').trim()
+  const aptSuite = String(checkoutData['apt-suite'] || '').trim()
+  const city = String(checkoutData.city || '').trim()
+  const district = String(checkoutData['state-province'] || '').trim()
+  const postalCode = String(checkoutData['postal-code'] || '').trim()
 
   return (
     <form
@@ -408,24 +535,6 @@ const PaymentMethod = ({
       onSubmit={async (e) => {
         e.preventDefault()
         const paymentValues = Object.fromEntries(new FormData(e.target as HTMLFormElement)) as Record<string, any>
-        const token = await getStoredAccessToken()
-
-        if (!token) {
-          toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın, sepetiniz korunacak.', { duration: 6000 })
-          setTimeout(() => {
-            window.location.href = '/login?redirect=/checkout'
-          }, 2000)
-          return
-        }
-
-        const firstName = String(checkoutData['first-name'] || '').trim()
-        const lastName = String(checkoutData['last-name'] || '').trim()
-        const phone = String(checkoutData.phone || '').trim()
-        const email = String(checkoutData.email || '').trim()
-        const address = String(checkoutData.address || '').trim()
-        const city = String(checkoutData.city || '').trim()
-        const district = String(checkoutData['state-province'] || '').trim()
-        const postalCode = String(checkoutData['postal-code'] || '').trim()
 
         // Posta kodu opsiyonel — müşteri talebi
         const missingFields = [
@@ -448,9 +557,47 @@ const PaymentMethod = ({
           return
         }
 
+        if (cartItems.length === 0) {
+          toast.error('Sepetiniz bos. Odeme icin once urun ekleyin.')
+          return
+        }
+
         try {
-          if (cartItems.length === 0) {
-            toast.error('Sepetiniz bos. Odeme icin once urun ekleyin.')
+          // ── MİSAFİR (üyeliksiz) akış: tek public çağrı ──
+          if (!isMember) {
+            if (methodActive === 'Internet-banking') {
+              toast.error('Havale/EFT için lütfen giriş yapın veya kart ile ödeyin.')
+              return
+            }
+            setSubmitting(true)
+            const guestRes = await apiCreateGuestCheckout({
+              email,
+              firstName,
+              lastName,
+              phone,
+              line1: address,
+              line2: aptSuite || undefined,
+              city,
+              district,
+              postalCode: postalCode || undefined,
+              couponCode: couponCode || undefined,
+              method: 'CREDIT_CARD',
+              items: buildOrderItems(cartItems),
+            })
+            const guestIframe = guestRes?.data?.iframeUrl || guestRes?.iframeUrl
+            if (!guestIframe) throw new Error(guestRes?.message || 'Odeme oturumu baslatilamadi')
+            // Sepeti burada TEMİZLEME — yalnızca /odeme/basarili temizler
+            window.location.href = guestIframe
+            return
+          }
+
+          // ── ÜYE akış ──
+          const token = await getStoredAccessToken()
+          if (!token) {
+            toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın, sepetiniz korunacak.', { duration: 6000 })
+            setTimeout(() => {
+              window.location.href = '/login?redirect=/checkout'
+            }, 2000)
             return
           }
 
@@ -462,7 +609,7 @@ const PaymentMethod = ({
             lastName,
             phone,
             line1: address,
-            line2: String(checkoutData['apt-suite'] || '').trim() || undefined,
+            line2: aptSuite || undefined,
             city,
             district,
             postalCode,
@@ -476,27 +623,12 @@ const PaymentMethod = ({
           const orderRes = await apiCreateOrder(token, {
             addressId,
             couponCode: couponCode || undefined,
-            items: cartItems.map((item) => {
-              // Yalnızca gerçek DB varyant id'si gönderilir; sentetik satır
-              // kimliği ("250g__Orta" gibi) backend'de variant not found yapar.
-              // Eski sepet kayıtlarında dbVariantId yok — variantId cuid
-              // görünümündeyse (sentetik ayracı "__" içermez) onu kullan.
-              const legacyId =
-                item.variantId && !item.variantId.includes('__') && item.variantId.length >= 20
-                  ? item.variantId
-                  : undefined
-              return {
-                productId: item.productId,
-                variantId: item.dbVariantId || legacyId,
-                quantity: item.quantity,
-              }
-            }),
+            items: buildOrderItems(cartItems),
           })
           const orderId = orderRes?.data?.id || orderRes?.id
           if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
 
           if (methodActive === 'Internet-banking') {
-            clearCart()
             toast.success('Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.')
             return
           }
@@ -511,11 +643,10 @@ const PaymentMethod = ({
 
           // KRİTİK: Sepeti burada TEMİZLEME. Ödeme onaylanana kadar ürünler sepette
           // kalmalı — müşteri PayTR'den ödemeden/iptalle dönerse sepeti kaybetmesin.
-          // Sepet yalnızca /odeme/basarili sayfasında (ödeme başarıyla dönünce) temizlenir.
+          // Sepet yalnızca /odeme/basarili sayfasında temizlenir.
           window.location.href = iframeUrl
         } catch (error: any) {
           const msg = String(error?.message || '')
-          // Friendly Turkish messages for common backend errors
           let userMsg = 'Ödeme başlatılamadı. Lütfen tekrar deneyin.'
           if (/Product not found|product/i.test(msg)) {
             userMsg = 'Sepetinizdeki ürünlerden biri artık satışta değil. Sepeti yenileyip tekrar deneyin.'
@@ -538,6 +669,34 @@ const PaymentMethod = ({
     >
       <Fieldset>
         <FieldGroup className="mt-0!">
+          {/* ── Sipariş Onay Özeti (adım adım) ── */}
+          <div className="divide-y divide-neutral-200 rounded-xl border border-neutral-200 dark:divide-neutral-700 dark:border-neutral-700">
+            <div className="flex items-start justify-between gap-3 p-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-emerald-500" />
+                  İletişim
+                </div>
+                <p className="mt-1 truncate text-sm">{[email, phone].filter(Boolean).join(' · ') || <span className="text-red-500">Eksik</span>}</p>
+              </div>
+              <button type="button" onClick={onEditContact} className="shrink-0 text-sm font-medium underline">Değiştir</button>
+            </div>
+            <div className="flex items-start justify-between gap-3 p-4">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-emerald-500" />
+                  Teslimat Adresi
+                </div>
+                <p className="mt-1 text-sm">
+                  {[`${firstName} ${lastName}`.trim(), address, aptSuite, [district, city].filter(Boolean).join('/')]
+                    .filter(Boolean)
+                    .join(', ') || <span className="text-red-500">Eksik</span>}
+                </p>
+              </div>
+              <button type="button" onClick={onEditShipping} className="shrink-0 text-sm font-medium underline">Değiştir</button>
+            </div>
+          </div>
+
           {/* Kredi / Banka Kartı */}
           <div className="rounded-xl border border-neutral-200 p-4 transition hover:border-primary-300 dark:border-neutral-700">
             <RadioGroup

@@ -289,6 +289,9 @@ export const apiGetOrder = (token: string, id: string) =>
   fetchAPI<any>(`/orders/${id}`, { headers: authHeaders(token), revalidate: 0 })
 export const apiReturnOrder = (token: string, orderId: string, data: any) =>
   fetchAPI<any>(`/orders/${orderId}/return`, { method: 'POST', body: JSON.stringify(data), headers: authHeaders(token), revalidate: 0 })
+// Üyeliksiz (misafir) checkout — tek çağrıda müşteri+adres+sipariş+PayTR oturumu
+export const apiCreateGuestCheckout = (data: any) =>
+  fetchAPI<any>('/public/checkout/guest', { method: 'POST', body: JSON.stringify(data), revalidate: 0 })
 
 // ============ PAYMENT ============
 export const apiCreateCheckoutSession = (token: string, data: any) =>
