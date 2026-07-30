@@ -69,8 +69,17 @@ const Information = () => {
   const [tabActive, setTabActive] = useState<Tab>('ContactInfo')
   const [checkoutData, setCheckoutData] = useState<Record<string, any>>({})
   const [prefillReady, setPrefillReady] = useState(false)
-  // null = kontrol ediliyor, true = üye, false = misafir
-  const [isMember, setIsMember] = useState<boolean | null>(null)
+  // null = kontrol ediliyor, true = üye, false = misafir.
+  // Token localStorage'da varsa SENKRON olarak üye kabul et — böylece üye
+  // kullanıcıya "Giriş Yap" linki bir an bile görünmez (async doğrulama altta).
+  const [isMember, setIsMember] = useState<boolean | null>(() => {
+    if (typeof window === 'undefined') return null
+    try {
+      return localStorage.getItem('pureolentia_token') ? true : null
+    } catch {
+      return null
+    }
+  })
   const [memberLabel, setMemberLabel] = useState('')
   // Misafir "Üyeliksiz devam et" seçti mi
   const [guestChosen, setGuestChosen] = useState(false)

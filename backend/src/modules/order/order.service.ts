@@ -227,12 +227,16 @@ export class OrderService {
           }
         }
 
-        // Apply coupon if provided
+        // Apply coupon if provided.
+        // ÖNEMLİ: Kupon arama/hesaplama admin.service.validateCoupon ile birebir
+        // aynı olmalı (aksi halde ödeme sayfası indirim gösterir ama sipariş/PayTR
+        // indirimsiz tutar çeker). Kod BÜYÜK HARFE çevrilerek aranır.
         let discount = 0;
+        let couponFreeShipping = false;
         let couponId: string | null = null;
         if (data.couponCode) {
           const coupon = await tx.coupon.findUnique({
-            where: { code: data.couponCode },
+            where: { code: data.couponCode.toUpperCase() },
           });
           if (coupon && coupon.isActive) {
             // Check usage limits
@@ -243,6 +247,12 @@ export class OrderService {
             if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date()) {
               throw new BadRequestException('Kuponun süresi dolmuş');
             }
+            // Minimum sipariş tutarı
+            if (coupon.minOrderAmount && subtotal < Number(coupon.minOrderAmount)) {
+              throw new BadRequestException(
+                `Minimum sipariş tutarı: ₺${coupon.minOrderAmount}`,
+              );
+            }
 
             if (coupon.type === 'percentage') {
               discount = subtotal * (Number(coupon.value) / 100);
@@ -252,8 +262,12 @@ export class OrderService {
               }
             } else if (coupon.type === 'fixed') {
               discount = Number(coupon.value);
+            } else if (coupon.type === 'free_shipping') {
+              // free_shipping: indirim yok, kargo sıfırlanır (aşağıda)
+              couponFreeShipping = true;
             }
-            // free_shipping tipinde discount = 0, kargo ayrıca handle edilecek
+            // İndirim ara toplamı aşamaz
+            discount = Math.min(discount, subtotal);
             couponId = coupon.id;
             await tx.coupon.update({
               where: { id: coupon.id },
@@ -290,8 +304,10 @@ export class OrderService {
           if (Number.isFinite(n) && n >= 0) defaultShippingCost = n;
         }
 
-        const shippingCost =
+        const baseShippingCost =
           subtotal >= freeShippingThreshold ? 0 : defaultShippingCost;
+        // free_shipping kuponu kargoyu sıfırlar
+        const shippingCost = couponFreeShipping ? 0 : baseShippingCost;
         // Fiyatlar KDV DAHİL: KDV üstüne EKLENMEZ. `tax` sadece fiyatın içindeki
         // KDV tutarı (bilgi amaçlı). Toplam = ara toplam - indirim + kargo.
         const netAfterDiscount = Math.max(subtotal - discount, 0);
