@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -11,13 +12,17 @@ import {
 } from '../../common/pipes/pagination.pipe';
 import { OrderStatus, PaymentMethod } from '@prisma/client';
 import { PaymentService } from '../payment/payment.service';
+import { NotificationService } from '../notification/notification.service';
 
 @Injectable()
 export class OrderService {
+  private readonly logger = new Logger(OrderService.name);
+
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
     private payment: PaymentService,
+    private notification: NotificationService,
   ) {}
 
   /**
@@ -525,7 +530,7 @@ export class OrderService {
       data: { orderId: id, status, changedBy, note },
     });
 
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id },
       data: { status },
       include: {
@@ -533,5 +538,97 @@ export class OrderService {
         statusHistory: { orderBy: { createdAt: 'desc' } },
       },
     });
+
+    // Duruma göre müşteri bilgilendirme maili (webhook/işlemi bloke etmez)
+    this.sendStatusEmail(id, status).catch((e) =>
+      this.logger.error(`Durum maili gönderilemedi (${id}): ${String(e)}`),
+    );
+
+    return updated;
+  }
+
+  /**
+   * Admin durum değiştirdiğinde müşteriye e-posta:
+   *  - CONFIRMED  → "siparişiniz onaylandı"
+   *  - PREPARING  → "siparişiniz hazırlanıyor"
+   *  - SHIPPED    → "kargoya verildi" (+ takip no/link varsa)
+   *  - DELIVERED  → "teslim edildi"
+   * Diğer durumlarda mail gönderilmez.
+   */
+  private async sendStatusEmail(orderId: string, status: OrderStatus) {
+    const notify: OrderStatus[] = [
+      OrderStatus.CONFIRMED,
+      OrderStatus.PREPARING,
+      OrderStatus.SHIPPED,
+      OrderStatus.DELIVERED,
+    ];
+    if (!notify.includes(status)) return;
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        user: { select: { email: true, firstName: true } },
+      },
+    });
+    const email = order?.user?.email;
+    if (!order || !email) return;
+
+    const frontendUrl =
+      this.config.get<string>('app.frontendUrl') || 'https://pureolentia.com';
+    const name = order.user?.firstName || '';
+    const wrap = (heading: string, body: string, cta = 'Siparişlerim') => `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#D4793F;margin:0 0 8px">${heading}</h2>
+        <p style="color:#555;font-size:14px;line-height:1.6">${body}</p>
+        <a href="${frontendUrl}/orders" style="display:inline-block;background:#D4793F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;margin-top:8px">${cta}</a>
+        <p style="color:#999;font-size:12px;margin-top:20px">Sipariş No: ${order.orderNumber}</p>
+      </div>`;
+
+    let subject = '';
+    let html = '';
+    switch (status) {
+      case OrderStatus.CONFIRMED:
+        subject = `Siparişiniz onaylandı — ${order.orderNumber}`;
+        html = wrap(
+          'Siparişiniz onaylandı ☕',
+          `Merhaba ${name}, siparişiniz onaylandı ve kısa süre içinde hazırlanmaya başlanacak.`,
+        );
+        break;
+      case OrderStatus.PREPARING:
+        subject = `Siparişiniz hazırlanıyor — ${order.orderNumber}`;
+        html = wrap(
+          'Siparişiniz hazırlanıyor',
+          `Merhaba ${name}, kahveniz taze şekilde hazırlanıyor. Kargoya verildiğinde takip bilgisiyle sizi bilgilendireceğiz.`,
+        );
+        break;
+      case OrderStatus.SHIPPED: {
+        const trackLine = order.trackingNumber
+          ? `Takip No: <strong>${order.trackingNumber}</strong>${
+              order.trackingUrl
+                ? ` — <a href="${order.trackingUrl}" style="color:#D4793F">kargoyu takip et</a>`
+                : ''
+            }`
+          : 'Kargo takip numaranız en kısa sürede paylaşılacaktır.';
+        subject = `Siparişiniz kargoya verildi — ${order.orderNumber}`;
+        html = wrap(
+          'Siparişiniz kargoda 🚚',
+          `Merhaba ${name}, siparişiniz kargoya teslim edildi.<br>${trackLine}`,
+          order.trackingUrl ? 'Kargoyu Takip Et' : 'Siparişlerim',
+        );
+        break;
+      }
+      case OrderStatus.DELIVERED:
+        subject = `Siparişiniz teslim edildi — ${order.orderNumber}`;
+        html = wrap(
+          'Siparişiniz teslim edildi 🎉',
+          `Merhaba ${name}, siparişiniz adresinize teslim edildi. Afiyet olsun! Görüşlerinizi bizimle paylaşmaktan çekinmeyin.`,
+        );
+        break;
+      default:
+        return;
+    }
+
+    await this.notification.sendEmail(email, subject, html);
   }
 }

@@ -1286,6 +1286,7 @@ enum LoyaltyTier {
 
 enum OrderStatus {
   PENDING
+  PAID
   CONFIRMED
   PREPARING
   SHIPPED

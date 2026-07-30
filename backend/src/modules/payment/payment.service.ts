@@ -604,9 +604,11 @@ export class PaymentService {
 
       // Sipariş durumunu güncelle
       if (newStatus === PaymentStatus.COMPLETED) {
+        // Ödeme alındı ama admin onayı bekliyor (BEKLEME). Admin panelden
+        // ONAYLANDI (CONFIRMED) seçilince müşteriye onay maili gider.
         await tx.order.update({
           where: { id: payment.orderId },
-          data: { status: 'CONFIRMED', paidAt: new Date() },
+          data: { status: 'PAID', paidAt: new Date() },
         });
         this.logger.log(`Payment completed: ${payment.id}`);
       } else {
@@ -729,14 +731,14 @@ export class PaymentService {
     const adminEmail =
       this.config.get<string>('smtp.user') || this.config.get<string>('smtp.from');
 
-    // ── Müşteriye onay ──
+    // ── Müşteriye "sipariş alındı" (ödeme onayı + ürün özeti) ──
     if (customerEmail) {
       const html = `
       <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px">
-        <h2 style="color:#D4793F;margin:0 0 8px">Siparişiniz onaylandı ☕</h2>
+        <h2 style="color:#D4793F;margin:0 0 8px">Siparişiniz alındı ☕</h2>
         <p style="color:#555;font-size:14px;line-height:1.6">Merhaba ${
           order.user?.firstName || ''
-        }, ödemeniz başarıyla alındı ve siparişiniz hazırlık sürecine girdi.</p>
+        }, ödemeniz başarıyla alındı. Siparişiniz onay için sıraya alındı; onaylandığında sizi ayrıca bilgilendireceğiz.</p>
         <table style="width:100%;border-collapse:collapse;font-size:14px;margin:16px 0">${rows}${totalsRow}</table>
         ${addr ? `<p style="color:#555;font-size:13px;line-height:1.6"><strong>Teslimat:</strong><br>${addr}</p>` : ''}
         <a href="${frontendUrl}/orders" style="display:inline-block;background:#D4793F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;margin-top:8px">Siparişlerim</a>
@@ -744,8 +746,29 @@ export class PaymentService {
       </div>`;
       await this.notification.sendEmail(
         customerEmail,
-        `Siparişiniz onaylandı — ${order.orderNumber}`,
+        `Siparişiniz alındı — ${order.orderNumber}`,
         html,
+      );
+
+      // ── Ayrı süreç bilgilendirme maili ──
+      const processHtml = `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#D4793F;margin:0 0 8px">Siparişiniz nasıl ilerleyecek?</h2>
+        <p style="color:#555;font-size:14px;line-height:1.6">Siparişiniz aşağıdaki aşamalardan geçecek ve her adımda size e-posta ile bilgi vereceğiz:</p>
+        <ol style="color:#444;font-size:14px;line-height:1.9;padding-left:18px">
+          <li><strong>Ödeme alındı</strong> — ödemeniz onaylandı (şu an buradasınız).</li>
+          <li><strong>Onaylandı</strong> — siparişiniz ekibimizce onaylandı.</li>
+          <li><strong>Hazırlanıyor</strong> — kahveniz taze şekilde hazırlanıyor.</li>
+          <li><strong>Kargoda</strong> — kargoya teslim edildi, takip numarası paylaşılır.</li>
+          <li><strong>Teslim edildi</strong> — siparişiniz adresinize ulaştı.</li>
+        </ol>
+        <p style="color:#555;font-size:13px;line-height:1.6">Sipariş durumunuzu istediğiniz zaman <a href="${frontendUrl}/orders" style="color:#D4793F">Siparişlerim</a> sayfasından takip edebilirsiniz.</p>
+        <p style="color:#999;font-size:12px;margin-top:16px">Sipariş No: ${order.orderNumber}</p>
+      </div>`;
+      await this.notification.sendEmail(
+        customerEmail,
+        `Sipariş süreciniz hakkında — ${order.orderNumber}`,
+        processHtml,
       );
     }
 

@@ -11,12 +11,18 @@ import { useEffect, useState } from 'react'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  PENDING: { label: 'Beklemede', color: 'bg-yellow-100 text-yellow-800' },
+  PENDING: { label: 'Ödeme Bekleniyor', color: 'bg-yellow-100 text-yellow-800' },
+  PAID: { label: 'Ödeme Alındı', color: 'bg-amber-100 text-amber-800' },
+  CONFIRMED: { label: 'Onaylandı', color: 'bg-sky-100 text-sky-800' },
   PROCESSING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800' },
+  PREPARING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800' },
   SHIPPED: { label: 'Kargoya Verildi', color: 'bg-purple-100 text-purple-800' },
+  IN_TRANSIT: { label: 'Yolda', color: 'bg-purple-100 text-purple-800' },
   DELIVERED: { label: 'Teslim Edildi', color: 'bg-green-100 text-green-800' },
   CANCELLED: { label: 'İptal Edildi', color: 'bg-red-100 text-red-800' },
+  RETURNED: { label: 'İade Edildi', color: 'bg-neutral-100 text-neutral-800' },
   REFUNDED: { label: 'İade Edildi', color: 'bg-neutral-100 text-neutral-800' },
+  PAYMENT_FAILED: { label: 'Ödeme Başarısız', color: 'bg-red-100 text-red-800' },
 }
 
 export default function OrdersPage() {

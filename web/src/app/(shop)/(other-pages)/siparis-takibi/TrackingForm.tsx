@@ -5,7 +5,8 @@ import { useState } from 'react'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  PENDING:    { label: 'Beklemede',        color: 'bg-amber-100 text-amber-800 border-amber-200',       icon: '⏳' },
+  PENDING:    { label: 'Ödeme Bekleniyor',  color: 'bg-amber-100 text-amber-800 border-amber-200',       icon: '⏳' },
+  PAID:       { label: 'Ödeme Alındı',      color: 'bg-amber-100 text-amber-800 border-amber-200',       icon: '💳' },
   CONFIRMED:  { label: 'Onaylandı',        color: 'bg-sky-100 text-sky-800 border-sky-200',             icon: '✓' },
   PROCESSING: { label: 'Hazırlanıyor',     color: 'bg-indigo-100 text-indigo-800 border-indigo-200',    icon: '☕' },
   PREPARING:  { label: 'Hazırlanıyor',     color: 'bg-indigo-100 text-indigo-800 border-indigo-200',    icon: '☕' },
