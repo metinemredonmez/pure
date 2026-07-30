@@ -243,6 +243,14 @@ export class CatalogService {
     const normGrind = (g?: string) =>
       g && VALID_GRINDS.includes(g) ? g : null;
 
+    const VALID_ROASTS = ['LIGHT', 'MEDIUM', 'MEDIUM_DARK', 'DARK'];
+    const ROAST_LABELS: Record<string, string> = {
+      LIGHT: 'Açık Kavurma', MEDIUM: 'Orta Kavurma',
+      MEDIUM_DARK: 'Orta-Koyu Kavurma', DARK: 'Koyu Kavurma',
+    };
+    const normRoast = (r?: string) =>
+      r && VALID_ROASTS.includes(r) ? r : null;
+
     await this.prisma.$transaction(async (tx) => {
       // Listede olmayan mevcut varyantları pasifleştir (silme yok)
       for (const ex of existing) {
@@ -255,13 +263,16 @@ export class CatalogService {
       }
       for (const v of variants || []) {
         const grind = normGrind(v.grindType);
+        const roast = normRoast(v.roastLevel);
         const gLabel = grind ? GRIND_LABELS[grind] : '';
+        const rLabel = roast ? ROAST_LABELS[roast] : '';
         const name =
           (typeof v.name === 'string' && v.name.trim()) ||
-          `${v.weight}g${gLabel ? ' - ' + gLabel : ''}`;
+          [`${v.weight}g`, gLabel, rLabel].filter(Boolean).join(' - ');
         const data: any = {
           name,
           grindType: grind,
+          roastLevel: roast,
           weight: Number(v.weight),
           price: Number(v.price),
           stock: Number(v.stock) || 0,
@@ -273,7 +284,7 @@ export class CatalogService {
           const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
           const sku =
             (typeof v.sku === 'string' && v.sku.trim()) ||
-            `${product.sku}-${v.weight}-${grind || 'STD'}-${rand}`;
+            `${product.sku}-${v.weight}-${grind || 'STD'}-${roast || 'STD'}-${rand}`;
           await tx.productVariant.create({
             data: { productId, sku, ...data },
           });

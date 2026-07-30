@@ -168,6 +168,11 @@ export class VariantInputDto {
   @IsString()
   grindType?: string;
 
+  @ApiPropertyOptional({ description: 'RoastLevel enum: LIGHT|MEDIUM|MEDIUM_DARK|DARK' })
+  @IsOptional()
+  @IsString()
+  roastLevel?: string;
+
   @ApiProperty({ example: 250 })
   @IsInt()
   weight: number;

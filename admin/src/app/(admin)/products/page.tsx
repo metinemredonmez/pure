@@ -90,7 +90,7 @@ export default function ProductsPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   // Varyantlar (öğütme × gramaj × fiyat) — admin editörü
   const [variants, setVariants] = useState<
-    { id?: string; grindType: string; weight: number; price: number; stock: number }[]
+    { id?: string; grindType: string; roastLevel: string; weight: number; price: number; stock: number }[]
   >([]);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -167,6 +167,7 @@ export default function ProductsPage() {
         ((product.variants as any[]) || []).map((v) => ({
           id: v.id,
           grindType: v.grindType || '',
+          roastLevel: v.roastLevel || '',
           weight: Number(v.weight) || 0,
           price: Number(v.price) || 0,
           stock: Number(v.stock) || 0,
@@ -239,6 +240,7 @@ export default function ProductsPage() {
           .map((v) => ({
             id: v.id,
             grindType: v.grindType || undefined,
+            roastLevel: v.roastLevel || undefined,
             weight: Number(v.weight),
             price: Number(v.price),
             stock: Number(v.stock) || 0,
@@ -602,18 +604,18 @@ export default function ProductsPage() {
             <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 1 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                <Typography variant="subtitle2">Varyantlar (Öğütme × Gramaj × Fiyat)</Typography>
+                <Typography variant="subtitle2">Varyantlar (Kavurma × Öğütme × Gramaj × Fiyat)</Typography>
                 <Button
                   size="small"
                   startIcon={<AddIcon />}
-                  onClick={() => setVariants([...variants, { grindType: '', weight: 0, price: 0, stock: 0 }])}
+                  onClick={() => setVariants([...variants, { grindType: '', roastLevel: '', weight: 0, price: 0, stock: 0 }])}
                 >
                   Varyant Ekle
                 </Button>
               </Box>
               <Typography variant="caption" color="text.secondary">
-                Boş bırakırsanız ürün tek fiyattan satılır. Sitede öğütme/gramaj seçilince fiyat bu varyantlara göre değişir.
-                Öğütmesi olan varyant ekleyince sitede &quot;Öğütme&quot; seçici çıkar.
+                Boş bırakırsanız ürün tek fiyattan satılır. Sitede kavurma/öğütme/gramaj seçilince fiyat bu varyantlara göre değişir.
+                Birden fazla farklı kavurma/öğütme girerseniz sitede o seçici çıkar; seçimler sipariş detayına düşer.
               </Typography>
               <Stack spacing={1} sx={{ mt: 1.5 }}>
                 {variants.map((v, idx) => (
@@ -632,6 +634,20 @@ export default function ProductsPage() {
                         <MenuItem value="FILTER">Filtre</MenuItem>
                         <MenuItem value="ESPRESSO">Espresso</MenuItem>
                         <MenuItem value="TURKISH">Türk Kahvesi</MenuItem>
+                      </Select>
+                    </FormControl>
+                    <FormControl size="small" sx={{ minWidth: 140, flex: 1 }}>
+                      <InputLabel>Kavurma</InputLabel>
+                      <Select
+                        value={v.roastLevel}
+                        label="Kavurma"
+                        onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, roastLevel: e.target.value } : x)))}
+                      >
+                        <MenuItem value="">Genel / Yok</MenuItem>
+                        <MenuItem value="LIGHT">Açık</MenuItem>
+                        <MenuItem value="MEDIUM">Orta</MenuItem>
+                        <MenuItem value="MEDIUM_DARK">Orta-Koyu</MenuItem>
+                        <MenuItem value="DARK">Koyu</MenuItem>
                       </Select>
                     </FormControl>
                     <TextField

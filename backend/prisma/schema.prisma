@@ -750,6 +750,7 @@ model ProductVariant {
   sku        String      @unique
   name       String
   grindType  GrindType?
+  roastLevel RoastLevel?
   weight     Int
   price      Decimal     @db.Decimal(10, 2)
   stock      Int         @default(0)

@@ -34,20 +34,24 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
 
   const variants = (p.variants || []) as any[]
   const kavurmaValues = (p.options?.find((o: any) => o.name === 'Kavurma')?.optionValues || []) as any[]
+  // Seçilebilir kavurma (admin varyantlarında ≥2 farklı kavurma girildiyse)
+  const roastValues = (p.options?.find((o: any) => o.name === 'KavurmaSecim')?.optionValues || []) as any[]
   const grindValues = (p.options?.find((o: any) => o.name === 'Öğütme')?.optionValues || []) as any[]
   const gramajValues = (p.options?.find((o: any) => o.name === 'Gramaj')?.optionValues || []) as GramajValue[]
 
   const [color, setColor] = useState<string>(kavurmaValues[0]?.name || '')
+  const [roast, setRoast] = useState<string>(roastValues[0]?.value || '')
   const [grind, setGrind] = useState<string>(grindValues[0]?.value || '')
   const [size, setSize] = useState<string>(gramajValues[0]?.name || '')
   const [quantity, setQuantity] = useState<number>(1)
 
   const activeGramaj = gramajValues.find((g) => g.name === size)
   const selectedWeight = activeGramaj?.weight
-  // (öğütme + gramaj) kombinasyonuna göre doğru varyant → fiyatı ondan al
+  // (kavurma + öğütme + gramaj) kombinasyonuna göre doğru varyant → fiyatı ondan al
   const activeVariant =
     variants.find(
       (v) =>
+        (!roast || v.roastLevel === roast) &&
         (!grind || v.grindType === grind) &&
         (selectedWeight == null || Number(v.weight) === selectedWeight),
     ) ||
@@ -65,6 +69,7 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
   const activeVariantId = activeVariant?.id || activeGramaj?.variantId
 
   const grindLabel = grindValues.find((g) => g.value === grind)?.name || ''
+  const roastLabel = roastValues.find((r) => r.value === roast)?.name || ''
 
   const handleAdd = () => {
     addItem({
@@ -75,7 +80,7 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
       quantity,
       image: featuredImage?.src || '',
       size,
-      color,
+      color: roastLabel || color,
       grind: grindLabel,
       // Satır kimliği: seçenek kombinasyonu (gerçek id varsa o, yoksa sentetik).
       variantId: activeVariantId || [size, grindLabel, color].filter(Boolean).join('__') || undefined,
@@ -114,8 +119,38 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
         )}
       </div>
 
-      {/* Kavurma — ürünün sabit özelliği (admin belirler), seçilemez bilgi */}
-      {p.roastLevel && (
+      {/* Kavurma seçimi — admin varyantlarında birden fazla kavurma girildiyse */}
+      {roastValues.length > 0 && (
+        <Headless.Field>
+          <Headless.RadioGroup value={roast} onChange={setRoast} aria-label="Kavurma">
+            <Headless.Label className="block text-sm font-medium">Kavurma</Headless.Label>
+            <div className="mt-2.5 flex flex-wrap gap-2">
+              {roastValues.map((r) => {
+                const isActive = r.value === roast
+                return (
+                  <Headless.Radio
+                    key={r.value}
+                    value={r.value}
+                    as="button"
+                    type="button"
+                    className={clsx(
+                      'rounded-full border px-4 py-2 text-sm font-medium transition',
+                      isActive
+                        ? 'border-primary-600 bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300'
+                        : 'border-neutral-200 text-neutral-600 hover:border-neutral-400 dark:border-neutral-700 dark:text-neutral-300'
+                    )}
+                  >
+                    {r.name}
+                  </Headless.Radio>
+                )
+              })}
+            </div>
+          </Headless.RadioGroup>
+        </Headless.Field>
+      )}
+
+      {/* Kavurma — tek kavurmalı üründe sabit bilgi (seçici yok) */}
+      {p.roastLevel && roastValues.length === 0 && (
         <div className="flex items-center gap-2 text-sm">
           <span className="font-medium">Kavurma:</span>
           <span className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">

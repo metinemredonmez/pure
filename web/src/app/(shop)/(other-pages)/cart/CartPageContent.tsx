@@ -108,9 +108,9 @@ export default function CartPageContent() {
                         <h3 className="text-base font-semibold">
                           <Link href={'/products/' + item.handle}>{item.name}</Link>
                         </h3>
-                        {(item.size || item.grind) && (
+                        {(item.size || item.grind || item.color) && (
                           <div className="mt-1.5 flex text-sm text-neutral-500 dark:text-neutral-400">
-                            <span>{[item.size, item.grind].filter(Boolean).join(' · ')}</span>
+                            <span>{[item.size, item.grind, item.color].filter(Boolean).join(' · ')}</span>
                           </div>
                         )}
                       </div>

@@ -126,6 +126,20 @@ export function adaptProduct(product: any, index: number = 0) {
     return grinds.map((g) => ({ name: GRIND_LABELS[g] || g, value: g, swatch: null }))
   })()
 
+  // Kavurma seçenekleri — varyantlarda birden fazla farklı roastLevel varsa
+  // müşteri SEÇEBİLİR (admin ürün başına hangi kavurmaları girdiyse onlar).
+  // Tek/0 kavurmalı üründe seçici çıkmaz, ürünün sabit kavurması bilgi kalır.
+  const ROAST_OPT_LABELS: Record<string, string> = {
+    LIGHT: 'Açık Kavurma', MEDIUM: 'Orta Kavurma',
+    MEDIUM_DARK: 'Orta-Koyu Kavurma', DARK: 'Koyu Kavurma',
+  }
+  const roastOptions = (() => {
+    const variants = (product.variants as any[]) || []
+    const roasts = [...new Set(variants.map((v) => v.roastLevel).filter(Boolean))] as string[]
+    if (roasts.length < 2) return []
+    return roasts.map((r) => ({ name: ROAST_OPT_LABELS[r] || r, value: r, swatch: null }))
+  })()
+
   const roastName =
     roastLevel === 'LIGHT' ? 'Acik Kavurma' :
     roastLevel === 'DARK' ? 'Koyu Kavurma' :
@@ -145,9 +159,10 @@ export function adaptProduct(product: any, index: number = 0) {
     status: product.isFeatured ? 'Yeni Mahsul' : product.compareAtPrice ? '%20 Indirim' : '',
     // Only include option groups that actually have values —
     // bundle products (e.g. "12'li Kutu") won't show a gramaj selector.
-    // Kavurma SEÇENEK DEĞİL — admin'de ürün için tek kavurma belirlenir (ürünün
-    // sabit özelliği), müşteriye seçtirilmez; bilgi olarak ayrıca gösterilir.
+    // Kavurma: varyantlarda ≥2 farklı kavurma varsa müşteri seçer; yoksa
+    // ürünün sabit kavurması bilgi olarak gösterilir (seçici çıkmaz).
     options: [
+      ...(roastOptions.length ? [{ name: 'KavurmaSecim', optionValues: roastOptions }] : []),
       ...(grindOptions.length ? [{ name: 'Öğütme', optionValues: grindOptions }] : []),
       ...(gramajOptions.length ? [{ name: 'Gramaj', optionValues: gramajOptions }] : []),
     ],
