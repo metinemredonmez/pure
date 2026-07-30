@@ -90,6 +90,10 @@ interface Order {
     email: string;
     firstName?: string;
     lastName?: string;
+    phone?: string;
+    companyName?: string;
+    taxNumber?: string;
+    isPartner?: boolean;
   };
   items?: OrderItem[];
   payment?: {
@@ -99,14 +103,16 @@ interface Order {
     amount: number;
   };
   address?: {
-    fullName: string;
-    phone: string;
-    addressLine1: string;
-    addressLine2?: string;
-    city: string;
-    state?: string;
-    postalCode: string;
-    country: string;
+    title?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    line1?: string;
+    line2?: string;
+    city?: string;
+    district?: string;
+    postalCode?: string;
+    country?: string;
   };
   statusHistory?: {
     id: string;
@@ -511,12 +517,36 @@ export default function OrdersPage() {
                   <Typography variant="subtitle2" fontWeight={700}>Müşteri Bilgileri</Typography>
                 </Box>
                 <Card variant="outlined" sx={{ p: 2 }}>
-                  <Typography variant="body2">
+                  <Typography variant="body2" fontWeight={500}>
                     {selectedOrder.user?.firstName} {selectedOrder.user?.lastName}
+                    {selectedOrder.user?.isPartner && (
+                      <Chip label="B2B" size="small" color="success" sx={{ ml: 1, height: 18 }} />
+                    )}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" display="block">
                     {selectedOrder.user?.email}
                   </Typography>
+                  {(selectedOrder.user?.phone || selectedOrder.address?.phone) && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Tel: {selectedOrder.user?.phone || selectedOrder.address?.phone}
+                    </Typography>
+                  )}
+                  {(selectedOrder.user?.companyName || selectedOrder.user?.taxNumber) && (
+                    <>
+                      <Divider sx={{ my: 1 }} />
+                      <Typography variant="caption" fontWeight={700} display="block">Cari / Fatura Bilgisi</Typography>
+                      {selectedOrder.user?.companyName && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Firma: {selectedOrder.user.companyName}
+                        </Typography>
+                      )}
+                      {selectedOrder.user?.taxNumber && (
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Vergi/TCKN: {selectedOrder.user.taxNumber}
+                        </Typography>
+                      )}
+                    </>
+                  )}
                 </Card>
               </Grid>
 
@@ -524,17 +554,21 @@ export default function OrdersPage() {
               <Grid size={{ xs: 12, md: 6 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                   <LocationIcon sx={{ color: olentiaColors.primary.main, fontSize: 20 }} />
-                  <Typography variant="subtitle2" fontWeight={700}>Teslimat Adresi</Typography>
+                  <Typography variant="subtitle2" fontWeight={700}>Teslimat / Fatura Adresi</Typography>
                 </Box>
                 <Card variant="outlined" sx={{ p: 2 }}>
                   {selectedOrder.address ? (
                     <>
-                      <Typography variant="body2" fontWeight={500}>{selectedOrder.address.fullName}</Typography>
+                      <Typography variant="body2" fontWeight={500}>
+                        {selectedOrder.address.firstName} {selectedOrder.address.lastName}
+                      </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {selectedOrder.address.addressLine1}
-                        {selectedOrder.address.addressLine2 && `, ${selectedOrder.address.addressLine2}`}
+                        {selectedOrder.address.line1}
+                        {selectedOrder.address.line2 && `, ${selectedOrder.address.line2}`}
                         <br />
-                        {selectedOrder.address.city} {selectedOrder.address.state} {selectedOrder.address.postalCode}
+                        {[selectedOrder.address.district, selectedOrder.address.city, selectedOrder.address.postalCode]
+                          .filter(Boolean)
+                          .join(' / ')}
                         <br />
                         {selectedOrder.address.phone}
                       </Typography>

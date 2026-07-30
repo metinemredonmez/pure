@@ -405,7 +405,17 @@ export class OrderService {
         payment: true,
         address: true,
         user: {
-          select: { id: true, email: true, firstName: true, lastName: true },
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            // Cari / fatura bilgisi
+            companyName: true,
+            taxNumber: true,
+            isPartner: true,
+          },
         },
       },
     });

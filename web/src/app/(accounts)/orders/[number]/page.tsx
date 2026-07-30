@@ -1,199 +1,233 @@
-import { Divider } from '@/components/Divider'
-import Prices from '@/components/Prices'
-import { getOrder } from '@/data/data'
-import ButtonSecondary from '@/shared/Button/ButtonSecondary'
-import clsx from 'clsx'
-import { Metadata } from 'next'
-import Image from 'next/image'
-import { notFound } from 'next/navigation'
+'use client'
 
-export async function generateMetadata({ params }: { params: Promise<{ number: string }> }): Promise<Metadata> {
-  const { number } = await params
-  const order = await getOrder(number)
-  if (!order) {
-    return {
-      title: 'Order not found',
-      description: 'The order you are looking for does not exist.',
-    }
-  }
-  const { number: orderNumber, status } = order
-  return { title: 'Order' + orderNumber, description: status }
+import { Divider } from '@/components/Divider'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+
+const STATUS_MAP: Record<string, { label: string; color: string; step: number }> = {
+  PENDING: { label: 'Ödeme Bekleniyor', color: 'bg-yellow-100 text-yellow-800', step: 0 },
+  PAID: { label: 'Ödeme Alındı', color: 'bg-amber-100 text-amber-800', step: 1 },
+  CONFIRMED: { label: 'Onaylandı', color: 'bg-sky-100 text-sky-800', step: 1 },
+  PREPARING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800', step: 2 },
+  PROCESSING: { label: 'Hazırlanıyor', color: 'bg-blue-100 text-blue-800', step: 2 },
+  SHIPPED: { label: 'Kargoya Verildi', color: 'bg-purple-100 text-purple-800', step: 3 },
+  IN_TRANSIT: { label: 'Yolda', color: 'bg-purple-100 text-purple-800', step: 3 },
+  DELIVERED: { label: 'Teslim Edildi', color: 'bg-green-100 text-green-800', step: 4 },
+  CANCELLED: { label: 'İptal Edildi', color: 'bg-red-100 text-red-800', step: 0 },
+  RETURNED: { label: 'İade Edildi', color: 'bg-neutral-100 text-neutral-800', step: 0 },
+  REFUNDED: { label: 'İade Edildi', color: 'bg-neutral-100 text-neutral-800', step: 0 },
+  PAYMENT_FAILED: { label: 'Ödeme Başarısız', color: 'bg-red-100 text-red-800', step: 0 },
 }
 
-const Page = async ({ params }: { params: Promise<{ number: string }> }) => {
-  const { number } = await params
-  const order = await getOrder(number)
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  CREDIT_CARD: 'Kredi / Banka Kartı',
+  DEBIT_CARD: 'Banka Kartı',
+  BANK_TRANSFER: 'Havale / EFT',
+  QR_CODE: 'QR Kod',
+}
 
-  if (!order?.number) {
-    return notFound()
+function money(v: any) {
+  return `₺${Number(v || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
+function fmtDate(d?: string) {
+  if (!d) return '—'
+  try {
+    return new Date(d).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })
+  } catch {
+    return '—'
+  }
+}
+
+export default function OrderDetailPage() {
+  const params = useParams<{ number: string }>()
+  const id = params?.number
+  const [order, setOrder] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const token = localStorage.getItem('pureolentia_token')
+    if (!token) {
+      window.location.href = '/login?redirect=/orders'
+      return
+    }
+    if (!id) return
+    fetch(`${API_URL}/orders/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => r.json())
+      .then((res) => {
+        const data = res?.data || res
+        if (!data || !data.id) {
+          setError('Sipariş bulunamadı.')
+        } else {
+          setOrder(data)
+        }
+        setLoading(false)
+      })
+      .catch(() => {
+        setError('Sipariş yüklenemedi.')
+        setLoading(false)
+      })
+  }, [id])
+
+  if (loading) return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+  if (error || !order) {
+    return (
+      <div className="py-16 text-center">
+        <h1 className="text-xl font-semibold">{error || 'Sipariş bulunamadı'}</h1>
+        <Link href="/orders" className="mt-4 inline-block text-sm font-medium text-primary-700 underline">
+          Siparişlerime dön
+        </Link>
+      </div>
+    )
   }
 
-  const products = order.products
+  const status = STATUS_MAP[order.status] || { label: order.status, color: 'bg-neutral-100 text-neutral-800', step: 0 }
+  const addr = order.address
+  const items: any[] = order.items || []
 
   return (
     <div>
       <div className="flex flex-wrap items-end gap-4">
         <div>
           <p className="mb-1 text-sm">
-            <span className="text-neutral-500 dark:text-neutral-400">Siparis verildi</span>
-            <time dateTime="2021-03-22"> {order.date}</time>
+            <span className="text-neutral-500 dark:text-neutral-400">Sipariş verildi</span>
+            <time> {fmtDate(order.createdAt)}</time>
           </p>
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Order #{order.number}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Sipariş #{order.orderNumber}</h1>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>{status.label}</span>
+          </div>
         </div>
-
-        <div className="ml-auto">
-          <ButtonSecondary size="smaller" href="#">
-            View invoice
-            <span className="ms-2" aria-hidden="true">
-              &rarr;
-            </span>
-          </ButtonSecondary>
-        </div>
+        {order.invoiceUrl && (
+          <div className="ml-auto">
+            <a
+              href={order.invoiceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-600"
+            >
+              Faturayı Görüntüle <span className="ms-2">&rarr;</span>
+            </a>
+          </div>
+        )}
       </div>
 
-      {/* Products */}
-      <div className="mt-6">
-        <h2 className="sr-only">Products purchased</h2>
-        <div className="flex flex-col gap-y-10">
-          {products.map((product) => (
-            <div key={product.id} className="border-t border-b bg-white sm:rounded-lg sm:border dark:bg-neutral-800">
-              <div className="py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:p-8">
-                <div className="sm:flex lg:col-span-7">
-                  <div className="relative aspect-square w-full shrink-0 rounded-lg object-cover sm:size-40">
-                    {product.featuredImage.src && (
-                      <Image
-                        alt={product.featuredImage.alt}
-                        src={product.featuredImage}
-                        fill
-                        className="rounded-lg object-cover"
-                        sizes="(min-width: 640px) 10rem, 100vw"
-                      />
-                    )}
-                  </div>
+      {/* Durum çubuğu */}
+      <div className="mt-8 rounded-lg border border-neutral-200 p-6 dark:border-neutral-700">
+        <div className="overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700">
+          <div
+            style={{ width: `calc(${status.step} / 4 * 100%)` }}
+            className="h-2 rounded-full bg-primary-700"
+          />
+        </div>
+        <div className="mt-4 hidden grid-cols-4 text-sm font-medium text-neutral-500 sm:grid">
+          <div className={status.step >= 1 ? 'text-neutral-950 dark:text-white' : ''}>Ödeme Alındı</div>
+          <div className={`text-center ${status.step >= 2 ? 'text-neutral-950 dark:text-white' : ''}`}>Hazırlanıyor</div>
+          <div className={`text-center ${status.step >= 3 ? 'text-neutral-950 dark:text-white' : ''}`}>Kargoda</div>
+          <div className={`text-right ${status.step >= 4 ? 'text-neutral-950 dark:text-white' : ''}`}>Teslim Edildi</div>
+        </div>
+        {order.trackingNumber && (
+          <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
+            Kargo Takip No: <span className="font-medium">{order.trackingNumber}</span>
+            {order.trackingUrl && (
+              <>
+                {' — '}
+                <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">
+                  kargoyu takip et
+                </a>
+              </>
+            )}
+          </p>
+        )}
+      </div>
 
-                  <div className="mt-6 flex flex-col sm:mt-0 sm:ml-6">
-                    <h3 className="text-base font-medium">
-                      <a href={product.href}>{product.title}</a>
-                    </h3>
-                    <p className="my-2 text-sm text-neutral-500 dark:text-neutral-400">Adet {product.quantity}</p>
-                    <Prices price={product.price} className="mt-auto flex justify-start" />
-                  </div>
-                </div>
-
-                <div className="mt-6 lg:col-span-5 lg:mt-0">
-                  <dl className="grid grid-cols-2 gap-x-6 text-sm">
-                    <div>
-                      <dt className="font-medium">Delivery address</dt>
-                      <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
-                        <span className="block">{product.address[0]}</span>
-                        <span className="block">{product.address[1]}</span>
-                        <span className="block">{product.address[2]}</span>
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium">Kargo bilgileri</dt>
-                      <dd className="mt-3 flex flex-col gap-y-3 text-neutral-500 dark:text-neutral-400">
-                        <p>{product.email}</p>
-                        <p>{product.phone}</p>
-                        <button type="button" className="font-medium underline">
-                          Edit
-                          <span aria-hidden="true"> &rarr;</span>
-                        </button>
-                      </dd>
-                    </div>
-                  </dl>
-                </div>
+      {/* Ürünler */}
+      <div className="mt-8 rounded-lg border border-neutral-200 dark:border-neutral-700">
+        <div className="divide-y divide-neutral-200 p-4 sm:p-6 dark:divide-neutral-700">
+          {items.map((item, idx) => (
+            <div key={idx} className="flex py-4 first:pt-0 last:pb-0">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium">{item.productName || item.product?.name || 'Ürün'}</h3>
+                {(item.variantName || item.variant?.name) && (
+                  <p className="mt-0.5 text-xs text-primary-700">{item.variantName || item.variant?.name}</p>
+                )}
+                <p className="mt-1 text-xs text-neutral-500">Adet: {item.quantity}</p>
               </div>
-
-              <div className="border-t px-4 py-6 sm:px-6 lg:p-8">
-                <h4 className="sr-only">Status</h4>
-                <p className="text-sm font-medium">
-                  {product.status} on <time dateTime={product.datetime}>{product.date}</time>
-                </p>
-                <div aria-hidden="true" className="mt-6">
-                  <div className="overflow-hidden rounded-full bg-neutral-200">
-                    <div
-                      style={{ width: `calc((${product.step} * 2 + 1) / 8 * 100%)` }}
-                      className="h-2 rounded-full bg-neutral-950 sm:h-1.5"
-                    />
-                  </div>
-                  <div className="mt-6 hidden grid-cols-4 text-sm font-medium text-neutral-500 sm:grid">
-                    <div className="text-neutral-950 dark:text-white">Siparis verildi</div>
-                    <div className={clsx(product.step > 0 ? 'text-neutral-950 dark:text-white' : '', 'text-center')}>
-                      Processing
-                    </div>
-                    <div className={clsx(product.step > 1 ? 'text-neutral-950 dark:text-white' : '', 'text-center')}>
-                      Shipped
-                    </div>
-                    <div className={clsx(product.step > 2 ? 'text-neutral-950 dark:text-white' : '', 'text-right')}>
-                      Delivered
-                    </div>
-                  </div>
-                </div>
+              <div className="text-right text-sm">
+                <p className="font-semibold">{money(item.totalPrice)}</p>
+                <p className="text-xs text-neutral-500">{money(item.unitPrice)} / adet</p>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* Billing */}
-      <div className="mt-16">
-        <h2 className="sr-only">Billing Summary</h2>
+      {/* Adres + Ödeme + Özet */}
+      <div className="mt-8 rounded-lg bg-neutral-50 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8 dark:bg-neutral-800">
+        <dl className="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:col-span-7">
+          <div>
+            <dt className="font-medium">Teslimat / Fatura Adresi</dt>
+            <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
+              {addr ? (
+                <>
+                  <span className="block">{[addr.firstName, addr.lastName].filter(Boolean).join(' ')}</span>
+                  <span className="block">{addr.line1}{addr.line2 ? `, ${addr.line2}` : ''}</span>
+                  <span className="block">{[addr.district, addr.city, addr.postalCode].filter(Boolean).join(' / ')}</span>
+                  {addr.phone && <span className="block">{addr.phone}</span>}
+                </>
+              ) : (
+                <span className="block">Adres bilgisi yok</span>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="font-medium">Ödeme Bilgisi</dt>
+            <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
+              <span className="block">
+                {PAYMENT_METHOD_LABEL[order.payment?.method] || order.payment?.method || 'Kredi / Banka Kartı'}
+              </span>
+              <span className="block">
+                Durum: {order.payment?.status === 'COMPLETED' ? 'Ödendi' : order.payment?.status === 'REFUNDED' ? 'İade Edildi' : order.payment?.status || status.label}
+              </span>
+            </dd>
+          </div>
+        </dl>
 
-        <div className="bg-neutral-50 px-4 py-6 sm:rounded-lg sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8 dark:bg-neutral-800">
-          <dl className="grid grid-cols-2 gap-6 text-sm sm:grid-cols-2 md:gap-x-8 lg:col-span-7">
-            <div>
-              <dt className="t font-medium">Billing address</dt>
-              <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
-                <span className="block">Floyd Miles</span>
-                <span className="block">7363 Cynthia Pass</span>
-                <span className="block">Toronto, ON N3Y 4H8</span>
-              </dd>
+        <dl className="mt-8 flex flex-col gap-y-4 text-sm lg:col-span-5 lg:mt-0">
+          <div className="flex items-center justify-between">
+            <dt className="text-neutral-600 dark:text-neutral-300">Ara Toplam</dt>
+            <dd className="font-medium">{money(order.subtotal)}</dd>
+          </div>
+          {Number(order.discount) > 0 && (
+            <div className="flex items-center justify-between text-green-700 dark:text-green-400">
+              <dt>İndirim</dt>
+              <dd className="font-medium">-{money(order.discount)}</dd>
             </div>
-            <div>
-              <dt className="font-medium">Payment information</dt>
-              <dd className="-mt-1 -ml-4 flex flex-wrap">
-                <div className="mt-4 ml-4 shrink-0">
-                  <svg width={36} height={24} viewBox="0 0 36 24" aria-hidden="true" className="h-6 w-auto">
-                    <rect rx={4} fill="#224DBA" width={36} height={24} />
-                    <path
-                      d="M10.925 15.673H8.874l-1.538-6c-.073-.276-.228-.52-.456-.635A6.575 6.575 0 005 8.403v-.231h3.304c.456 0 .798.347.855.75l.798 4.328 2.05-5.078h1.994l-3.076 7.5zm4.216 0h-1.937L14.8 8.172h1.937l-1.595 7.5zm4.101-5.422c.057-.404.399-.635.798-.635a3.54 3.54 0 011.88.346l.342-1.615A4.808 4.808 0 0020.496 8c-1.88 0-3.248 1.039-3.248 2.481 0 1.097.969 1.673 1.653 2.02.74.346 1.025.577.968.923 0 .519-.57.75-1.139.75a4.795 4.795 0 01-1.994-.462l-.342 1.616a5.48 5.48 0 002.108.404c2.108.057 3.418-.981 3.418-2.539 0-1.962-2.678-2.077-2.678-2.942zm9.457 5.422L27.16 8.172h-1.652a.858.858 0 00-.798.577l-2.848 6.924h1.994l.398-1.096h2.45l.228 1.096h1.766zm-2.905-5.482l.57 2.827h-1.596l1.026-2.827z"
-                      fill="#fff"
-                    />
-                  </svg>
-                  <p className="sr-only">Visa</p>
-                </div>
-                <div className="mt-4 ml-4">
-                  <p className="">Ending with 4242</p>
-                  <p className="text-neutral-600 dark:text-neutral-300">Expires 02 / 24</p>
-                </div>
-              </dd>
-            </div>
-          </dl>
+          )}
+          <div className="flex items-center justify-between">
+            <dt className="text-neutral-600 dark:text-neutral-300">Kargo</dt>
+            <dd className="font-medium">{Number(order.shippingCost) === 0 ? 'Ücretsiz' : money(order.shippingCost)}</dd>
+          </div>
+          <div className="flex items-center justify-between">
+            <dt className="text-neutral-600 dark:text-neutral-300">KDV (dahil)</dt>
+            <dd className="font-medium">{money(order.tax)}</dd>
+          </div>
+          <Divider />
+          <div className="flex items-center justify-between">
+            <dt className="font-medium">Toplam</dt>
+            <dd className="font-semibold text-primary-700">{money(order.total)}</dd>
+          </div>
+        </dl>
+      </div>
 
-          <dl className="mt-8 flex flex-col gap-y-5 text-sm lg:col-span-5 lg:mt-0">
-            <div className="flex items-center justify-between">
-              <dt className="text-neutral-600 dark:text-neutral-300">Ara Toplam</dt>
-              <dd className="font-medium">$72</dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-neutral-600 dark:text-neutral-300">Kargo</dt>
-              <dd className="font-medium">$5</dd>
-            </div>
-            <div className="flex items-center justify-between">
-              <dt className="text-neutral-600 dark:text-neutral-300">Vergi</dt>
-              <dd className="font-medium">$6.16</dd>
-            </div>
-            <Divider />
-            <div className="flex items-center justify-between">
-              <dt className="font-medium">Siparis Toplami</dt>
-              <dd className="font-medium">$83.16</dd>
-            </div>
-          </dl>
-        </div>
+      <div className="mt-8">
+        <Link href="/orders" className="text-sm font-medium text-primary-700 underline">
+          ← Siparişlerime dön
+        </Link>
       </div>
     </div>
   )
 }
-
-export default Page

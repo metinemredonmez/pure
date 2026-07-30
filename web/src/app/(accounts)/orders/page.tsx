@@ -91,7 +91,7 @@ export default function OrdersPage() {
                 </div>
                 <div className="mt-3 flex items-center gap-3 sm:mt-0">
                   <span className="text-lg font-bold text-primary-700">₺{Number(order.total || 0).toLocaleString('tr-TR')}</span>
-                  <Button color="light" size="smaller" href={`/orders/${order.orderNumber}`}>
+                  <Button color="light" size="smaller" href={`/orders/${order.id}`}>
                     Detay
                   </Button>
                 </div>
