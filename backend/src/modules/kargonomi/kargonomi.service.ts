@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { IntegrationSettingsService } from '../ops/integration-settings.service';
 import {
   CreateKargonomiShipmentDto,
   UpdateKargonomiShipmentDto,
@@ -15,24 +16,33 @@ import {
 @Injectable()
 export class KargonomiService {
   private readonly logger = new Logger(KargonomiService.name);
-  private readonly baseUrl: string;
-  private readonly apiToken: string;
-  private readonly webhookSecret: string;
+  private readonly baseUrl = 'https://app.kargonomi.com.tr/api/v1';
 
-  constructor(private readonly configService: ConfigService) {
-    this.baseUrl = 'https://app.kargonomi.com.tr/api/v1';
-    this.apiToken = this.configService.get<string>('KARGONOMI_API_TOKEN', '');
-    this.webhookSecret = this.configService.get<string>('KARGONOMI_WEBHOOK_SECRET', '');
-  }
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly settings: IntegrationSettingsService,
+  ) {}
 
   // ══════════════════════════════════════════════
   // PRIVATE HELPERS
   // ══════════════════════════════════════════════
 
+  /** Admin (Entegrasyonlar) ayarından token; yoksa env'e düşer */
+  private async getToken(): Promise<string> {
+    const fromDb = await this.settings.get('kargonomi_api_token');
+    return fromDb || this.configService.get<string>('KARGONOMI_API_TOKEN', '');
+  }
+
+  /** Webhook imza doğrulama anahtarı — admin ayarı; yoksa env */
+  async getWebhookSecret(): Promise<string> {
+    const fromDb = await this.settings.get('kargonomi_webhook_secret');
+    return fromDb || this.configService.get<string>('KARGONOMI_WEBHOOK_SECRET', '');
+  }
+
   /** Build standard Authorization headers for Kargonomi API calls */
-  private getHeaders(): Record<string, string> {
+  private async getHeaders(): Promise<Record<string, string>> {
     return {
-      Authorization: `Bearer ${this.apiToken}`,
+      Authorization: `Bearer ${await this.getToken()}`,
       Accept: 'application/json',
     };
   }
@@ -65,7 +75,7 @@ export class KargonomiService {
     const fetchOptions: RequestInit = {
       method,
       headers: {
-        ...this.getHeaders(),
+        ...(await this.getHeaders()),
         ...(options?.headers || {}),
       },
     };
@@ -124,7 +134,7 @@ export class KargonomiService {
       const response = await fetch(url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${this.apiToken}`,
+          Authorization: `Bearer ${await this.getToken()}`,
           Accept: 'application/json',
         },
         body: form,
@@ -252,7 +262,7 @@ export class KargonomiService {
     try {
       const response = await fetch(url, {
         method: 'GET',
-        headers: this.getHeaders(),
+        headers: await this.getHeaders(),
       });
 
       if (!response.ok) {
@@ -341,10 +351,14 @@ export class KargonomiService {
    * Verify the HMAC-SHA256 signature from a Kargonomi webhook request.
    * Compares the X-Webhook-Signature header against a computed HMAC of the raw body.
    */
-  verifyWebhookSignature(rawBody: Buffer, signature: string): boolean {
+  async verifyWebhookSignature(
+    rawBody: Buffer,
+    signature: string,
+  ): Promise<boolean> {
     const crypto = require('crypto');
+    const secret = await this.getWebhookSecret();
     const computed = crypto
-      .createHmac('sha256', this.webhookSecret)
+      .createHmac('sha256', secret)
       .update(rawBody)
       .digest('hex');
 

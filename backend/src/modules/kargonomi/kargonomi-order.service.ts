@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { KargonomiService } from './kargonomi.service';
 import { OrderService } from '../order/order.service';
+import { IntegrationSettingsService } from '../ops/integration-settings.service';
 import { OrderStatus } from '@prisma/client';
 
 /**
@@ -40,7 +41,14 @@ export class KargonomiOrderService {
     private config: ConfigService,
     private kargonomi: KargonomiService,
     private orderService: OrderService,
+    private settings: IntegrationSettingsService,
   ) {}
+
+  /** Admin ayarı (Entegrasyonlar); yoksa env fallback */
+  private async setting(dbKey: string, envKey: string): Promise<string> {
+    const fromDb = await this.settings.get(dbKey);
+    return fromDb || this.config.get<string>(envKey, '') || '';
+  }
 
   private normalizePhone(raw?: string): string {
     let d = String(raw || '').replace(/\D/g, '');
@@ -65,9 +73,10 @@ export class KargonomiOrderService {
 
   /** Admin: sipariş için Kargonomi gönderisi oluştur ve kargoya ver. */
   async shipOrder(orderId: string) {
-    if (!this.config.get<string>('KARGONOMI_API_TOKEN')) {
+    const token = await this.setting('kargonomi_api_token', 'KARGONOMI_API_TOKEN');
+    if (!token) {
       throw new BadRequestException(
-        'Kargonomi API token tanımlı değil (KARGONOMI_API_TOKEN).',
+        'Kargonomi API token tanımlı değil. Admin → Entegrasyonlar → Kargo\'dan girin.',
       );
     }
     const order = await this.prisma.order.findUnique({
@@ -83,11 +92,13 @@ export class KargonomiOrderService {
     const addr = order.address;
     if (!addr) throw new BadRequestException('Siparişte teslimat adresi yok');
 
-    // Gönderici: Kargonomi panelinde tanımlı depo (warehouse) id'si
-    const warehouseId = Number(this.config.get<string>('KARGONOMI_WAREHOUSE_ID'));
+    // Gönderici: Kargonomi panelinde tanımlı depo (warehouse) id'si (admin ayarı)
+    const warehouseId = Number(
+      await this.setting('kargonomi_warehouse_id', 'KARGONOMI_WAREHOUSE_ID'),
+    );
     if (!warehouseId) {
       throw new BadRequestException(
-        'Gönderici deposu tanımlı değil (KARGONOMI_WAREHOUSE_ID). Kargonomi panelinde depo oluşturup id\'sini .env\'e ekleyin.',
+        'Gönderici deposu tanımlı değil. Kargonomi panelinde depo oluşturup id\'sini Admin → Entegrasyonlar → Kargo\'ya girin (Kargonomi Depo/Gönderici ID).',
       );
     }
 
@@ -107,7 +118,8 @@ export class KargonomiOrderService {
       .filter(Boolean)
       .join(' ')
       .trim();
-    const desi = Number(this.config.get<string>('KARGONOMI_DEFAULT_DESI')) || 1;
+    const desi =
+      Number(await this.setting('kargonomi_default_desi', 'KARGONOMI_DEFAULT_DESI')) || 1;
 
     const body: any = {
       warehouse_id: warehouseId,

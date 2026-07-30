@@ -202,7 +202,7 @@ export class KargonomiWebhookController {
       throw new BadRequestException('Missing webhook signature');
     }
 
-    const isValid = this.kargonomiService.verifyWebhookSignature(rawBody, signature);
+    const isValid = await this.kargonomiService.verifyWebhookSignature(rawBody, signature);
     if (!isValid) {
       this.logger.warn('Invalid Kargonomi webhook signature received');
       throw new BadRequestException('Invalid webhook signature');
