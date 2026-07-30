@@ -4,6 +4,7 @@ import { NotifyAddToCart } from '@/components/AddToCardButton'
 import NcInputNumber from '@/components/NcInputNumber'
 import Prices from '@/components/Prices'
 import { useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductDetail } from '@/data/data'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
@@ -26,6 +27,7 @@ const fmt = (n: number) => `₺${Number(n || 0).toFixed(0)}`
 
 export default function ProductBuyBox({ product }: { product: TProductDetail }) {
   const { addItem, totalQuantity, subtotal } = useCart()
+  const { t } = useTranslation()
   const p = product as any
 
   const featuredImage = p.featuredImage
@@ -266,7 +268,7 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
             className="hidden sm:block"
             strokeWidth={1.5}
           />
-          <span className="text-base/6 font-normal sm:ml-2.5">Sepete Ekle</span>
+          <span className="text-base/6 font-normal sm:ml-2.5">{t('common.add_to_cart', 'Sepete Ekle')}</span>
         </ButtonPrimary>
       </div>
     </div>

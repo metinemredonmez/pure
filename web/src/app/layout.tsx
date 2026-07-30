@@ -1,6 +1,7 @@
 import Aside from '@/components/aside'
 import ChatbotWidget from '@/components/ChatbotWidget'
 import { CartProvider } from '@/contexts/CartContext'
+import { LanguageProvider } from '@/contexts/LanguageContext'
 import '@/styles/tailwind.css'
 import { Metadata } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
@@ -36,13 +37,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${inter.variable} ${playfair.variable} ${inter.className}`}>
       <body className="bg-white text-neutral-900 dark:bg-neutral-900 dark:text-neutral-200">
-        <CartProvider>
-          <Aside.Provider>
-            {children}
-            <GlobalClient />
-            <ChatbotWidget />
-          </Aside.Provider>
-        </CartProvider>
+        <LanguageProvider>
+          <CartProvider>
+            <Aside.Provider>
+              {children}
+              <GlobalClient />
+              <ChatbotWidget />
+            </Aside.Provider>
+          </CartProvider>
+        </LanguageProvider>
 
         {/* OneSignal Web Push */}
         <Script
