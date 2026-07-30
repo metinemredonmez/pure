@@ -558,6 +558,110 @@ export class OrderService {
   }
 
   /**
+   * Sipariş iptali (admin). Kargo sürecindeki/teslim edilmiş sipariş iptal
+   * edilemez. Ödenmişse tam iade (PayTR) + stok geri yüklenir; ödenmemiş
+   * PENDING/PAID'de stok geri yüklenir. Sipariş CANCELLED olur.
+   */
+  async cancel(id: string, adminId?: string, reason?: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: { items: true, payment: true },
+    });
+    if (!order) throw new NotFoundException('Sipariş bulunamadı');
+
+    const CARGO_LOCKED: OrderStatus[] = [
+      OrderStatus.SHIPPED,
+      OrderStatus.IN_TRANSIT,
+      OrderStatus.DELIVERED,
+    ];
+    if (CARGO_LOCKED.includes(order.status)) {
+      throw new BadRequestException(
+        'Kargo sürecindeki veya teslim edilmiş sipariş iptal edilemez. İade süreci başlatın.',
+      );
+    }
+    if (
+      order.status === OrderStatus.CANCELLED ||
+      order.status === OrderStatus.REFUNDED
+    ) {
+      throw new BadRequestException('Sipariş zaten iptal/iade edilmiş.');
+    }
+
+    const paid = order.payment && order.payment.status === 'COMPLETED';
+    if (paid && order.payment) {
+      // Tam iade — stok geri yüklemeyi refund yapar; order status'ü aşağıda ayarlıyoruz
+      await this.payment.refund(
+        order.payment.id,
+        Number(order.payment.amount),
+        reason || 'Sipariş iptali',
+        false,
+      );
+    } else if (order.status === OrderStatus.PENDING) {
+      // Ödenmemiş ama stok düşülmüş → geri yükle
+      await this.prisma.$transaction(async (tx) => {
+        for (const item of order.items) {
+          if (item.variantId) {
+            await tx.productVariant.update({
+              where: { id: item.variantId },
+              data: { stock: { increment: item.quantity } },
+            });
+          } else if (item.productId) {
+            await tx.product.update({
+              where: { id: item.productId },
+              data: { stock: { increment: item.quantity } },
+            });
+          }
+        }
+      });
+    }
+    // PAYMENT_FAILED zaten stok iade etti → dokunma
+
+    const updated = await this.prisma.order.update({
+      where: { id },
+      data: {
+        status: OrderStatus.CANCELLED,
+        statusHistory: {
+          create: {
+            status: OrderStatus.CANCELLED,
+            changedBy: adminId,
+            note: reason || 'Sipariş iptal edildi',
+          },
+        },
+      },
+      include: { items: true, statusHistory: { orderBy: { createdAt: 'desc' } } },
+    });
+    return updated;
+  }
+
+  /**
+   * Sipariş silme (admin). FK: OrderItem/OrderStatusHistory cascade;
+   * Payment (+Refund/PaymentLog) ve ShipmentRecord manuel silinir.
+   */
+  async remove(id: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    if (!order) throw new NotFoundException('Sipariş bulunamadı');
+
+    await this.prisma.$transaction(async (tx) => {
+      const payment = await tx.payment.findUnique({
+        where: { orderId: id },
+        select: { id: true },
+      });
+      if (payment) {
+        await tx.refund.deleteMany({ where: { paymentId: payment.id } });
+        await tx.paymentLog.deleteMany({ where: { paymentId: payment.id } });
+        await tx.payment.delete({ where: { orderId: id } });
+      }
+      // ShipmentStatusHistory cascade ile silinir
+      await tx.shipmentRecord.deleteMany({ where: { orderId: id } });
+      // OrderItem + OrderStatusHistory cascade ile silinir
+      await tx.order.delete({ where: { id } });
+    });
+    return { success: true };
+  }
+
+  /**
    * Admin durum değiştirdiğinde müşteriye e-posta:
    *  - CONFIRMED  → "siparişiniz onaylandı"
    *  - PREPARING  → "siparişiniz hazırlanıyor"

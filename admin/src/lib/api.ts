@@ -206,6 +206,14 @@ export const ordersApi = {
     });
     return data;
   },
+  cancelOrder: async (id: string, reason?: string) => {
+    const { data } = await api.post(`/admin/orders/${id}/cancel`, { reason });
+    return data;
+  },
+  deleteOrder: async (id: string) => {
+    const { data } = await api.delete(`/admin/orders/${id}`);
+    return data;
+  },
 };
 
 // Payments API

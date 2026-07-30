@@ -47,6 +47,8 @@ import {
   Payment as PaymentIcon,
   AccessTime as TimeIcon,
   FilterList as FilterIcon,
+  CancelOutlined as CancelIcon,
+  DeleteOutline as DeleteIcon,
 } from '@mui/icons-material';
 import { ordersApi } from '@/lib/api';
 import { olentiaColors } from '@/lib/theme';
@@ -183,7 +185,15 @@ export default function OrdersPage() {
   const [newStatus, setNewStatus] = useState('');
   const [statusNote, setStatusNote] = useState('');
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [actionOrder, setActionOrder] = useState<Order | null>(null);
+  const [cancelReason, setCancelReason] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
   const [sortBy, setSortBy] = useState('createdAt');
+
+  // Kargo sürecinde / bitmiş siparişte iptal edilemez
+  const CANCELLABLE_BLOCKED = ['SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'CANCELLED', 'REFUNDED'];
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const handleSort = (field: string) => {
@@ -252,6 +262,35 @@ export default function OrdersPage() {
       console.error('Durum güncellenemedi:', error);
     } finally {
       setStatusUpdating(false);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!actionOrder) return;
+    setActionLoading(true);
+    try {
+      await ordersApi.cancelOrder(actionOrder.id, cancelReason || undefined);
+      setCancelDialogOpen(false);
+      setCancelReason('');
+      fetchOrders();
+    } catch (error: any) {
+      alert(error?.response?.data?.message || 'Sipariş iptal edilemedi');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (!actionOrder) return;
+    setActionLoading(true);
+    try {
+      await ordersApi.deleteOrder(actionOrder.id);
+      setDeleteDialogOpen(false);
+      fetchOrders();
+    } catch (error: any) {
+      alert(error?.response?.data?.message || 'Sipariş silinemedi');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -453,6 +492,18 @@ export default function OrdersPage() {
                         <Tooltip title="Durum Güncelle">
                           <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleOpenStatusDialog(order); }}>
                             <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        {!CANCELLABLE_BLOCKED.includes(order.status) && (
+                          <Tooltip title="Siparişi İptal Et">
+                            <IconButton size="small" color="warning" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setCancelReason(''); setCancelDialogOpen(true); }}>
+                              <CancelIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title="Siparişi Sil">
+                          <IconButton size="small" color="error" onClick={(e) => { e.stopPropagation(); setActionOrder(order); setDeleteDialogOpen(true); }}>
+                            <DeleteIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -799,6 +850,50 @@ export default function OrdersPage() {
             sx={{ bgcolor: olentiaColors.primary.main, '&:hover': { bgcolor: olentiaColors.primary.dark } }}
           >
             {statusUpdating ? 'Güncelleniyor...' : 'Güncelle'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sipariş İptal Dialog */}
+      <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Siparişi İptal Et</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            <strong>{actionOrder?.orderNumber}</strong> siparişi iptal edilecek. Ödeme alınmışsa
+            otomatik iade başlatılır ve stok geri yüklenir.
+          </Typography>
+          <TextField
+            fullWidth
+            multiline
+            rows={2}
+            size="small"
+            label="İptal nedeni (opsiyonel)"
+            value={cancelReason}
+            onChange={(e) => setCancelReason(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setCancelDialogOpen(false)} color="inherit">Vazgeç</Button>
+          <Button onClick={handleCancelOrder} variant="contained" color="warning" disabled={actionLoading}>
+            {actionLoading ? 'İşleniyor...' : 'İptal Et'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sipariş Silme Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Siparişi Sil</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2">
+            <strong>{actionOrder?.orderNumber}</strong> siparişi ve tüm kayıtları (ödeme, kargo, geçmiş)
+            <strong> kalıcı olarak</strong> silinecek. Bu işlem geri alınamaz. Muhasebe kaydı için iptal
+            (iade) tercih edilmelidir.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)} color="inherit">Vazgeç</Button>
+          <Button onClick={handleDeleteOrder} variant="contained" color="error" disabled={actionLoading}>
+            {actionLoading ? 'Siliniyor...' : 'Kalıcı Sil'}
           </Button>
         </DialogActions>
       </Dialog>

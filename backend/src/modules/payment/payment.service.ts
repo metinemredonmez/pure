@@ -953,7 +953,12 @@ export class PaymentService {
   // REFUND
   // ══════════════════════════════════════════════
 
-  async refund(paymentId: string, amount: number, reason?: string) {
+  async refund(
+    paymentId: string,
+    amount: number,
+    reason?: string,
+    updateOrderStatus = true,
+  ) {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
@@ -969,6 +974,15 @@ export class PaymentService {
     ) {
       throw new BadRequestException(
         'Sadece tamamlanmış ödemeler iade edilebilir',
+      );
+    }
+
+    // Kargo sürecindeki sipariş iade edilemez (SHIPPED/IN_TRANSIT).
+    // Teslim sonrası iade için kargo iade (return) süreci kullanılır.
+    const CARGO_LOCKED = ['SHIPPED', 'IN_TRANSIT'];
+    if (payment.order && CARGO_LOCKED.includes(payment.order.status as string)) {
+      throw new BadRequestException(
+        'Kargo sürecindeki sipariş iade edilemez. Teslimat sonrası iade sürecini kullanın.',
       );
     }
 
@@ -1073,6 +1087,18 @@ export class PaymentService {
             data: { status: PaymentStatus.REFUNDED },
           });
 
+          // Tam iadede sipariş durumu da REFUNDED (iptal akışı false geçer)
+          if (
+            updateOrderStatus &&
+            amount === Number(payment.amount) &&
+            payment.order
+          ) {
+            await this.prisma.order.update({
+              where: { id: payment.orderId },
+              data: { status: 'REFUNDED' },
+            });
+          }
+
           this.logger.log(`Refund completed: ${refund.id}`);
         } else {
           await this.prisma.refund.update({
@@ -1096,6 +1122,20 @@ export class PaymentService {
         where: { id: refund.id },
         data: { status: 'COMPLETED', processedAt: new Date() },
       });
+      await this.prisma.payment.update({
+        where: { id: paymentId },
+        data: { status: PaymentStatus.REFUNDED },
+      });
+      if (
+        updateOrderStatus &&
+        amount === Number(payment.amount) &&
+        payment.order
+      ) {
+        await this.prisma.order.update({
+          where: { id: payment.orderId },
+          data: { status: 'REFUNDED' },
+        });
+      }
     }
 
     await this.logPayment(paymentId, 'refund.created', {

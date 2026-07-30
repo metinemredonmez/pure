@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -100,5 +101,23 @@ export class OrderController {
     @Body() dto: UpdateOrderStatusDto,
   ) {
     return this.orderService.updateStatus(id, dto.status, adminId, dto.note);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Post('admin/orders/:id/cancel')
+  @ApiOperation({ summary: 'Cancel order (admin) — kargo sürecinde engellenir' })
+  cancel(
+    @Param('id') id: string,
+    @CurrentUser('id') adminId: string,
+    @Body() body: { reason?: string },
+  ) {
+    return this.orderService.cancel(id, adminId, body?.reason);
+  }
+
+  @Roles(UserRole.ADMIN)
+  @Delete('admin/orders/:id')
+  @ApiOperation({ summary: 'Delete order (admin)' })
+  remove(@Param('id') id: string) {
+    return this.orderService.remove(id);
   }
 }
