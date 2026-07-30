@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -50,6 +51,7 @@ const STATUS_MAP: Record<string, { label: string; cls: string }> = {
 }
 
 export default function AccountSubscriptionsPage() {
+  const { t } = useTranslation()
   const [subs, setSubs] = useState<SubscriptionItem[]>([])
   const [loading, setLoading] = useState(true)
   const [busyId, setBusyId] = useState<string | null>(null)
@@ -79,7 +81,7 @@ export default function AccountSubscriptionsPage() {
   const action = async (id: string, kind: 'pause' | 'resume' | 'cancel') => {
     const token = localStorage.getItem('pureolentia_token')
     if (!token) return
-    const confirmMsg = kind === 'cancel' ? 'Aboneliği iptal etmek istediğinize emin misiniz?' : ''
+    const confirmMsg = kind === 'cancel' ? t('subscription.cancel_confirm', 'Aboneliği iptal etmek istediğinize emin misiniz?') : ''
     if (confirmMsg && !confirm(confirmMsg)) return
     setBusyId(id)
     try {
@@ -88,13 +90,13 @@ export default function AccountSubscriptionsPage() {
         headers: { Authorization: `Bearer ${token}` },
       })
       const j = await r.json()
-      if (!r.ok || j?.success === false) throw new Error(j?.message || 'Hata')
+      if (!r.ok || j?.success === false) throw new Error(j?.message || t('common.error', 'Hata'))
       toast.success(
-        kind === 'pause' ? 'Abonelik duraklatıldı' : kind === 'resume' ? 'Abonelik yeniden başlatıldı' : 'Abonelik iptal edildi'
+        kind === 'pause' ? t('subscription.paused_toast', 'Abonelik duraklatıldı') : kind === 'resume' ? t('subscription.resumed_toast', 'Abonelik yeniden başlatıldı') : t('subscription.cancelled_toast', 'Abonelik iptal edildi')
       )
       await load()
     } catch (e: any) {
-      toast.error(e?.message || 'İşlem başarısız')
+      toast.error(e?.message || t('common.action_failed', 'İşlem başarısız'))
     } finally {
       setBusyId(null)
     }
@@ -102,20 +104,20 @@ export default function AccountSubscriptionsPage() {
 
   if (loading) {
     return (
-      <div className="py-10 text-center text-sm text-neutral-500">Abonelikler yükleniyor...</div>
+      <div className="py-10 text-center text-sm text-neutral-500">{t('subscription.loading', 'Abonelikler yükleniyor...')}</div>
     )
   }
 
   if (subs.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-neutral-200 dark:border-neutral-700 p-12 text-center">
-        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">Henüz aboneliğiniz yok</h2>
-        <p className="mt-2 text-sm text-neutral-500">Kahve aboneliğine başlayın, her ay taze kavrulmuş kahveniz kapınıza gelsin.</p>
+        <h2 className="text-lg font-semibold text-neutral-900 dark:text-white">{t('subscription.empty_title', 'Henüz aboneliğiniz yok')}</h2>
+        <p className="mt-2 text-sm text-neutral-500">{t('subscription.empty_desc', 'Kahve aboneliğine başlayın, her ay taze kavrulmuş kahveniz kapınıza gelsin.')}</p>
         <Link
           href="/subscription"
           className="mt-6 inline-flex items-center rounded-full bg-primary-700 px-6 py-3 text-sm font-semibold text-white hover:bg-primary-800 transition"
         >
-          Abonelikleri İncele
+          {t('subscription.browse_plans', 'Abonelikleri İncele')}
         </Link>
       </div>
     )
@@ -124,8 +126,8 @@ export default function AccountSubscriptionsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">Aboneliklerim</h1>
-        <p className="mt-1 text-sm text-neutral-500">Aktif aboneliklerinizi buradan yönetebilirsiniz.</p>
+        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">{t('subscription.my_title', 'Aboneliklerim')}</h1>
+        <p className="mt-1 text-sm text-neutral-500">{t('subscription.my_subtitle', 'Aktif aboneliklerinizi buradan yönetebilirsiniz.')}</p>
       </div>
 
       {subs.map((s) => {
@@ -140,40 +142,40 @@ export default function AccountSubscriptionsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
-                    {s.plan?.name || 'Abonelik'}
+                    {s.plan?.name || t('subscription.default_name', 'Abonelik')}
                   </h3>
-                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${st.cls}`}>{st.label}</span>
+                  <span className={`rounded-full px-3 py-1 text-xs font-medium ${st.cls}`}>{t(`subscription.status_${s.status.toLowerCase()}`, st.label)}</span>
                 </div>
                 <p className="mt-1 text-xs text-neutral-500">
-                  Başlangıç: {formatDate(s.createdAt)}
-                  {s.plan?.frequencyWeeks ? ` · ${s.plan.frequencyWeeks === 4 ? 'Ayda 1' : `${s.plan.frequencyWeeks} haftada 1`}` : ''}
+                  {t('subscription.start_label', 'Başlangıç:')} {formatDate(s.createdAt)}
+                  {s.plan?.frequencyWeeks ? ` · ${s.plan.frequencyWeeks === 4 ? t('subscription.freq_monthly', 'Ayda 1') : t('subscription.freq_weeks', '{weeks} haftada 1', { weeks: s.plan.frequencyWeeks })}` : ''}
                   {s.plan?.weightGrams ? ` · ${s.plan.weightGrams >= 1000 ? `${s.plan.weightGrams / 1000}kg` : `${s.plan.weightGrams}g`}` : ''}
                 </p>
               </div>
 
               <div className="text-right">
                 <div className="text-xl font-bold text-primary-700">{s.plan ? formatPrice(s.plan.priceMonthly) : '—'}</div>
-                <div className="text-xs text-neutral-500">/ teslimat</div>
+                <div className="text-xs text-neutral-500">{t('subscription.per_delivery', '/ teslimat')}</div>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-3 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 p-4 text-xs sm:grid-cols-4">
               <div>
-                <div className="text-neutral-500">Sonraki Teslimat</div>
+                <div className="text-neutral-500">{t('subscription.next_delivery', 'Sonraki Teslimat')}</div>
                 <div className="mt-1 font-semibold text-neutral-900 dark:text-white">{formatDate(s.nextBillingDate)}</div>
               </div>
               <div>
-                <div className="text-neutral-500">Öğütüm</div>
+                <div className="text-neutral-500">{t('subscription.grind', 'Öğütüm')}</div>
                 <div className="mt-1 font-semibold text-neutral-900 dark:text-white">{s.grindPreference || '—'}</div>
               </div>
               <div>
-                <div className="text-neutral-500">Ödeme Kartı</div>
+                <div className="text-neutral-500">{t('subscription.payment_card', 'Ödeme Kartı')}</div>
                 <div className="mt-1 font-semibold text-neutral-900 dark:text-white">
                   {s.cardBrand && s.cardLast4 ? `${s.cardBrand} •••• ${s.cardLast4}` : '—'}
                 </div>
               </div>
               <div>
-                <div className="text-neutral-500">Teslimat Sayısı</div>
+                <div className="text-neutral-500">{t('subscription.delivery_count', 'Teslimat Sayısı')}</div>
                 <div className="mt-1 font-semibold text-neutral-900 dark:text-white">{s.cycles?.length || 0}</div>
               </div>
             </div>
@@ -185,7 +187,7 @@ export default function AccountSubscriptionsPage() {
                   disabled={busyId === s.id}
                   className="rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:hover:bg-neutral-800"
                 >
-                  Duraklat
+                  {t('subscription.pause', 'Duraklat')}
                 </button>
               )}
               {isPaused && (
@@ -194,7 +196,7 @@ export default function AccountSubscriptionsPage() {
                   disabled={busyId === s.id}
                   className="rounded-full bg-primary-700 px-4 py-2 text-xs font-medium text-white hover:bg-primary-800 disabled:opacity-50"
                 >
-                  Devam Ettir
+                  {t('subscription.resume', 'Devam Ettir')}
                 </button>
               )}
               {canCancel && (
@@ -203,7 +205,7 @@ export default function AccountSubscriptionsPage() {
                   disabled={busyId === s.id}
                   className="rounded-full border border-red-300 px-4 py-2 text-xs font-medium text-red-700 hover:bg-red-50 disabled:opacity-50"
                 >
-                  Aboneliği İptal Et
+                  {t('subscription.cancel', 'Aboneliği İptal Et')}
                 </button>
               )}
             </div>

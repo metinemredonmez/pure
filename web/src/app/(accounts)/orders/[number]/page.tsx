@@ -1,6 +1,7 @@
 'use client'
 
 import { Divider } from '@/components/Divider'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
@@ -42,6 +43,7 @@ function fmtDate(d?: string) {
 }
 
 export default function OrderDetailPage() {
+  const { t } = useTranslation()
   const params = useParams<{ number: string }>()
   const id = params?.number
   const [order, setOrder] = useState<any>(null)
@@ -60,25 +62,25 @@ export default function OrderDetailPage() {
       .then((res) => {
         const data = res?.data || res
         if (!data || !data.id) {
-          setError('Sipariş bulunamadı.')
+          setError(t('order.not_found', 'Sipariş bulunamadı.'))
         } else {
           setOrder(data)
         }
         setLoading(false)
       })
       .catch(() => {
-        setError('Sipariş yüklenemedi.')
+        setError(t('order.load_failed', 'Sipariş yüklenemedi.'))
         setLoading(false)
       })
   }, [id])
 
-  if (loading) return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+  if (loading) return <div className="py-20 text-center text-neutral-400">{t('common.loading', 'Yükleniyor...')}</div>
   if (error || !order) {
     return (
       <div className="py-16 text-center">
-        <h1 className="text-xl font-semibold">{error || 'Sipariş bulunamadı'}</h1>
+        <h1 className="text-xl font-semibold">{error || t('order.not_found_short', 'Sipariş bulunamadı')}</h1>
         <Link href="/orders" className="mt-4 inline-block text-sm font-medium text-primary-700 underline">
-          Siparişlerime dön
+          {t('order.back_to_orders', 'Siparişlerime dön')}
         </Link>
       </div>
     )
@@ -93,11 +95,11 @@ export default function OrderDetailPage() {
       <div className="flex flex-wrap items-end gap-4">
         <div>
           <p className="mb-1 text-sm">
-            <span className="text-neutral-500 dark:text-neutral-400">Sipariş verildi</span>
+            <span className="text-neutral-500 dark:text-neutral-400">{t('order.placed_on', 'Sipariş verildi')}</span>
             <time> {fmtDate(order.createdAt)}</time>
           </p>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Sipariş #{order.orderNumber}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{t('order.order_number', 'Sipariş #{number}', { number: order.orderNumber })}</h1>
             <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${status.color}`}>{status.label}</span>
           </div>
         </div>
@@ -109,7 +111,7 @@ export default function OrderDetailPage() {
               rel="noopener noreferrer"
               className="inline-flex items-center rounded-full border border-neutral-300 px-4 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-600"
             >
-              Faturayı Görüntüle <span className="ms-2">&rarr;</span>
+              {t('order.view_invoice', 'Faturayı Görüntüle')} <span className="ms-2">&rarr;</span>
             </a>
           </div>
         )}
@@ -124,19 +126,19 @@ export default function OrderDetailPage() {
           />
         </div>
         <div className="mt-4 hidden grid-cols-4 text-sm font-medium text-neutral-500 sm:grid">
-          <div className={status.step >= 1 ? 'text-neutral-950 dark:text-white' : ''}>Ödeme Alındı</div>
-          <div className={`text-center ${status.step >= 2 ? 'text-neutral-950 dark:text-white' : ''}`}>Hazırlanıyor</div>
-          <div className={`text-center ${status.step >= 3 ? 'text-neutral-950 dark:text-white' : ''}`}>Kargoda</div>
-          <div className={`text-right ${status.step >= 4 ? 'text-neutral-950 dark:text-white' : ''}`}>Teslim Edildi</div>
+          <div className={status.step >= 1 ? 'text-neutral-950 dark:text-white' : ''}>{t('order.step_paid', 'Ödeme Alındı')}</div>
+          <div className={`text-center ${status.step >= 2 ? 'text-neutral-950 dark:text-white' : ''}`}>{t('order.step_preparing', 'Hazırlanıyor')}</div>
+          <div className={`text-center ${status.step >= 3 ? 'text-neutral-950 dark:text-white' : ''}`}>{t('order.step_shipping', 'Kargoda')}</div>
+          <div className={`text-right ${status.step >= 4 ? 'text-neutral-950 dark:text-white' : ''}`}>{t('order.step_delivered', 'Teslim Edildi')}</div>
         </div>
         {order.trackingNumber && (
           <p className="mt-4 text-sm text-neutral-600 dark:text-neutral-300">
-            Kargo Takip No: <span className="font-medium">{order.trackingNumber}</span>
+            {t('order.tracking_no', 'Kargo Takip No:')} <span className="font-medium">{order.trackingNumber}</span>
             {order.trackingUrl && (
               <>
                 {' — '}
                 <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="text-primary-700 underline">
-                  kargoyu takip et
+                  {t('order.track_cargo', 'kargoyu takip et')}
                 </a>
               </>
             )}
@@ -150,15 +152,15 @@ export default function OrderDetailPage() {
           {items.map((item, idx) => (
             <div key={idx} className="flex py-4 first:pt-0 last:pb-0">
               <div className="flex-1">
-                <h3 className="text-sm font-medium">{item.productName || item.product?.name || 'Ürün'}</h3>
+                <h3 className="text-sm font-medium">{item.productName || item.product?.name || t('order.product', 'Ürün')}</h3>
                 {(item.variantName || item.variant?.name) && (
                   <p className="mt-0.5 text-xs text-primary-700">{item.variantName || item.variant?.name}</p>
                 )}
-                <p className="mt-1 text-xs text-neutral-500">Adet: {item.quantity}</p>
+                <p className="mt-1 text-xs text-neutral-500">{t('order.quantity', 'Adet: {count}', { count: item.quantity })}</p>
               </div>
               <div className="text-right text-sm">
                 <p className="font-semibold">{money(item.totalPrice)}</p>
-                <p className="text-xs text-neutral-500">{money(item.unitPrice)} / adet</p>
+                <p className="text-xs text-neutral-500">{t('order.per_unit', '{price} / adet', { price: money(item.unitPrice) })}</p>
               </div>
             </div>
           ))}
@@ -169,7 +171,7 @@ export default function OrderDetailPage() {
       <div className="mt-8 rounded-lg bg-neutral-50 px-4 py-6 sm:px-6 lg:grid lg:grid-cols-12 lg:gap-x-8 lg:px-8 lg:py-8 dark:bg-neutral-800">
         <dl className="grid grid-cols-1 gap-6 text-sm sm:grid-cols-2 lg:col-span-7">
           <div>
-            <dt className="font-medium">Teslimat / Fatura Adresi</dt>
+            <dt className="font-medium">{t('order.address_title', 'Teslimat / Fatura Adresi')}</dt>
             <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
               {addr ? (
                 <>
@@ -179,18 +181,18 @@ export default function OrderDetailPage() {
                   {addr.phone && <span className="block">{addr.phone}</span>}
                 </>
               ) : (
-                <span className="block">Adres bilgisi yok</span>
+                <span className="block">{t('order.no_address', 'Adres bilgisi yok')}</span>
               )}
             </dd>
           </div>
           <div>
-            <dt className="font-medium">Ödeme Bilgisi</dt>
+            <dt className="font-medium">{t('order.payment_info', 'Ödeme Bilgisi')}</dt>
             <dd className="mt-3 text-neutral-500 dark:text-neutral-400">
               <span className="block">
-                {PAYMENT_METHOD_LABEL[order.payment?.method] || order.payment?.method || 'Kredi / Banka Kartı'}
+                {PAYMENT_METHOD_LABEL[order.payment?.method] || order.payment?.method || t('order.credit_debit_card', 'Kredi / Banka Kartı')}
               </span>
               <span className="block">
-                Durum: {order.payment?.status === 'COMPLETED' ? 'Ödendi' : order.payment?.status === 'REFUNDED' ? 'İade Edildi' : order.payment?.status || status.label}
+                {t('order.payment_status', 'Durum:')} {order.payment?.status === 'COMPLETED' ? t('order.payment_paid', 'Ödendi') : order.payment?.status === 'REFUNDED' ? t('order.payment_refunded', 'İade Edildi') : order.payment?.status || status.label}
               </span>
             </dd>
           </div>
@@ -198,26 +200,26 @@ export default function OrderDetailPage() {
 
         <dl className="mt-8 flex flex-col gap-y-4 text-sm lg:col-span-5 lg:mt-0">
           <div className="flex items-center justify-between">
-            <dt className="text-neutral-600 dark:text-neutral-300">Ara Toplam</dt>
+            <dt className="text-neutral-600 dark:text-neutral-300">{t('cart.subtotal', 'Ara Toplam')}</dt>
             <dd className="font-medium">{money(order.subtotal)}</dd>
           </div>
           {Number(order.discount) > 0 && (
             <div className="flex items-center justify-between text-green-700 dark:text-green-400">
-              <dt>İndirim</dt>
+              <dt>{t('cart.discount', 'İndirim')}</dt>
               <dd className="font-medium">-{money(order.discount)}</dd>
             </div>
           )}
           <div className="flex items-center justify-between">
-            <dt className="text-neutral-600 dark:text-neutral-300">Kargo</dt>
-            <dd className="font-medium">{Number(order.shippingCost) === 0 ? 'Ücretsiz' : money(order.shippingCost)}</dd>
+            <dt className="text-neutral-600 dark:text-neutral-300">{t('cart.shipping', 'Kargo')}</dt>
+            <dd className="font-medium">{Number(order.shippingCost) === 0 ? t('cart.free', 'Ücretsiz') : money(order.shippingCost)}</dd>
           </div>
           <div className="flex items-center justify-between">
-            <dt className="text-neutral-600 dark:text-neutral-300">KDV (dahil)</dt>
+            <dt className="text-neutral-600 dark:text-neutral-300">{t('order.tax_included', 'KDV (dahil)')}</dt>
             <dd className="font-medium">{money(order.tax)}</dd>
           </div>
           <Divider />
           <div className="flex items-center justify-between">
-            <dt className="font-medium">Toplam</dt>
+            <dt className="font-medium">{t('cart.total', 'Toplam')}</dt>
             <dd className="font-semibold text-primary-700">{money(order.total)}</dd>
           </div>
         </dl>
@@ -225,7 +227,7 @@ export default function OrderDetailPage() {
 
       <div className="mt-8">
         <Link href="/orders" className="text-sm font-medium text-primary-700 underline">
-          ← Siparişlerime dön
+          {t('order.back_to_orders_arrow', '← Siparişlerime dön')}
         </Link>
       </div>
     </div>

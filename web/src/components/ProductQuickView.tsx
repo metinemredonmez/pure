@@ -5,6 +5,7 @@ import IconDiscount from '@/components/IconDiscount'
 import LikeButton from '@/components/LikeButton'
 import NcInputNumber from '@/components/NcInputNumber'
 import Prices from '@/components/Prices'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductDetail, getProductDetailByHandle } from '@/data/data'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Link } from '@/shared/link'
@@ -26,6 +27,7 @@ interface ProductQuickViewProps {
 
 const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
   const { productQuickViewHandle: handle } = useAside()
+  const { t } = useTranslation()
 
   const [product, setProduct] = useState<TProductDetail>()
 
@@ -112,7 +114,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                 <div className="ms-1.5 flex">
                   <span>{rating}</span>
                   <span className="mx-2 block">·</span>
-                  <span className="text-neutral-600 underline dark:text-neutral-400">{reviewNumber} değerlendirme</span>
+                  <span className="text-neutral-600 underline dark:text-neutral-400">{t('product.reviews_count', '{count} değerlendirme', { count: reviewNumber ?? 0 })}</span>
                 </div>
               </Link>
               <span className="mx-2.5 hidden sm:block">·</span>
@@ -147,7 +149,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                   className="hidden sm:block"
                   strokeWidth={1.5}
                 />
-                <span className="text-base/6 font-normal sm:ml-2.5">Sepete Ekle</span>
+                <span className="text-base/6 font-normal sm:ml-2.5">{t('common.add_to_cart', 'Sepete Ekle')}</span>
               </ButtonPrimary>
             </div>
           </fieldset>
@@ -159,37 +161,46 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
         <AccordionInfo
           data={[
             {
-              name: 'Açıklama',
-              content:
-                'Özenle seçilmiş tek menşeili kahve çekirdeklerinden, taze kavrulmuş specialty kahve. Her paketin arkasında bir hikaye, her yudumda benzersiz bir lezzet deneyimi.',
+              name: t('product.section_description', 'Açıklama'),
+              content: t(
+                'product.description_body',
+                'Özenle seçilmiş tek menşeili kahve çekirdeklerinden, taze kavrulmuş specialty kahve. Her paketin arkasında bir hikaye, her yudumda benzersiz bir lezzet deneyimi.'
+              ),
             },
             {
-              name: 'Özellikler',
-              content: `<ul class="list-disc list-inside leading-7">
+              name: t('product.section_features', 'Özellikler'),
+              content: t(
+                'product.features_body',
+                `<ul class="list-disc list-inside leading-7">
                   <li>Taze kavrulmuş, sipariş üzerine hazırlanır</li>
                   <li>Tek menşeili specialty sınıf çekirdekler</li>
                   <li>SCA standartlarında kalite kontrolü</li>
                   <li>Hava geçirmez ambalaj ile tazelik koruması</li>
-                </ul>`,
+                </ul>`
+              ),
             },
             {
-              name: 'Kargo & İade',
-              content:
-                '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.',
+              name: t('product.section_shipping_returns', 'Kargo & İade'),
+              content: t(
+                'product.shipping_returns_body',
+                '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.'
+              ),
             },
             {
-              name: 'Saklama Koşulları',
-              content:
-                'Serin, kuru ve doğrudan güneş ışığı almayan bir yerde saklayın. Açıldıktan sonra hava geçirmez kapta muhafaza edin. Raf ömrü: 12 ay (açılmamış), 1 ay (açılmış).',
+              name: t('product.section_storage', 'Saklama Koşulları'),
+              content: t(
+                'product.storage_body',
+                'Serin, kuru ve doğrudan güneş ışığı almayan bir yerde saklayın. Açıldıktan sonra hava geçirmez kapta muhafaza edin. Raf ömrü: 12 ay (açılmamış), 1 ay (açılmış).'
+              ),
             },
           ]}
         />
 
         <div className="mt-6 flex text-sm text-neutral-500">
           <p className="text-xs">
-            veya{' '}
+            {t('common.or', 'veya')}{' '}
             <Link href={'/products/' + handle} className="text-xs font-medium text-neutral-900 uppercase">
-              Ürün detay sayfasına git <span aria-hidden="true"> →</span>
+              {t('product.go_to_detail', 'Ürün detay sayfasına git')} <span aria-hidden="true"> →</span>
             </Link>
           </p>
         </div>

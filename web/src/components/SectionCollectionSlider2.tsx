@@ -1,6 +1,7 @@
 'use client'
 
 import Heading from '@/components/Heading/Heading'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TCollection } from '@/data/data'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
@@ -22,8 +23,8 @@ export interface SectionSliderCategoriesProps {
 }
 
 const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
-  heading = 'Menşeilere göre',
-  headingDim = 'Kahve dünyasını keşfet',
+  heading,
+  headingDim,
   subHeading,
   className,
   collections,
@@ -31,21 +32,25 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
     slidesToScroll: 'auto',
   },
 }) => {
+  const { t } = useTranslation()
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
+
+  const _heading = heading ?? t('section.by_origin', 'Menşeilere göre')
+  const _headingDim = headingDim ?? t('section.discover_coffee_world', 'Kahve dünyasını keşfet')
 
   return (
     <div className={clsx(className)}>
       <Heading
         description={subHeading}
         hasNextPrev
-        headingDim={headingDim}
+        headingDim={_headingDim}
         prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}
         onClickPrev={onPrevButtonClick}
         onClickNext={onNextButtonClick}
       >
-        {heading}
+        {_heading}
       </Heading>
 
       <div className={'embla'} ref={emblaRef}>
@@ -64,7 +69,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
               <div>
                 <div className="absolute inset-x-10 inset-y-6 flex flex-col justify-center sm:items-center">
                   <div className="relative flex text-neutral-900">
-                    <span className="text-lg font-semibold">More collections</span>
+                    <span className="text-lg font-semibold">{t('section.more_collections', 'More collections')}</span>
                     <HugeiconsIcon
                       icon={ArrowUpRight01Icon}
                       size={24}
@@ -73,7 +78,7 @@ const SectionCollectionSlider2: FC<SectionSliderCategoriesProps> = ({
                       strokeWidth={1.5}
                     />
                   </div>
-                  <span className="mt-1 text-sm text-neutral-800">Daha Fazla Göster</span>
+                  <span className="mt-1 text-sm text-neutral-800">{t('section.show_more', 'Daha Fazla Göster')}</span>
                 </div>
               </div>
               <Link

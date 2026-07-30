@@ -1,6 +1,7 @@
 'use client'
 
 import Heading from '@/components/Heading/Heading'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import { useCarouselDotButton } from '@/hooks/use-carousel-dot-buttons'
 import { StarIcon } from '@heroicons/react/24/solid'
@@ -59,9 +60,12 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
     slidesToScroll: 1,
     loop: true,
   },
-  heading = 'Müşterilerimiz ne diyor?',
-  subHeading = 'Pure Olentia ailesinden geri bildirimler',
+  heading,
+  subHeading,
 }) => {
+  const { t } = useTranslation()
+  const headingText = heading ?? t('reviews.client_say_heading', 'Müşterilerimiz ne diyor?')
+  const subHeadingText = subHeading ?? t('reviews.client_say_subheading', 'Pure Olentia ailesinden geri bildirimler')
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions, [Autoplay({ playOnInit: true, delay: 4500 })])
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
   const { selectedIndex, scrollSnaps, onDotButtonClick } = useCarouselDotButton(emblaApi)
@@ -69,14 +73,14 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
   return (
     <div className={clsx('relative', className)}>
       <Heading
-        description={subHeading}
+        description={subHeadingText}
         isCenter
         prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}
         onClickPrev={onPrevButtonClick}
         onClickNext={onNextButtonClick}
       >
-        {heading}
+        {headingText}
       </Heading>
 
       <div className="relative mx-auto mt-12 max-w-3xl">
@@ -115,7 +119,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
                 <p className="mt-5 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                   {item.clientName}
                 </p>
-                <p className="text-xs text-neutral-500">Pure Olentia Müşterisi</p>
+                <p className="text-xs text-neutral-500">{t('reviews.customer_label', 'Pure Olentia Müşterisi')}</p>
               </li>
             ))}
           </ul>
@@ -126,7 +130,7 @@ const SectionClientSay: FC<SectionClientSayProps> = ({
                 type="button"
                 key={index}
                 onClick={() => onDotButtonClick(index)}
-                aria-label={`Yorum ${index + 1}`}
+                aria-label={t('reviews.review_n', 'Yorum {n}', { n: index + 1 })}
                 className={clsx(
                   index === selectedIndex ? 'w-6 bg-primary-700' : 'w-2 bg-neutral-300 dark:bg-neutral-700',
                   'h-2 rounded-full transition-all'

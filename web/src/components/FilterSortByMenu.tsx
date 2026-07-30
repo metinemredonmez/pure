@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronDownIcon } from '@heroicons/react/24/solid'
 import { ArrangeByLettersAZIcon } from '@hugeicons/core-free-icons'
@@ -25,6 +26,7 @@ type Props = {
 }
 
 const SortInner: FC<Props> = ({ className }) => {
+  const { t } = useTranslation()
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -55,7 +57,7 @@ const SortInner: FC<Props> = ({ className }) => {
             )}
           >
             <HugeiconsIcon icon={ArrangeByLettersAZIcon} size={18} />
-            <span className="ms-2">{selected.name}</span>
+            <span className="ms-2">{t(`sort.${selected.value}`, selected.name)}</span>
             <ChevronDownIcon className="ml-3 size-4" aria-hidden="true" />
           </ListboxButton>
           <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
@@ -73,7 +75,7 @@ const SortInner: FC<Props> = ({ className }) => {
                 >
                   {({ selected: isSelected }) => (
                     <>
-                      <span className={clsx('block truncate', isSelected && 'font-medium')}>{item.name}</span>
+                      <span className={clsx('block truncate', isSelected && 'font-medium')}>{t(`sort.${item.value}`, item.name)}</span>
                       {isSelected ? (
                         <span className="absolute inset-y-0 start-0 flex items-center ps-3 text-primary-700 dark:text-neutral-200">
                           <CheckIcon className="size-5" aria-hidden="true" />

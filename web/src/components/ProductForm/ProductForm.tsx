@@ -2,6 +2,7 @@
 
 import { NotifyAddToCart } from '@/components/AddToCardButton'
 import { useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductDetail } from '@/data/data'
 import Form from 'next/form'
 import React from 'react'
@@ -17,6 +18,7 @@ const ProductForm = ({
   product: TProductDetail
 }) => {
   const { addItem, totalQuantity, subtotal } = useCart()
+  const { t } = useTranslation()
   const { featuredImage, title, price, id, handle } = product as TProductDetail & {
     id?: string
     handle?: string
@@ -29,10 +31,11 @@ const ProductForm = ({
     const productId = id || handle || title || 'product'
     const productHandle = handle || ''
     const variantId = [size, color].filter(Boolean).join('__') || undefined
+    const productName = title || t('common.product', 'Ürün')
 
     addItem({
       productId,
-      name: title || 'Ürün',
+      name: productName,
       handle: productHandle,
       price: price || 0,
       quantity,
@@ -53,7 +56,7 @@ const ProductForm = ({
           quantity={quantity}
           size={size}
           color={color}
-          title={title || 'Ürün'}
+          title={productName}
           price={price || 0}
           totalItems={newCount}
           cartTotal={newTotal}

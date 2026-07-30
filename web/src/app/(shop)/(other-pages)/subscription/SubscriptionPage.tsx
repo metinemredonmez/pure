@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Coffee01Icon, DeliveryTruck01Icon, GiftIcon, PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useRouter } from 'next/navigation'
@@ -62,6 +63,7 @@ export default function SubscriptionPage({
   durationDiscounts = { 3: 0, 6: 5, 12: 10 },
 }: SubscriptionPageProps) {
   const router = useRouter()
+  const { t } = useTranslation()
   const { addItem } = useCart()
   const [adding, setAdding] = useState(false)
 
@@ -144,7 +146,7 @@ export default function SubscriptionPage({
 
   const handleAddToCart = async () => {
     if (!canSubmit || !selectedPackage) {
-      toast.error('Lütfen tüm seçimleri tamamlayın')
+      toast.error(t('subscription.complete_selections', 'Lütfen tüm seçimleri tamamlayın'))
       return
     }
     setAdding(true)
@@ -176,10 +178,10 @@ export default function SubscriptionPage({
         slug: 'subscription',
         meta,
       } as any)
-      toast.success('Abonelik sepete eklendi')
+      toast.success(t('subscription.added_to_cart', 'Abonelik sepete eklendi'))
       router.push('/cart')
     } catch (e) {
-      toast.error('Sepete eklenemedi')
+      toast.error(t('subscription.add_failed', 'Sepete eklenemedi'))
     } finally {
       setAdding(false)
     }
@@ -234,14 +236,14 @@ export default function SubscriptionPage({
       {/* SEÇİM AKIŞI */}
       <div id="abonelik-secimi" className="container mt-20 scroll-mt-10">
         <div className="mx-auto max-w-3xl">
-          <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">Aboneliğinizi Oluşturun</h2>
+          <h2 className="text-center text-2xl font-bold text-neutral-900 dark:text-white sm:text-3xl">{t('subscription.create_title', 'Aboneliğinizi Oluşturun')}</h2>
           <p className="mt-3 text-center text-sm text-neutral-500">
-            Önce kahve türünü seçin — sonraki adımlar kahve türüne göre değişir.
+            {t('subscription.create_subtitle', 'Önce kahve türünü seçin — sonraki adımlar kahve türüne göre değişir.')}
           </p>
 
           {/* 1. Kahve Türü */}
           <div className="mt-10">
-            <Label step="1" text="Kahve Türü" />
+            <Label step="1" text={t('subscription.coffee_type', 'Kahve Türü')} />
             <div className="mt-3 grid grid-cols-3 gap-2">
               {(['turk', 'espresso', 'filtre'] as CoffeeKind[]).map((k) => {
                 const enabled =
@@ -270,7 +272,7 @@ export default function SubscriptionPage({
           {/* 2. Espresso/Filtre — Ürün Serisi */}
           {coffee && coffee !== 'turk' && (
             <div className="mt-8">
-              <Label step="2" text="Ürün Serisi" />
+              <Label step="2" text={t('subscription.product_series', 'Ürün Serisi')} />
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {(coffee === 'espresso' ? config.espresso.series : config.filtre.series).map((s) => {
                   const active = seriesId === s.id
@@ -295,7 +297,7 @@ export default function SubscriptionPage({
           {/* 3. Espresso: Öğütüm (paket öncesi). Filtre: Paket (öğütüm sonra) */}
           {coffee === 'espresso' && seriesId && (
             <div className="mt-8">
-              <Label step="3" text="Öğütüm Şekli" />
+              <Label step="3" text={t('subscription.grind_type', 'Öğütüm Şekli')} />
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {config.espresso.grinds.map((g) => {
                   const active = grindId === g.id
@@ -322,7 +324,7 @@ export default function SubscriptionPage({
             (coffee === 'espresso' && seriesId && grindId) ||
             (coffee === 'filtre' && seriesId)) && (
             <div className="mt-8">
-              <Label step={coffee === 'turk' ? '2' : coffee === 'espresso' ? '4' : '3'} text="Paket Seçimi" />
+              <Label step={coffee === 'turk' ? '2' : coffee === 'espresso' ? '4' : '3'} text={t('subscription.package_selection', 'Paket Seçimi')} />
               <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                 {packages.map((p) => {
                   const active = packageId === p.id
@@ -343,7 +345,7 @@ export default function SubscriptionPage({
                         {p.label}
                       </p>
                       <p className="mt-1 text-xs text-neutral-500">
-                        Her gönderimde {p.count} × {formatGrams(p.grams)} = {formatGrams(p.count * p.grams)}
+                        {t('subscription.per_shipment_detail', 'Her gönderimde {count} × {grams} = {total}', { count: p.count, grams: formatGrams(p.grams), total: formatGrams(p.count * p.grams) })}
                       </p>
                     </button>
                   )
@@ -355,7 +357,7 @@ export default function SubscriptionPage({
           {/* Filtre Kahve: Öğütüm (paketin SONRASI) */}
           {coffee === 'filtre' && seriesId && packageId && (
             <div className="mt-8">
-              <Label step="4" text="Öğütüm Şekli" />
+              <Label step="4" text={t('subscription.grind_type', 'Öğütüm Şekli')} />
               <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {config.filtre.grinds.map((g) => {
                   const active = grindId === g.id
@@ -380,7 +382,7 @@ export default function SubscriptionPage({
           {/* 5. Abonelik Süresi */}
           {packageId && (coffee === 'turk' || (seriesId && grindId)) && (
             <div className="mt-8">
-              <Label step={coffee === 'turk' ? '3' : '5'} text="Abonelik Süresi" />
+              <Label step={coffee === 'turk' ? '3' : '5'} text={t('subscription.duration', 'Abonelik Süresi')} />
               <div className="mt-3 grid grid-cols-3 gap-2">
                 {[3, 6, 12].map((d) => {
                   const active = duration === d
@@ -395,10 +397,10 @@ export default function SubscriptionPage({
                           : 'border-neutral-300 bg-white text-neutral-700 hover:border-primary-700 hover:text-primary-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200'
                       }`}
                     >
-                      <div>{d} Ay</div>
+                      <div>{t('subscription.months', '{count} Ay', { count: d })}</div>
                       {discount > 0 && (
                         <div className={`mt-1 text-[10px] ${active ? 'text-white/80' : 'text-emerald-600'}`}>
-                          %{discount} indirim
+                          {t('subscription.percent_discount', '%{percent} indirim', { percent: discount })}
                         </div>
                       )}
                     </button>
@@ -410,8 +412,7 @@ export default function SubscriptionPage({
 
           {/* AÇIKLAMA */}
           <p className="mt-8 rounded-xl bg-neutral-50 px-4 py-3 text-xs text-neutral-600 dark:bg-neutral-900 dark:text-neutral-300">
-            Seçtiğiniz paket içeriği, <strong>her gönderimde</strong> adresinize teslim edilecek kahve miktarını ifade eder.
-            Abonelik süreniz boyunca kahveniz ayda 1 kez düzenli olarak gönderilir.
+            {t('subscription.package_note_1', 'Seçtiğiniz paket içeriği,')} <strong>{t('subscription.each_shipment', 'her gönderimde')}</strong> {t('subscription.package_note_2', 'adresinize teslim edilecek kahve miktarını ifade eder. Abonelik süreniz boyunca kahveniz ayda 1 kez düzenli olarak gönderilir.')}
           </p>
 
           {/* SİPARİŞ ÖZETİ */}
@@ -419,33 +420,32 @@ export default function SubscriptionPage({
             <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 dark:border-amber-700/40 dark:bg-amber-900/20">
               <div className="border-b border-amber-200/60 px-4 py-2.5 dark:border-amber-700/30">
                 <p className="text-xs font-bold uppercase tracking-widest text-amber-800 dark:text-amber-300">
-                  📦 Sipariş Özeti
+                  📦 {t('subscription.order_summary', 'Sipariş Özeti')}
                 </p>
               </div>
               <div className="px-4 py-4 text-sm">
-                <Row label="Seçilen Paket" value={packageName} />
-                <Row label="Kahve Türü" value={COFFEE_LABELS[coffee!]} />
-                {selectedSeries && <Row label="Ürün Serisi" value={selectedSeries.label} />}
-                {selectedGrind && <Row label="Öğütüm Şekli" value={selectedGrind.label} />}
-                <Row label="Her Gönderimde" value={`${selectedPackage.count} adet ${formatGrams(selectedPackage.grams)}`} />
-                <Row label="Her Gönderimde Toplam" value={formatGrams(perShipmentGrams)} />
-                <Row label="Abonelik Süresi" value={`${duration} Ay`} />
-                <Row label="Toplam Gönderim" value={`${totalShipments} adet`} />
-                <Row label="Toplam Kahve Miktarı" value={formatGrams(totalGrams)} />
-                <Row label="Gönderim Başı Fiyat" value={perShipmentPrice > 0 ? formatPrice(perShipmentPrice) : '—'} />
-                {discountPercent > 0 && <Row label="Abonelik İndirimi" value={`%${discountPercent}`} />}
+                <Row label={t('subscription.selected_package', 'Seçilen Paket')} value={packageName} />
+                <Row label={t('subscription.coffee_type', 'Kahve Türü')} value={COFFEE_LABELS[coffee!]} />
+                {selectedSeries && <Row label={t('subscription.product_series', 'Ürün Serisi')} value={selectedSeries.label} />}
+                {selectedGrind && <Row label={t('subscription.grind_type', 'Öğütüm Şekli')} value={selectedGrind.label} />}
+                <Row label={t('subscription.each_shipment_label', 'Her Gönderimde')} value={t('subscription.count_grams', '{count} adet {grams}', { count: selectedPackage.count, grams: formatGrams(selectedPackage.grams) })} />
+                <Row label={t('subscription.each_shipment_total', 'Her Gönderimde Toplam')} value={formatGrams(perShipmentGrams)} />
+                <Row label={t('subscription.duration', 'Abonelik Süresi')} value={t('subscription.months', '{count} Ay', { count: duration })} />
+                <Row label={t('subscription.total_shipments', 'Toplam Gönderim')} value={t('subscription.count_pieces', '{count} adet', { count: totalShipments })} />
+                <Row label={t('subscription.total_coffee_amount', 'Toplam Kahve Miktarı')} value={formatGrams(totalGrams)} />
+                <Row label={t('subscription.per_shipment_price', 'Gönderim Başı Fiyat')} value={perShipmentPrice > 0 ? formatPrice(perShipmentPrice) : '—'} />
+                {discountPercent > 0 && <Row label={t('subscription.subscription_discount', 'Abonelik İndirimi')} value={`%${discountPercent}`} />}
                 <div className="mt-3 flex items-center justify-between border-t border-amber-200/60 pt-3 dark:border-amber-700/30">
                   <span className="text-sm font-bold uppercase tracking-widest text-amber-900 dark:text-amber-200">
-                    Toplam Abonelik Tutarı
+                    {t('subscription.total_amount', 'Toplam Abonelik Tutarı')}
                   </span>
                   <span className="text-xl font-bold text-amber-900 dark:text-amber-200">
-                    {perShipmentPrice > 0 ? formatPrice(totalPrice) : 'Fiyat alınamadı'}
+                    {perShipmentPrice > 0 ? formatPrice(totalPrice) : t('subscription.price_unavailable', 'Fiyat alınamadı')}
                   </span>
                 </div>
                 {perShipmentPrice <= 0 && (
                   <p className="mt-3 rounded-md bg-amber-100 px-3 py-2 text-xs text-amber-800 dark:bg-amber-900/40 dark:text-amber-200">
-                    ⚠️ Bu kombinasyon için fiyat tanımlı değil. Admin Panel → Abonelikler → Abonelik Planları → Fiyat Matrisi
-                    bölümünden fiyatı girilebilir.
+                    ⚠️ {t('subscription.price_not_defined', 'Bu kombinasyon için fiyat tanımlı değil. Admin Panel → Abonelikler → Abonelik Planları → Fiyat Matrisi bölümünden fiyatı girilebilir.')}
                   </p>
                 )}
               </div>
@@ -460,7 +460,7 @@ export default function SubscriptionPage({
                       : 'bg-neutral-300 text-neutral-500 cursor-not-allowed'
                   }`}
                 >
-                  {adding ? 'Sepete ekleniyor...' : canSubmit ? 'Abone Ol & Sepete Ekle' : 'Eksik Seçim'}
+                  {adding ? t('subscription.adding', 'Sepete ekleniyor...') : canSubmit ? t('subscription.subscribe_add', 'Abone Ol & Sepete Ekle') : t('subscription.incomplete', 'Eksik Seçim')}
                 </button>
               </div>
             </div>

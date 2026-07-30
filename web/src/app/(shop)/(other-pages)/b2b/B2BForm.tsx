@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
@@ -9,6 +10,7 @@ import { useRef, useState } from 'react'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 export default function B2BForm() {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
@@ -29,7 +31,7 @@ export default function B2BForm() {
 
     if (!name || !company || !email) {
       setStatus('error')
-      setErrorMsg('Lütfen ad, firma ve e-posta alanlarını doldurun.')
+      setErrorMsg(t('b2b.error_required', 'Lütfen ad, firma ve e-posta alanlarını doldurun.'))
       return
     }
 
@@ -64,7 +66,7 @@ export default function B2BForm() {
           serverMsg = errBody?.message || errBody?.data?.message || ''
         } catch {}
         setStatus('error')
-        setErrorMsg(serverMsg || `Teklif talebi gönderilemedi (kod ${res.status}).`)
+        setErrorMsg(serverMsg || t('b2b.error_send', 'Teklif talebi gönderilemedi (kod {code}).', { code: res.status }))
         return
       }
 
@@ -72,7 +74,7 @@ export default function B2BForm() {
       formRef.current?.reset()
     } catch {
       setStatus('error')
-      setErrorMsg('Sunucuya ulaşılamadı. Lütfen birkaç dakika sonra tekrar deneyin.')
+      setErrorMsg(t('form.error_network', 'Sunucuya ulaşılamadı. Lütfen birkaç dakika sonra tekrar deneyin.'))
     }
   }
 
@@ -82,42 +84,42 @@ export default function B2BForm() {
         <FieldGroup>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <Label>Ad Soyad</Label>
-              <Input name="name" placeholder="Adınız Soyadınız" required />
+              <Label>{t('form.full_name', 'Ad Soyad')}</Label>
+              <Input name="name" placeholder={t('form.full_name_placeholder', 'Adınız Soyadınız')} required />
             </Field>
             <Field>
-              <Label>Firma Adı</Label>
-              <Input name="company" placeholder="Firma adı" required />
+              <Label>{t('b2b.company', 'Firma Adı')}</Label>
+              <Input name="company" placeholder={t('b2b.company_placeholder', 'Firma adı')} required />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <Label>E-posta</Label>
-              <Input name="email" type="email" placeholder="ornek@firma.com" required />
+              <Label>{t('form.email', 'E-posta')}</Label>
+              <Input name="email" type="email" placeholder={t('b2b.email_placeholder', 'ornek@firma.com')} required />
             </Field>
             <Field>
-              <Label>Telefon</Label>
+              <Label>{t('form.phone', 'Telefon')}</Label>
               <Input name="phone" placeholder="+90 5XX XXX XX XX" />
             </Field>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
-              <Label>Sektör</Label>
-              <Input name="sector" placeholder="Otel, Restoran, Ofis..." />
+              <Label>{t('b2b.sector', 'Sektör')}</Label>
+              <Input name="sector" placeholder={t('b2b.sector_placeholder', 'Otel, Restoran, Ofis...')} />
             </Field>
             <Field>
-              <Label>Aylık Tüketim (kg)</Label>
-              <Input name="volume" type="number" placeholder="Örneğin: 50" />
+              <Label>{t('b2b.monthly_volume', 'Aylık Tüketim (kg)')}</Label>
+              <Input name="volume" type="number" placeholder={t('b2b.volume_placeholder', 'Örneğin: 50')} />
             </Field>
           </div>
           <Field>
-            <Label>Mesajınız</Label>
-            <Textarea name="message" rows={4} placeholder="İhtiyaçlarınızı anlatabilirsiniz..." />
+            <Label>{t('contact.message', 'Mesajınız')}</Label>
+            <Textarea name="message" rows={4} placeholder={t('b2b.message_placeholder', 'İhtiyaçlarınızı anlatabilirsiniz...')} />
           </Field>
 
           {status === 'success' && (
             <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-              Teklif talebiniz başarıyla iletildi. 24 saat içinde size dönüş yapacağız.
+              {t('b2b.success', 'Teklif talebiniz başarıyla iletildi. 24 saat içinde size dönüş yapacağız.')}
             </div>
           )}
           {status === 'error' && errorMsg && (
@@ -127,7 +129,7 @@ export default function B2BForm() {
           )}
 
           <ButtonPrimary type="submit" className="w-full" disabled={status === 'loading'}>
-            {status === 'loading' ? 'Gönderiliyor...' : 'Teklif Talep Et'}
+            {status === 'loading' ? t('form.sending', 'Gönderiliyor...') : t('b2b.submit', 'Teklif Talep Et')}
           </ButtonPrimary>
         </FieldGroup>
       </Fieldset>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import { getApiGoogleReviews } from '@/lib/api'
 import { ArrowLeft02Icon, ArrowRight02Icon } from '@hugeicons/core-free-icons'
@@ -71,6 +72,7 @@ interface Props {
 }
 
 export default function SectionGoogleReviews({ className = '' }: Props) {
+  const { t } = useTranslation()
   const emblaOptions: EmblaOptionsType = { align: 'start', slidesToScroll: 1, loop: true }
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
@@ -103,11 +105,11 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
       <div className="mb-10 flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-3 rounded-full border border-neutral-200 bg-white px-5 py-2.5 shadow-sm dark:border-neutral-700 dark:bg-neutral-800">
           <GoogleLogo className="h-5 w-5" />
-          <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">Google Yorumları</span>
+          <span className="text-sm font-semibold text-neutral-700 dark:text-neutral-200">{t('reviews.google_reviews', 'Google Yorumları')}</span>
         </div>
 
         <h2 className="text-3xl font-bold text-neutral-900 sm:text-4xl lg:text-5xl dark:text-white">
-          Müşterilerimiz Ne Diyor?
+          {t('reviews.what_customers_say', 'Müşterilerimiz Ne Diyor?')}
         </h2>
 
         <div className="flex items-center gap-3 text-sm">
@@ -116,7 +118,7 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
             <span className="font-bold text-neutral-900 dark:text-white">{aggregateRating.toFixed(1)}</span>
           </div>
           <span className="text-neutral-400">·</span>
-          <span className="text-neutral-600 dark:text-neutral-400">{reviewCount}+ Google yorumu</span>
+          <span className="text-neutral-600 dark:text-neutral-400">{t('reviews.google_count', '{count}+ Google yorumu', { count: reviewCount })}</span>
           <span className="text-neutral-400">·</span>
           <a
             href="https://www.google.com/maps/search/?api=1&query=Olentia+Pure+Sancaktepe"
@@ -124,7 +126,7 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
             rel="noreferrer"
             className="font-medium text-primary-700 hover:underline dark:text-primary-400"
           >
-            Google'da Görün →
+            {t('reviews.see_on_google', "Google'da Görün")} →
           </a>
         </div>
       </div>
@@ -176,14 +178,14 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
         {/* Arrows */}
         <button
           onClick={onPrevButtonClick}
-          aria-label="Önceki yorum"
+          aria-label={t('reviews.prev_review', 'Önceki yorum')}
           className="absolute -left-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-neutral-200 transition hover:scale-110 sm:flex dark:bg-neutral-800 dark:ring-neutral-700"
         >
           <HugeiconsIcon icon={ArrowLeft02Icon} size={20} color="currentColor" strokeWidth={1.5} />
         </button>
         <button
           onClick={onNextButtonClick}
-          aria-label="Sonraki yorum"
+          aria-label={t('reviews.next_review', 'Sonraki yorum')}
           className="absolute -right-4 top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white shadow-lg ring-1 ring-neutral-200 transition hover:scale-110 sm:flex dark:bg-neutral-800 dark:ring-neutral-700"
         >
           <HugeiconsIcon icon={ArrowRight02Icon} size={20} color="currentColor" strokeWidth={1.5} />

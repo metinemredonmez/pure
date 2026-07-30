@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { getApiSiteSettings } from '@/lib/api'
 import Breadcrumb from '@/shared/Breadcrumb'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
@@ -13,6 +14,7 @@ import { useEffect, useState } from 'react'
 
 export default function CartPageContent() {
   const { items, subtotal, removeItem, updateQuantity, isHydrated } = useCart()
+  const { t } = useTranslation()
 
   // Admin → Ayarlar'dan KDV oranı (% cinsinden), ücretsiz kargo eşiği ve kargo ücreti
   const [kdvRate, setKdvRate] = useState(0.10)
@@ -40,8 +42,8 @@ export default function CartPageContent() {
     return (
       <div className="nc-CartPage">
         <main className="container py-16 lg:pt-20 lg:pb-28">
-          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alışveriş Sepeti</h2>
-          <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">{t('cart.title', 'Alışveriş Sepeti')}</h2>
+          <div className="py-20 text-center text-neutral-400">{t('common.loading', 'Yükleniyor...')}</div>
         </main>
       </div>
     )
@@ -51,17 +53,17 @@ export default function CartPageContent() {
     return (
       <div className="nc-CartPage">
         <main className="container py-16 lg:pt-20 lg:pb-28">
-          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alışveriş Sepeti</h2>
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">{t('cart.title', 'Alışveriş Sepeti')}</h2>
           <div className="mt-20 flex flex-col items-center justify-center py-20 text-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
               <HugeiconsIcon icon={PackageIcon} size={40} color="currentColor" strokeWidth={1.5} className="text-neutral-400" />
             </div>
-            <h3 className="mt-6 text-xl font-semibold">Sepetiniz boş</h3>
+            <h3 className="mt-6 text-xl font-semibold">{t('cart.empty', 'Sepetiniz boş')}</h3>
             <p className="mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
-              Henüz sepetinize ürün eklemediniz. Kahvelerimizi keşfetmeye başlayın!
+              {t('cart.empty_desc', 'Henüz sepetinize ürün eklemediniz. Kahvelerimizi keşfetmeye başlayın!')}
             </p>
             <ButtonPrimary href="/collections/all" className="mt-8">
-              Kahveleri Keşfet
+              {t('cart.explore_coffees', 'Kahveleri Keşfet')}
             </ButtonPrimary>
           </div>
         </main>
@@ -73,8 +75,8 @@ export default function CartPageContent() {
     <div className="nc-CartPage">
       <main className="container py-16 lg:pt-20 lg:pb-28">
         <div className="mb-12 sm:mb-16">
-          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">Alışveriş Sepeti</h2>
-          <Breadcrumb breadcrumbs={[{ id: 1, name: 'Ana Sayfa', href: '/' }]} currentPage="Alışveriş Sepeti" className="mt-5" />
+          <h2 className="block text-2xl font-semibold sm:text-3xl lg:text-4xl">{t('cart.title', 'Alışveriş Sepeti')}</h2>
+          <Breadcrumb breadcrumbs={[{ id: 1, name: t('nav.home', 'Ana Sayfa'), href: '/' }]} currentPage={t('cart.title', 'Alışveriş Sepeti')} className="mt-5" />
         </div>
 
         <hr className="my-10 border-neutral-200 xl:my-12 dark:border-neutral-700" />
@@ -142,13 +144,13 @@ export default function CartPageContent() {
                   <div className="mt-auto flex items-end justify-between pt-4 text-sm">
                     <div className="flex items-center justify-center rounded-full border border-neutral-200 px-2.5 py-1.5 text-xs text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
                       <CheckIcon className="h-3.5 w-3.5" />
-                      <span className="ml-1 leading-none">Stokta</span>
+                      <span className="ml-1 leading-none">{t('product.in_stock', 'Stokta')}</span>
                     </div>
                     <button
                       onClick={() => removeItem(item.id)}
                       className="text-sm font-medium text-red-500 hover:text-red-600"
                     >
-                      Kaldır
+                      {t('common.remove', 'Kaldır')}
                     </button>
                   </div>
                 </div>
@@ -160,45 +162,45 @@ export default function CartPageContent() {
 
           <div className="flex-1">
             <div className="sticky top-10">
-              <h3 className="text-lg font-semibold">Sipariş Özeti</h3>
+              <h3 className="text-lg font-semibold">{t('cart.order_summary', 'Sipariş Özeti')}</h3>
               <div className="mt-7 divide-y divide-neutral-200/70 text-sm text-neutral-500 dark:divide-neutral-700/80 dark:text-neutral-400">
                 <div className="flex justify-between pb-4">
-                  <span>Ara Toplam</span>
+                  <span>{t('cart.subtotal', 'Ara Toplam')}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ₺{subtotal.toLocaleString('tr-TR')}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>Kargo</span>
+                  <span>{t('cart.shipping', 'Kargo')}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     {shippingCost === 0 ? (
-                      <span className="text-green-600">Ücretsiz</span>
+                      <span className="text-green-600">{t('cart.free', 'Ücretsiz')}</span>
                     ) : (
                       `₺${shippingCost.toLocaleString('tr-TR')}`
                     )}
                   </span>
                 </div>
                 <div className="flex justify-between py-4">
-                  <span>KDV (%{(kdvRate * 100).toFixed(0)} dahil)</span>
+                  <span>{t('cart.vat_included', 'KDV (%{rate} dahil)', { rate: (kdvRate * 100).toFixed(0) })}</span>
                   <span className="font-semibold text-neutral-900 dark:text-neutral-200">
                     ₺{kdvAmount.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
                 {subtotal < freeShippingThreshold && (
                   <div className="py-3 text-xs text-primary-600">
-                    ₺{(freeShippingThreshold - subtotal).toLocaleString('tr-TR')} daha ekleyin, ücretsiz kargo kazanın!
+                    {t('cart.free_shipping_hint', '₺{amount} daha ekleyin, ücretsiz kargo kazanın!', { amount: (freeShippingThreshold - subtotal).toLocaleString('tr-TR') })}
                   </div>
                 )}
                 <div className="flex justify-between pt-4 text-base font-semibold text-neutral-900 dark:text-neutral-200">
-                  <span>Toplam</span>
+                  <span>{t('cart.total', 'Toplam')}</span>
                   <span>₺{total.toLocaleString('tr-TR')}</span>
                 </div>
               </div>
               <ButtonPrimary href="/checkout" className="mt-8 w-full">
-                Ödemeye Geç
+                {t('common.checkout', 'Ödemeye Geç')}
               </ButtonPrimary>
               <p className="mt-4 text-center text-xs text-neutral-400">
-                ₺{freeShippingThreshold} üzeri siparişlerde ücretsiz kargo
+                {t('cart.free_shipping_over', '₺{amount} üzeri siparişlerde ücretsiz kargo', { amount: freeShippingThreshold })}
               </p>
             </div>
           </div>

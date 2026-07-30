@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { apiGetMe, apiUpdateProfile } from '@/lib/api'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
@@ -26,6 +27,7 @@ const TR_PROVINCES = [
 ]
 
 export default function AccountPage() {
+  const { t } = useTranslation()
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -89,42 +91,42 @@ export default function AccountPage() {
   }
 
   if (loading) {
-    return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+    return <div className="py-20 text-center text-neutral-400">{t('common.loading', 'Yükleniyor...')}</div>
   }
 
   if (!user) {
-    return <div className="py-20 text-center text-neutral-400">Giriş yapmanız gerekiyor.</div>
+    return <div className="py-20 text-center text-neutral-400">{t('account.login_required', 'Giriş yapmanız gerekiyor.')}</div>
   }
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
-      <h1 className="text-2xl font-semibold sm:text-3xl">Hesap Bilgileri</h1>
+      <h1 className="text-2xl font-semibold sm:text-3xl">{t('account.info_title', 'Hesap Bilgileri')}</h1>
 
       <form onSubmit={handleSubmit}>
         <Fieldset>
           <FieldGroup className="max-w-2xl space-y-7">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field>
-                <Label>Ad</Label>
+                <Label>{t('form.first_name', 'Ad')}</Label>
                 <Input name="firstName" defaultValue={user.firstName || ''} />
               </Field>
               <Field>
-                <Label>Soyad</Label>
+                <Label>{t('form.last_name', 'Soyad')}</Label>
                 <Input name="lastName" defaultValue={user.lastName || ''} />
               </Field>
             </div>
 
             <Field>
-              <Label>E-posta</Label>
+              <Label>{t('form.email', 'E-posta')}</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={Mail01Icon} size={16} />
                 <Input name="email" type="email" defaultValue={user.email || ''} disabled className="opacity-60" />
               </InputGroup>
-              <p className="mt-1 text-xs text-neutral-400">E-posta adresi değiştirilemez.</p>
+              <p className="mt-1 text-xs text-neutral-400">{t('account.email_immutable', 'E-posta adresi değiştirilemez.')}</p>
             </Field>
 
             <Field>
-              <Label>Telefon</Label>
+              <Label>{t('form.phone', 'Telefon')}</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={SmartPhone01Icon} size={16} />
                 <Input name="phone" defaultValue={user.phone || ''} placeholder="05XX XXX XX XX" />
@@ -133,34 +135,34 @@ export default function AccountPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <Field>
-                <Label>Şehir</Label>
+                <Label>{t('form.city', 'Şehir')}</Label>
                 <select
                   name="city"
                   defaultValue={user.city || ''}
                   className="block w-full rounded-lg border border-neutral-200 bg-white px-3.5 py-2.5 text-sm focus:border-primary-500 focus:outline-none dark:border-neutral-700 dark:bg-neutral-800"
                 >
-                  <option value="">— Şehir Seçin —</option>
+                  <option value="">{t('form.select_city', '— Şehir Seçin —')}</option>
                   {TR_PROVINCES.map((p) => (
                     <option key={p} value={p}>{p}</option>
                   ))}
                 </select>
               </Field>
               <Field>
-                <Label>İlçe</Label>
-                <Input name="district" defaultValue={user.district || ''} placeholder="Örn: Sancaktepe" />
+                <Label>{t('form.district', 'İlçe')}</Label>
+                <Input name="district" defaultValue={user.district || ''} placeholder={t('form.district_placeholder', 'Örn: Sancaktepe')} />
               </Field>
             </div>
 
             <Field>
-              <Label>Açık Adres</Label>
+              <Label>{t('form.address', 'Açık Adres')}</Label>
               <InputGroup>
                 <HugeiconsIcon data-slot="icon" icon={MapsLocation01Icon} size={16} />
-                <Input name="address" defaultValue={user.address || ''} placeholder="Mahalle, sokak, kapı no, daire" />
+                <Input name="address" defaultValue={user.address || ''} placeholder={t('form.address_placeholder', 'Mahalle, sokak, kapı no, daire')} />
               </InputGroup>
             </Field>
 
             <Field>
-              <Label>Posta Kodu (opsiyonel)</Label>
+              <Label>{t('form.postal_code_optional', 'Posta Kodu (opsiyonel)')}</Label>
               <Input name="postalCode" defaultValue={user.postalCode || ''} placeholder="34887" />
             </Field>
 
@@ -172,7 +174,7 @@ export default function AccountPage() {
 
             <div className="pt-2">
               <ButtonPrimary type="submit" disabled={saving}>
-                {saving ? 'Kaydediliyor...' : 'Bilgileri Güncelle'}
+                {saving ? t('common.saving', 'Kaydediliyor...') : t('account.update_info', 'Bilgileri Güncelle')}
               </ButtonPrimary>
             </div>
           </FieldGroup>

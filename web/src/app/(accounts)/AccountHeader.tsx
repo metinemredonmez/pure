@@ -1,8 +1,10 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { useEffect, useState } from 'react'
 
 export default function AccountHeader() {
+  const { t } = useTranslation()
   const [user, setUser] = useState<any>(null)
 
   useEffect(() => {
@@ -13,13 +15,13 @@ export default function AccountHeader() {
   }, [])
 
   const name = user
-    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Kullanıcı'
-    : 'Hesabım'
+    ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || t('account.user', 'Kullanıcı')
+    : t('account.my_account', 'Hesabım')
   const email = user?.email || ''
 
   return (
     <div className="max-w-2xl">
-      <h2 className="text-3xl font-semibold xl:text-4xl">Hesap</h2>
+      <h2 className="text-3xl font-semibold xl:text-4xl">{t('account.heading', 'Hesap')}</h2>
       <span className="mt-4 block text-base text-neutral-500 sm:text-lg dark:text-neutral-400">
         {user ? (
           <>
@@ -27,7 +29,7 @@ export default function AccountHeader() {
             {email && <> · {email}</>}
           </>
         ) : (
-          <span className="text-neutral-400">Yükleniyor...</span>
+          <span className="text-neutral-400">{t('common.loading', 'Yükleniyor...')}</span>
         )}
       </span>
     </div>

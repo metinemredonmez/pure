@@ -1,16 +1,10 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductItem } from '@/data/data'
 import * as Headless from '@headlessui/react'
 import clsx from 'clsx'
 import { useState } from 'react'
-
-const ROAST_LABELS: Record<string, string> = {
-  light: 'Açık Kavurma',
-  medium: 'Orta Kavurma',
-  'medium-dark': 'Orta-Koyu',
-  dark: 'Koyu Kavurma',
-}
 
 const ProductColorOptions = ({
   options,
@@ -21,7 +15,15 @@ const ProductColorOptions = ({
   className?: string
   defaultColor: string
 }) => {
+  const { t } = useTranslation()
   const [selected, setSelected] = useState(defaultColor)
+
+  const roastLabels: Record<string, string> = {
+    light: t('product.roast_light', 'Açık Kavurma'),
+    medium: t('product.roast_medium', 'Orta Kavurma'),
+    'medium-dark': t('product.roast_medium_dark', 'Orta-Koyu'),
+    dark: t('product.roast_dark', 'Koyu Kavurma'),
+  }
 
   const optionValues = options?.find((option) => option.name === 'Kavurma')?.optionValues
 
@@ -31,12 +33,12 @@ const ProductColorOptions = ({
 
   return (
     <Headless.Field className={clsx(className)}>
-      <Headless.RadioGroup value={selected} name="roast" onChange={setSelected} aria-label="Kavurma Profili">
-        <Headless.Label className="block text-sm font-medium rtl:text-right">Kavurma Profili</Headless.Label>
+      <Headless.RadioGroup value={selected} name="roast" onChange={setSelected} aria-label={t('product.roast_profile', 'Kavurma Profili')}>
+        <Headless.Label className="block text-sm font-medium rtl:text-right">{t('product.roast_profile', 'Kavurma Profili')}</Headless.Label>
         <div className="mt-2.5 flex flex-wrap gap-2">
           {optionValues.map((value) => {
             const isActive = value.name === selected
-            const label = ROAST_LABELS[value.name.toLowerCase()] || value.name
+            const label = roastLabels[value.name.toLowerCase()] || value.name
 
             return (
               <Headless.Radio

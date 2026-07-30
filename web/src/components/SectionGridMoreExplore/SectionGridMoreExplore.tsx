@@ -1,6 +1,7 @@
 'use client'
 
 import Heading from '@/components/Heading/Heading'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TCollection, getGroupCollections } from '@/data/data'
 import svgs1 from '@/images/collections/explore1.svg'
 import svgs2 from '@/images/collections/explore2.svg'
@@ -36,9 +37,11 @@ const SectionGridMoreExplore: FC<SectionGridMoreExploreProps> = ({
   boxCard = 'box4',
   gridClassName = 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
   groupCollections,
-  heading = 'Kesfet.',
+  heading,
 }) => {
+  const { t } = useTranslation()
   const [tabActive, setTabActive] = useState(groupCollections[1].id)
+  const _heading = heading ?? t('section.explore', 'Kesfet.')
 
   const renderCollectionCard = (collection: TCollection, index: number) => {
     switch (boxCard) {
@@ -60,7 +63,7 @@ const SectionGridMoreExplore: FC<SectionGridMoreExploreProps> = ({
         fontClass="text-3xl md:text-4xl 2xl:text-5xl font-semibold"
         isCenter
       >
-        {heading}
+        {_heading}
       </Heading>
 
       <div className="relative mb-12 flex w-full justify-center lg:mb-14">
@@ -86,7 +89,7 @@ const SectionGridMoreExplore: FC<SectionGridMoreExploreProps> = ({
       {/* Button */}
       <div className="mt-20 flex justify-center">
         <Button color="light" href="/collections/all" className="[--btn-border:white]/0">
-          Tüm Koleksiyonları Keşfet
+          {t('section.explore_all_collections', 'Tüm Koleksiyonları Keşfet')}
           <ArrowRightIcon className="h-4 w-4" />
         </Button>
       </div>

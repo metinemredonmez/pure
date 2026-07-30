@@ -1,6 +1,7 @@
 'use client'
 
 import { getHeaderDropdownCategories } from '@/data/navigation'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/24/solid'
 import { Link } from '../Link'
@@ -11,11 +12,12 @@ interface Props {
 }
 
 export default function CategoriesDropdown({ className, categories }: Props) {
+  const { t } = useTranslation()
   return (
     <div className={className}>
       <Popover className="group">
         <PopoverButton className="-m-2.5 flex items-center rounded-md p-2.5 text-sm font-medium focus:outline-hidden sm:text-base">
-          <span>Kategoriler</span>
+          <span>{t('nav.categories', 'Kategoriler')}</span>
           <ChevronDownIcon className="ms-2 size-5 text-neutral-700 group-data-open:-rotate-180" aria-hidden="true" />
         </PopoverButton>
 
@@ -45,9 +47,9 @@ export default function CategoriesDropdown({ className, categories }: Props) {
           {/* FOOTER */}
           <div className="bg-neutral-50 p-6 dark:bg-neutral-700">
             <Link href="/collections/all">
-              <span className="block text-sm font-medium">Tüm kahveleri gör</span>
+              <span className="block text-sm font-medium">{t('nav.view_all_coffees', 'Tüm kahveleri gör')}</span>
               <span className="mt-0.5 block text-sm text-neutral-500 dark:text-neutral-400">
-                Aradığınızı bulun.
+                {t('nav.find_what_you_look_for', 'Aradığınızı bulun.')}
               </span>
             </Link>
           </div>

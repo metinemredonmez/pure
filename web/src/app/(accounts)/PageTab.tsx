@@ -1,35 +1,43 @@
 'use client'
 
 import { Link } from '@/components/Link'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { usePathname } from 'next/navigation'
 
 const pages: {
   name: string
   link: string
+  tk: string
 }[] = [
   {
     name: 'Hesap Bilgileri',
     link: '/account',
+    tk: 'account.info_title',
   },
   {
     name: 'Favorilerim',
     link: '/account-wishlists',
+    tk: 'wishlist.title',
   },
   {
     name: 'Aboneliklerim',
     link: '/account-subscriptions',
+    tk: 'subscription.my_title',
   },
   {
     name: 'Sipariş Geçmişi',
     link: '/orders',
+    tk: 'nav.order_history',
   },
   {
     name: 'Şifre Değiştir',
     link: '/account-password',
+    tk: 'password.title',
   },
 ]
 
 const PageTab = () => {
+  const { t } = useTranslation()
   const pathname = usePathname()
 
   return (
@@ -51,7 +59,7 @@ const PageTab = () => {
                   : 'border-transparent text-neutral-500 hover:text-neutral-950 dark:text-neutral-400 dark:hover:text-neutral-100'
               }`}
             >
-              {item.name}
+              {t(item.tk, item.name)}
             </Link>
           )
         })}

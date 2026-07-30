@@ -1,6 +1,7 @@
 'use client'
 
 import Heading from '@/components/Heading/Heading'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductItem } from '@/data/data'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import type { EmblaOptionsType } from 'embla-carousel'
@@ -23,28 +24,31 @@ const SectionSliderProductCard: FC<SectionSliderProductCardProps> = ({
   headingFontClassName,
   headingClassName,
   heading,
-  subHeading = 'Taze kavrulmuş özel kahveler',
+  subHeading,
   data,
   emblaOptions = {
     slidesToScroll: 'auto',
   },
 }) => {
+  const { t } = useTranslation()
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
+
+  const _subHeading = subHeading ?? t('section.fresh_roasted_subheading', 'Taze kavrulmuş özel kahveler')
 
   return (
     <div className={`nc-SectionSliderProductCard ${className}`}>
       <Heading
         className={headingClassName}
         fontClass={headingFontClassName}
-        headingDim={subHeading}
+        headingDim={_subHeading}
         hasNextPrev
         prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}
         onClickPrev={onPrevButtonClick}
         onClickNext={onNextButtonClick}
       >
-        {heading || 'Yeni Gelenler'}
+        {heading || t('section.new_arrivals', 'Yeni Gelenler')}
       </Heading>
 
       <div className="embla" ref={emblaRef}>

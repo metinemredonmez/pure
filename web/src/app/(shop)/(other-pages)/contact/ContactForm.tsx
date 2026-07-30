@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Field, FieldGroup, Fieldset, Label } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
@@ -9,6 +10,7 @@ import { useRef, useState } from 'react'
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 export default function ContactForm() {
+  const { t } = useTranslation()
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
   const formRef = useRef<HTMLFormElement>(null)
@@ -29,7 +31,7 @@ export default function ContactForm() {
 
     if (!payload.name || !payload.email || !payload.message) {
       setStatus('error')
-      setErrorMsg('Lütfen ad, e-posta ve mesaj alanlarını doldurun.')
+      setErrorMsg(t('contact.error_required', 'Lütfen ad, e-posta ve mesaj alanlarını doldurun.'))
       return
     }
 
@@ -47,7 +49,12 @@ export default function ContactForm() {
           serverMsg = errBody?.message || errBody?.data?.message || ''
         } catch {}
         setStatus('error')
-        setErrorMsg(serverMsg || `Mesaj gönderilemedi (kod ${res.status}). Lütfen daha sonra tekrar deneyin.`)
+        setErrorMsg(
+          serverMsg ||
+            t('contact.error_send', 'Mesaj gönderilemedi (kod {code}). Lütfen daha sonra tekrar deneyin.', {
+              code: res.status,
+            })
+        )
         return
       }
 
@@ -57,7 +64,10 @@ export default function ContactForm() {
     } catch (err) {
       setStatus('error')
       setErrorMsg(
-        'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin veya birkaç dakika sonra tekrar deneyin.'
+        t(
+          'contact.error_network',
+          'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin veya birkaç dakika sonra tekrar deneyin.'
+        )
       )
     }
   }
@@ -67,29 +77,29 @@ export default function ContactForm() {
       <Fieldset>
         <FieldGroup>
           <Field>
-            <Label>Ad Soyad</Label>
-            <Input name="name" placeholder="Adınız Soyadınız" type="text" required />
+            <Label>{t('form.full_name', 'Ad Soyad')}</Label>
+            <Input name="name" placeholder={t('form.full_name_placeholder', 'Adınız Soyadınız')} type="text" required />
           </Field>
           <Field>
-            <Label>E-posta</Label>
-            <Input name="email" type="email" placeholder="ornek@email.com" required />
+            <Label>{t('form.email', 'E-posta')}</Label>
+            <Input name="email" type="email" placeholder={t('form.email_placeholder', 'ornek@email.com')} required />
           </Field>
           <Field>
-            <Label>Telefon (opsiyonel)</Label>
+            <Label>{t('contact.phone_optional', 'Telefon (opsiyonel)')}</Label>
             <Input name="phone" type="tel" placeholder="+90 5xx xxx xx xx" />
           </Field>
           <Field>
-            <Label>Konu (opsiyonel)</Label>
-            <Input name="subject" type="text" placeholder="Toplu sipariş, abonelik vb." />
+            <Label>{t('contact.subject_optional', 'Konu (opsiyonel)')}</Label>
+            <Input name="subject" type="text" placeholder={t('contact.subject_placeholder', 'Toplu sipariş, abonelik vb.')} />
           </Field>
           <Field>
-            <Label>Mesajınız</Label>
-            <Textarea name="message" rows={6} required placeholder="Mesajınızı yazın..." />
+            <Label>{t('contact.message', 'Mesajınız')}</Label>
+            <Textarea name="message" rows={6} required placeholder={t('contact.message_placeholder', 'Mesajınızı yazın...')} />
           </Field>
 
           {status === 'success' && (
             <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-              Mesajınız başarıyla iletildi. En kısa sürede size dönüş yapacağız.
+              {t('contact.success', 'Mesajınız başarıyla iletildi. En kısa sürede size dönüş yapacağız.')}
             </div>
           )}
           {status === 'error' && errorMsg && (
@@ -99,7 +109,7 @@ export default function ContactForm() {
           )}
 
           <ButtonPrimary type="submit" disabled={status === 'loading'}>
-            {status === 'loading' ? 'Gönderiliyor...' : 'Mesaj Gönder'}
+            {status === 'loading' ? t('form.sending', 'Gönderiliyor...') : t('contact.submit', 'Mesaj Gönder')}
           </ButtonPrimary>
         </FieldGroup>
       </Fieldset>

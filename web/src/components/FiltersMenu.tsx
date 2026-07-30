@@ -3,6 +3,7 @@
 import ButtonClose from '@/shared/Button/ButtonClose'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonThird from '@/shared/Button/ButtonThird'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Checkbox, CheckboxField, CheckboxGroup } from '@/shared/checkbox'
 import { Radio, RadioField, RadioGroup } from '@/shared/radio'
 import * as Headless from '@headlessui/react'
@@ -107,6 +108,7 @@ export const FiltersMenuTabs = ({
   filterOptions = demo_filters_options.filter((f) => f.type !== 'radio'),
   className,
 }: Props) => {
+  const { t } = useTranslation()
   const handleFormSubmit = async (formData: FormData) => {
     const params = new URLSearchParams(window.location.search)
     // Clear old filter params
@@ -128,7 +130,7 @@ export const FiltersMenuTabs = ({
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>Filtre seçeneği bulunamadı</div>
+    return <div>{t('filter.no_options', 'Filtre seçeneği bulunamadı')}</div>
   }
 
   return (
@@ -219,10 +221,10 @@ export const FiltersMenuTabs = ({
 
                       <div className="flex items-center justify-between rounded-b-2xl bg-neutral-50 p-5 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
                         <Headless.CloseButton className="-mx-3" size="smaller" as={ButtonThird} type="button">
-                          İptal
+                          {t('common.cancel', 'İptal')}
                         </Headless.CloseButton>
                         <Headless.CloseButton size="smaller" as={ButtonPrimary} type="submit">
-                          Uygula
+                          {t('common.apply', 'Uygula')}
                         </Headless.CloseButton>
                       </div>
                     </div>
@@ -238,13 +240,14 @@ export const FiltersMenuTabs = ({
 }
 
 export const FiltersMenuSidebar = ({ filterOptions = demo_filters_options, className }: Props) => {
+  const { t } = useTranslation()
   const handleFormSubmit = async (formData: FormData) => {
     const formDataObject = Object.fromEntries(formData.entries())
     console.log('Form submitted with data:', formDataObject)
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>Filtre seçeneği bulunamadı</div>
+    return <div>{t('filter.no_options', 'Filtre seçeneği bulunamadı')}</div>
   }
 
   return (
@@ -312,6 +315,7 @@ export const FiltersMenuSidebar = ({ filterOptions = demo_filters_options, class
 }
 
 export function FiltersMenuDialog({ className, filterOptions = demo_filters_options }: Props) {
+  const { t } = useTranslation()
   const [showAllFilter, setShowAllFilter] = useState(false)
 
   const handleFormSubmit = async (formData: FormData) => {
@@ -320,7 +324,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
   }
 
   if (!filterOptions || filterOptions.length === 0) {
-    return <div>Filtre seçeneği bulunamadı</div>
+    return <div>{t('filter.no_options', 'Filtre seçeneği bulunamadı')}</div>
   }
 
   const checkedNumber = 3 // Example logic for checked number, replace with actual logic
@@ -334,7 +338,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
         onClick={() => setShowAllFilter(true)}
       >
         <HugeiconsIcon icon={FilterVerticalIcon} size={18} />
-        <span className="ms-2">Tüm Filtreler</span>
+        <span className="ms-2">{t('filter.all_filters', 'Tüm Filtreler')}</span>
         <ChevronDownIcon className="ms-3 size-4" />
         {checkedNumber ? (
           <span className="absolute top-0 -right-0.5 flex size-4.5 items-center justify-center rounded-full bg-black text-[0.65rem] font-semibold text-white ring-2 ring-white dark:bg-neutral-200 dark:text-neutral-900 dark:ring-neutral-900">
@@ -359,7 +363,7 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
           >
             <div className="relative shrink-0 border-b border-neutral-200 p-4 text-center sm:px-8 dark:border-neutral-800">
               <Headless.DialogTitle as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                Filtreler
+                {t('filter.title', 'Filtreler')}
               </Headless.DialogTitle>
               <div className="absolute end-2 top-2">
                 <Headless.CloseButton
@@ -424,10 +428,10 @@ export function FiltersMenuDialog({ className, filterOptions = demo_filters_opti
 
             <div className="flex shrink-0 items-center justify-between bg-neutral-50 p-4 sm:px-8 dark:border-t dark:border-neutral-800 dark:bg-neutral-900">
               <Headless.CloseButton as={ButtonThird} size="smaller" className="-mx-2" type="button">
-                İptal
+                {t('common.cancel', 'İptal')}
               </Headless.CloseButton>
               <Headless.CloseButton as={ButtonPrimary} size="smaller" type="submit">
-                Filtreleri Uygula
+                {t('filter.apply_filters', 'Filtreleri Uygula')}
               </Headless.CloseButton>
             </div>
           </Headless.DialogPanel>

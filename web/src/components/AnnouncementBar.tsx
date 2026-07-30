@@ -3,6 +3,7 @@
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { FC, useEffect, useState } from 'react'
+import { useTranslation } from '@/contexts/LanguageContext'
 
 export interface AnnouncementItem {
   text: string
@@ -14,16 +15,18 @@ interface AnnouncementBarProps {
   announcements?: AnnouncementItem[]
 }
 
-const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
-  { text: 'Taze kavrulmuş kahveniz kapınızda', href: '/collections/all', cta: 'Sipariş Ver' },
-  { text: '₺300 üzeri siparişlerde ücretsiz kargo', href: '/collections/all', cta: 'Alışverişe Başla' },
-  { text: 'Aylık kahve aboneliğinde %15 indirim', href: '/subscription', cta: 'Abone Ol' },
-  { text: 'Kurumsal müşterilere özel fiyatlar', href: '/b2b', cta: 'Teklif Al' },
-]
-
 const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnouncements }) => {
+  const { t } = useTranslation()
+
+  const defaultAnnouncements: AnnouncementItem[] = [
+    { text: t('announcement.fresh_roasted', 'Taze kavrulmuş kahveniz kapınızda'), href: '/collections/all', cta: t('announcement.order_now', 'Sipariş Ver') },
+    { text: t('announcement.free_shipping', '₺300 üzeri siparişlerde ücretsiz kargo'), href: '/collections/all', cta: t('announcement.start_shopping', 'Alışverişe Başla') },
+    { text: t('announcement.subscription_discount', 'Aylık kahve aboneliğinde %15 indirim'), href: '/subscription', cta: t('announcement.subscribe', 'Abone Ol') },
+    { text: t('announcement.b2b_prices', 'Kurumsal müşterilere özel fiyatlar'), href: '/b2b', cta: t('announcement.get_quote', 'Teklif Al') },
+  ]
+
   const announcements =
-    propAnnouncements && propAnnouncements.length > 0 ? propAnnouncements : DEFAULT_ANNOUNCEMENTS
+    propAnnouncements && propAnnouncements.length > 0 ? propAnnouncements : defaultAnnouncements
 
   const [visible, setVisible] = useState(true)
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -120,10 +123,10 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
         <Link
           href="/siparis-takibi"
           className="relative z-10 hidden shrink-0 items-center gap-x-2 pl-3 transition hover:opacity-80 sm:flex"
-          title="Sipariş Takibi"
+          title={t('announcement.order_tracking', 'Sipariş Takibi')}
         >
           <span className="hidden text-[10px] font-semibold uppercase tracking-widest text-white/50 lg:inline">
-            Kapınızda
+            {t('announcement.at_your_door', 'Kapınızda')}
           </span>
           <svg className="h-8 w-8 text-amber-200/80" viewBox="0 0 32 32" fill="none">
             {/* Roof */}
@@ -215,7 +218,7 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
 
             {/* Delivered! bubble — appears to the LEFT of scooter, vertically centered (avoids clipping above bar) */}
             <div className="delivered-bubble absolute right-full top-1/2 mr-2 -translate-y-1/2 whitespace-nowrap rounded-full bg-emerald-500 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white opacity-0 shadow-lg">
-              ✓ Teslim edildi
+              {t('announcement.delivered', '✓ Teslim edildi')}
             </div>
           </div>
         </div>
@@ -236,7 +239,7 @@ const AnnouncementBar: FC<AnnouncementBarProps> = ({ announcements: propAnnounce
         <button
           onClick={() => setVisible(false)}
           className="relative z-10 ml-3 shrink-0 rounded-full p-1 text-white/40 transition hover:bg-white/10 hover:text-white"
-          aria-label="Kapat"
+          aria-label={t('common.close', 'Kapat')}
         >
           <XMarkIcon className="h-3.5 w-3.5" />
         </button>

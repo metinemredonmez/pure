@@ -2,6 +2,7 @@
 
 import ReviewItem from '@/components/ReviewItem'
 import StarReview from '@/components/StarReview'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TReview } from '@/data/data'
 import { getApiProductReviews, submitProductReview } from '@/lib/api'
 import { Button } from '@/shared/Button/Button'
@@ -39,6 +40,7 @@ function mapReviews(raw: any[]): TReview[] {
 }
 
 const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialReviews, className }: Props) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = React.useState(false)
   const [rating_, setRating] = React.useState(0)
   const [title, setTitle] = React.useState('')
@@ -78,16 +80,16 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
     setMessage(null)
 
     if (!productId) {
-      setMessage({ type: 'error', text: 'Ürün bilgisi alınamadı, lütfen sayfayı yenileyin.' })
+      setMessage({ type: 'error', text: t('reviews.error_no_product', 'Ürün bilgisi alınamadı, lütfen sayfayı yenileyin.') })
       return
     }
     if (rating_ < 1 || rating_ > 5) {
-      setMessage({ type: 'error', text: 'Lütfen 1-5 arası puan verin.' })
+      setMessage({ type: 'error', text: t('reviews.error_rating_range', 'Lütfen 1-5 arası puan verin.') })
       return
     }
     const body = comment.trim()
     if (body.length < 2) {
-      setMessage({ type: 'error', text: 'Yorum en az 2 karakter olmalı.' })
+      setMessage({ type: 'error', text: t('reviews.error_min_length', 'Yorum en az 2 karakter olmalı.') })
       return
     }
 
@@ -100,13 +102,13 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
     setSubmitting(false)
 
     if (res?.success === false || res?.statusCode >= 400) {
-      setMessage({ type: 'error', text: res?.message || 'Yorum gönderilemedi.' })
+      setMessage({ type: 'error', text: res?.message || t('reviews.error_submit_failed', 'Yorum gönderilemedi.') })
       return
     }
 
     resetForm()
     await refreshReviews()
-    setMessage({ type: 'success', text: 'Yorumunuz alındı, teşekkürler!' })
+    setMessage({ type: 'success', text: t('reviews.success_submitted', 'Yorumunuz alındı, teşekkürler!') })
     setTimeout(() => {
       setIsOpen(false)
       setMessage(null)
@@ -119,7 +121,7 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
         <h2 className="flex scroll-mt-8 items-center text-2xl font-semibold" id="reviews">
           <StarIcon className="mb-0.5 size-7" />
           <span className="ml-1.5">
-            {rating} · {reviewCount} Yorum
+            {rating} · {t('reviews.review_count', '{count} Yorum', { count: reviewCount })}
           </span>
         </h2>
 
@@ -132,48 +134,48 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
             </div>
           </div>
         ) : (
-          <p className="mt-6 text-sm text-neutral-500">Henüz yorum yok. İlk yorumu siz yazın.</p>
+          <p className="mt-6 text-sm text-neutral-500">{t('reviews.empty', 'Henüz yorum yok. İlk yorumu siz yazın.')}</p>
         )}
 
         <Button className="mt-10" onClick={() => setIsOpen(true)}>
           <HugeiconsIcon icon={MessageAdd01Icon} size={20} />
-          Yorum yaz
+          {t('reviews.write_review', 'Yorum yaz')}
         </Button>
 
         <Dialog size="2xl" open={isOpen} onClose={setIsOpen}>
           <DialogTitle>
             <div className="flex items-center">
               <HugeiconsIcon icon={MessageAdd01Icon} size={20} className="mr-2" />
-              Yorum yaz
+              {t('reviews.write_review', 'Yorum yaz')}
             </div>
           </DialogTitle>
           <DialogDescription>
-            E-posta adresiniz yayınlanmaz. Zorunlu alanlar yıldız (*) ile işaretlidir.
+            {t('reviews.email_not_published', 'E-posta adresiniz yayınlanmaz. Zorunlu alanlar yıldız (*) ile işaretlidir.')}
           </DialogDescription>
           <DialogBody>
             {!isLoggedIn ? (
               <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-700 dark:bg-neutral-900">
                 <p className="text-neutral-700 dark:text-neutral-200">
-                  Yorum yapabilmek için{' '}
+                  {t('reviews.login_prompt_before', 'Yorum yapabilmek için')}{' '}
                   <Link href="/login" className="font-semibold underline">
-                    giriş yapmalısınız
+                    {t('reviews.login_prompt_link', 'giriş yapmalısınız')}
                   </Link>
-                  . Hesabınız yoksa{' '}
+                  {t('reviews.login_prompt_middle', '. Hesabınız yoksa')}{' '}
                   <Link href="/signup" className="font-semibold underline">
-                    buradan
+                    {t('reviews.login_prompt_here', 'buradan')}
                   </Link>{' '}
-                  oluşturabilirsiniz.
+                  {t('reviews.login_prompt_after', 'oluşturabilirsiniz.')}
                 </p>
               </div>
             ) : (
               <form id="review-form" onSubmit={handleSubmit}>
                 <Fieldset>
                   <Field>
-                    <Label>Puan *</Label>
+                    <Label>{t('reviews.label_rating', 'Puan *')}</Label>
                     <StarReview onRatingChange={setRating} initialRating={rating_} />
                   </Field>
                   <Field className="mt-5">
-                    <Label>Başlık</Label>
+                    <Label>{t('reviews.label_title', 'Başlık')}</Label>
                     <input
                       type="text"
                       value={title}
@@ -183,7 +185,7 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
                     />
                   </Field>
                   <Field className="mt-5">
-                    <Label>Yorumunuz *</Label>
+                    <Label>{t('reviews.label_comment', 'Yorumunuz *')}</Label>
                     <Textarea
                       name="comment"
                       placeholder=""
@@ -210,11 +212,11 @@ const ProductReviews = ({ productId, rating, reviewNumber, reviews: initialRevie
           </DialogBody>
           <DialogActions>
             <Button size="smaller" plain onClick={() => setIsOpen(false)}>
-              {isLoggedIn ? 'İptal' : 'Kapat'}
+              {isLoggedIn ? t('common.cancel', 'İptal') : t('common.close', 'Kapat')}
             </Button>
             {isLoggedIn && (
               <Button size="smaller" type="submit" form="review-form" disabled={submitting}>
-                {submitting ? 'Gönderiliyor...' : 'Yorumu Gönder'}
+                {submitting ? t('reviews.submitting', 'Gönderiliyor...') : t('reviews.submit_review', 'Yorumu Gönder')}
               </Button>
             )}
           </DialogActions>

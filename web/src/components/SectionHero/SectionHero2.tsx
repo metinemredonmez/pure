@@ -4,6 +4,7 @@ import backgroundLineSvg from '@/images/Moon.svg'
 import heroImage1 from '@/images/hero-right-1.png'
 import heroImage2 from '@/images/hero-right-2.png'
 import heroImage3 from '@/images/hero-right-3.png'
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -23,34 +24,6 @@ export interface HeroSlide {
   btnHref: string
 }
 
-// Default fallback data (used when no slides prop passed)
-const defaultData: HeroSlide[] = [
-  {
-    id: 1,
-    imageUrl: heroImage1.src,
-    heading: 'Premium Specialty <br /> Kahve Koleksiyonu',
-    subHeading: 'Taze kavrulmuş, tek menşeili kahveler',
-    btnText: 'Kahveleri Keşfet',
-    btnHref: '/collections/all',
-  },
-  {
-    id: 2,
-    imageUrl: heroImage2.src,
-    heading: 'Tarladan Fincana <br /> İzlenebilir Lezzet',
-    subHeading: 'Her çekirdeğin hikayesini takip edin',
-    btnText: 'Hikayemizi Öğrenin',
-    btnHref: '/about',
-  },
-  {
-    id: 3,
-    imageUrl: heroImage3.src,
-    heading: 'Aylık Kahve <br /> Aboneliği',
-    subHeading: 'Her ay kapınıza taze kahve',
-    btnText: 'Abonelik Başlat',
-    btnHref: '/subscription',
-  },
-]
-
 interface Props {
   className?: string
   slides?: HeroSlide[]
@@ -58,7 +31,35 @@ interface Props {
 
 let TIME_OUT: NodeJS.Timeout | null = null
 const SectionHero2: FC<Props> = ({ className = '', slides }) => {
+  const { t } = useTranslation()
   // =================
+  // Default fallback data (used when no slides prop passed)
+  const defaultData: HeroSlide[] = [
+    {
+      id: 1,
+      imageUrl: heroImage1.src,
+      heading: t('hero.slide1_heading', 'Premium Specialty <br /> Kahve Koleksiyonu'),
+      subHeading: t('hero.slide1_subheading', 'Taze kavrulmuş, tek menşeili kahveler'),
+      btnText: t('hero.slide1_btn', 'Kahveleri Keşfet'),
+      btnHref: '/collections/all',
+    },
+    {
+      id: 2,
+      imageUrl: heroImage2.src,
+      heading: t('hero.slide2_heading', 'Tarladan Fincana <br /> İzlenebilir Lezzet'),
+      subHeading: t('hero.slide2_subheading', 'Her çekirdeğin hikayesini takip edin'),
+      btnText: t('hero.slide2_btn', 'Hikayemizi Öğrenin'),
+      btnHref: '/about',
+    },
+    {
+      id: 3,
+      imageUrl: heroImage3.src,
+      heading: t('hero.slide3_heading', 'Aylık Kahve <br /> Aboneliği'),
+      subHeading: t('hero.slide3_subheading', 'Her ay kapınıza taze kahve'),
+      btnText: t('hero.slide3_btn', 'Abonelik Başlat'),
+      btnHref: '/subscription',
+    },
+  ]
   const data: HeroSlide[] = slides && slides.length ? slides : defaultData
 
   const [isSlided, setIsSlided] = useState(false)

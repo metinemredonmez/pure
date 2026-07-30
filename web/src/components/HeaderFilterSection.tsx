@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import Nav from '@/shared/Nav/Nav'
 import NavItem from '@/shared/Nav/NavItem'
@@ -19,8 +20,26 @@ export interface HeaderFilterSectionProps {
 }
 
 const HeaderFilterSection: FC<HeaderFilterSectionProps> = ({ className = 'mb-12', heading }) => {
+  const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(true)
   const [tabActive, setTabActive] = useState('Tümü')
+
+  const tabLabel = (item: string) => {
+    switch (item) {
+      case 'Tümü':
+        return t('filter.all', 'Tümü')
+      case 'Çekirdek':
+        return t('filter.whole_bean', 'Çekirdek')
+      case 'Öğütülmüş':
+        return t('filter.ground', 'Öğütülmüş')
+      case 'Filtre':
+        return t('filter.filter_coffee', 'Filtre')
+      case 'Türk Kahvesi':
+        return t('filter.turkish_coffee', 'Türk Kahvesi')
+      default:
+        return item
+    }
+  }
 
   return (
     <div className={`relative flex flex-col ${className}`}>
@@ -29,7 +48,7 @@ const HeaderFilterSection: FC<HeaderFilterSectionProps> = ({ className = 'mb-12'
         <Nav className="sm:gap-x-2">
           {['Tümü', 'Çekirdek', 'Öğütülmüş', 'Filtre', 'Türk Kahvesi', 'Espresso'].map((item, index) => (
             <NavItem key={index} isActive={tabActive === item} onClick={() => setTabActive(item)}>
-              {item}
+              {tabLabel(item)}
             </NavItem>
           ))}
         </Nav>
@@ -42,7 +61,7 @@ const HeaderFilterSection: FC<HeaderFilterSectionProps> = ({ className = 'mb-12'
             }}
           >
             <HugeiconsIcon icon={FilterIcon} size={22} className="-ml-1" color="currentColor" strokeWidth={1.5} />
-            <span className="ml-2">Filtre</span>
+            <span className="ml-2">{t('common.filter', 'Filtre')}</span>
             <ChevronDownIcon className={`size-5 ${isOpen ? 'rotate-180' : ''}`} aria-hidden="true" />
           </ButtonPrimary>
         </span>

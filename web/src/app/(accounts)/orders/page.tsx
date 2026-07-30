@@ -1,6 +1,7 @@
 'use client'
 
 import Prices from '@/components/Prices'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Button } from '@/shared/Button/Button'
 import { PackageIcon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -26,6 +27,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 }
 
 export default function OrdersPage() {
+  const { t } = useTranslation()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -51,15 +53,15 @@ export default function OrdersPage() {
   }, [])
 
   if (loading) {
-    return <div className="py-20 text-center text-neutral-400">Yükleniyor...</div>
+    return <div className="py-20 text-center text-neutral-400">{t('common.loading', 'Yükleniyor...')}</div>
   }
 
   return (
     <div className="flex flex-col gap-y-10 sm:gap-y-12">
       <div>
-        <h1 className="text-2xl font-semibold">Sipariş Geçmişi</h1>
+        <h1 className="text-2xl font-semibold">{t('order.history_title', 'Sipariş Geçmişi')}</h1>
         <p className="mt-4 text-neutral-500 dark:text-neutral-400">
-          Son siparişlerinizin durumunu kontrol edin ve iade işlemlerini yönetin.
+          {t('order.history_subtitle', 'Son siparişlerinizin durumunu kontrol edin ve iade işlemlerini yönetin.')}
         </p>
       </div>
 
@@ -68,10 +70,10 @@ export default function OrdersPage() {
           <div className="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-100 dark:bg-neutral-800">
             <HugeiconsIcon icon={PackageIcon} size={36} color="currentColor" strokeWidth={1.5} className="text-neutral-400" />
           </div>
-          <h3 className="mt-6 text-lg font-semibold">Henüz siparişiniz yok</h3>
-          <p className="mt-2 text-sm text-neutral-500">İlk siparişinizi verin!</p>
+          <h3 className="mt-6 text-lg font-semibold">{t('order.empty_title', 'Henüz siparişiniz yok')}</h3>
+          <p className="mt-2 text-sm text-neutral-500">{t('order.empty_subtitle', 'İlk siparişinizi verin!')}</p>
           <Link href="/collections/all" className="mt-6 rounded-full bg-primary-700 px-6 py-2.5 text-sm font-medium text-white hover:bg-primary-800">
-            Alışverişe Başla
+            {t('order.start_shopping', 'Alışverişe Başla')}
           </Link>
         </div>
       ) : (
@@ -92,7 +94,7 @@ export default function OrdersPage() {
                 <div className="mt-3 flex items-center gap-3 sm:mt-0">
                   <span className="text-lg font-bold text-primary-700">₺{Number(order.total || 0).toLocaleString('tr-TR')}</span>
                   <Button color="light" size="smaller" href={`/orders/${order.id}`}>
-                    Detay
+                    {t('order.detail', 'Detay')}
                   </Button>
                 </div>
               </div>
@@ -110,7 +112,7 @@ export default function OrdersPage() {
                           <h3 className="text-sm font-medium">{item.productName}</h3>
                           <span className="text-sm font-semibold">₺{Number(item.unitPrice || 0).toLocaleString('tr-TR')}</span>
                         </div>
-                        <p className="text-xs text-neutral-500">Adet: {item.quantity}</p>
+                        <p className="text-xs text-neutral-500">{t('order.quantity', 'Adet: {count}', { count: item.quantity })}</p>
                       </div>
                     </div>
                   ))}

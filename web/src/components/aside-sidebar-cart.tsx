@@ -3,6 +3,7 @@
 import { DeliveryTruck01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { CartItem, useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
@@ -13,9 +14,10 @@ import { Aside } from './aside/aside'
 
 const AsideSidebarCart = () => {
   const { items, subtotal, removeItem, updateQuantity } = useCart()
+  const { t } = useTranslation()
 
   return (
-    <Aside openFrom="right" type="cart" heading="Alışveriş Sepeti">
+    <Aside openFrom="right" type="cart" heading={t('cart.title', 'Alışveriş Sepeti')}>
       <div className="flex h-full flex-col">
         {/* CONTENT */}
         <div className="hidden-scrollbar flex-1 overflow-x-hidden overflow-y-auto py-6">
@@ -28,23 +30,23 @@ const AsideSidebarCart = () => {
                 </svg>
               </div>
               <h3 className="mt-6 text-lg font-semibold text-neutral-800 dark:text-neutral-200">
-                Sepetiniz boş
+                {t('cart.empty', 'Sepetiniz boş')}
               </h3>
               <p className="mt-2 max-w-xs text-sm text-neutral-500 dark:text-neutral-400">
-                Henüz sepetinize ürün eklemediniz. Taze kavrulmuş kahvelerimizi keşfedin!
+                {t('cart.empty_description', 'Henüz sepetinize ürün eklemediniz. Taze kavrulmuş kahvelerimizi keşfedin!')}
               </p>
               <Link
                 href="/collections/all"
                 className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary-700 px-6 py-3 text-sm font-medium text-white transition hover:bg-primary-800"
               >
-                Kahveleri Keşfet
+                {t('cart.discover_coffees', 'Kahveleri Keşfet')}
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                 </svg>
               </Link>
               <div className="mt-8 rounded-2xl bg-neutral-50 p-4 dark:bg-neutral-800">
                 <p className="text-xs font-medium text-neutral-600 dark:text-neutral-400">
-                  <HugeiconsIcon icon={DeliveryTruck01Icon} size={14} color="currentColor" strokeWidth={1.5} className="inline-block" /> 300 TL üzeri siparişlerde <span className="text-primary-700 dark:text-primary-400">ücretsiz kargo</span>
+                  <HugeiconsIcon icon={DeliveryTruck01Icon} size={14} color="currentColor" strokeWidth={1.5} className="inline-block" /> {t('cart.free_shipping_over', '300 TL üzeri siparişlerde')} <span className="text-primary-700 dark:text-primary-400">{t('cart.free_shipping', 'ücretsiz kargo')}</span>
                 </p>
               </div>
             </div>
@@ -71,24 +73,24 @@ const AsideSidebarCart = () => {
             className="mt-auto grid shrink-0 gap-4 border-t border-neutral-900/10 py-6 dark:border-neutral-100/10"
           >
             <h2 id="summary-heading" className="sr-only">
-              Sipariş özeti
+              {t('cart.order_summary', 'Sipariş özeti')}
             </h2>
             <div>
               <div className="flex justify-between text-base font-medium text-gray-900 dark:text-neutral-100">
-                <p className="font-medium">Ara Toplam</p>
+                <p className="font-medium">{t('cart.subtotal', 'Ara Toplam')}</p>
                 <p className="font-medium">₺{subtotal.toLocaleString('tr-TR')}</p>
               </div>
               <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">
-                Kargo ve vergiler ödeme sırasında hesaplanır.
+                {t('cart.shipping_taxes_note', 'Kargo ve vergiler ödeme sırasında hesaplanır.')}
               </p>
               <div className="mt-5 grid grid-cols-2 gap-2">
-                <ButtonSecondary href="/cart">Sepeti Gör</ButtonSecondary>
-                <ButtonPrimary href="/checkout">Ödemeye Geç</ButtonPrimary>
+                <ButtonSecondary href="/cart">{t('cart.view_cart', 'Sepeti Gör')}</ButtonSecondary>
+                <ButtonPrimary href="/checkout">{t('common.checkout', 'Ödemeye Geç')}</ButtonPrimary>
               </div>
               <div className="mt-6 flex justify-center text-center text-sm text-neutral-500 dark:text-neutral-400">
                 <p className="text-xs">
                   <Link href="/collections/all" className="text-xs font-medium uppercase">
-                    Alışverişe Devam Et<span aria-hidden="true"> →</span>
+                    {t('cart.continue_shopping', 'Alışverişe Devam Et')}<span aria-hidden="true"> →</span>
                   </Link>
                 </p>
               </div>
@@ -109,6 +111,7 @@ const CartProduct = ({
   onRemove: () => void
   onQuantityChange: (qty: number) => void
 }) => {
+  const { t } = useTranslation()
   const { name, price, image, size, color, grind, quantity, handle } = product
 
   return (
@@ -165,7 +168,7 @@ const CartProduct = ({
           <div className="inline-grid w-full max-w-16 grid-cols-1">
             <select
               name={`quantity-${product.id}`}
-              aria-label={`Adet, ${name}`}
+              aria-label={t('cart.quantity_for', 'Adet, {name}', { name })}
               className="col-start-1 row-start-1 appearance-none rounded-md py-0.5 ps-3 pe-8 text-xs/6 outline-1 -outline-offset-1 outline-neutral-900/10 focus:outline-1 dark:outline-white/15"
               value={quantity}
               onChange={(e) => onQuantityChange(Number(e.target.value))}
@@ -188,7 +191,7 @@ const CartProduct = ({
               onClick={onRemove}
               className="font-medium text-primary-600 dark:text-primary-500"
             >
-              Kaldır
+              {t('common.remove', 'Kaldır')}
             </button>
           </div>
         </div>

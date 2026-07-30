@@ -5,6 +5,7 @@ import { UserCircle02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Divider } from '../Divider'
 import { Link } from '../Link'
 
@@ -58,6 +59,7 @@ function clearAuthStorage(): boolean {
 
 export default function AvatarDropdown({ className }: Props) {
   const router = useRouter()
+  const { t } = useTranslation()
   const [user, setUser] = useState<CurrentUser | null>(null)
   const [mounted, setMounted] = useState(false)
 
@@ -145,7 +147,7 @@ export default function AvatarDropdown({ className }: Props) {
                   {getInitials(displayName)}
                 </div>
                 <div className="grow overflow-hidden">
-                  <h4 className="truncate font-semibold">{displayName || 'Hesabım'}</h4>
+                  <h4 className="truncate font-semibold">{displayName || t('account.my_account', 'Hesabım')}</h4>
                   {user?.email && <p className="mt-0.5 truncate text-xs text-neutral-500">{user.email}</p>}
                 </div>
               </div>
@@ -156,8 +158,8 @@ export default function AvatarDropdown({ className }: Props) {
                     <HugeiconsIcon icon={UserCircle02Icon} size={28} color="currentColor" strokeWidth={1.5} />
                   </div>
                   <div className="grow">
-                    <h4 className="font-semibold">Misafir Kullanıcı</h4>
-                    <p className="mt-0.5 text-xs text-neutral-500">Giriş yapın veya kayıt olun</p>
+                    <h4 className="font-semibold">{t('account.guest_user', 'Misafir Kullanıcı')}</h4>
+                    <p className="mt-0.5 text-xs text-neutral-500">{t('account.login_or_signup', 'Giriş yapın veya kayıt olun')}</p>
                   </div>
                 </div>
                 <div className="mt-4 grid grid-cols-2 gap-2">
@@ -165,13 +167,13 @@ export default function AvatarDropdown({ className }: Props) {
                     href="/login"
                     className="flex items-center justify-center rounded-full bg-primary-700 px-4 py-2 text-xs font-medium text-white transition hover:bg-primary-800"
                   >
-                    Giriş Yap
+                    {t('account.login', 'Giriş Yap')}
                   </Link>
                   <Link
                     href="/signup"
                     className="flex items-center justify-center rounded-full border border-neutral-300 px-4 py-2 text-xs font-medium text-neutral-700 transition hover:bg-neutral-100 dark:border-neutral-600 dark:text-neutral-300 dark:hover:bg-neutral-700"
                   >
-                    Kayıt Ol
+                    {t('account.signup', 'Kayıt Ol')}
                   </Link>
                 </div>
               </div>
@@ -205,7 +207,7 @@ export default function AvatarDropdown({ className }: Props) {
                     </svg>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium">Hesabım</p>
+                    <p className="text-sm font-medium">{t('account.my_account', 'Hesabım')}</p>
                   </div>
                 </Link>
 
@@ -234,7 +236,7 @@ export default function AvatarDropdown({ className }: Props) {
                     </svg>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium">Siparişlerim</p>
+                    <p className="text-sm font-medium">{t('order.my_orders', 'Siparişlerim')}</p>
                   </div>
                 </Link>
 
@@ -254,7 +256,7 @@ export default function AvatarDropdown({ className }: Props) {
                     </svg>
                   </div>
                   <div className="ml-4">
-                    <p className="text-sm font-medium">Favorilerim</p>
+                    <p className="text-sm font-medium">{t('account.my_wishlist', 'Favorilerim')}</p>
                   </div>
                 </Link>
 
@@ -286,7 +288,7 @@ export default function AvatarDropdown({ className }: Props) {
                 </svg>
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium">Yardım</p>
+                <p className="text-sm font-medium">{t('nav.help', 'Yardım')}</p>
               </div>
             </Link>
 
@@ -311,7 +313,7 @@ export default function AvatarDropdown({ className }: Props) {
                   </svg>
                 </div>
                 <div className="ml-4">
-                  <p className="text-sm font-medium">Çıkış Yap</p>
+                  <p className="text-sm font-medium">{t('account.logout', 'Çıkış Yap')}</p>
                 </div>
               </button>
             )}

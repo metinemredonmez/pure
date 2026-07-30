@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId }) => {
+  const { t } = useTranslation()
   const [isLiked, setIsLiked] = useState(liked)
   const [loading, setLoading] = useState(false)
 
@@ -40,7 +42,7 @@ const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId 
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('pureolentia_token') : null
     if (!token) {
-      toast.error('Favorilere eklemek için giriş yapın', { duration: 3000 })
+      toast.error(t('like.login_required', 'Favorilere eklemek için giriş yapın'), { duration: 3000 })
       setTimeout(() => {
         window.location.href = '/login'
       }, 1000)
@@ -68,9 +70,9 @@ const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId 
       if (!res.ok) {
         setIsLiked(!nextLiked) // revert
         const err = await res.json().catch(() => null)
-        toast.error(err?.message || 'İşlem başarısız', { duration: 2500 })
+        toast.error(err?.message || t('common.operation_failed', 'İşlem başarısız'), { duration: 2500 })
       } else {
-        toast.success(nextLiked ? 'Favorilere eklendi ♥' : 'Favorilerden kaldırıldı', { duration: 2000 })
+        toast.success(nextLiked ? t('like.added', 'Favorilere eklendi ♥') : t('like.removed', 'Favorilerden kaldırıldı'), { duration: 2000 })
         // Notify wishlist page (or anyone listening) to update its list
         window.dispatchEvent(
           new CustomEvent('wishlist:changed', {
@@ -80,7 +82,7 @@ const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId 
       }
     } catch {
       setIsLiked(!nextLiked) // revert
-      toast.error('Bağlantı hatası', { duration: 2500 })
+      toast.error(t('common.connection_error', 'Bağlantı hatası'), { duration: 2500 })
     } finally {
       setLoading(false)
     }
@@ -89,7 +91,7 @@ const LikeButton: React.FC<Props> = ({ className = '', liked = false, productId 
   return (
     <button
       type="button"
-      aria-label={isLiked ? 'Favorilerden kaldır' : 'Favorilere ekle'}
+      aria-label={isLiked ? t('like.remove_aria', 'Favorilerden kaldır') : t('like.add_aria', 'Favorilere ekle')}
       className={`flex h-9 w-9 items-center justify-center rounded-full bg-white text-neutral-700 nc-shadow-lg disabled:opacity-60 dark:bg-neutral-900 dark:text-neutral-200 ${className}`}
       onClick={handleClick}
       disabled={loading}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { useState } from 'react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
@@ -36,6 +37,7 @@ function money(v: any) {
 }
 
 export default function TrackingForm() {
+  const { t } = useTranslation()
   const [orderNumber, setOrderNumber] = useState('')
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -47,7 +49,7 @@ export default function TrackingForm() {
     setError(null)
     setResult(null)
     if (!orderNumber || !email) {
-      setError('Sipariş numarası ve e-posta zorunludur.')
+      setError(t('tracking.required_fields', 'Sipariş numarası ve e-posta zorunludur.'))
       return
     }
     setLoading(true)
@@ -58,11 +60,11 @@ export default function TrackingForm() {
       const r = await fetch(url.toString())
       const j = await r.json()
       if (!r.ok || j?.success === false) {
-        throw new Error(j?.message || 'Sipariş bulunamadı')
+        throw new Error(j?.message || t('tracking.not_found', 'Sipariş bulunamadı'))
       }
       setResult(j?.data || j)
     } catch (err: any) {
-      setError(err?.message || 'Bir hata oluştu')
+      setError(err?.message || t('tracking.error', 'Bir hata oluştu'))
     } finally {
       setLoading(false)
     }
@@ -75,7 +77,7 @@ export default function TrackingForm() {
       <form onSubmit={submit} className="space-y-4">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            Sipariş Numarası
+            {t('tracking.order_number', 'Sipariş Numarası')}
           </label>
           <input
             type="text"
@@ -87,7 +89,7 @@ export default function TrackingForm() {
         </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-neutral-700 dark:text-neutral-300">
-            E-posta Adresi
+            {t('tracking.email', 'E-posta Adresi')}
           </label>
           <input
             type="email"
@@ -102,7 +104,7 @@ export default function TrackingForm() {
           disabled={loading}
           className="w-full rounded-full bg-primary-700 py-3.5 text-sm font-semibold text-white shadow-lg transition hover:bg-primary-800 disabled:opacity-60"
         >
-          {loading ? 'Sorgulanıyor...' : 'Sipariş Durumunu Sorgula'}
+          {loading ? t('tracking.querying', 'Sorgulanıyor...') : t('tracking.query_status', 'Sipariş Durumunu Sorgula')}
         </button>
       </form>
 
@@ -116,7 +118,7 @@ export default function TrackingForm() {
         <div className="mt-6 space-y-4 rounded-2xl border border-neutral-200 bg-neutral-50 p-5 dark:border-neutral-700 dark:bg-neutral-800/50">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs text-neutral-500">Sipariş No</p>
+              <p className="text-xs text-neutral-500">{t('tracking.order_no', 'Sipariş No')}</p>
               <p className="text-sm font-bold text-neutral-900 dark:text-white">{result.orderNumber}</p>
               <p className="mt-1 text-xs text-neutral-500">{fmt(result.createdAt)}</p>
             </div>
@@ -127,11 +129,11 @@ export default function TrackingForm() {
 
           {result.trackingNumber && (
             <div className="rounded-xl bg-white p-3 text-xs dark:bg-neutral-900">
-              <span className="text-neutral-500">Kargo Takip No: </span>
+              <span className="text-neutral-500">{t('tracking.tracking_no', 'Kargo Takip No:')} </span>
               <span className="font-mono font-semibold">{result.trackingNumber}</span>
               {result.trackingUrl && (
                 <a href={result.trackingUrl} target="_blank" rel="noreferrer" className="ml-2 text-primary-700 hover:underline">
-                  Kargo sitesinde takip et →
+                  {t('tracking.track_on_carrier', 'Kargo sitesinde takip et →')}
                 </a>
               )}
             </div>
@@ -139,19 +141,19 @@ export default function TrackingForm() {
 
           {Array.isArray(result.items) && result.items.length > 0 && (
             <div className="rounded-xl bg-white p-3 dark:bg-neutral-900">
-              <p className="mb-2 text-xs font-semibold text-neutral-500">Ürünler</p>
+              <p className="mb-2 text-xs font-semibold text-neutral-500">{t('tracking.products', 'Ürünler')}</p>
               <ul className="space-y-1 text-xs">
                 {result.items.map((it: any, i: number) => (
                   <li key={i} className="flex justify-between">
                     <span className="text-neutral-700 dark:text-neutral-300">
-                      {it.product?.name || 'Ürün'} × {it.quantity}
+                      {it.product?.name || t('tracking.product', 'Ürün')} × {it.quantity}
                     </span>
                     <span className="font-semibold">{money(Number(it.unitPrice) * it.quantity)}</span>
                   </li>
                 ))}
               </ul>
               <div className="mt-2 flex justify-between border-t pt-2 text-sm font-bold dark:border-neutral-700">
-                <span>Toplam</span>
+                <span>{t('cart.total', 'Toplam')}</span>
                 <span className="text-primary-700">{money(result.total)}</span>
               </div>
             </div>
@@ -159,7 +161,7 @@ export default function TrackingForm() {
 
           {Array.isArray(result.statusHistory) && result.statusHistory.length > 0 && (
             <div>
-              <p className="mb-2 text-xs font-semibold text-neutral-500">Durum Geçmişi</p>
+              <p className="mb-2 text-xs font-semibold text-neutral-500">{t('tracking.status_history', 'Durum Geçmişi')}</p>
               <div className="space-y-2">
                 {result.statusHistory.map((h: any, i: number) => {
                   const s = STATUS_LABELS[h.status] || { label: h.status, color: '', icon: '•' }

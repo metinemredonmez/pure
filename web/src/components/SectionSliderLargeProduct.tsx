@@ -1,6 +1,7 @@
 'use client'
 
 import Heading from '@/components/Heading/Heading'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductItem } from '@/data/data'
 import { useCarouselArrowButtons } from '@/hooks/use-carousel-arrow-buttons'
 import { ArrowUpRight01Icon } from '@hugeicons/core-free-icons'
@@ -25,28 +26,34 @@ export interface SectionSliderLargeProductProps {
 const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
   className = '',
   products,
-  heading = 'Uzmanlar seçti',
-  headingDim = 'Haftanın favorileri',
-  viewAllLabel = 'Daha fazla',
-  viewAllCaption = 'Tümünü gör',
+  heading,
+  headingDim,
+  viewAllLabel,
+  viewAllCaption,
   emblaOptions = {
     slidesToScroll: 'auto',
   },
 }) => {
+  const { t } = useTranslation()
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { prevBtnDisabled, nextBtnDisabled, onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
+
+  const _heading = heading ?? t('section.experts_choice', 'Uzmanlar seçti')
+  const _headingDim = headingDim ?? t('section.weekly_favorites', 'Haftanın favorileri')
+  const _viewAllLabel = viewAllLabel ?? t('section.view_all_label', 'Daha fazla')
+  const _viewAllCaption = viewAllCaption ?? t('section.view_all_caption', 'Tümünü gör')
   return (
     <div className={`nc-SectionSliderLargeProduct ${className}`}>
       <Heading
         isCenter={false}
         hasNextPrev
-        headingDim={headingDim}
+        headingDim={_headingDim}
         prevBtnDisabled={prevBtnDisabled}
         nextBtnDisabled={nextBtnDisabled}
         onClickPrev={onPrevButtonClick}
         onClickNext={onNextButtonClick}
       >
-        {heading}
+        {_heading}
       </Heading>
 
       <div className={'embla'} ref={emblaRef}>
@@ -68,7 +75,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
               <div className="h-[300px] bg-black/5 dark:bg-neutral-800"></div>
               <div className="absolute inset-x-10 inset-y-6 flex flex-col items-center justify-center">
                 <div className="relative flex items-center justify-center">
-                  <span className="text-xl font-semibold">{viewAllLabel}</span>
+                  <span className="text-xl font-semibold">{_viewAllLabel}</span>
                   <HugeiconsIcon
                     icon={ArrowUpRight01Icon}
                     size={24}
@@ -77,7 +84,7 @@ const SectionSliderLargeProduct: FC<SectionSliderLargeProductProps> = ({
                     strokeWidth={1.5}
                   />
                 </div>
-                <span className="mt-1 text-sm">{viewAllCaption}</span>
+                <span className="mt-1 text-sm">{_viewAllCaption}</span>
               </div>
             </div>
           </Link>

@@ -1,6 +1,7 @@
 'use client'
 
 import { useCart } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import ButtonSecondary from '@/shared/Button/ButtonSecondary'
 import { CheckIcon } from '@heroicons/react/24/solid'
@@ -34,6 +35,7 @@ export default function SubscriptionTabs({
   bireyselPlans: Plan[]
   kurumsalPlans: Plan[]
 }) {
+  const { t } = useTranslation()
   const [tab, setTab] = useState<'bireysel' | 'kurumsal'>('bireysel')
   const [gramaj, setGramaj] = useState(250)
   const [kahveTipi, setKahveTipi] = useState('Filtre Kahve')
@@ -56,7 +58,7 @@ export default function SubscriptionTabs({
               : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800'
           }`}
         >
-          Bireysel Abonelik
+          {t('subscription.individual', 'Bireysel Abonelik')}
         </button>
         <button
           type="button"
@@ -67,7 +69,7 @@ export default function SubscriptionTabs({
               : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-300 dark:hover:bg-neutral-800'
           }`}
         >
-          Kurumsal Abonelik
+          {t('subscription.corporate', 'Kurumsal Abonelik')}
         </button>
       </div>
 
@@ -76,7 +78,7 @@ export default function SubscriptionTabs({
         <div className="mx-auto mb-12 flex max-w-2xl flex-wrap items-center justify-center gap-6">
           <div>
             <label className="mb-2 block text-xs font-semibold tracking-wider text-neutral-500 uppercase">
-              Gramaj
+              {t('subscription.gramaj', 'Gramaj')}
             </label>
             <div className="flex gap-2">
               {GRAMAJ_OPTIONS.map((g) => (
@@ -97,7 +99,7 @@ export default function SubscriptionTabs({
           </div>
           <div>
             <label className="mb-2 block text-xs font-semibold tracking-wider text-neutral-500 uppercase">
-              Kahve Tipi
+              {t('subscription.coffee_kind', 'Kahve Tipi')}
             </label>
             <div className="flex gap-2">
               {KAHVE_TIPI.map((t) => (
@@ -137,7 +139,7 @@ export default function SubscriptionTabs({
               >
                 {plan.popular && (
                   <span className="absolute top-3 right-3 z-10 rounded-full bg-primary-500 px-3 py-1 text-xs tracking-widest text-white">
-                    POPÜLER
+                    {t('subscription.popular', 'POPÜLER')}
                   </span>
                 )}
                 <div className="mb-8">
@@ -146,10 +148,10 @@ export default function SubscriptionTabs({
                   </h3>
                   <h2 className="flex items-baseline gap-1 text-4xl leading-none text-neutral-800 dark:text-neutral-200">
                     <span className="font-bold">{formatPrice(monthlyPrice)}</span>
-                    <span className="text-lg font-normal text-neutral-500">/ay</span>
+                    <span className="text-lg font-normal text-neutral-500">{t('subscription.per_month', '/ay')}</span>
                   </h2>
                   <p className="mt-2 text-xs text-neutral-500">
-                    Toplam {formatPrice(totalPrice)} · %{plan.discount} indirim
+                    {t('subscription.total_with_discount', 'Toplam {price} · %{discount} indirim', { price: formatPrice(totalPrice), discount: plan.discount })}
                   </p>
                   {tab === 'bireysel' && (
                     <p className="mt-1 text-xs text-primary-600 font-medium">
@@ -186,7 +188,7 @@ export default function SubscriptionTabs({
                         setTimeout(() => setAddedPlan(null), 2000)
                       }}
                     >
-                      {addedPlan === plan.period ? 'Sepete Eklendi!' : 'Sepete Ekle'}
+                      {addedPlan === plan.period ? t('cart.added', 'Sepete Eklendi!') : t('common.add_to_cart', 'Sepete Ekle')}
                     </ButtonPrimary>
                   ) : (
                     <ButtonSecondary
@@ -206,7 +208,7 @@ export default function SubscriptionTabs({
                         setTimeout(() => setAddedPlan(null), 2000)
                       }}
                     >
-                      <span className="font-medium">{addedPlan === plan.period ? 'Sepete Eklendi!' : 'Sepete Ekle'}</span>
+                      <span className="font-medium">{addedPlan === plan.period ? t('cart.added', 'Sepete Eklendi!') : t('common.add_to_cart', 'Sepete Ekle')}</span>
                     </ButtonSecondary>
                   )}
                 </div>
@@ -219,8 +221,7 @@ export default function SubscriptionTabs({
       {/* Info note */}
       <div className="mx-auto mt-12 max-w-2xl text-center">
         <p className="text-sm text-neutral-500 dark:text-neutral-400">
-          İstediğiniz zaman hesap panelinizden iptal edebilirsiniz. İndirim oranları admin panelden yönetilir.
-          Kurumsal abonelikler için <a href="/b2b" className="text-primary-600 underline">teklif alın</a>.
+          {t('subscription.info_note', 'İstediğiniz zaman hesap panelinizden iptal edebilirsiniz. İndirim oranları admin panelden yönetilir. Kurumsal abonelikler için')} <a href="/b2b" className="text-primary-600 underline">{t('subscription.get_quote', 'teklif alın')}</a>.
         </p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductItem } from '@/data/data'
 import NcImage from '@/shared/NcImage/NcImage'
 import { Link } from '@/shared/link'
@@ -19,6 +20,7 @@ interface Props {
 }
 
 const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
+  const { t } = useTranslation()
   const { title, price, status, rating, options, handle, selectedOptions, reviewNumber, images, featuredImage } = data
   const color = selectedOptions?.find((option) => option.name === 'Kavurma')?.value
 
@@ -31,9 +33,9 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
   // Kavurma / menşei mini bilgisi
   const roastLevel = (data as any).roastLevel
   const roastLabel =
-    roastLevel === 'LIGHT' ? 'Açık Kavurma' :
-    roastLevel === 'DARK' ? 'Koyu Kavurma' :
-    roastLevel === 'MEDIUM' ? 'Orta Kavurma' : ''
+    roastLevel === 'LIGHT' ? t('product.roast_light', 'Açık Kavurma') :
+    roastLevel === 'DARK' ? t('product.roast_dark', 'Koyu Kavurma') :
+    roastLevel === 'MEDIUM' ? t('product.roast_medium', 'Orta Kavurma') : ''
   const origin = (data as any).origin as string | undefined
 
   const { open: openAside, setProductQuickViewHandle } = useAside()
@@ -76,7 +78,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
           color={selectedOptions?.find((option) => option.name === 'Kavurma')?.value}
         >
           <ShoppingBagIcon className="-ml-1 size-3.5" />
-          <span>Sepete Ekle</span>
+          <span>{t('common.add_to_cart', 'Sepete Ekle')}</span>
         </AddToCardButton>
 
         <button
@@ -88,7 +90,7 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
           }}
         >
           <ArrowsPointingOutIcon className="-ml-1 size-3.5" />
-          <span>Hızlı bakış</span>
+          <span>{t('product.quick_view', 'Hızlı bakış')}</span>
         </button>
       </div>
     )
@@ -131,14 +133,14 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
             <div className="flex items-baseline gap-1.5">
               <Prices price={hasPriceRange ? minPrice : price ?? 1} />
               {hasPriceRange && (
-                <span className="text-xs text-neutral-500 dark:text-neutral-400">’ten başlayan</span>
+                <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('product.starting_from', '’ten başlayan')}</span>
               )}
             </div>
             {(reviewNumber ?? 0) > 0 && (
               <div className="mb-0.5 flex items-center">
                 <StarIcon className="h-5 w-5 pb-px text-amber-400" />
                 <span className="ms-1 text-sm text-neutral-500 dark:text-neutral-400">
-                  {rating} ({reviewNumber} değerlendirme)
+                  {rating} ({t('product.reviews_count', '{count} değerlendirme', { count: reviewNumber ?? 0 })})
                 </span>
               </div>
             )}

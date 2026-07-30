@@ -11,6 +11,7 @@ import {
   getStoredAccessToken,
 } from '@/lib/api'
 import { useCart, type CartItem } from '@/contexts/CartContext'
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Checkbox, CheckboxField } from '@/shared/checkbox'
 import { Field, FieldGroup, Fieldset, Label, Legend } from '@/shared/fieldset'
 import { Input } from '@/shared/input'
@@ -84,6 +85,7 @@ const Information = () => {
   // Misafir "Üyeliksiz devam et" seçti mi
   const [guestChosen, setGuestChosen] = useState(false)
   const { items, coupon, removeCoupon } = useCart()
+  const { t } = useTranslation()
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -176,9 +178,9 @@ const Information = () => {
       {/* ── Üye / Misafir seçimi ── */}
       {isMember === false && !guestChosen && (
         <div className="rounded-xl border border-primary-200 bg-primary-50/60 p-5 dark:border-primary-900/40 dark:bg-primary-900/10">
-          <h3 className="text-base font-semibold">Nasıl devam etmek istersiniz?</h3>
+          <h3 className="text-base font-semibold">{t('checkout.how_continue', 'Nasıl devam etmek istersiniz?')}</h3>
           <p className="mt-1 text-sm text-neutral-600 dark:text-neutral-400">
-            Zaten üye misiniz? Giriş yaparak adres ve sipariş geçmişinize erişebilirsiniz. Dilerseniz üyeliksiz de devam edebilirsiniz.
+            {t('checkout.member_prompt', 'Zaten üye misiniz? Giriş yaparak adres ve sipariş geçmişinize erişebilirsiniz. Dilerseniz üyeliksiz de devam edebilirsiniz.')}
           </p>
           <div className="mt-4 flex flex-col gap-2.5 sm:flex-row">
             <ButtonPrimary
@@ -187,9 +189,9 @@ const Information = () => {
                 window.location.href = '/login?redirect=/checkout'
               }}
             >
-              Giriş Yap
+              {t('account.login', 'Giriş Yap')}
             </ButtonPrimary>
-            <ButtonThird onClick={() => setGuestChosen(true)}>Üyeliksiz Devam Et</ButtonThird>
+            <ButtonThird onClick={() => setGuestChosen(true)}>{t('checkout.continue_as_guest', 'Üyeliksiz Devam Et')}</ButtonThird>
           </div>
         </div>
       )}
@@ -198,14 +200,14 @@ const Information = () => {
         <div className="flex items-center gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 dark:border-emerald-900/40 dark:bg-emerald-900/15">
           <HugeiconsIcon icon={CheckmarkCircle02Icon} size={22} className="shrink-0 text-emerald-600" />
           <p className="text-sm text-emerald-800 dark:text-emerald-300">
-            Üye olarak devam ediyorsunuz{memberLabel ? <> — <span className="font-semibold">{memberLabel}</span></> : ''}.
+            {t('checkout.continuing_as_member', 'Üye olarak devam ediyorsunuz')}{memberLabel ? <> — <span className="font-semibold">{memberLabel}</span></> : ''}.
           </p>
         </div>
       )}
 
       {isMember === false && guestChosen && (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-neutral-200 bg-neutral-50 px-5 py-3.5 dark:border-neutral-700 dark:bg-neutral-800/60">
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">Üyeliksiz devam ediyorsunuz.</p>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">{t('checkout.continuing_as_guest', 'Üyeliksiz devam ediyorsunuz.')}</p>
           <button
             type="button"
             className="text-sm font-medium underline"
@@ -213,14 +215,14 @@ const Information = () => {
               window.location.href = '/login?redirect=/checkout'
             }}
           >
-            Giriş yap
+            {t('account.login', 'Giriş yap')}
           </button>
         </div>
       )}
 
       <div id="ContactInfo" className="scroll-mt-5 rounded-xl border">
         <TabHeader
-          title="İletişim Bilgileri"
+          title={t('checkout.contact_info', 'İletişim Bilgileri')}
           icon={UserCircle02Icon}
           value={tabActive !== 'ContactInfo' ? contactSummary : ''}
           onClickChange={() => {
@@ -243,7 +245,7 @@ const Information = () => {
 
       <div id="ShippingAddress" className="scroll-mt-5 rounded-xl border">
         <TabHeader
-          title="Teslimat Adresi"
+          title={t('checkout.shipping_address', 'Teslimat Adresi')}
           icon={Route02Icon}
           value={tabActive !== 'ShippingAddress' ? addressSummary : ''}
           onClickChange={() => {
@@ -263,14 +265,14 @@ const Information = () => {
               }}
             />
           ) : (
-            <div className="py-8 text-center text-sm text-neutral-400">Adres bilgileri yükleniyor...</div>
+            <div className="py-8 text-center text-sm text-neutral-400">{t('checkout.address_loading', 'Adres bilgileri yükleniyor...')}</div>
           )}
         </div>
       </div>
 
       <div id="PaymentMethod" className="scroll-mt-5 rounded-xl border">
         <TabHeader
-          title="Ödeme Yöntemi"
+          title={t('checkout.payment_method', 'Ödeme Yöntemi')}
           icon={CreditCardPosIcon}
           value=""
           onClickChange={() => {
@@ -315,6 +317,7 @@ const TabHeader = ({
   value: string
   onClickChange: () => void
 }) => {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-start gap-5 p-5 sm:flex-row sm:p-6">
       <HugeiconsIcon icon={icon} size={24} className="sm:mt-1.5" />
@@ -330,7 +333,7 @@ const TabHeader = ({
         onClick={onClickChange}
         type="button"
       >
-        Değiştir
+        {t('common.change', 'Değiştir')}
       </button>
     </div>
   )
@@ -347,6 +350,7 @@ const ContactInfo = ({
   onClose: () => void
   onSave: (values: Record<string, any>) => void
 }) => {
+  const { t } = useTranslation()
   return (
     <form
       action="#"
@@ -361,36 +365,36 @@ const ContactInfo = ({
       <Fieldset>
         <FieldGroup className="mt-0!">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-lg font-semibold">İletişim Bilgileri</h3>
+            <h3 className="text-lg font-semibold">{t('checkout.contact_info', 'İletişim Bilgileri')}</h3>
             {!isMember && (
               <p className="text-sm">
-                Hesabınız var mı?{` `}
+                {t('checkout.have_account', 'Hesabınız var mı?')}{` `}
                 <Link href="/login?redirect=/checkout" className="font-medium underline">
-                  Giriş Yap
+                  {t('account.login', 'Giriş Yap')}
                 </Link>
               </p>
             )}
           </div>
           <Field className="max-w-lg">
-            <Label>Telefon Numarası</Label>
+            <Label>{t('form.phone', 'Telefon Numarası')}</Label>
             <Input placeholder="05XX XXX XX XX" type="tel" name="phone" defaultValue={String(initialValues.phone || '')} />
           </Field>
           <Field className="max-w-lg">
-            <Label>E-posta Adresi</Label>
+            <Label>{t('form.email', 'E-posta Adresi')}</Label>
             <Input type="email" name="email" defaultValue={String(initialValues.email || '')} />
           </Field>
           <Field>
             <CheckboxField>
               <Checkbox name="newsletter" defaultChecked />
-              <Label>Bana yenilikler ve kampanyaları gönder</Label>
+              <Label>{t('checkout.newsletter_optin', 'Bana yenilikler ve kampanyaları gönder')}</Label>
             </CheckboxField>
           </Field>
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-4">
-            <ButtonPrimary type="submit">Onayla ve Devam Et</ButtonPrimary>
+            <ButtonPrimary type="submit">{t('checkout.confirm_continue', 'Onayla ve Devam Et')}</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              İptal
+              {t('common.cancel', 'İptal')}
             </ButtonThird>
           </div>
         </FieldGroup>
@@ -400,6 +404,7 @@ const ContactInfo = ({
 }
 
 const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Record<string, any>; onClose: () => void; onSave: (values: Record<string, any>) => void }) => {
+  const { t } = useTranslation()
   return (
     <form
       action="#"
@@ -415,23 +420,23 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
         <FieldGroup className="mt-0!">
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
-              <Label>Ad</Label>
-              <Input placeholder="Adınız" name="first-name" defaultValue={String(initialValues['first-name'] || '')} />
+              <Label>{t('form.first_name', 'Ad')}</Label>
+              <Input placeholder={t('form.first_name_placeholder', 'Adınız')} name="first-name" defaultValue={String(initialValues['first-name'] || '')} />
             </Field>
             <Field>
-              <Label>Soyad</Label>
-              <Input placeholder="Soyadınız" name="last-name" defaultValue={String(initialValues['last-name'] || '')} />
+              <Label>{t('form.last_name', 'Soyad')}</Label>
+              <Input placeholder={t('form.last_name_placeholder', 'Soyadınız')} name="last-name" defaultValue={String(initialValues['last-name'] || '')} />
             </Field>
           </div>
 
           {/* ============ */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-4">
             <Field className="sm:col-span-2">
-              <Label>Adres</Label>
-              <Input placeholder="Sokak, mahalle, no" defaultValue={String(initialValues.address || '')} type={'text'} name="address" />
+              <Label>{t('form.address', 'Adres')}</Label>
+              <Input placeholder={t('form.address_placeholder', 'Sokak, mahalle, no')} defaultValue={String(initialValues.address || '')} type={'text'} name="address" />
             </Field>
             <Field>
-              <Label>Daire / Kat</Label>
+              <Label>{t('form.apt_suite', 'Daire / Kat')}</Label>
               <Input defaultValue={String(initialValues['apt-suite'] || '')} name="apt-suite" />
             </Field>
           </div>
@@ -439,30 +444,30 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
           {/* ============ */}
           <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-4">
             <Field>
-              <Label>İl</Label>
+              <Label>{t('form.province', 'İl')}</Label>
               <Select defaultValue={String(initialValues.city || '')} name="city">
-                <option value="">Seçiniz...</option>
+                <option value="">{t('form.select_placeholder', 'Seçiniz...')}</option>
                 {TR_PROVINCES.map((p) => (<option key={p} value={p}>{p}</option>))}
               </Select>
             </Field>
             <Field>
-              <Label>Ülke</Label>
+              <Label>{t('form.country', 'Ülke')}</Label>
               <Select defaultValue={String(initialValues.country || 'Turkey')} name="country">
-                <option value="Turkey">Türkiye</option>
+                <option value="Turkey">{t('form.turkey', 'Türkiye')}</option>
               </Select>
             </Field>
             <Field>
-              <Label>İlçe</Label>
-              <Input placeholder="İlçe" defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
+              <Label>{t('form.district', 'İlçe')}</Label>
+              <Input placeholder={t('form.district', 'İlçe')} defaultValue={String(initialValues['state-province'] || '')} name="state-province" />
             </Field>
             <Field>
-              <Label>Posta Kodu (opsiyonel)</Label>
+              <Label>{t('form.postal_code_optional', 'Posta Kodu (opsiyonel)')}</Label>
               <Input placeholder="34000" defaultValue={String(initialValues['postal-code'] || '')} name="postal-code" />
             </Field>
           </div>
 
           <Field className="max-w-lg">
-            <Legend>Adres Tipi</Legend>
+            <Legend>{t('checkout.address_type', 'Adres Tipi')}</Legend>
             <RadioGroup
               className="mt-1.5 grid grid-cols-1 gap-2 space-y-0! sm:grid-cols-2 sm:gap-3"
               name="address-type"
@@ -472,7 +477,7 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
               <RadioField>
                 <Label>
                   <span className="text-sm font-medium">
-                    Ev <span className="font-light">(Gün Boyu Teslimat)</span>
+                    {t('checkout.address_home', 'Ev')} <span className="font-light">{t('checkout.address_home_note', '(Gün Boyu Teslimat)')}</span>
                   </span>
                 </Label>
                 <Radio value="at-home" defaultChecked />
@@ -481,9 +486,9 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
               <RadioField>
                 <Label>
                   <span className="text-sm font-medium">
-                    İş Yeri{' '}
+                    {t('checkout.address_office', 'İş Yeri')}{' '}
                     <span className="font-light">
-                      (Teslimat <span className="font-medium">09:00 - 17:00</span>)
+                      {t('checkout.address_office_note_prefix', '(Teslimat')} <span className="font-medium">09:00 - 17:00</span>)
                     </span>
                   </span>
                 </Label>
@@ -494,9 +499,9 @@ const ShippingAddress = ({ initialValues, onClose, onSave }: { initialValues: Re
 
           {/* ============ */}
           <div className="flex flex-wrap gap-2.5 pt-6">
-            <ButtonPrimary type="submit">Adresi Onayla ve Devam Et</ButtonPrimary>
+            <ButtonPrimary type="submit">{t('checkout.confirm_address_continue', 'Adresi Onayla ve Devam Et')}</ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              İptal
+              {t('common.cancel', 'İptal')}
             </ButtonThird>
           </div>
         </FieldGroup>
@@ -526,6 +531,7 @@ const PaymentMethod = ({
 }) => {
   const [methodActive, setMethodActive] = useState<'Credit-Card' | 'Internet-banking'>('Credit-Card')
   const [submitting, setSubmitting] = useState(false)
+  const { t } = useTranslation()
 
   const firstName = String(checkoutData['first-name'] || '').trim()
   const lastName = String(checkoutData['last-name'] || '').trim()
@@ -547,27 +553,27 @@ const PaymentMethod = ({
 
         // Posta kodu opsiyonel — müşteri talebi
         const missingFields = [
-          !firstName && 'ad',
-          !lastName && 'soyad',
-          !phone && 'telefon',
-          !email && 'e-posta',
-          !address && 'adres',
-          !city && 'il',
-          !district && 'ilçe',
+          !firstName && t('form.first_name_lower', 'ad'),
+          !lastName && t('form.last_name_lower', 'soyad'),
+          !phone && t('form.phone_lower', 'telefon'),
+          !email && t('form.email_lower', 'e-posta'),
+          !address && t('form.address_lower', 'adres'),
+          !city && t('form.province_lower', 'il'),
+          !district && t('form.district_lower', 'ilçe'),
         ].filter(Boolean) as string[]
 
         if (missingFields.length > 0) {
-          toast.error(`Eksik alanlar: ${missingFields.join(', ')}`)
+          toast.error(t('checkout.missing_fields', 'Eksik alanlar: {fields}', { fields: missingFields.join(', ') }))
           return
         }
 
         if (!paymentValues.termsAccepted) {
-          toast.error('Odeme oncesi mesafeli satis ve kullanim kosullarini onaylayin.')
+          toast.error(t('checkout.terms_required', 'Odeme oncesi mesafeli satis ve kullanim kosullarini onaylayin.'))
           return
         }
 
         if (cartItems.length === 0) {
-          toast.error('Sepetiniz bos. Odeme icin once urun ekleyin.')
+          toast.error(t('checkout.cart_empty_pay', 'Sepetiniz bos. Odeme icin once urun ekleyin.'))
           return
         }
 
@@ -575,7 +581,7 @@ const PaymentMethod = ({
           // ── MİSAFİR (üyeliksiz) akış: tek public çağrı ──
           if (!isMember) {
             if (methodActive === 'Internet-banking') {
-              toast.error('Havale/EFT için lütfen giriş yapın veya kart ile ödeyin.')
+              toast.error(t('checkout.bank_transfer_login_required', 'Havale/EFT için lütfen giriş yapın veya kart ile ödeyin.'))
               return
             }
             setSubmitting(true)
@@ -603,7 +609,7 @@ const PaymentMethod = ({
           // ── ÜYE akış ──
           const token = await getStoredAccessToken()
           if (!token) {
-            toast.error('Oturum süreniz doldu. Lütfen tekrar giriş yapın, sepetiniz korunacak.', { duration: 6000 })
+            toast.error(t('checkout.session_expired_cart_kept', 'Oturum süreniz doldu. Lütfen tekrar giriş yapın, sepetiniz korunacak.'), { duration: 6000 })
             setTimeout(() => {
               window.location.href = '/login?redirect=/checkout'
             }, 2000)
@@ -638,7 +644,7 @@ const PaymentMethod = ({
           if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
 
           if (methodActive === 'Internet-banking') {
-            toast.success('Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.')
+            toast.success(t('checkout.order_created_transfer_manual', 'Siparis olusturuldu. Havale/EFT akisi henuz otomatik baglanmadi.'))
             return
           }
 
@@ -656,17 +662,17 @@ const PaymentMethod = ({
           window.location.href = iframeUrl
         } catch (error: any) {
           const msg = String(error?.message || '')
-          let userMsg = 'Ödeme başlatılamadı. Lütfen tekrar deneyin.'
+          let userMsg = t('checkout.payment_failed_retry', 'Ödeme başlatılamadı. Lütfen tekrar deneyin.')
           if (/Product not found|product/i.test(msg)) {
-            userMsg = 'Sepetinizdeki ürünlerden biri artık satışta değil. Sepeti yenileyip tekrar deneyin.'
+            userMsg = t('checkout.product_unavailable', 'Sepetinizdeki ürünlerden biri artık satışta değil. Sepeti yenileyip tekrar deneyin.')
           } else if (/kupon|coupon/i.test(msg)) {
-            userMsg = msg.replace(/^.*?:/, '').trim() || 'Kupon geçerli değil. Sepetten kuponu kaldırıp tekrar deneyin.'
+            userMsg = msg.replace(/^.*?:/, '').trim() || t('checkout.coupon_invalid_remove', 'Kupon geçerli değil. Sepetten kuponu kaldırıp tekrar deneyin.')
             onCouponInvalid?.()
           } else if (/unauthorized|401|token/i.test(msg)) {
-            userMsg = 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.'
+            userMsg = t('checkout.session_expired', 'Oturum süreniz doldu. Lütfen tekrar giriş yapın.')
             setTimeout(() => { window.location.href = '/login?redirect=/checkout' }, 2000)
           } else if (/network|fetch/i.test(msg)) {
-            userMsg = 'Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.'
+            userMsg = t('checkout.connection_error', 'Bağlantı hatası. İnternetinizi kontrol edip tekrar deneyin.')
           } else if (msg && !/^TypeError|^undefined/.test(msg)) {
             userMsg = msg
           }
@@ -684,25 +690,25 @@ const PaymentMethod = ({
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-emerald-500" />
-                  İletişim
+                  {t('checkout.contact', 'İletişim')}
                 </div>
-                <p className="mt-1 truncate text-sm">{[email, phone].filter(Boolean).join(' · ') || <span className="text-red-500">Eksik</span>}</p>
+                <p className="mt-1 truncate text-sm">{[email, phone].filter(Boolean).join(' · ') || <span className="text-red-500">{t('checkout.missing', 'Eksik')}</span>}</p>
               </div>
-              <button type="button" onClick={onEditContact} className="shrink-0 text-sm font-medium underline">Değiştir</button>
+              <button type="button" onClick={onEditContact} className="shrink-0 text-sm font-medium underline">{t('common.change', 'Değiştir')}</button>
             </div>
             <div className="flex items-start justify-between gap-3 p-4">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
                   <HugeiconsIcon icon={CheckmarkCircle02Icon} size={16} className="text-emerald-500" />
-                  Teslimat Adresi
+                  {t('checkout.shipping_address', 'Teslimat Adresi')}
                 </div>
                 <p className="mt-1 text-sm">
                   {[`${firstName} ${lastName}`.trim(), address, aptSuite, [district, city].filter(Boolean).join('/')]
                     .filter(Boolean)
-                    .join(', ') || <span className="text-red-500">Eksik</span>}
+                    .join(', ') || <span className="text-red-500">{t('checkout.missing', 'Eksik')}</span>}
                 </p>
               </div>
-              <button type="button" onClick={onEditShipping} className="shrink-0 text-sm font-medium underline">Değiştir</button>
+              <button type="button" onClick={onEditShipping} className="shrink-0 text-sm font-medium underline">{t('common.change', 'Değiştir')}</button>
             </div>
           </div>
 
@@ -710,7 +716,7 @@ const PaymentMethod = ({
           <div className="rounded-xl border border-neutral-200 p-4 transition hover:border-primary-300 dark:border-neutral-700">
             <RadioGroup
               name="payment-method"
-              aria-label="Ödeme yöntemi"
+              aria-label={t('checkout.payment_method', 'Ödeme yöntemi')}
               onChange={(e) => setMethodActive(e as any)}
               value={methodActive}
             >
@@ -722,8 +728,8 @@ const PaymentMethod = ({
                       <HugeiconsIcon icon={CreditCardIcon} size={20} className="text-primary-700" />
                     </div>
                     <div>
-                      <p className="font-semibold">Kredi / Banka Kartı</p>
-                      <p className="text-xs text-neutral-500">Visa, Mastercard, Troy — Taksit imkanı</p>
+                      <p className="font-semibold">{t('checkout.credit_debit_card', 'Kredi / Banka Kartı')}</p>
+                      <p className="text-xs text-neutral-500">{t('checkout.card_brands_note', 'Visa, Mastercard, Troy — Taksit imkanı')}</p>
                     </div>
                   </div>
                   <div className="hidden items-center gap-1.5 sm:flex">
@@ -742,16 +748,16 @@ const PaymentMethod = ({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">Güvenli Ödeme — PayTR</p>
+                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-200">{t('checkout.secure_payment_paytr', 'Güvenli Ödeme — PayTR')}</p>
                     <p className="mt-1 text-xs text-blue-800 dark:text-blue-300">
-                      "Siparişi Onayla"ya tıkladığınızda, kart bilgilerinizi <strong>PayTR</strong>'nin güvenli 256-bit SSL ödeme sayfasında gireceksiniz. Kart bilgileriniz sitemizde saklanmaz.
+                      {t('checkout.paytr_desc_prefix', '"Siparişi Onayla"ya tıkladığınızda, kart bilgilerinizi')} <strong>PayTR</strong>{t('checkout.paytr_desc_suffix', '\'nin güvenli 256-bit SSL ödeme sayfasında gireceksiniz. Kart bilgileriniz sitemizde saklanmaz.')}
                     </p>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <div className="flex h-7 w-11 items-center justify-center rounded border bg-white text-[9px] font-bold text-blue-700">VISA</div>
                       <div className="flex h-7 w-11 items-center justify-center rounded border bg-white"><div className="flex -space-x-1"><div className="h-4 w-4 rounded-full bg-red-500 opacity-80"></div><div className="h-4 w-4 rounded-full bg-yellow-500 opacity-80"></div></div></div>
                       <div className="flex h-7 w-11 items-center justify-center rounded border bg-white text-[8px] font-bold text-blue-900">TROY</div>
                       <div className="flex h-7 items-center rounded border bg-white px-2 text-[9px] font-semibold text-green-700">3D SECURE</div>
-                      <div className="flex h-7 items-center rounded border bg-white px-2 text-[9px] font-semibold text-neutral-600">TAKSİT</div>
+                      <div className="flex h-7 items-center rounded border bg-white px-2 text-[9px] font-semibold text-neutral-600">{t('checkout.installment', 'TAKSİT')}</div>
                     </div>
                   </div>
                 </div>
@@ -763,7 +769,7 @@ const PaymentMethod = ({
           <div className="rounded-xl border border-neutral-200 p-4 transition hover:border-primary-300 dark:border-neutral-700">
             <RadioGroup
               name="payment-method"
-              aria-label="Ödeme yöntemi"
+              aria-label={t('checkout.payment_method', 'Ödeme yöntemi')}
               onChange={(e) => setMethodActive(e as any)}
               value={methodActive}
             >
@@ -774,8 +780,8 @@ const PaymentMethod = ({
                     <HugeiconsIcon icon={InternetIcon} size={20} className="text-emerald-700" />
                   </div>
                   <div>
-                    <p className="font-semibold">Havale / EFT</p>
-                    <p className="text-xs text-neutral-500">Banka havalesi ile ödeme</p>
+                    <p className="font-semibold">{t('checkout.bank_transfer', 'Havale / EFT')}</p>
+                    <p className="text-xs text-neutral-500">{t('checkout.bank_transfer_note', 'Banka havalesi ile ödeme')}</p>
                   </div>
                 </Label>
               </RadioField>
@@ -783,14 +789,14 @@ const PaymentMethod = ({
 
             <div className={clsx('mt-4 border-t pt-4', methodActive !== 'Internet-banking' && 'hidden')}>
               <div className="rounded-lg bg-blue-50 p-4 dark:bg-blue-900/20">
-                <p className="mb-3 text-sm font-medium text-blue-800 dark:text-blue-300">Havale yaptıktan sonra siparişiniz işleme alınacaktır.</p>
+                <p className="mb-3 text-sm font-medium text-blue-800 dark:text-blue-300">{t('checkout.transfer_processing_note', 'Havale yaptıktan sonra siparişiniz işleme alınacaktır.')}</p>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-neutral-500">Banka</span><span className="font-medium">İş Bankası</span></div>
-                  <div className="flex justify-between"><span className="text-neutral-500">Hesap Sahibi</span><span className="font-medium">Pure Olentia Gıda Ltd. Şti.</span></div>
+                  <div className="flex justify-between"><span className="text-neutral-500">{t('checkout.bank', 'Banka')}</span><span className="font-medium">İş Bankası</span></div>
+                  <div className="flex justify-between"><span className="text-neutral-500">{t('checkout.account_holder', 'Hesap Sahibi')}</span><span className="font-medium">Pure Olentia Gıda Ltd. Şti.</span></div>
                   <div className="flex justify-between"><span className="text-neutral-500">IBAN</span><span className="font-mono text-xs font-medium">TR00 0000 0000 0000 0000 0000 00</span></div>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-neutral-400">* IBAN bilgileri admin panelden yönetilir. Gerçek IBAN'ı admin'den girin.</p>
+              <p className="mt-3 text-xs text-neutral-400">{t('checkout.iban_admin_note', '* IBAN bilgileri admin panelden yönetilir. Gerçek IBAN\'ı admin\'den girin.')}</p>
             </div>
           </div>
 
@@ -799,9 +805,9 @@ const PaymentMethod = ({
               <Checkbox name="termsAccepted" />
               <Label className="text-sm leading-6">
                 <span>
-                  <Link href="/mesafeli-satis" className="font-medium underline">Mesafeli Satis Sozlesmesi</Link>,{' '}
-                  <Link href="/kullanim-kosullari" className="font-medium underline">Kullanim Kosullari</Link> ve{' '}
-                  <Link href="/gizlilik-politikasi" className="font-medium underline">Gizlilik Politikasi</Link>'ni okudum ve kabul ediyorum.
+                  <Link href="/mesafeli-satis" className="font-medium underline">{t('checkout.distance_sales_agreement', 'Mesafeli Satis Sozlesmesi')}</Link>,{' '}
+                  <Link href="/kullanim-kosullari" className="font-medium underline">{t('checkout.terms_of_use', 'Kullanim Kosullari')}</Link> {t('common.and', 've')}{' '}
+                  <Link href="/gizlilik-politikasi" className="font-medium underline">{t('checkout.privacy_policy', 'Gizlilik Politikasi')}</Link>{t('checkout.terms_accept_suffix', '\'ni okudum ve kabul ediyorum.')}
                 </span>
               </Label>
             </CheckboxField>
@@ -813,7 +819,7 @@ const PaymentMethod = ({
               <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
-              <span>Güvenli Ödeme</span>
+              <span>{t('checkout.secure_payment', 'Güvenli Ödeme')}</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-neutral-500">
               <svg className="h-4 w-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -831,10 +837,10 @@ const PaymentMethod = ({
 
           <div className="flex flex-wrap gap-2.5 pt-4">
             <ButtonPrimary className="min-w-56" type="submit" disabled={submitting}>
-              {submitting ? 'Yonlendiriliyor...' : 'Siparişi Onayla'}
+              {submitting ? t('checkout.redirecting', 'Yonlendiriliyor...') : t('order.confirm', 'Siparişi Onayla')}
             </ButtonPrimary>
             <ButtonThird type="button" onClick={onClose}>
-              Teslimat Adresine Dön
+              {t('checkout.back_to_shipping', 'Teslimat Adresine Dön')}
             </ButtonThird>
           </div>
         </FieldGroup>

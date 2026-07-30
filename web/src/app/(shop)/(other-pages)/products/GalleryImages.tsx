@@ -1,5 +1,6 @@
 'use client'
 
+import { useTranslation } from '@/contexts/LanguageContext'
 import { Button } from '@/shared/Button/Button'
 import ButtonClose from '@/shared/Button/ButtonClose'
 import { CloseButton, Dialog, DialogBackdrop, DialogPanel } from '@headlessui/react'
@@ -364,6 +365,7 @@ const HeaderGalleryGrid5 = ({
   images: string[]
   handleOpenDialog: (index?: number) => void
 }) => {
+  const { t } = useTranslation()
   if (!images.length) return null
 
   // En fazla 5 thumbnail göster (ilk büyük resim hariç)
@@ -391,7 +393,7 @@ const HeaderGalleryGrid5 = ({
             <button
               type="button"
               key={index}
-              aria-label={`Görsel ${index + 2}`}
+              aria-label={t('gallery.image_n', 'Görsel {n}', { n: index + 2 })}
               className="relative aspect-square overflow-hidden rounded-lg"
               onClick={() => handleOpenDialog(index + 1)}
             >
