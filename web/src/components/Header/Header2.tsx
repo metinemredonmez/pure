@@ -6,7 +6,6 @@ import { FC } from 'react'
 import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
-import LanguageToggle from './LanguageToggle'
 import Navigation from './Navigation/Navigation'
 import SearchBtnPopover from './SearchBtnPopover'
 
@@ -41,7 +40,6 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">
-            <LanguageToggle />
             <SearchBtnPopover />
             <AvatarDropdown />
             <CartBtn />

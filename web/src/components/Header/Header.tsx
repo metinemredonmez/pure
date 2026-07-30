@@ -6,7 +6,6 @@ import { FC } from 'react'
 import AvatarDropdown from './AvatarDropdown'
 import CartBtn from './CartBtn'
 import CurrencyDropdown from './CurrencyDropdown'
-import LanguageToggle from './LanguageToggle'
 import TransLabel from '@/components/TransLabel'
 import HamburgerBtnMenu from './HamburgerBtnMenu'
 import NavDropdown from './NavDropdown'
@@ -55,7 +54,6 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
             <div className="block lg:hidden">
               <HamburgerBtnMenu />
             </div>
-            <LanguageToggle />
             <CurrencyDropdown currencies={currencies} className="hidden md:block" />
             <SearchBtnPopover />
             <AvatarDropdown />
