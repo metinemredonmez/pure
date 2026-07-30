@@ -2,6 +2,8 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationService } from '../notification/notification.service';
+import { InvoiceService } from '../invoice/invoice.service';
+import { InvoiceType } from '../invoice/dto/invoice.dto';
 import { PaymentMethod, PaymentStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 
@@ -31,6 +33,7 @@ export class PaymentService {
     private prisma: PrismaService,
     private config: ConfigService,
     private notification: NotificationService,
+    private invoice: InvoiceService,
   ) {}
 
   /**
@@ -657,9 +660,12 @@ export class PaymentService {
       newStatus === PaymentStatus.COMPLETED &&
       !providerData?.isSubscriptionPayment
     ) {
-      // Webhook'u asla bloke/etme — mail hatası ödeme onayını bozmamalı
+      // Webhook'u asla bloke/etme — mail/fatura hatası ödeme onayını bozmamalı
       this.sendOrderPaidEmails(payment.orderId).catch((e) =>
         this.logger.error(`Sipariş maili gönderilemedi (${payment.orderId}): ${String(e)}`),
+      );
+      this.createOrderInvoice(payment.orderId).catch((e) =>
+        this.logger.error(`Fatura oluşturulamadı (${payment.orderId}): ${String(e)}`),
       );
     }
     if (providerData?.isSubscriptionPayment && providerData?.subscriptionId) {
@@ -792,6 +798,99 @@ export class PaymentService {
     }
   }
 
+  /**
+   * Ödeme onaylanınca BirFatura ile otomatik e-arşiv/e-fatura keser ve dönen
+   * belge URL'ini Order.invoiceUrl'e yazar. BIRFATURA_API_KEY yoksa atlar.
+   * Hata ödeme akışını bozmaz (non-blocking çağrılır).
+   */
+  private async createOrderInvoice(orderId: string) {
+    if (!this.config.get<string>('BIRFATURA_API_KEY')) return; // anahtar yoksa atla
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true, user: true, address: true },
+    });
+    if (!order || order.invoiceUrl) return; // zaten fatura var
+
+    // Fiyatlar KDV DAHİL → BirFatura birim fiyatı KDV HARİÇ ister; net'e çevir.
+    const grossNet = Number(order.subtotal) - Number(order.discount);
+    const taxAmt = Number(order.tax);
+    let vatRate = 1;
+    if (grossNet - taxAmt > 0 && taxAmt > 0) {
+      vatRate = Math.max(0, Math.round((taxAmt / (grossNet - taxAmt)) * 100));
+    }
+    const toNet = (gross: number) =>
+      Math.round((gross / (1 + vatRate / 100)) * 100) / 100;
+
+    const items = order.items.map((it) => ({
+      name: `${it.productName || 'Ürün'}${it.variantName ? ` - ${it.variantName}` : ''}`,
+      quantity: it.quantity,
+      unit: 'adet',
+      unitPrice: toNet(Number(it.unitPrice)),
+      vatRate,
+    }));
+    if (Number(order.shippingCost) > 0) {
+      items.push({
+        name: 'Kargo',
+        quantity: 1,
+        unit: 'adet',
+        unitPrice: toNet(Number(order.shippingCost)),
+        vatRate,
+      });
+    }
+
+    const isCompany = !!(order.user?.isPartner && order.user?.taxNumber);
+    const addr = order.address;
+    const buyerName = isCompany
+      ? order.user?.companyName ||
+        `${addr?.firstName || ''} ${addr?.lastName || ''}`.trim()
+      : `${addr?.firstName || order.user?.firstName || ''} ${addr?.lastName || order.user?.lastName || ''}`.trim();
+    const buyerAddress = addr
+      ? `${addr.line1 || ''} ${addr.line2 || ''} ${addr.district || ''} ${addr.city || ''}`
+          .replace(/\s+/g, ' ')
+          .trim()
+      : '';
+
+    const dto: any = {
+      type: isCompany ? InvoiceType.E_FATURA : InvoiceType.E_ARSIV,
+      buyerName: buyerName || 'Müşteri',
+      buyerEmail: order.user?.email || undefined,
+      buyerAddress: buyerAddress || undefined,
+      items,
+      orderRef: order.orderNumber,
+      note: 'Kahve siparişi',
+    };
+    if (isCompany) {
+      dto.buyerTaxNo = order.user?.taxNumber || undefined;
+    } else if (order.user?.taxNumber) {
+      dto.buyerTcNo = order.user.taxNumber; // bireysel TCKN (varsa)
+    }
+
+    try {
+      const res: any = await this.invoice.createInvoice(dto);
+      // BirFatura yanıt alan adları sağlayıcıya göre değişebilir — olası URL alanları
+      const url =
+        res?.pdfUrl || res?.url || res?.belgeUrl || res?.faturaUrl ||
+        res?.data?.pdfUrl || res?.data?.url || null;
+      const invoiceId =
+        res?.id || res?.invoiceId || res?.faturaId || res?.data?.id || null;
+      if (url || invoiceId) {
+        await this.prisma.order.update({
+          where: { id: orderId },
+          data: { invoiceUrl: url || String(invoiceId) },
+        });
+      }
+      this.logger.log(
+        `Fatura oluşturuldu (${order.orderNumber}). BirFatura yanıtı: ${JSON.stringify(
+          res,
+        ).slice(0, 500)}`,
+      );
+    } catch (e) {
+      this.logger.error(
+        `Fatura oluşturulamadı (${order.orderNumber}): ${String(e)}`,
+      );
+    }
+  }
+
   async handleIyzicoWebhook(data: {
     token: string;
     conversationId: string;
@@ -874,9 +973,10 @@ export class PaymentService {
         });
 
         if (newStatus === PaymentStatus.COMPLETED) {
+          // PayTR ile tutarlı: ödeme alındı → PAID (bekleme/onay bekliyor)
           await tx.order.update({
             where: { id: payment.orderId },
-            data: { status: 'CONFIRMED', paidAt: new Date() },
+            data: { status: 'PAID', paidAt: new Date() },
           });
         } else {
           // Payment failed - restore stock
@@ -915,6 +1015,20 @@ export class PaymentService {
 
       // ─── Subscription payment detection ───
       const providerData = payment.providerData as any;
+
+      // Sipariş bilgilendirme e-postaları — PayTR ile aynı (yalnız ödeme onayı)
+      if (
+        newStatus === PaymentStatus.COMPLETED &&
+        !providerData?.isSubscriptionPayment
+      ) {
+        this.sendOrderPaidEmails(payment.orderId).catch((e) =>
+          this.logger.error(`Sipariş maili gönderilemedi (${payment.orderId}): ${String(e)}`),
+        );
+        this.createOrderInvoice(payment.orderId).catch((e) =>
+          this.logger.error(`Fatura oluşturulamadı (${payment.orderId}): ${String(e)}`),
+        );
+      }
+
       if (providerData?.isSubscriptionPayment && providerData?.subscriptionId) {
         const subId = providerData.subscriptionId;
         if (newStatus === PaymentStatus.COMPLETED) {
