@@ -54,7 +54,7 @@ const Header: FC<HeaderProps> = async ({ hasBorderBottom = true }) => {
             <div className="block lg:hidden">
               <HamburgerBtnMenu />
             </div>
-            <LanguageToggle className="hidden md:block" />
+            <LanguageToggle />
             <CurrencyDropdown currencies={currencies} className="hidden md:block" />
             <SearchBtnPopover />
             <AvatarDropdown />
