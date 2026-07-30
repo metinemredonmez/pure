@@ -12,7 +12,12 @@ export interface CartItem {
   image?: string
   size?: string
   color?: string
+  /** Öğütme etiketi (ör. "V60", "Espresso") — özet ekranlarında gösterilir */
+  grind?: string
+  /** Sepet satırı kimliği (seçenek kombinasyonu) — sentetik olabilir */
   variantId?: string
+  /** Veritabanındaki GERÇEK ProductVariant.id — siparişe SADECE bu gönderilir */
+  dbVariantId?: string
 }
 
 export interface AppliedCoupon {

@@ -64,6 +64,8 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
         : basePrice
   const activeVariantId = activeVariant?.id || activeGramaj?.variantId
 
+  const grindLabel = grindValues.find((g) => g.value === grind)?.name || ''
+
   const handleAdd = () => {
     addItem({
       productId: p.id || p.handle || title,
@@ -74,7 +76,12 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
       image: featuredImage?.src || '',
       size,
       color,
-      variantId: activeVariantId || [size, color].filter(Boolean).join('__') || undefined,
+      grind: grindLabel,
+      // Satır kimliği: seçenek kombinasyonu (gerçek id varsa o, yoksa sentetik).
+      variantId: activeVariantId || [size, grindLabel, color].filter(Boolean).join('__') || undefined,
+      // Siparişe yalnızca GERÇEK DB varyant id'si gider — sahte id backend'de
+      // "Product variant not found" hatasına yol açıyordu.
+      dbVariantId: activeVariant?.id || undefined,
     })
 
     const newTotal = subtotal + activePrice * quantity
@@ -107,7 +114,17 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
         )}
       </div>
 
-      {/* Kavurma Profili */}
+      {/* Kavurma — ürünün sabit özelliği (admin belirler), seçilemez bilgi */}
+      {p.roastLevel && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="font-medium">Kavurma:</span>
+          <span className="rounded-full border border-neutral-200 px-3 py-1 text-neutral-700 dark:border-neutral-700 dark:text-neutral-300">
+            {p.roastLevel === 'LIGHT' ? 'Açık Kavurma' : p.roastLevel === 'DARK' ? 'Koyu Kavurma' : p.roastLevel === 'MEDIUM_DARK' ? 'Orta-Koyu Kavurma' : 'Orta Kavurma'}
+          </span>
+        </div>
+      )}
+
+      {/* (Eski) Kavurma seçici — adapter artık Kavurma'yı seçenek olarak üretmez */}
       {kavurmaValues.length > 0 && (
         <Headless.Field>
           <Headless.RadioGroup value={color} onChange={setColor} aria-label="Kavurma Profili">

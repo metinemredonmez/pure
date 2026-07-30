@@ -145,8 +145,9 @@ export function adaptProduct(product: any, index: number = 0) {
     status: product.isFeatured ? 'Yeni Mahsul' : product.compareAtPrice ? '%20 Indirim' : '',
     // Only include option groups that actually have values —
     // bundle products (e.g. "12'li Kutu") won't show a gramaj selector.
+    // Kavurma SEÇENEK DEĞİL — admin'de ürün için tek kavurma belirlenir (ürünün
+    // sabit özelliği), müşteriye seçtirilmez; bilgi olarak ayrıca gösterilir.
     options: [
-      ...(kavurmaOptions.length ? [{ name: 'Kavurma', optionValues: kavurmaOptions }] : []),
       ...(grindOptions.length ? [{ name: 'Öğütme', optionValues: grindOptions }] : []),
       ...(gramajOptions.length ? [{ name: 'Gramaj', optionValues: gramajOptions }] : []),
     ],

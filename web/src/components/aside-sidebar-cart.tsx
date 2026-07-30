@@ -109,7 +109,7 @@ const CartProduct = ({
   onRemove: () => void
   onQuantityChange: (qty: number) => void
 }) => {
-  const { name, price, image, size, color, quantity, handle } = product
+  const { name, price, image, size, color, grind, quantity, handle } = product
 
   return (
     <div className="flex py-5 last:pb-0">
@@ -155,9 +155,7 @@ const CartProduct = ({
                 <Link href={'/products/' + handle}>{name}</Link>
               </h3>
               <p className="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-                {color && <span>{color}</span>}
-                {color && size && <span className="mx-2 h-4 border-l border-neutral-200 dark:border-neutral-700"></span>}
-                {size && <span>{size}</span>}
+                {[size, grind, color].filter(Boolean).join(' · ')}
               </p>
             </div>
             <Prices price={price || 0} className="mt-0.5" />

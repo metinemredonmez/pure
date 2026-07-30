@@ -56,6 +56,9 @@ interface OrderItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  /** Sipariş anındaki snapshot — ürün/varyant silinse bile görünür */
+  productName?: string;
+  variantName?: string;
   product?: {
     id: string;
     name: string;
@@ -553,11 +556,12 @@ export default function OrdersPage() {
                               </Avatar>
                               <Box>
                                 <Typography variant="body2" fontWeight={500}>
-                                  {item.product?.name || 'Bilinmeyen Ürün'}
+                                  {item.product?.name || item.productName || 'Bilinmeyen Ürün'}
                                 </Typography>
-                                {item.variant && (
-                                  <Typography variant="caption" color="text.secondary">
-                                    {item.variant.name}
+                                {/* Seçilen gramaj + öğütme — canlı varyant, yoksa sipariş anındaki snapshot */}
+                                {(item.variant?.name || item.variantName) && (
+                                  <Typography variant="caption" sx={{ color: 'primary.main', fontWeight: 600 }}>
+                                    {item.variant?.name || item.variantName}
                                   </Typography>
                                 )}
                               </Box>

@@ -135,7 +135,11 @@ export default function CheckoutContent() {
                   <div className="flex justify-between">
                     <div>
                       <h4 className="text-sm font-medium">{item.name}</h4>
-                      {item.size && <p className="mt-0.5 text-xs text-neutral-500">{item.size}</p>}
+                      {(item.size || item.grind) && (
+                        <p className="mt-0.5 text-xs text-neutral-500">
+                          {[item.size, item.grind].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
                     </div>
                     <Prices price={item.price} className="mt-0.5" />
                   </div>

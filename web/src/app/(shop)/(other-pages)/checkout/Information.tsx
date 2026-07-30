@@ -476,11 +476,21 @@ const PaymentMethod = ({
           const orderRes = await apiCreateOrder(token, {
             addressId,
             couponCode: couponCode || undefined,
-            items: cartItems.map((item) => ({
-              productId: item.productId,
-              variantId: item.variantId || undefined,
-              quantity: item.quantity,
-            })),
+            items: cartItems.map((item) => {
+              // Yalnızca gerçek DB varyant id'si gönderilir; sentetik satır
+              // kimliği ("250g__Orta" gibi) backend'de variant not found yapar.
+              // Eski sepet kayıtlarında dbVariantId yok — variantId cuid
+              // görünümündeyse (sentetik ayracı "__" içermez) onu kullan.
+              const legacyId =
+                item.variantId && !item.variantId.includes('__') && item.variantId.length >= 20
+                  ? item.variantId
+                  : undefined
+              return {
+                productId: item.productId,
+                variantId: item.dbVariantId || legacyId,
+                quantity: item.quantity,
+              }
+            }),
           })
           const orderId = orderRes?.data?.id || orderRes?.id
           if (!orderId) throw new Error(orderRes?.message || 'Siparis olusturulamadi')
