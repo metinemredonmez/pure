@@ -357,15 +357,27 @@ export class OrderService {
     userId: string,
     query: PaginationDto,
   ): Promise<PaginatedResult<any>> {
+    // Müşteri sipariş geçmişinde YALNIZCA ödenmiş siparişler görünür.
+    // Ödemesi hiç yapılmamış (PENDING / PAYMENT_FAILED) veya ödenmeden
+    // otomatik iptal edilmiş (paidAt yok + CANCELLED) siparişler gizlenir.
+    // Ödendikten sonra iptal/iade edilenler (paidAt dolu) görünmeye devam eder.
+    const where: any = {
+      userId,
+      OR: [
+        { paidAt: { not: null } },
+        { status: { notIn: ['PENDING', 'PAYMENT_FAILED', 'CANCELLED'] } },
+      ],
+    };
+
     const [data, total] = await Promise.all([
       this.prisma.order.findMany({
-        where: { userId },
+        where,
         include: { items: true, payment: true },
         skip: query.skip,
         take: query.limit,
         orderBy: { createdAt: 'desc' },
       }),
-      this.prisma.order.count({ where: { userId } }),
+      this.prisma.order.count({ where }),
     ]);
 
     return {

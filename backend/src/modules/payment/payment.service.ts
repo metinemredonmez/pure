@@ -1,6 +1,7 @@
 import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationService } from '../notification/notification.service';
 import { PaymentMethod, PaymentStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 
@@ -29,6 +30,7 @@ export class PaymentService {
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
+    private notification: NotificationService,
   ) {}
 
   /**
@@ -646,6 +648,18 @@ export class PaymentService {
 
     // ─── Subscription payment detection ───
     const providerData = payment.providerData as any;
+
+    // ─── Sipariş bilgilendirme e-postaları — YALNIZCA ödeme onaylanınca ───
+    // (ödenmemiş siparişe mail gitmez). Abonelik ödemeleri hariç.
+    if (
+      newStatus === PaymentStatus.COMPLETED &&
+      !providerData?.isSubscriptionPayment
+    ) {
+      // Webhook'u asla bloke/etme — mail hatası ödeme onayını bozmamalı
+      this.sendOrderPaidEmails(payment.orderId).catch((e) =>
+        this.logger.error(`Sipariş maili gönderilemedi (${payment.orderId}): ${String(e)}`),
+      );
+    }
     if (providerData?.isSubscriptionPayment && providerData?.subscriptionId) {
       const subId = providerData.subscriptionId;
       if (newStatus === PaymentStatus.COMPLETED) {
@@ -672,6 +686,87 @@ export class PaymentService {
     }
 
     return { status: 'OK' };
+  }
+
+  /**
+   * Ödeme onaylanınca müşteriye "siparişiniz onaylandı" + info@ adresine
+   * "yeni ödenmiş sipariş" bilgilendirme e-postası gönderir. Hata durumunda
+   * sessizce loglar; ödeme akışını bozmaz.
+   */
+  private async sendOrderPaidEmails(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: true,
+        user: { select: { email: true, firstName: true, lastName: true } },
+        address: true,
+      },
+    });
+    if (!order) return;
+
+    const frontendUrl =
+      this.config.get<string>('app.frontendUrl') || 'https://pureolentia.com';
+    const rows = (order.items || [])
+      .map(
+        (it: any) =>
+          `<tr><td style="padding:6px 0;color:#333">${it.productName || 'Ürün'}${
+            it.variantName ? ` <span style="color:#888">(${it.variantName})</span>` : ''
+          } × ${it.quantity}</td><td style="padding:6px 0;text-align:right;color:#333">₺${Number(
+            it.totalPrice,
+          ).toFixed(2)}</td></tr>`,
+      )
+      .join('');
+    const totalsRow = `<tr><td style="padding:10px 0;border-top:1px solid #eee;font-weight:bold">Toplam</td><td style="padding:10px 0;border-top:1px solid #eee;text-align:right;font-weight:bold">₺${Number(
+      order.total,
+    ).toFixed(2)}</td></tr>`;
+    const addr = order.address
+      ? `${order.address.firstName || ''} ${order.address.lastName || ''}<br>${order.address.line1 || ''}${
+          order.address.line2 ? ' ' + order.address.line2 : ''
+        }<br>${order.address.district || ''} / ${order.address.city || ''}<br>${order.address.phone || ''}`
+      : '';
+
+    const customerEmail = order.user?.email;
+    const adminEmail =
+      this.config.get<string>('smtp.user') || this.config.get<string>('smtp.from');
+
+    // ── Müşteriye onay ──
+    if (customerEmail) {
+      const html = `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#D4793F;margin:0 0 8px">Siparişiniz onaylandı ☕</h2>
+        <p style="color:#555;font-size:14px;line-height:1.6">Merhaba ${
+          order.user?.firstName || ''
+        }, ödemeniz başarıyla alındı ve siparişiniz hazırlık sürecine girdi.</p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin:16px 0">${rows}${totalsRow}</table>
+        ${addr ? `<p style="color:#555;font-size:13px;line-height:1.6"><strong>Teslimat:</strong><br>${addr}</p>` : ''}
+        <a href="${frontendUrl}/orders" style="display:inline-block;background:#D4793F;color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;margin-top:8px">Siparişlerim</a>
+        <p style="color:#999;font-size:12px;margin-top:20px">Sipariş No: ${order.orderNumber}</p>
+      </div>`;
+      await this.notification.sendEmail(
+        customerEmail,
+        `Siparişiniz onaylandı — ${order.orderNumber}`,
+        html,
+      );
+    }
+
+    // ── info@ (admin) yeni ödenmiş sipariş ──
+    if (adminEmail) {
+      const html = `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#D4793F;margin:0 0 8px">Yeni ödenmiş sipariş</h2>
+        <p style="color:#555;font-size:14px">Müşteri: ${order.user?.firstName || ''} ${
+          order.user?.lastName || ''
+        } &lt;${customerEmail || '-'}&gt;</p>
+        <table style="width:100%;border-collapse:collapse;font-size:14px;margin:16px 0">${rows}${totalsRow}</table>
+        ${addr ? `<p style="color:#555;font-size:13px;line-height:1.6"><strong>Teslimat:</strong><br>${addr}</p>` : ''}
+        <p style="color:#999;font-size:12px;margin-top:12px">Sipariş No: ${order.orderNumber} — durum: Ödendi (CONFIRMED)</p>
+      </div>`;
+      await this.notification.sendEmail(
+        adminEmail,
+        `Yeni ödenmiş sipariş — ${order.orderNumber}`,
+        html,
+      );
+    }
   }
 
   async handleIyzicoWebhook(data: {
