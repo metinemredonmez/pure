@@ -480,33 +480,17 @@ export class OpsQueueProcessor extends WorkerHost {
       (p) => p.stock <= p.lowStockThreshold,
     );
 
-    if (criticalProducts.length === 0) {
-      return { alerts: 0, products: [] };
-    }
-
-    // Get admin users
-    const admins = await this.prisma.user.findMany({
-      where: { role: 'ADMIN', isActive: true },
-      select: { id: true },
-    });
-
     const productNames = criticalProducts.map((p) => p.name);
-    const message = `${criticalProducts.length} üründe stok kritik seviyede: ${productNames.slice(0, 3).join(', ')}${criticalProducts.length > 3 ? '...' : ''}`;
 
-    // Send notification to all admins
-    for (const admin of admins) {
-      await this.createNotification(
-        admin.id,
-        '⚠️ Düşük Stok Uyarısı',
-        message,
-        'warning',
-        '/admin/products?filter=low-stock',
+    // NOT: Düşük stok İN-APP BİLDİRİMİ kapatıldı (kullanıcı talebi — admin bell'i
+    // tekrarlayan "Düşük Stok Uyarısı" ile dolduruyordu, dedup yoktu). Düşük stok
+    // bilgisi hâlâ Dashboard KPI + /admin/dashboard/low-stock listesinde görünür.
+    // Yeniden açmak isterseniz aşağıdaki bloğu geri getirin.
+    if (criticalProducts.length > 0) {
+      this.logger.log(
+        `Stock alert (bildirim kapalı): ${criticalProducts.length} düşük stoklu ürün`,
       );
     }
-
-    this.logger.log(
-      `Stock alert: ${criticalProducts.length} products low on stock`,
-    );
     return { alerts: criticalProducts.length, products: productNames };
   }
 
