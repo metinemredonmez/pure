@@ -190,6 +190,7 @@ export const ordersApi = {
     limit?: number;
     status?: string;
     search?: string;
+    paymentState?: 'paid' | 'unpaid';
   }) => {
     const { data } = await api.get('/admin/orders', { params });
     return data;

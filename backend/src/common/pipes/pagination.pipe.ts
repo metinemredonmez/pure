@@ -28,6 +28,11 @@ export class PaginationDto {
   @IsString()
   status?: string;
 
+  @ApiPropertyOptional({ enum: ['paid', 'unpaid'], description: 'Siparişi ödeme durumuna göre grupla (paid = ödemesi alınan, unpaid = ödeme bekleyen)' })
+  @IsOptional()
+  @IsString()
+  paymentState?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

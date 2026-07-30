@@ -32,6 +32,8 @@ import {
   Stack,
   Grid,
   Tooltip,
+  Tabs,
+  Tab,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -164,6 +166,8 @@ export default function OrdersPage() {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  // 'paid' = ödemesi alınan siparişler (varsayılan), 'unpaid' = ödeme bekleyenler
+  const [paymentTab, setPaymentTab] = useState<'paid' | 'unpaid'>('paid');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -191,6 +195,7 @@ export default function OrdersPage() {
         limit: rowsPerPage,
         search: search || undefined,
         status: statusFilter || undefined,
+        paymentState: paymentTab,
       });
       const result = response.data || response;
       setOrders(result.data || result.items || []);
@@ -200,7 +205,7 @@ export default function OrdersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, rowsPerPage, search, statusFilter]);
+  }, [page, rowsPerPage, search, statusFilter, paymentTab]);
 
   useEffect(() => {
     fetchOrders();
@@ -276,6 +281,18 @@ export default function OrdersPage() {
           </Stack>
         }
       />
+
+      {/* Ödeme durumu ayrımı — sadece ödemesi alınan siparişler işlem listesinde */}
+      <Card sx={{ mb: 2 }}>
+        <Tabs
+          value={paymentTab}
+          onChange={(_, v) => { setPaymentTab(v); setStatusFilter(''); setPage(0); }}
+          sx={{ px: 2 }}
+        >
+          <Tab value="paid" label="Ödemesi Alınan Siparişler" />
+          <Tab value="unpaid" label="Ödeme Bekleyenler" />
+        </Tabs>
+      </Card>
 
       {/* Filters */}
       <Card sx={{ mb: 3, p: 2 }}>

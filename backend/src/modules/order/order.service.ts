@@ -463,6 +463,18 @@ export class OrderService {
       ];
     }
 
+    // Ödeme durumu ayrımı: ödemesi alınmamış (PENDING) ve ödemesi başarısız
+    // siparişler "bekleme/işlem" listesine karışmamalı. Belirli bir durum
+    // seçildiyse o önceliklidir; yoksa paymentState gruplaması uygulanır.
+    const UNPAID_STATUSES = ['PENDING', 'PAYMENT_FAILED'];
+    if (query.status) {
+      where.status = query.status;
+    } else if (query.paymentState === 'paid') {
+      where.status = { notIn: UNPAID_STATUSES };
+    } else if (query.paymentState === 'unpaid') {
+      where.status = { in: UNPAID_STATUSES };
+    }
+
     const [data, total] = await Promise.all([
       this.prisma.order.findMany({
         where,
