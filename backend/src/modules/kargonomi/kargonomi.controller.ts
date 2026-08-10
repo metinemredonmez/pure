@@ -186,6 +186,14 @@ export class KargonomiWebhookController {
    * Verifies HMAC-SHA256 signature from X-Webhook-Signature header
    * before processing the payload.
    */
+  /** Kargonomi webhook kaydı sırasında URL'yi GET ile doğruluyor — 200 dön. */
+  @Get('webhook')
+  @Public()
+  @ApiOperation({ summary: 'Kargonomi webhook endpoint verification (GET probe)' })
+  verifyEndpoint() {
+    return { success: true, message: 'Kargonomi webhook endpoint aktif' };
+  }
+
   @Post('webhook')
   @Public()
   @HttpCode(HttpStatus.OK)
