@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Anthropic from '@anthropic-ai/sdk';
 import { PrismaService } from '../../prisma/prisma.service';
 
 const SYSTEM_PROMPT = `Sen Pure Olentia'nın (pureolentia.com) resmi yapay zeka asistanısın. Pure Olentia Türkiye'de specialty (özel) kahve satan premium bir markadır.
@@ -19,12 +20,10 @@ MARKA BİLGİSİ:
 - E-posta: info@pureolentia.com
 - Telefon: 0552 462 29 54
 
-ÜRÜNLER (backend'den gelir — güncel ürünler ve fiyatlar için siteyi yönlendir; spesifik ürün adı verme):
-- Türk Kahvesi çeşitleri (farklı paketler ve gramajlar)
-- Filtre kahveler: single-origin ve blend seçenekleri
-- Espresso blendleri
-- Cold Brew Konsantre
-- Ekipmanlar: demleme aletleri
+ÜRÜNLER:
+- Sana ayrıca "GÜNCEL MAĞAZA VERİSİ" bloğu verilir: satıştaki gerçek ürünler, fiyatları (KDV dahil), kavurma/aroma notaları ve linkleri.
+- Kahve önerirken SADECE bu blokta olan ürünleri öner; fiyatı ve linkini ver.
+- Blokta olmayan ürün adı uydurma. Müşterinin damak tadını (yumuşak/meyvemsi/yoğun, sütlü/sütsüz) sorup ona göre eşleştir.
 
 SAYFA YÖNLENDİRMELERİ:
 - Tüm ürünler: /collections/all
@@ -42,11 +41,10 @@ SAYFA YÖNLENDİRMELERİ:
 - Sipariş takibi: /siparis-takibi
 
 KARGO & ÖDEME:
-- ₺300 üzeri ücretsiz kargo
-- 1-3 iş günü teslimat
-- Yurtiçi/Aras kargo
-- PayTR güvenli ödeme (256-bit SSL)
-- 3D Secure + taksit imkanı (2-12 ay)
+- ₺300 üzeri ücretsiz kargo (güncel eşik GÜNCEL MAĞAZA VERİSİ bloğunda)
+- 1-3 iş günü içinde kargoya verilir; anlaşmalı kargo firmalarıyla en uygun gönderim otomatik seçilir
+- Fiyatlar KDV dahildir
+- PayTR güvenli ödeme (256-bit SSL), 3D Secure + taksit imkanı (2-12 ay)
 
 İADE:
 - 14 gün içinde açılmamış ürün iade edilebilir
@@ -85,13 +83,13 @@ export class ChatbotService {
       data: { sessionId: session.id, role: 'user', content },
     });
 
-    // Try OpenAI first; fall back to rule-based if no API key or error
+    // Try Claude first; fall back to rule-based if no API key or error
     let response: string;
     let intent = 'ai';
 
-    const openaiResult = await this.askOpenAI(session.id, content);
-    if (openaiResult) {
-      response = openaiResult;
+    const aiResult = await this.askClaude(session.id);
+    if (aiResult) {
+      response = aiResult;
     } else {
       const ruleResult = this.processMessage(content);
       response = ruleResult.response;
@@ -111,63 +109,164 @@ export class ChatbotService {
     return { intent, response, messageId: message.id };
   }
 
+  // ── Claude (Anthropic) entegrasyonu ──
+
+  private anthropicClient: Anthropic | null = null;
+  private storeContextCache: { text: string; at: number } | null = null;
+  private static readonly STORE_CONTEXT_TTL_MS = 5 * 60 * 1000;
+
+  private getAnthropic(): Anthropic | null {
+    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+    if (!apiKey) return null;
+    if (!this.anthropicClient) {
+      this.anthropicClient = new Anthropic({ apiKey });
+    }
+    return this.anthropicClient;
+  }
+
   /**
-   * Ask OpenAI with full conversation context.
-   * Returns null on any error or if API key is missing.
+   * Canlı mağaza verisi: satıştaki ürünler (fiyat/kavurma/aroma/link) +
+   * kargo/KDV ayarları. 5 dk bellekte tutulur — hem DB yükünü azaltır hem
+   * system prompt'u istekler arasında sabit tutar (prompt cache dostu).
    */
-  private async askOpenAI(internalSessionId: string, userMessage: string): Promise<string | null> {
-    const apiKey = this.config.get<string>('OPENAI_API_KEY');
-    if (!apiKey) {
-      this.logger.debug('OPENAI_API_KEY not set, using rule-based fallback');
+  private async buildStoreContext(): Promise<string> {
+    const now = Date.now();
+    if (
+      this.storeContextCache &&
+      now - this.storeContextCache.at < ChatbotService.STORE_CONTEXT_TTL_MS
+    ) {
+      return this.storeContextCache.text;
+    }
+
+    const ROAST_TR: Record<string, string> = {
+      LIGHT: 'Açık Kavurma',
+      MEDIUM: 'Orta Kavurma',
+      MEDIUM_DARK: 'Orta-Koyu Kavurma',
+      DARK: 'Koyu Kavurma',
+    };
+
+    const [products, settings] = await Promise.all([
+      this.prisma.product.findMany({
+        where: { status: 'ACTIVE', isActive: true },
+        include: {
+          category: { select: { name: true, slug: true } },
+          variants: { where: { isActive: true }, orderBy: { weight: 'asc' } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 60,
+      }),
+      this.prisma.siteSettings.findMany({
+        where: { key: { in: ['freeShippingThreshold', 'shippingCost'] } },
+      }),
+    ]);
+
+    const settingsMap: Record<string, any> = {};
+    settings.forEach((s) => (settingsMap[s.key] = s.value));
+    const freeShipping = Number(settingsMap.freeShippingThreshold) || 300;
+    const shippingCost = Number(settingsMap.shippingCost) || 97;
+
+    const lines = products.map((p) => {
+      const parts = [
+        `${p.name} — ₺${Number(p.price).toFixed(0)}`,
+        p.category?.name,
+        p.roastLevel ? ROAST_TR[p.roastLevel] || p.roastLevel : null,
+        p.origin,
+        p.aromaProfile?.length ? `aroma: ${p.aromaProfile.join(', ')}` : null,
+        p.flavorNotes ? `tat: ${p.flavorNotes}` : null,
+        p.stock <= 0 ? 'STOKTA YOK' : null,
+        `/products/${p.slug}`,
+      ].filter(Boolean);
+      const variantInfo = p.variants?.length
+        ? ` | seçenekler: ${p.variants
+            .map((v) => `${v.weight}g ₺${Number(v.price).toFixed(0)}`)
+            .join(', ')}`
+        : '';
+      return `- ${parts.join(' | ')}${variantInfo}`;
+    });
+
+    const text = [
+      'GÜNCEL MAĞAZA VERİSİ (fiyatlar KDV dahil):',
+      `Kargo: ₺${freeShipping} üzeri ÜCRETSİZ, altı ₺${shippingCost}.`,
+      '',
+      'SATIŞTAKİ ÜRÜNLER:',
+      ...(lines.length ? lines : ['(şu an ürün listesi alınamadı — /collections/all yönlendir)']),
+    ].join('\n');
+
+    this.storeContextCache = { text, at: now };
+    return text;
+  }
+
+  /**
+   * Claude'a tam sohbet bağlamı + canlı mağaza verisiyle sor.
+   * Anahtar yoksa veya hata olursa null döner (ezber cevaplara düşülür).
+   */
+  private async askClaude(internalSessionId: string): Promise<string | null> {
+    const client = this.getAnthropic();
+    if (!client) {
+      this.logger.debug('ANTHROPIC_API_KEY not set, using rule-based fallback');
       return null;
     }
 
-    const model = this.config.get<string>('OPENAI_CHATBOT_MODEL') || 'gpt-4o-mini';
+    // Chatbot düşük gecikme + düşük maliyet istiyor; kullanıcıyla Haiku
+    // üzerinde anlaşıldı. ANTHROPIC_CHATBOT_MODEL ile yükseltilebilir
+    // (örn. claude-opus-5).
+    const model =
+      this.config.get<string>('ANTHROPIC_CHATBOT_MODEL') || 'claude-haiku-4-5';
 
     try {
-      // Fetch last 10 messages for context
+      // Son 10 mesaj (az önce kaydedilen kullanıcı mesajı dahil)
       const history = await this.prisma.chatbotMessage.findMany({
         where: { sessionId: internalSessionId },
         orderBy: { createdAt: 'desc' },
         take: 10,
       });
 
-      // Reverse to chronological order, exclude the just-saved user message (already included as last)
-      const historyMessages = history.reverse().map((m) => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: m.content,
-      }));
+      const historyMessages: Anthropic.MessageParam[] = history
+        .reverse()
+        .map((m) => ({
+          role: m.role === 'assistant' ? ('assistant' as const) : ('user' as const),
+          content: m.content,
+        }));
 
-      const messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
-        ...historyMessages,
-      ];
+      // İlk mesaj user olmalı — baştaki assistant (karşılama) mesajlarını at
+      while (historyMessages.length && historyMessages[0].role === 'assistant') {
+        historyMessages.shift();
+      }
+      if (!historyMessages.length) return null;
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.7,
-          max_tokens: 400,
-        }),
+      const storeContext = await this.buildStoreContext();
+
+      const response = await client.messages.create({
+        model,
+        max_tokens: 700,
+        system: [
+          { type: 'text', text: SYSTEM_PROMPT },
+          {
+            type: 'text',
+            text: storeContext,
+            cache_control: { type: 'ephemeral' },
+          },
+        ],
+        messages: historyMessages,
       });
 
-      if (!response.ok) {
-        const err = await response.text().catch(() => '');
-        this.logger.error(`OpenAI API error ${response.status}: ${err.slice(0, 200)}`);
+      if (response.stop_reason === 'refusal') {
+        this.logger.warn('Claude refused chatbot request');
         return null;
       }
 
-      const json = (await response.json()) as any;
-      const text = json?.choices?.[0]?.message?.content?.trim();
+      const text = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+        .map((b) => b.text)
+        .join('')
+        .trim();
       return text || null;
     } catch (e: any) {
-      this.logger.error(`OpenAI query failed: ${e.message}`);
+      if (e instanceof Anthropic.APIError) {
+        this.logger.error(`Claude API error ${e.status}: ${e.message}`);
+      } else {
+        this.logger.error(`Claude query failed: ${e?.message || e}`);
+      }
       return null;
     }
   }
