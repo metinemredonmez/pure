@@ -196,16 +196,26 @@ export class KargonomiWebhookController {
     @Headers('x-webhook-signature') signature: string,
     @Body() body: KargonomiWebhookDto,
   ) {
-    // Verify HMAC-SHA256 signature
+    // Verify HMAC-SHA256 signature.
+    // Secret henüz tanımlı değilse (Kargonomi ekibinden bekleniyor) webhook'u
+    // uyarı loglayarak kabul et — kargo durum akışı secret beklerken durmasın.
+    // Secret girildiği anda imza doğrulaması zorunlu hale gelir.
     const rawBody = (req as any).rawBody as Buffer;
-    if (!signature || !rawBody) {
-      throw new BadRequestException('Missing webhook signature');
-    }
-
-    const isValid = await this.kargonomiService.verifyWebhookSignature(rawBody, signature);
-    if (!isValid) {
-      this.logger.warn('Invalid Kargonomi webhook signature received');
-      throw new BadRequestException('Invalid webhook signature');
+    const secret = await this.kargonomiService.getWebhookSecret();
+    if (secret) {
+      if (!signature || !rawBody) {
+        throw new BadRequestException('Missing webhook signature');
+      }
+      const isValid = await this.kargonomiService.verifyWebhookSignature(rawBody, signature);
+      if (!isValid) {
+        this.logger.warn('Invalid Kargonomi webhook signature received');
+        throw new BadRequestException('Invalid webhook signature');
+      }
+    } else {
+      this.logger.warn(
+        'Kargonomi webhook secret tanımlı değil — imza DOĞRULANMADAN kabul edildi. ' +
+          'Admin → Entegrasyonlar → Kargo → Webhook Secret alanını doldurun.',
+      );
     }
 
     this.logger.log(`Kargonomi webhook received: ${(body as any)?.meta?.webhook?.event_type || body.event}`);

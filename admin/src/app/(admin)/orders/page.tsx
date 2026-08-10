@@ -299,6 +299,20 @@ export default function OrdersPage() {
     }
   };
 
+  const handleDownloadBarcode = async (shipmentId: number) => {
+    try {
+      const blob = await ordersApi.downloadKargonomiBarcode(shipmentId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kargonomi-${shipmentId}-barkod.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (error: any) {
+      alert(error?.response?.data?.message || 'Barkod indirilemedi');
+    }
+  };
+
   const handleShipKargonomi = async (order: Order) => {
     if (!window.confirm(`${order.orderNumber} siparişi Kargonomi ile kargoya verilsin mi? (En ucuz firma otomatik seçilir, bakiyeden düşer)`)) return;
     try {
@@ -747,6 +761,42 @@ export default function OrdersPage() {
                       </Typography>
                     </Box>
                   </Stack>
+                </Card>
+              </Grid>
+
+              {/* Kargo (Kargonomi) */}
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                  <ShippingIcon sx={{ color: olentiaColors.primary.main, fontSize: 20 }} />
+                  <Typography variant="subtitle2" fontWeight={700}>Kargo</Typography>
+                </Box>
+                <Card variant="outlined" sx={{ p: 2 }}>
+                  {selectedOrder.kargonomiShipmentId ? (
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }} justifyContent="space-between">
+                      <Box>
+                        <Typography variant="body2">
+                          Kargonomi Gönderi: <b>#{selectedOrder.kargonomiShipmentId}</b>
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Takip No: {selectedOrder.trackingNumber || 'Henüz yok (webhook ile gelecek)'}
+                        </Typography>
+                      </Box>
+                      <Button size="small" variant="outlined" onClick={() => handleDownloadBarcode(selectedOrder.kargonomiShipmentId!)}>
+                        Barkod PDF İndir
+                      </Button>
+                    </Stack>
+                  ) : (
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ sm: 'center' }} justifyContent="space-between">
+                      <Typography variant="body2" color="text.secondary">
+                        Henüz kargoya verilmedi.
+                      </Typography>
+                      {isAdmin && ['PAID', 'CONFIRMED', 'PREPARING'].includes(selectedOrder.status) && (
+                        <Button size="small" variant="contained" startIcon={<ShippingIcon />} onClick={() => handleShipKargonomi(selectedOrder)}>
+                          Kargonomi ile Gönder
+                        </Button>
+                      )}
+                    </Stack>
+                  )}
                 </Card>
               </Grid>
 

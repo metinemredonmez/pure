@@ -225,6 +225,10 @@ export const ordersApi = {
     const { data } = await api.post(`/admin/kargonomi/ship-order/${id}`);
     return data;
   },
+  downloadKargonomiBarcode: async (shipmentId: number) => {
+    const res = await api.get(`/admin/kargonomi/shipments/${shipmentId}/barcode`, { responseType: 'blob' });
+    return res.data as Blob;
+  },
   deleteOrder: async (id: string) => {
     const { data } = await api.delete(`/admin/orders/${id}`);
     return data;
