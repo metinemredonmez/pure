@@ -99,10 +99,15 @@ function LoginForm() {
       if (error.mfaRequired || error.message === 'MFA_REQUIRED') {
         setMfaRequired(true);
         setError('');
-      } else if (err instanceof Error) {
-        setError(err.message);
       } else {
-        setError('Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.');
+        // Backend'in Türkçe hata mesajı (yanlış şifre, 2FA kodu, hesap kilidi) öncelikli
+        const apiMessage = (err as { response?: { data?: { message?: string | string[] } } })
+          ?.response?.data?.message;
+        setError(
+          (Array.isArray(apiMessage) ? apiMessage[0] : apiMessage) ||
+            (err instanceof Error ? err.message : '') ||
+            'Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.',
+        );
       }
     } finally {
       setIsLoading(false);

@@ -11,6 +11,9 @@ export const api = axios.create({
   },
 });
 
+// 401'i oturum süresi dolması sayılmayan (kimlik bilgisi gönderen) uçlar
+const NO_REFRESH_PATHS = ['/auth/login', '/auth/refresh', '/auth/logout'];
+
 // Token refresh state
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -51,8 +54,12 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // Bu uçlardaki 401 "oturum düştü" değil, kimlik bilgisi hatasıdır (yanlış şifre /
+    // 2FA kodu): refresh + login'e yönlendirme yapılmaz, hata mesajı çağırana gider.
+    const isCredentialRequest = NO_REFRESH_PATHS.some((p) => originalRequest?.url?.startsWith(p));
+
     // If 401 and not already retrying
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isCredentialRequest) {
       if (isRefreshing) {
         // Wait for the refresh to complete
         return new Promise((resolve, reject) => {
@@ -81,15 +88,22 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${API_URL}/auth/refresh`, {
+        const { data: res } = await axios.post(`${API_URL}/auth/refresh`, {
           refreshToken,
         });
 
-        const newAccessToken = data.accessToken;
+        // Backend yanıtı { success, data: { accessToken, refreshToken } } zarfında döner.
+        // Önceden zarf açılmadığı için cookie'ye "undefined" yazılıyor, backend eski
+        // refresh token'ı iptal ettiğinden kullanıcı oturumdan atılıyordu.
+        const tokens = res?.data ?? res;
+        const newAccessToken: string | undefined = tokens?.accessToken;
+        if (!newAccessToken) {
+          throw new Error('Refresh yanıtında access token yok');
+        }
         Cookies.set('accessToken', newAccessToken, { expires: 1 });
 
-        if (data.refreshToken) {
-          Cookies.set('refreshToken', data.refreshToken, { expires: 7 });
+        if (tokens.refreshToken) {
+          Cookies.set('refreshToken', tokens.refreshToken, { expires: 7 });
         }
 
         processQueue(null, newAccessToken);
