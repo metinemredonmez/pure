@@ -3,9 +3,8 @@
 import { CloseButton, Popover, PopoverButton, PopoverPanel } from '@headlessui/react'
 import { Cancel01Icon, Search01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { redirect } from 'next/navigation'
+import Form from 'next/form'
 import { Divider } from '../Divider'
-import { Link } from '../Link'
 
 const SearchBtnPopover = () => {
   return (
@@ -20,14 +19,8 @@ const SearchBtnPopover = () => {
       >
         <div className="container">
           <div className="mx-auto flex w-full max-w-xl flex-col py-4">
-            <form
-              action={'#'}
-              className="flex w-full items-center"
-              onSubmit={(e) => {
-                e.preventDefault()
-                redirect('/search')
-              }}
-            >
+            {/* Arama kelimesi /search?q=... ile gerçek aramaya gider (önceden kelime atılıyordu) */}
+            <Form action="/search" className="flex w-full items-center">
               <HugeiconsIcon icon={Search01Icon} size={26} color="currentColor" strokeWidth={1} />
               <input
                 data-autofocus
@@ -35,7 +28,8 @@ const SearchBtnPopover = () => {
                 type="text"
                 className="w-full !border-none px-4 py-2 text-sm/6 uppercase !ring-0 focus-visible:outline-none"
                 name="q"
-                aria-label="Search for products"
+                aria-label="Ürün ara"
+                placeholder="Ürün ara…"
                 autoComplete="off"
                 autoCorrect="off"
                 autoCapitalize="off"
@@ -47,21 +41,13 @@ const SearchBtnPopover = () => {
               </CloseButton>
 
               <input type="submit" value="" hidden />
-            </form>
+            </Form>
             <Divider className="my-4 block md:hidden" />
             <div className="block text-xs/6 text-neutral-500 uppercase md:hidden">
-              Press{' '}
-              <Link
-                href={'/search'}
-                className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900"
-              >
-                <kbd className="text-xs font-medium">Enter</kbd>
-              </Link>{' '}
-              to search or{' '}
-              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900">
-                <span className="text-xs font-medium">Esc</span>
-              </kbd>{' '}
-              to cancel
+              Aramak için{' '}
+              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900">Enter</kbd>, kapatmak
+              için{' '}
+              <kbd className="rounded-sm bg-neutral-100 px-1.5 py-0.5 text-xs font-medium text-neutral-900">Esc</kbd>
             </div>
           </div>
         </div>
