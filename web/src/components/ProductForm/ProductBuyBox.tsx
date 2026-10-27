@@ -115,7 +115,12 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
     <div className="flex flex-col gap-y-8">
       {/* Fiyat — seçili gramaja göre güncellenir */}
       <div className="flex items-center gap-x-3">
-        <Prices contentClass="py-1.5 px-3 text-xl font-semibold" price={activePrice} />
+        <Prices
+          contentClass="text-2xl"
+          price={activePrice}
+          // İndirim (karşılaştırma fiyatı) ürün fiyatı için tanımlı — farklı fiyatlı varyantta gösterilmez
+          compareAtPrice={activePrice === basePrice ? p.compareAtPrice : null}
+        />
         {gramajValues.length > 0 && activeGramaj?.name && (
           <span className="text-sm text-neutral-500 dark:text-neutral-400">/ {activeGramaj.name}</span>
         )}

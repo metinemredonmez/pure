@@ -145,18 +145,25 @@ export function adaptProduct(product: any, index: number = 0) {
     roastLevel === 'DARK' ? 'Koyu Kavurma' :
     roastLevel ? 'Orta Kavurma' : ''
 
+  const price = parseFloat(product.price) || 0
+  const compareAtPrice = parseFloat(product.compareAtPrice) || 0
+  const discountPercent =
+    compareAtPrice > price && price > 0 ? Math.round(((compareAtPrice - price) / compareAtPrice) * 100) : 0
+
   return {
     id: product.id,
     title: product.name,
     handle: product.slug,
     createdAt: product.createdAt,
     vendor: product.origin || 'Pure Olentia',
-    price: parseFloat(product.price) || 0,
+    price,
+    // İndirim öncesi fiyat (admin "Karşılaştırma Fiyatı"); fiyattan büyük değilse indirim yok
+    compareAtPrice: discountPercent > 0 ? compareAtPrice : null,
     featuredImage: productImages[0],
     images: productImages,
     reviewNumber: product.reviewCount || 0,
     rating: product.avgRating || 0,
-    status: product.isFeatured ? 'Yeni Mahsul' : product.compareAtPrice ? '%20 Indirim' : '',
+    status: product.isFeatured ? 'Yeni Mahsul' : discountPercent > 0 ? `%${discountPercent} İndirim` : '',
     // Only include option groups that actually have values —
     // bundle products (e.g. "12'li Kutu") won't show a gramaj selector.
     // Kavurma: varyantlarda ≥2 farklı kavurma varsa müşteri seçer; yoksa

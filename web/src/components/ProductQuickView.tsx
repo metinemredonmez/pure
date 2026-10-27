@@ -106,7 +106,7 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
           </h2>
 
           <div className="mt-5 flex flex-wrap items-center justify-start gap-x-4 gap-y-1.5 sm:gap-x-5 rtl:justify-end">
-            <Prices contentClass="py-1 px-2 md:py-1.5 md:px-3 text-lg font-semibold" price={price || 1} />
+            <Prices contentClass="text-xl" price={price || 1} />
             <div className="h-6 border-s border-neutral-300 dark:border-neutral-700"></div>
             <div className="flex items-center">
               <Link href={'/products/' + handle} className="flex items-center text-sm font-medium">

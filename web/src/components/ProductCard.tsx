@@ -131,7 +131,12 @@ const ProductCard: FC<Props> = ({ className = '', data, isLiked }) => {
 
           <div className="flex items-end justify-between">
             <div className="flex items-baseline gap-1.5">
-              <Prices price={hasPriceRange ? minPrice : price ?? 1} />
+              <Prices
+                contentClass="text-lg"
+                price={hasPriceRange ? minPrice : price ?? 1}
+                // İndirim ürün fiyatına göre tanımlı — gösterilen fiyat ürün fiyatıysa üstü çizili eski fiyat çıkar
+                compareAtPrice={(hasPriceRange ? minPrice : price) === price ? (data as any).compareAtPrice : null}
+              />
               {hasPriceRange && (
                 <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('product.starting_from', '’ten başlayan')}</span>
               )}
