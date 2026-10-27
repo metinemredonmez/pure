@@ -47,3 +47,6 @@ npm-debug.log*
 *.env.bak*
 .env.*.bak*
 .env.production.bak*
+
+# Claude Code yerel ayarlari (sunucu erisim komutlari icerebilir) asla commit edilmesin
+.claude/settings.local.json
