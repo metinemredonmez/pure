@@ -361,16 +361,16 @@ export class IdentityService {
 
   // ── Helper: generate access + refresh tokens ──
   private async generateTokens(userId: string, email: string, role: string) {
-    const payload = { sub: userId, email, role };
+    const payload = { sub: userId, email, role, typ: 'access' };
 
     const accessToken = this.jwtService.sign(payload, {
       expiresIn: this.configService.get('jwt.accessExpiry'),
     });
 
-    const refreshTokenValue = this.jwtService.sign(
-      { sub: userId },
-      { expiresIn: this.configService.get('jwt.refreshExpiry') },
-    );
+    // Refresh token JWT değil, opak rastgele değer: access token ile aynı secret'la
+    // imzalandığı için önceden Bearer olarak da kabul ediliyordu (7 gün, logout'ta
+    // bile). Artık yalnızca DB'deki hash'iyle eşleşerek /auth/refresh'te geçerli.
+    const refreshTokenValue = crypto.randomBytes(48).toString('base64url');
 
     // Store only hash of refresh token in DB (defense against DB leaks)
     const tokenHash = crypto

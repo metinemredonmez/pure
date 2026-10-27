@@ -21,7 +21,15 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub: string; email: string; role: string }) {
+  async validate(payload: { sub: string; email?: string; role?: string; typ?: string }) {
+    // Yalnızca access token kabul edilir. typ claim'i olmayan eski access
+    // token'lar (role taşır) süreleri dolana kadar geçerli; eski sürümün JWT
+    // refresh token'ları ({sub}, role yok) Bearer olarak reddedilir.
+    const isAccessToken = payload.typ ? payload.typ === 'access' : !!payload.role;
+    if (!isAccessToken) {
+      throw new UnauthorizedException('Invalid token type');
+    }
+
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
     });

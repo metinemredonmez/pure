@@ -41,6 +41,13 @@ function isTokenExpired(token: string | null): boolean {
   }
 }
 
+/** Refresh token opak (JWT değil) — süresini sadece backend bilir. Yalnızca eski
+ *  JWT refresh token'ların süresi istemcide okunabilir. */
+function isRefreshTokenExpired(token: string | null): boolean {
+  if (!token) return true
+  return token.split('.').length === 3 ? isTokenExpired(token) : false
+}
+
 /** Clear all auth storage. Returns true if anything was cleared. */
 function clearAuthStorage(): boolean {
   let cleared = false
@@ -77,7 +84,7 @@ export default function AvatarDropdown({ className }: Props) {
 
       // Token expired? Clear all auth state and treat as guest.
       // (Backend interceptor / refresh logic ayrı yerden kovalanmalı; bu UI fallback.)
-      if (accessToken && isTokenExpired(accessToken) && (!refreshToken || isTokenExpired(refreshToken))) {
+      if (accessToken && isTokenExpired(accessToken) && isRefreshTokenExpired(refreshToken)) {
         clearAuthStorage()
         setUser(null)
         return
@@ -101,7 +108,7 @@ export default function AvatarDropdown({ className }: Props) {
       try {
         const t = localStorage.getItem('pureolentia_token')
         const r = localStorage.getItem('pureolentia_refresh_token')
-        if (t && isTokenExpired(t) && (!r || isTokenExpired(r))) {
+        if (t && isTokenExpired(t) && isRefreshTokenExpired(r)) {
           clearAuthStorage()
           setUser(null)
         }
