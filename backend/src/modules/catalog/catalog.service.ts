@@ -73,7 +73,9 @@ export class CatalogService {
         where,
         include: {
           category: true,
-          variants: true,
+          // Pasif (kaldırılmış) varyantlar listelenmez: admin formu onları geri
+          // gönderip saveVariants'ta yeniden aktifleştiriyordu
+          variants: { where: { isActive: true } },
           images: { orderBy: { sortOrder: 'asc' } },
         },
         skip: query.skip,
@@ -233,11 +235,12 @@ export class CatalogService {
       (variants || []).filter((v) => v.id).map((v) => v.id),
     );
 
+    // Sitede iki seçenek var: Çekirdek / Öğütülmüş. Eski tipler geriye dönük kabul edilir.
     const VALID_GRINDS = [
-      'WHOLE_BEAN', 'FRENCH_PRESS', 'V60', 'FILTER', 'ESPRESSO', 'TURKISH',
+      'WHOLE_BEAN', 'GROUND', 'FRENCH_PRESS', 'V60', 'FILTER', 'ESPRESSO', 'TURKISH',
     ];
     const GRIND_LABELS: Record<string, string> = {
-      WHOLE_BEAN: 'Çekirdek', FRENCH_PRESS: 'French Press', V60: 'V60',
+      WHOLE_BEAN: 'Çekirdek', GROUND: 'Öğütülmüş', FRENCH_PRESS: 'French Press', V60: 'V60',
       FILTER: 'Filtre', ESPRESSO: 'Espresso', TURKISH: 'Türk Kahvesi',
     };
     const normGrind = (g?: string) =>
@@ -261,14 +264,18 @@ export class CatalogService {
           });
         }
       }
+      const reusedIds = new Set<string>();
       for (const v of variants || []) {
         const grind = normGrind(v.grindType);
         const roast = normRoast(v.roastLevel);
         const gLabel = grind ? GRIND_LABELS[grind] : '';
         const rLabel = roast ? ROAST_LABELS[roast] : '';
+        // Gramajsız varyant (ana üründen yalnızca öğütme seçimi) adında "0g" olmasın
+        const wLabel = Number(v.weight) > 0 ? `${v.weight}g` : '';
         const name =
           (typeof v.name === 'string' && v.name.trim()) ||
-          [`${v.weight}g`, gLabel, rLabel].filter(Boolean).join(' - ');
+          [wLabel, gLabel, rLabel].filter(Boolean).join(' - ') ||
+          'Standart';
         const data: any = {
           name,
           grindType: grind,
@@ -278,8 +285,19 @@ export class CatalogService {
           stock: Number(v.stock) || 0,
           isActive: true,
         };
-        if (v.id) {
-          await tx.productVariant.update({ where: { id: v.id }, data });
+        // Aynı adlı pasif varyant varsa yeniden etkinleştir — (productId, name)
+        // unique olduğu için silinip yeniden eklenen seçenek P2002 hatası veriyordu
+        const sameNameInactive = !v.id
+          ? existing.find(
+              (ex) => ex.name === name && !incomingIds.has(ex.id) && !reusedIds.has(ex.id),
+            )
+          : undefined;
+        if (sameNameInactive) reusedIds.add(sameNameInactive.id);
+        if (v.id || sameNameInactive) {
+          await tx.productVariant.update({
+            where: { id: v.id || sameNameInactive!.id },
+            data,
+          });
         } else {
           const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
           const sku =

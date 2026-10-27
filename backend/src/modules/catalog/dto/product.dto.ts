@@ -163,7 +163,7 @@ export class VariantInputDto {
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({ description: 'GrindType enum: WHOLE_BEAN|FRENCH_PRESS|V60|FILTER|ESPRESSO|TURKISH' })
+  @ApiPropertyOptional({ description: 'GrindType enum: WHOLE_BEAN (Çekirdek) | GROUND (Öğütülmüş); eski: FRENCH_PRESS|V60|FILTER|ESPRESSO|TURKISH' })
   @IsOptional()
   @IsString()
   grindType?: string;

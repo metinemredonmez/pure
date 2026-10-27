@@ -1248,8 +1248,11 @@ enum CronJobStatus {
   FAILED
 }
 
+// Sitede yalnızca iki seçenek: Çekirdek (WHOLE_BEAN) / Öğütülmüş (GROUND).
+// Diğerleri eski varyantlar için korunur; sitede "Öğütülmüş" olarak gösterilir.
 enum GrindType {
   WHOLE_BEAN
+  GROUND
   FRENCH_PRESS
   V60
   FILTER
