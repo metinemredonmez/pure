@@ -52,7 +52,7 @@ export default function ReviewsPage() {
   const [googleReviews, setGoogleReviews] = useState<GoogleReview[]>([]);
   const [googleRating, setGoogleRating] = useState<number>(0);
   const [googleCount, setGoogleCount] = useState<number>(0);
-  const [googleSource, setGoogleSource] = useState<'live' | 'cache' | 'mock' | ''>('');
+  const [googleSource, setGoogleSource] = useState<'live' | 'cache' | 'none' | ''>('');
   const [googleLoading, setGoogleLoading] = useState(false);
 
   const fetchGoogleReviews = useCallback(async (refresh = false) => {
@@ -260,9 +260,9 @@ export default function ReviewsPage() {
                   </Typography>
                   <Rating value={googleRating || 0} readOnly size="small" precision={0.1} />
                   <Typography variant="body2" color="text.secondary">{googleCount} yorum</Typography>
-                  {googleSource === 'mock' && (
+                  {googleSource === 'none' && (
                     <Chip
-                      label="Mock"
+                      label="Bağlı değil"
                       size="small"
                       color="warning"
                       sx={{ ml: 1, height: 20, fontSize: 10 }}
@@ -293,10 +293,10 @@ export default function ReviewsPage() {
             </Stack>
           </Card>
 
-          {googleSource === 'mock' && (
+          {googleSource === 'none' && (
             <Box sx={{ mb: 2, p: 1.5, borderRadius: 1, bgcolor: 'warning.main', color: 'warning.contrastText', opacity: 0.9 }}>
               <Typography variant="caption">
-                Backend .env içinde <code>GOOGLE_PLACES_API_KEY</code> ve <code>GOOGLE_PLACE_ID</code> tanımlı değil — mock veri gösteriliyor.
+                Google yorumları alınamadı (backend .env içinde <code>GOOGLE_PLACES_API_KEY</code> / <code>GOOGLE_PLACE_ID</code> tanımlı değil ya da Google hata verdi) — sitede Google yorumları bölümü gizli.
               </Typography>
             </Box>
           )}

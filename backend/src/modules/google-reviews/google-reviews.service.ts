@@ -14,21 +14,22 @@ export interface GoogleReviewsResponse {
   reviews: GoogleReview[];
   rating: number | null;
   reviewCount: number | null;
-  source: 'live' | 'cache' | 'mock';
+  source: 'live' | 'cache' | 'none';
   fetchedAt: string;
 }
 
 const CACHE_KEY = 'google_reviews:v1';
 const CACHE_TTL_SECONDS = 6 * 60 * 60; // 6h
 
-// Fallback / mock — used when API key or Place ID is not configured.
-const MOCK_REVIEWS: GoogleReview[] = [
-  { author: 'Mehmet Y.', rating: 5, text: 'Harika kahve! Taze kavrulmuş, aromatik ve lezzet dolu. Kesinlikle tavsiye ederim.', time: '2 hafta önce' },
-  { author: 'Ayşe K.', rating: 5, text: 'Türk kahvesinin en iyisi! Köpüğü bile mükemmel. Siparişi hızlı geldi.', time: '1 ay önce' },
-  { author: 'Ali R.', rating: 5, text: 'Uzun süredir en iyi kahveyi arıyordum, Pure Olentia ile buldum.', time: '1 ay önce' },
-  { author: 'Fatma S.', rating: 5, text: 'Abonelik sistemi çok pratik, her ay taze kahvem kapıda.', time: '2 ay önce' },
-  { author: 'Can D.', rating: 5, text: 'Ofis için toplu sipariş verdik, herkes bayıldı.', time: '2 ay önce' },
-];
+// Google'dan veri alınamazsa boş liste döner — uydurma (mock) yorum gösterilmez.
+// Önceden 5 sahte yorum "Google yorumu" gibi sitede yayınlanıyordu.
+const noReviews = (): GoogleReviewsResponse => ({
+  reviews: [],
+  rating: null,
+  reviewCount: null,
+  source: 'none',
+  fetchedAt: new Date().toISOString(),
+});
 
 @Injectable()
 export class GoogleReviewsService {
@@ -49,14 +50,8 @@ export class GoogleReviewsService {
     const placeId = this.config.get<string>('GOOGLE_PLACE_ID') || process.env.GOOGLE_PLACE_ID;
 
     if (!apiKey || !placeId) {
-      this.logger.warn('GOOGLE_PLACES_API_KEY or GOOGLE_PLACE_ID missing — returning mock reviews');
-      return {
-        reviews: MOCK_REVIEWS,
-        rating: 5.0,
-        reviewCount: MOCK_REVIEWS.length,
-        source: 'mock',
-        fetchedAt: new Date().toISOString(),
-      };
+      this.logger.warn('GOOGLE_PLACES_API_KEY or GOOGLE_PLACE_ID missing — no Google reviews');
+      return noReviews();
     }
 
     try {
@@ -73,13 +68,7 @@ export class GoogleReviewsService {
       if (!res.ok) {
         const text = await res.text();
         this.logger.error(`Places API error ${res.status}: ${text.slice(0, 300)}`);
-        return {
-          reviews: MOCK_REVIEWS,
-          rating: 5.0,
-          reviewCount: MOCK_REVIEWS.length,
-          source: 'mock',
-          fetchedAt: new Date().toISOString(),
-        };
+        return noReviews();
       }
 
       const data = (await res.json()) as any;
@@ -104,13 +93,7 @@ export class GoogleReviewsService {
       return response;
     } catch (error: any) {
       this.logger.error(`Failed to fetch Google reviews: ${error?.message || error}`);
-      return {
-        reviews: MOCK_REVIEWS,
-        rating: 5.0,
-        reviewCount: MOCK_REVIEWS.length,
-        source: 'mock',
-        fetchedAt: new Date().toISOString(),
-      };
+      return noReviews();
     }
   }
 

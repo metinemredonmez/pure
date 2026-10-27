@@ -17,19 +17,6 @@ interface GoogleReview {
   profilePhoto?: string
 }
 
-const FALLBACK_REVIEWS: GoogleReview[] = [
-  { author: 'Mehmet Y.', rating: 5, text: 'Harika kahve! Taze kavrulmuş, aromatik ve lezzet dolu. Kesinlikle tavsiye ederim.', time: '2 hafta önce' },
-  { author: 'Ayşe K.', rating: 5, text: 'Türk kahvesinin en iyisi! Köpüğü bile mükemmel. Siparişi hızlı geldi.', time: '1 ay önce' },
-  { author: 'Ali R.', rating: 5, text: 'Uzun süredir en iyi kahveyi arıyordum, Pure Olentia ile buldum. Özellikle filtre kahveleri muhteşem.', time: '1 ay önce' },
-  { author: 'Fatma S.', rating: 5, text: 'Abonelik sistemi çok pratik, her ay taze kahvem kapıda. Kaliteden ödün vermiyorlar.', time: '2 ay önce' },
-  { author: 'Can D.', rating: 5, text: 'Ofis için toplu sipariş verdik, herkes bayıldı. Fiyat-performans oranı mükemmel.', time: '2 ay önce' },
-  { author: 'Zeynep A.', rating: 5, text: 'Ethiopia Yirgacheffe denedim, meyve notaları inanılmaz. Packaging de çok şık.', time: '3 ay önce' },
-  { author: 'Burak T.', rating: 5, text: 'Kargo hızlı, paketleme özenli, kahve taptaze. 5 yıldız hak ediyor.', time: '3 ay önce' },
-  { author: 'Selin M.', rating: 5, text: 'Colombia Supremo favori kahvem oldu. Kremsi dokusu ve çikolata notaları harika.', time: '4 ay önce' },
-  { author: 'Emre B.', rating: 5, text: 'Kenya AA ile tanıştım, asidik yapısı ve meyve aroması cesur ama dengeli.', time: '4 ay önce' },
-  { author: 'Deniz K.', rating: 5, text: 'Hediye paketi aldım, sunumu ve kalitesi ile çok beğendiler. Teşekkürler Pure Olentia!', time: '5 ay önce' },
-]
-
 const AVATAR_COLORS = [
   'from-amber-500 to-orange-600',
   'from-emerald-500 to-teal-600',
@@ -77,9 +64,11 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
   const [emblaRef, emblaApi] = useEmblaCarousel(emblaOptions)
   const { onPrevButtonClick, onNextButtonClick } = useCarouselArrowButtons(emblaApi)
 
-  const [reviews, setReviews] = useState<GoogleReview[]>(FALLBACK_REVIEWS)
-  const [aggregateRating, setAggregateRating] = useState<number>(5)
-  const [reviewCount, setReviewCount] = useState<number>(FALLBACK_REVIEWS.length)
+  // Yalnızca Google'dan gelen gerçek yorumlar. Önceden 10 uydurma 5 yıldızlı yorum
+  // (sitede olmayan "Ethiopia Yirgacheffe", "Kenya AA" ürünlerinden bahseden) basılıyordu.
+  const [reviews, setReviews] = useState<GoogleReview[]>([])
+  const [aggregateRating, setAggregateRating] = useState<number>(0)
+  const [reviewCount, setReviewCount] = useState<number>(0)
 
   useEffect(() => {
     let cancelled = false
@@ -87,10 +76,10 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
       const res = (await getApiGoogleReviews()) as any
       if (cancelled) return
       const data = res?.data || res
-      const list: GoogleReview[] = Array.isArray(data?.reviews) ? data.reviews : []
-      if (list.length) {
-        setReviews(list)
-      }
+      const isReal = data?.source === 'live' || data?.source === 'cache'
+      const list: GoogleReview[] = isReal && Array.isArray(data?.reviews) ? data.reviews : []
+      if (!list.length) return
+      setReviews(list)
       if (typeof data?.rating === 'number') setAggregateRating(data.rating)
       if (typeof data?.reviewCount === 'number') setReviewCount(data.reviewCount)
     })()
@@ -98,6 +87,8 @@ export default function SectionGoogleReviews({ className = '' }: Props) {
       cancelled = true
     }
   }, [])
+
+  if (!reviews.length) return null
 
   return (
     <div className={`relative ${className}`}>
