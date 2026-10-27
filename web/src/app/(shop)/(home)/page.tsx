@@ -27,29 +27,35 @@ async function PageHome() {
 
   let backendBanners: any[] = []
 
-  const settings = await getSiteSettings()
+  // Birbirinden bağımsız 5 istek paralel çekilir (önceden sırayla bekleniyordu)
+  const [settings, apiProducts, apiCategories, apiCollections, apiBanners]: [
+    Awaited<ReturnType<typeof getSiteSettings>>,
+    any, any, any, any,
+  ] = await Promise.all([
+    getSiteSettings(),
+    getApiProducts({ limit: 20 }).catch(() => null),
+    getApiCategories().catch(() => null),
+    getApiCollections().catch(() => null),
+    getApiBanners().catch(() => null),
+  ])
 
   try {
-    const apiProducts = await getApiProducts({ limit: 20 }) as any
     const prodData = apiProducts?.data?.data || apiProducts?.data || []
     if (Array.isArray(prodData) && prodData.length) {
       products = prodData.map((p: any, i: number) => adaptProduct(p, i))
     }
 
-    const apiCategories = await getApiCategories() as any
     const catData = apiCategories?.data || apiCategories || []
     if (Array.isArray(catData) && catData.length) {
       categories = catData.map((c: any, i: number) => adaptCategory(c, i))
     }
 
-    const apiCollections = await getApiCollections() as any
     const colData = apiCollections?.data || apiCollections || []
     if (Array.isArray(colData) && colData.length) {
       collections = colData.map((c: any, i: number) => adaptCollection(c, i))
     }
 
-    // Fetch hero banners from backend (admin-managed via /website/banners)
-    const apiBanners = await getApiBanners() as any
+    // Hero banners (admin-managed via /website/banners)
     const bannerData = apiBanners?.data || apiBanners || []
     if (Array.isArray(bannerData) && bannerData.length) {
       backendBanners = bannerData

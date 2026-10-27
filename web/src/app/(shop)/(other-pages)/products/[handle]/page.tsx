@@ -1,8 +1,13 @@
-// Bu sayfayı SSR olarak çalıştır — backend silinen ürünler için cache'lenmiş
-// eski HTML serve etmesin. Brazil Santos vb. silinen slug'lar için her zaman
-// taze backend kontrolü + notFound() çağrısı.
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
+// ISR: sayfa 60 sn önbellekten sunulur, arka planda tazelenir. Önceden her istekte
+// (force-dynamic) baştan render ediliyordu → ürün sayfası TTFB 0,4–3 sn. Silinen
+// ürün en geç 60 sn içinde yeniden üretilince notFound() ile 404'e düşer.
+export const revalidate = 60
+
+// Boş liste: build'de ürün sayfası üretilmez; her ürün ilk ziyarette render edilip
+// önbelleğe alınır (yoksa dinamik segment her istekte render edilir)
+export async function generateStaticParams() {
+  return []
+}
 
 import AccordionInfo from '@/components/AccordionInfo'
 import { Divider } from '@/components/Divider'
@@ -15,9 +20,9 @@ import ProductSizeOptions from '@/components/ProductForm/ProductSizeOptions'
 import ProductBuyBox from '@/components/ProductForm/ProductBuyBox'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
-import { getProductDetailByHandle, getProductReviews, getProducts } from '@/data/data'
+import { getProducts } from '@/data/data'
 import { getApiProductBySlug, getApiProducts, getApiProductReviews } from '@/lib/api'
-import { adaptProduct } from '@/lib/adapters'
+import { adaptProduct, resolveImageUrl } from '@/lib/adapters'
 import Breadcrumb from '@/shared/Breadcrumb'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { StarIcon } from '@heroicons/react/24/solid'
@@ -32,12 +37,17 @@ import ProductStatus from '../ProductStatus'
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params
-  const product = await getProductDetailByHandle(handle)
-  const title = product?.title || 'Urun'
-  const description = product?.description || 'Urun detay sayfasi'
+  // Gerçek ürün (fetch sayfa render'ıyla aynı istek — Next önbelleğinden gelir).
+  // Önceden demo veriden okunuyordu: her ürünün başlığı "Ethiopia Yirgacheffe" çıkıyordu.
+  const apiProduct = (await getApiProductBySlug(handle)) as any
+  const data = apiProduct?.data
+  if (!data?.id) return { title: 'Ürün bulunamadı' }
+  const description = String(data.shortDescription || data.description || '').slice(0, 160)
+  const image = data.images?.[0]?.url ? resolveImageUrl(data.images[0].url) : undefined
   return {
-    title,
-    description,
+    title: data.name,
+    description: description || undefined,
+    openGraph: { title: data.name, description: description || undefined, images: image ? [image] : undefined },
   }
 }
 
@@ -74,11 +84,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
           '300 TL uzeri siparislerde ucretsiz kargo. Kapali urunlerde 14 gun iade hakki.',
       }
     }
-    const apiRelated = (await getApiProducts({ limit: 6 })) as any
-    const relData = apiRelated?.data?.data || apiRelated?.data || []
-    if (Array.isArray(relData) && relData.length) {
-      relatedProducts = relData.map((p: any, i: number) => adaptProduct(p, i))
-    }
   } catch (e) {}
 
   // Backend'de ürün yoksa direkt 404 — data.ts demo fallback'i artık
@@ -87,33 +92,36 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   if (!product) {
     return notFound()
   }
+
+  // Benzer ürünler + yorumlar birbirinden bağımsız — paralel çekilir (önceden sıralıydı)
+  const [apiRelated, apiReviews] = (await Promise.all([
+    getApiProducts({ limit: 6 }).catch(() => null),
+    getApiProductReviews(backendData.id).catch(() => null),
+  ])) as any[]
+  const relData = apiRelated?.data?.data || apiRelated?.data || []
+  if (Array.isArray(relData) && relData.length) {
+    relatedProducts = relData.map((p: any, i: number) => adaptProduct(p, i))
+  }
   if (!relatedProducts.length) {
     relatedProducts = (await getProducts()).slice(2, 8)
   }
 
-  // Fetch reviews from backend first, fall back to static demo data
   let reviews: any[] = []
-  try {
-    const productId = backendData?.id
-    if (productId) {
-      const apiReviews = (await getApiProductReviews(productId)) as any
-      const revData = apiReviews?.data?.data || apiReviews?.data || []
-      if (Array.isArray(revData) && revData.length) {
-        reviews = revData.map((r: any, i: number) => ({
-          id: r.id || String(i),
-          title: r.title || '',
-          rating: r.rating || 5,
-          content: r.content || r.comment || '',
-          author: r.author?.name || r.user?.firstName || 'Müşteri',
-          authorAvatar: undefined,
-          date: r.createdAt
-            ? new Date(r.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })
-            : '',
-          datetime: r.createdAt || '',
-        }))
-      }
-    }
-  } catch {}
+  const revData = apiReviews?.data?.data || apiReviews?.data || []
+  if (Array.isArray(revData) && revData.length) {
+    reviews = revData.map((r: any, i: number) => ({
+      id: r.id || String(i),
+      title: r.title || '',
+      rating: r.rating || 5,
+      content: r.content || r.comment || '',
+      author: r.author?.name || r.user?.firstName || 'Müşteri',
+      authorAvatar: undefined,
+      date: r.createdAt
+        ? new Date(r.createdAt).toLocaleDateString('tr-TR', { day: '2-digit', month: 'long', year: 'numeric' })
+        : '',
+      datetime: r.createdAt || '',
+    }))
+  }
 
   // Do not fall back to mock reviews — show empty state instead
 

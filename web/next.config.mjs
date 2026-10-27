@@ -80,10 +80,20 @@ const nextConfig = {
         ],
       },
       {
-        // HTML pages — always revalidate
+        // HTML pages — always revalidate. no-store değil no-cache: tarayıcı her seferinde
+        // sunucuya sorar ama geri/ileri önbelleği (bfcache) ve ETag doğrulaması çalışır.
         source: '/((?!_next|api).*)',
         headers: [
-          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Cache-Control', value: 'no-cache, must-revalidate' },
+        ],
+      },
+      {
+        // public/ altındaki görseller (hero, arka planlar ~0,5–0,8 MB) — önceden HTML
+        // kuralına takılıp her sayfa görüntülemede yeniden indiriliyordu. Son kural
+        // olduğu için yukarıdakini ezer.
+        source: '/:all*(jpg|jpeg|png|webp|avif|gif|svg|ico)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' },
         ],
       },
     ]
