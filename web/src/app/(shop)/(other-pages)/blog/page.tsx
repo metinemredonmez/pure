@@ -2,7 +2,6 @@ import BgGlassmorphism from '@/components/BgGlassmorphism/BgGlassmorphism'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionGridPosts from '@/components/blog/SectionGridPosts'
 import SectionMagazine5 from '@/components/blog/SectionMagazine5'
-import { getBlogPosts as getStaticBlogPosts } from '@/data/data'
 import { getApiBlogPosts } from '@/lib/api'
 import { adaptBlogPost } from '@/lib/adapters'
 import { Metadata } from 'next'
@@ -14,7 +13,7 @@ export const metadata: Metadata = {
 }
 
 const BlogPage: React.FC = async () => {
-  // Try backend first, fall back to static demo data
+  // Yalnızca backend'deki gerçek yazılar (template demo yazıları yok)
   let blogPosts: any[] = []
   try {
     const res = (await getApiBlogPosts({ limit: 30 })) as any
@@ -24,18 +23,19 @@ const BlogPage: React.FC = async () => {
     }
   } catch {}
 
-  if (!blogPosts.length) {
-    blogPosts = await getStaticBlogPosts()
-  }
 
   return (
     <div>
       <BgGlassmorphism />
       <div className="relative container">
         <div className="pt-12 pb-16 lg:pb-28">
-          <SectionMagazine5 posts={blogPosts} />
+          {blogPosts.length > 0 ? (
+            <SectionMagazine5 posts={blogPosts} />
+          ) : (
+            <p className="py-16 text-center text-neutral-500 dark:text-neutral-400">Henüz yayınlanmış yazı yok.</p>
+          )}
         </div>
-        <SectionGridPosts posts={blogPosts} className="pb-16 lg:pb-28" />
+        {blogPosts.length > 0 && <SectionGridPosts posts={blogPosts} className="pb-16 lg:pb-28" />}
         <SectionPromo2 className="pb-16 lg:pb-28" />
       </div>
     </div>

@@ -1,7 +1,6 @@
 import { Divider } from '@/components/Divider'
 import BlogCommentSection from '@/components/blog/BlogCommentSection'
 import PostCard1 from '@/components/blog/PostCard1'
-import { getBlogPosts as getStaticBlogPosts, getBlogPostsByHandle } from '@/data/data'
 import { adaptBlogPost } from '@/lib/adapters'
 import { getApiBlogPostBySlug, getApiBlogPosts } from '@/lib/api'
 import Avatar from '@/shared/Avatar/Avatar'
@@ -28,7 +27,7 @@ async function fetchPostFromBackend(slug: string) {
 
 export async function generateMetadata({ params }: { params: Promise<{ handle: string }> }): Promise<Metadata> {
   const { handle } = await params
-  const post = (await fetchPostFromBackend(handle)) || (await getBlogPostsByHandle(handle))
+  const post = await fetchPostFromBackend(handle)
   if (!post) {
     return {
       title: 'Blog',
@@ -41,12 +40,12 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
 
 export default async function Page({ params }: { params: Promise<{ handle: string }> }) {
   const { handle } = await params
-  const post = (await fetchPostFromBackend(handle)) || (await getBlogPostsByHandle(handle))
-  const { featuredImage, id, author, content, date, title, timeToRead, category, excerpt, tags } = post as any
-
-  if (!id) {
+  // Yalnızca gerçek yazı: bulunamazsa 404 (önceden her bilinmeyen adreste demo yazı #0 çıkıyordu)
+  const post = await fetchPostFromBackend(handle)
+  if (!post?.id) {
     return notFound()
   }
+  const { featuredImage, id, author, content, date, title, timeToRead, category, excerpt, tags } = post as any
 
   // Related posts from backend, fall back to static
   let relatedPosts: any[] = []
@@ -60,9 +59,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         .map((p: any, i: number) => adaptBlogPost(p, i))
     }
   } catch {}
-  if (!relatedPosts.length) {
-    relatedPosts = (await getStaticBlogPosts()).slice(0, 4)
-  }
 
   const renderHeader = () => {
     return (
@@ -71,7 +67,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
           {category?.title && <Badge color="blue">{category.title}</Badge>}
           <h1
             className="max-w-4xl text-3xl font-semibold text-neutral-900 md:text-4xl md:leading-[120%]! lg:text-4xl dark:text-neutral-100"
-            title="Quiet ingenuity: 120,000 lunches and counting"
           >
             {title}
           </h1>
@@ -145,6 +140,7 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   }
 
   const renderRelatedPosts = () => {
+    if (!relatedPosts.length) return null
     return (
       <div className="mt-16 bg-neutral-100 py-16 lg:mt-24 lg:py-24 dark:bg-neutral-800">
         <div className="container">

@@ -1,5 +1,4 @@
 import Logo from '@/components/Logo'
-import { getCollections } from '@/data/data'
 import { getNavigation } from '@/data/navigation'
 import clsx from 'clsx'
 import { FC } from 'react'
@@ -15,7 +14,6 @@ export interface Props {
 
 const Header2: FC<Props> = async ({ hasBorder = true }) => {
   const navigationMenu = await getNavigation()
-  const allCollections = await getCollections()
 
   return (
     <div className="relative z-50 w-full bg-white">
@@ -36,7 +34,7 @@ const Header2: FC<Props> = async ({ hasBorder = true }) => {
           </div>
 
           <div className="mx-4 hidden flex-2 justify-center lg:flex">
-            <Navigation menu={navigationMenu} featuredCollection={allCollections[10]} />
+            <Navigation menu={navigationMenu} />
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-x-2.5 sm:gap-x-5">

@@ -20,7 +20,6 @@ import ProductSizeOptions from '@/components/ProductForm/ProductSizeOptions'
 import ProductBuyBox from '@/components/ProductForm/ProductBuyBox'
 import SectionPromo2 from '@/components/SectionPromo2'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
-import { getProducts } from '@/data/data'
 import { getApiProductBySlug, getApiProducts, getApiProductReviews } from '@/lib/api'
 import { adaptProduct, resolveImageUrl } from '@/lib/adapters'
 import Breadcrumb from '@/shared/Breadcrumb'
@@ -101,9 +100,6 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   const relData = apiRelated?.data?.data || apiRelated?.data || []
   if (Array.isArray(relData) && relData.length) {
     relatedProducts = relData.map((p: any, i: number) => adaptProduct(p, i))
-  }
-  if (!relatedProducts.length) {
-    relatedProducts = (await getProducts()).slice(2, 8)
   }
 
   let reviews: any[] = []
@@ -323,12 +319,17 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
         <Divider />
         <ProductReviews productId={product.id} reviewNumber={reviewNumber || 0} rating={rating || 1} reviews={reviews} />
         <Divider />
-        <SectionSliderProductCard
-          heading="Benzer Ürünler"
-          subHeading="Bunları da beğenebilirsiniz"
-          data={relatedProducts}
-        />
-        <Divider />
+        {/* Benzer ürünler yalnızca gerçek ürünlerden (demo yedek yok); kendisi hariç */}
+        {relatedProducts.some((p) => p.id !== product.id) && (
+          <>
+            <SectionSliderProductCard
+              heading="Benzer Ürünler"
+              subHeading="Bunları da beğenebilirsiniz"
+              data={relatedProducts.filter((p) => p.id !== product.id)}
+            />
+            <Divider />
+          </>
+        )}
         <SectionPromo2 />
       </div>
     </main>

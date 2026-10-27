@@ -1,15 +1,7 @@
 import { FilterSortByMenuListBox } from '@/components/FilterSortByMenu'
 import ProductCard from '@/components/ProductCard'
-import { getProducts } from '@/data/data'
 import { getApiProducts, getApiCategories } from '@/lib/api'
 import { adaptProduct } from '@/lib/adapters'
-import {
-  Pagination,
-  PaginationList,
-  PaginationNext,
-  PaginationPage,
-  PaginationPrevious,
-} from '@/shared/Pagination/Pagination'
 
 export default async function Page({
   params,
@@ -61,14 +53,7 @@ export default async function Page({
     }
   } catch (e) {}
 
-  // Sadece "all" sayfası boş gelirse data.ts'ten demo göster (geçici).
-  // Specific kategori sayfası (espresso, filtre-kahve, vs.) boşsa BOŞ hâl
-  // göstersin — yanlış ürün karıştırmasın.
-  if (!products.length && !isSpecificCategory) {
-    try {
-      products = await getProducts()
-    } catch {}
-  }
+  // Ürün yoksa boş durum gösterilir — template demo ürünleri asla gösterilmez
 
   return (
     <main>
@@ -144,19 +129,6 @@ export default async function Page({
         </div>
       )}
 
-      {products.length > 0 && (
-        <div className="mt-20 flex justify-center lg:mt-24">
-          <Pagination className="mx-auto">
-            <PaginationPrevious href="?page=1" />
-            <PaginationList>
-              <PaginationPage href="?page=1" current>
-                1
-              </PaginationPage>
-            </PaginationList>
-            <PaginationNext href="?page=1" />
-          </Pagination>
-        </div>
-      )}
     </main>
   )
 }

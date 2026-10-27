@@ -1,10 +1,10 @@
 import { Divider } from '@/components/Divider'
 import SectionPromo1 from '@/components/SectionPromo1'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
-import { getCollectionByHandle, getProducts } from '@/data/data'
 import { getApiCategories, getApiCollections, getApiProducts } from '@/lib/api'
 import { adaptProduct } from '@/lib/adapters'
 import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import React from 'react'
 
@@ -32,11 +32,7 @@ export async function generateMetadata({ params }: { params: Promise<{ handle: s
     }
   } catch (e) {}
 
-  if (title === 'Koleksiyon') {
-    const collection = await getCollectionByHandle(handle)
-    title = collection?.title || 'Koleksiyon'
-    description = collection?.description || ''
-  }
+  if (title === 'Koleksiyon' && handle === 'all') title = 'Tüm Ürünler'
 
   return { title, description }
 }
@@ -47,9 +43,12 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
   // Get collection/category info from backend
   let title = ''
   let description = ''
+  // Backend gerçekten cevap verdi mi? (geçici hata 404'e çevrilmesin)
+  let lookedUp = false
   try {
     const apiCats = await getApiCategories() as any
     const cats = apiCats?.data || []
+    lookedUp = Array.isArray(cats) && cats.length > 0
     const found = cats.find((c: any) => c.slug === handle)
     if (found) {
       title = found.name
@@ -65,12 +64,12 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
     }
   } catch (e) {}
 
-  // Fallback to static
-  if (!title) {
-    const collection = await getCollectionByHandle(handle)
-    title = collection?.title || handle
-    description = collection?.description || ''
+  // Kategori/koleksiyon bulunamadıysa 404 — önceden template demo koleksiyonu
+  // ("Single Origin" vb.) gösteriliyordu
+  if (!title && handle !== 'all' && lookedUp) {
+    notFound()
   }
+  if (!title) title = handle === 'all' ? 'Tüm Ürünler' : 'Koleksiyon'
 
   // Related products
   let relatedProducts: any[] = []
@@ -81,9 +80,6 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
       relatedProducts = prodData.map((p: any, i: number) => adaptProduct(p, i))
     }
   } catch (e) {}
-  if (!relatedProducts.length) {
-    relatedProducts = (await getProducts()).slice(0, 4)
-  }
 
   // Pretty titles for known handles
   const HANDLE_TITLES: Record<string, string> = {
@@ -139,8 +135,12 @@ const Layout = async ({ children, params }: { children: React.ReactNode; params:
           <div className="mt-2 lg:mt-4">{children}</div>
         </div>
 
-        <Divider />
-        <SectionSliderLargeProduct products={relatedProducts} />
+        {relatedProducts.length > 0 && (
+          <>
+            <Divider />
+            <SectionSliderLargeProduct products={relatedProducts} />
+          </>
+        )}
         <Divider />
         <SectionPromo1 />
       </div>

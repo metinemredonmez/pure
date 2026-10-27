@@ -21,7 +21,7 @@ const Lv1MenuItem = ({ menuItem }: { menuItem: TNavigationItem }) => {
   )
 }
 
-const MegaMenu = ({ menuItem, collection }: { menuItem: TNavigationItem; collection: TCollection }) => {
+const MegaMenu = ({ menuItem, collection }: { menuItem: TNavigationItem; collection?: TCollection }) => {
   const renderNavlink = (item: TNavigationItem) => {
     return (
       <li key={item.id} className={clsx('menu-item', item.isNew && 'menuIsNew')}>
@@ -52,9 +52,12 @@ const MegaMenu = ({ menuItem, collection }: { menuItem: TNavigationItem; collect
                     </div>
                   ))}
                 </div>
-                <div className="w-2/5 xl:w-5/14">
-                  <CollectionCard3 collection={collection} />
-                </div>
+                {/* Öne çıkan koleksiyon kartı yalnızca gerçek veri verilirse (demo koleksiyon yok) */}
+                {collection && (
+                  <div className="w-2/5 xl:w-5/14">
+                    <CollectionCard3 collection={collection} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -128,7 +131,7 @@ const DropdownMenu = ({ menuItem }: { menuItem: TNavigationItem }) => {
 export interface Props {
   menu: TNavigationItem[]
   className?: string
-  featuredCollection: TCollection
+  featuredCollection?: TCollection
 }
 const Navigation: FC<Props> = ({ menu, className, featuredCollection }) => {
   return (

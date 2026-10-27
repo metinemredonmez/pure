@@ -8,7 +8,6 @@ import SectionPromo2 from '@/components/SectionPromo2'
 import SectionPromo3 from '@/components/SectionPromo3'
 import SectionSliderLargeProduct from '@/components/SectionSliderLargeProduct'
 import SectionSliderProductCard from '@/components/SectionSliderProductCard'
-import { getCollections as getStaticCollections, getProducts as getStaticProducts } from '@/data/data'
 import { getApiProducts, getApiCategories, getApiCollections, getApiBanners } from '@/lib/api'
 import { adaptProduct, adaptCategory, adaptCollection, resolveImageUrl } from '@/lib/adapters'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -61,17 +60,10 @@ async function PageHome() {
       backendBanners = bannerData
     }
   } catch (e) {
-    console.warn('API unavailable, using static data')
+    console.warn('API unavailable')
   }
 
-  // Fallback to static data if API returned nothing
-  if (!products.length) {
-    products = await getStaticProducts()
-  }
-  if (!categories.length) {
-    const staticCollections = await getStaticCollections()
-    categories = staticCollections.slice(0, 7)
-  }
+  // API boş/erişilemezse ürün bölümleri gizlenir — template demo ürünleri gösterilmez
 
   const carouselProducts1 = products.slice(0, 5)
   const carouselProducts2 = products.slice(3, 10)
@@ -238,26 +230,34 @@ async function PageHome() {
       />
 
       <div className="relative container mt-24 flex flex-col gap-y-24 lg:mt-32 lg:gap-y-32">
-        <SectionSliderProductCard
-          data={carouselProducts1}
-          heading={settings.homeNewArrivalsHeading}
-          subHeading={settings.homeNewArrivalsSubHeading}
-        />
-        <Divider />
+        {carouselProducts1.length > 0 && (
+          <>
+            <SectionSliderProductCard
+              data={carouselProducts1}
+              heading={settings.homeNewArrivalsHeading}
+              subHeading={settings.homeNewArrivalsSubHeading}
+            />
+            <Divider />
+          </>
+        )}
         <SectionPromo1 />
-        <SectionSliderProductCard
-          data={carouselProducts2}
-          heading={settings.homeBestSellersHeading}
-          subHeading={settings.homeBestSellersSubHeading}
-        />
+        {carouselProducts2.length > 0 && (
+          <SectionSliderProductCard
+            data={carouselProducts2}
+            heading={settings.homeBestSellersHeading}
+            subHeading={settings.homeBestSellersSubHeading}
+          />
+        )}
         <SectionPromo2 />
-        <SectionSliderLargeProduct
-          products={carouselProducts3}
-          heading={settings.homeExpertsHeading}
-          headingDim={settings.homeExpertsSubHeading}
-          viewAllLabel={settings.homeViewAllLabel}
-          viewAllCaption={settings.homeViewAllCaption}
-        />
+        {carouselProducts3.length > 0 && (
+          <SectionSliderLargeProduct
+            products={carouselProducts3}
+            heading={settings.homeExpertsHeading}
+            headingDim={settings.homeExpertsSubHeading}
+            viewAllLabel={settings.homeViewAllLabel}
+            viewAllCaption={settings.homeViewAllCaption}
+          />
+        )}
 
         {/* Google reviews carousel (data from /public/google-reviews) */}
         <SectionGoogleReviews />
