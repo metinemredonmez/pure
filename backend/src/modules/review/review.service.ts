@@ -82,6 +82,12 @@ export class ReviewService {
   // USER: Yorum Yazma
   // ══════════════════════════════════════════════
 
+  /** Yorum düz metindir: HTML etiketleri saklanmaz (regex SanitizePipe atlatılabiliyor). */
+  private toPlainText(value?: string) {
+    // Etikete benzeyen her şey (kapanmamış "<iframe src=..." dahil) silinir; "5 < 6", "<3" kalır
+    return value === undefined ? undefined : value.replace(/<[a-zA-Z!/][^>]*>?/g, '').trim();
+  }
+
   async createReview(
     userId: string,
     productId: string,
@@ -144,8 +150,8 @@ export class ReviewService {
           userId,
           orderId: data.orderId,
           rating: data.rating,
-          title: data.title,
-          comment: data.comment,
+          title: this.toPlainText(data.title),
+          comment: this.toPlainText(data.comment),
           images: data.images || [],
           isVerified,
           isApproved: true,
@@ -222,6 +228,8 @@ export class ReviewService {
       where: { id: reviewId },
       data: {
         ...data,
+        title: this.toPlainText(data.title),
+        comment: this.toPlainText(data.comment),
         isApproved: true, // Düzenlenen yorum tekrar onaya gidebilir: false yapın
       },
     });

@@ -40,10 +40,8 @@ const ReviewItem: FC<ReviewItemProps> = ({ className, data }) => {
         </div>
       </div>
       <div className="prose prose-sm mt-4 sm:prose sm:max-w-2xl dark:prose-invert">
-        <div
-          className="text-neutral-600 dark:text-neutral-300"
-          dangerouslySetInnerHTML={{ __html: data.content || '' }}
-        ></div>
+        {/* Müşteri yorumu kullanıcı girdisidir — HTML olarak basılmaz (stored XSS) */}
+        <p className="whitespace-pre-line text-neutral-600 dark:text-neutral-300">{data.content || ''}</p>
       </div>
     </div>
   )
