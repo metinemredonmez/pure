@@ -1,5 +1,6 @@
-import { Controller, Post, Get, Body, Param, Query, Req } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { Controller, Post, Get, Body, Param, Query, Req, Res, HttpCode } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiBody } from '@nestjs/swagger';
+import type { Request, Response } from 'express';
 import { PaymentService } from './payment.service';
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -55,9 +56,18 @@ export class PaymentController {
 
   @Public()
   @Post('webhooks/paytr')
+  @HttpCode(200)
   @ApiOperation({ summary: 'PayTR payment webhook' })
-  paytrWebhook(@Body() dto: PayTRWebhookDto) {
-    return this.paymentService.handlePayTRWebhook(dto);
+  @ApiBody({ type: PayTRWebhookDto })
+  async paytrWebhook(@Req() req: Request, @Res() res: Response) {
+    // PayTR bildirime düz metin "OK" bekler; JSON (TransformInterceptor) dönülürse
+    // bildirimi başarısız sayıp tekrar tekrar gönderir. Body bilerek pipe'lardan
+    // geçirilmez: SanitizePipe base64 hash'i bozup imza doğrulamasını düşürebiliyor.
+    const result = await this.paymentService.handlePayTRWebhook(req.body);
+    res
+      .status(200)
+      .type('text/plain')
+      .send(result.status === 'OK' ? 'OK' : 'PAYTR notification failed');
   }
 
   @Public()

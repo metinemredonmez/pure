@@ -523,6 +523,11 @@ export class PaymentService {
   // WEBHOOK HANDLERS
   // ══════════════════════════════════════════════
 
+  /** Sağlayıcıdan sonuç bekleyen (henüz sonuçlanmamış) ödeme mi? */
+  private isPaymentAwaitingResult(status: PaymentStatus) {
+    return status === PaymentStatus.PENDING || status === PaymentStatus.PROCESSING;
+  }
+
   async handlePayTRWebhook(data: {
     merchant_oid: string;
     status: string;
@@ -535,6 +540,18 @@ export class PaymentService {
     currency?: string;
     payment_amount?: string;
   }) {
+    // Body pipe'lardan geçmeden gelir (bkz. controller) — zorunlu alanları elle doğrula
+    if (
+      !data ||
+      typeof data.merchant_oid !== 'string' ||
+      typeof data.status !== 'string' ||
+      typeof data.total_amount !== 'string' ||
+      typeof data.hash !== 'string'
+    ) {
+      this.logger.error('PayTR webhook: eksik veya hatalı alanlar — reddedildi');
+      return { status: 'FAIL' };
+    }
+
     // HMAC doğrulama
     const merchantKey = this.config.get<string>('paytr.merchantKey');
     const merchantSalt = this.config.get<string>('paytr.merchantSalt');
@@ -553,7 +570,12 @@ export class PaymentService {
       .update(hashStr)
       .digest('base64');
 
-    if (data.hash !== expectedHash) {
+    const receivedHash = Buffer.from(data.hash);
+    const expectedHashBuf = Buffer.from(expectedHash);
+    if (
+      receivedHash.length !== expectedHashBuf.length ||
+      !crypto.timingSafeEqual(receivedHash, expectedHashBuf)
+    ) {
       this.logger.error('PayTR webhook hash mismatch');
       await this.logPayment(
         data.merchant_oid,
@@ -570,6 +592,15 @@ export class PaymentService {
     if (!payment) {
       this.logger.error(`Payment not found: ${data.merchant_oid}`);
       return { status: 'FAIL' };
+    }
+
+    // Idempotency: PayTR aynı bildirimi birden fazla kez gönderebilir. Sonuçlanmış
+    // ödeme tekrar işlenmez (stok iki kez iade edilmez, mail/fatura tekrarlanmaz).
+    if (!this.isPaymentAwaitingResult(payment.status)) {
+      this.logger.log(
+        `PayTR webhook tekrarı: ${payment.id} zaten ${payment.status} — işlem yapılmadı`,
+      );
+      return { status: 'OK' };
     }
 
     // CRITICAL: Verify that the amount PayTR confirmed matches the expected order amount.
@@ -594,9 +625,13 @@ export class PaymentService {
         : PaymentStatus.FAILED;
 
     // Use transaction for atomic updates
-    await this.prisma.$transaction(async (tx) => {
-      await tx.payment.update({
-        where: { id: payment.id },
+    const transitioned = await this.prisma.$transaction(async (tx) => {
+      // Koşullu güncelleme: eşzamanlı gelen tekrar bildirimlerden yalnızca biri geçer
+      const { count } = await tx.payment.updateMany({
+        where: {
+          id: payment.id,
+          status: { in: [PaymentStatus.PENDING, PaymentStatus.PROCESSING] },
+        },
         data: {
           status: newStatus,
           paidAt: newStatus === PaymentStatus.COMPLETED ? new Date() : null,
@@ -604,6 +639,7 @@ export class PaymentService {
           providerData: data as any,
         },
       });
+      if (count === 0) return false;
 
       // Sipariş durumunu güncelle
       if (newStatus === PaymentStatus.COMPLETED) {
@@ -647,7 +683,13 @@ export class PaymentService {
           `Payment failed: ${payment.id} - ${data.failed_reason_msg}`,
         );
       }
+      return true;
     });
+
+    if (!transitioned) {
+      this.logger.log(`PayTR webhook tekrarı (eşzamanlı): ${payment.id} — işlem yapılmadı`);
+      return { status: 'OK' };
+    }
 
     await this.logPayment(payment.id, `paytr.webhook.${data.status}`, data);
 
