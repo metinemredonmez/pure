@@ -5,7 +5,7 @@ import {
   Box, Typography, Card, Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, TablePagination, TableSortLabel, Chip, IconButton, TextField, InputAdornment, Select,
   MenuItem, FormControl, InputLabel, Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, Divider, Skeleton, Avatar, Stack, Grid, Tooltip, Switch, FormControlLabel,
+  Button, Divider, Skeleton, Avatar, Stack, Grid, Tooltip, Switch, FormControlLabel, Checkbox,
 } from '@mui/material';
 import {
   Search as SearchIcon, Add as AddIcon, Edit as EditIcon, Delete as DeleteIcon,
@@ -62,6 +62,17 @@ const roastLabels: Record<string, string> = {
   LIGHT: 'Açık', MEDIUM: 'Orta', MEDIUM_DARK: 'Orta-Koyu', DARK: 'Koyu',
 };
 
+// Sitede öğütme seçimi yalnızca iki seçenek: Çekirdek / Öğütülmüş.
+// Eski varyant tipleri (Filtre, Espresso, V60, French Press, Türk Kahvesi) Öğütülmüş sayılır.
+const GRIND_CHOICES = [
+  { value: 'WHOLE_BEAN', label: 'Çekirdek' },
+  { value: 'GROUND', label: 'Öğütülmüş' },
+];
+const toGrindChoice = (g?: string | null) => (!g ? '' : g === 'WHOLE_BEAN' ? 'WHOLE_BEAN' : 'GROUND');
+
+type VariantRow = { id?: string; grindType: string; roastLevel: string; weight: number; price: number; stock: number };
+const variantComboKey = (v: VariantRow) => `${v.roastLevel}|${v.weight}`;
+
 function formatCurrency(amount: number | string | null | undefined) {
   const num = typeof amount === 'string' ? parseFloat(amount) : Number(amount);
   if (isNaN(num)) return '₺0,00';
@@ -89,9 +100,7 @@ export default function ProductsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   // Varyantlar (öğütme × gramaj × fiyat) — admin editörü
-  const [variants, setVariants] = useState<
-    { id?: string; grindType: string; roastLevel: string; weight: number; price: number; stock: number }[]
-  >([]);
+  const [variants, setVariants] = useState<VariantRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('createdAt');
@@ -163,15 +172,25 @@ export default function ProductsPage() {
         brewGuide: product.brewGuide || '',
         altitude: product.altitude || '', process: product.process || '', categoryId: product.category?.id || '',
       });
+      // Eski öğütme tipleri "Öğütülmüş"e çevrilir; aynı (öğütme, kavurma, gramaj)
+      // tekrarı tek satıra iner (kaydedilince fazlası pasifleşir)
+      const seen = new Set<string>();
       setVariants(
-        ((product.variants as any[]) || []).map((v) => ({
-          id: v.id,
-          grindType: v.grindType || '',
-          roastLevel: v.roastLevel || '',
-          weight: Number(v.weight) || 0,
-          price: Number(v.price) || 0,
-          stock: Number(v.stock) || 0,
-        })),
+        ((product.variants as any[]) || [])
+          .map((v) => ({
+            id: v.id,
+            grindType: toGrindChoice(v.grindType),
+            roastLevel: v.roastLevel || '',
+            weight: Number(v.weight) || 0,
+            price: Number(v.price) || 0,
+            stock: Number(v.stock) || 0,
+          }))
+          .filter((v) => {
+            const key = `${v.grindType}|${variantComboKey(v)}`;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          }),
       );
     } else {
       setEditingProduct(null);
@@ -184,6 +203,45 @@ export default function ProductsPage() {
       setVariants([]);
     }
     setDialogOpen(true);
+  };
+
+  // Ana formdaki öğütme seçimi varyant satırlarını yönetir: her (kavurma, gramaj)
+  // grubunda seçilen öğütme için bir satır olur (fiyat/stok o gruptan kopyalanır).
+  // Varyant yoksa ana ürün fiyatı/stoku/gramajıyla satır açılır.
+  const toggleGrind = (grind: string, checked: boolean) => {
+    if (checked) {
+      if (variants.length === 0) {
+        setVariants([{ grindType: grind, roastLevel: form.roastLevel, weight: form.weight || 0, price: form.price, stock: form.stock }]);
+        return;
+      }
+      const next = variants.map((v) => ({ ...v }));
+      for (const key of new Set(variants.map(variantComboKey))) {
+        const group = next.filter((v) => variantComboKey(v) === key);
+        if (group.some((v) => v.grindType === grind)) continue;
+        const unassigned = group.find((v) => !v.grindType);
+        if (unassigned) {
+          unassigned.grindType = grind;
+        } else {
+          const base = group[0];
+          next.push({ grindType: grind, roastLevel: base.roastLevel, weight: base.weight, price: base.price, stock: base.stock });
+        }
+      }
+      setVariants(next);
+      return;
+    }
+    const next: VariantRow[] = [];
+    for (const v of variants) {
+      if (v.grindType !== grind) {
+        next.push(v);
+        continue;
+      }
+      const hasOtherGrind = variants.some(
+        (o) => o !== v && variantComboKey(o) === variantComboKey(v) && o.grindType && o.grindType !== grind,
+      );
+      // Grupta başka öğütme varsa satır kalkar; yoksa gramaj/fiyat satırı "Genel" olarak kalır
+      if (!hasOtherGrind && v.weight > 0) next.push({ ...v, grindType: '' });
+    }
+    setVariants(next);
   };
 
   const generateSlug = (name: string) => {
@@ -235,8 +293,9 @@ export default function ProductsPage() {
       }
       // Varyantları (öğütme × gramaj × fiyat) kaydet — geçerli olanlar
       if (productId) {
+        // Gramajsız satır da geçerli: ana üründen yalnızca öğütme seçimi (Çekirdek/Öğütülmüş)
         const cleanVariants = variants
-          .filter((v) => Number(v.weight) > 0 && Number(v.price) > 0)
+          .filter((v) => Number(v.price) > 0 && (Number(v.weight) > 0 || !!v.grindType))
           .map((v) => ({
             id: v.id,
             grindType: v.grindType || undefined,
@@ -601,6 +660,29 @@ export default function ProductsPage() {
             <Grid size={{ xs: 6, md: 4 }}>
               <TextField fullWidth type="number" label="Stok" value={form.stock || ""} onChange={(e) => setForm({ ...form, stock: e.target.value === "" ? 0 : Number(e.target.value) })} inputProps={{ min: 0 }} />
             </Grid>
+            <Grid size={{ xs: 12, md: 8 }}>
+              <Typography variant="caption" color="text.secondary">
+                Öğütme Seçenekleri (sitede müşteri seçer)
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                {GRIND_CHOICES.map((g) => (
+                  <FormControlLabel
+                    key={g.value}
+                    label={g.label}
+                    control={
+                      <Checkbox
+                        size="small"
+                        checked={variants.some((v) => v.grindType === g.value)}
+                        onChange={(e) => toggleGrind(g.value, e.target.checked)}
+                      />
+                    }
+                  />
+                ))}
+              </Stack>
+              <Typography variant="caption" color="text.secondary" component="div">
+                İşaretlenen seçenek aşağıdaki varyant listesine o anki fiyat/stokla eklenir; fiyatı sonradan değiştirirseniz varyant satırını da güncelleyin.
+              </Typography>
+            </Grid>
             <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 1 }} />
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
@@ -615,7 +697,7 @@ export default function ProductsPage() {
               </Box>
               <Typography variant="caption" color="text.secondary">
                 Boş bırakırsanız ürün tek fiyattan satılır. Sitede kavurma/öğütme/gramaj seçilince fiyat bu varyantlara göre değişir.
-                Birden fazla farklı kavurma/öğütme girerseniz sitede o seçici çıkar; seçimler sipariş detayına düşer.
+                Öğütme sitede yalnızca Çekirdek / Öğütülmüş olarak seçilir; birden fazla kavurma girerseniz kavurma seçici de çıkar. Seçimler sipariş detayına düşer.
               </Typography>
               <Stack spacing={1} sx={{ mt: 1.5 }}>
                 {variants.map((v, idx) => (
@@ -628,12 +710,9 @@ export default function ProductsPage() {
                         onChange={(e) => setVariants(variants.map((x, i) => (i === idx ? { ...x, grindType: e.target.value } : x)))}
                       >
                         <MenuItem value="">Genel / Yok</MenuItem>
-                        <MenuItem value="WHOLE_BEAN">Çekirdek (öğütülmemiş)</MenuItem>
-                        <MenuItem value="FRENCH_PRESS">French Press</MenuItem>
-                        <MenuItem value="V60">V60</MenuItem>
-                        <MenuItem value="FILTER">Filtre</MenuItem>
-                        <MenuItem value="ESPRESSO">Espresso</MenuItem>
-                        <MenuItem value="TURKISH">Türk Kahvesi</MenuItem>
+                        {GRIND_CHOICES.map((g) => (
+                          <MenuItem key={g.value} value={g.value}>{g.label}</MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                     <FormControl size="small" sx={{ minWidth: 140, flex: 1 }}>

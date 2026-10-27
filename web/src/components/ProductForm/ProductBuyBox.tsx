@@ -6,6 +6,7 @@ import Prices from '@/components/Prices'
 import { useCart } from '@/contexts/CartContext'
 import { useTranslation } from '@/contexts/LanguageContext'
 import { TProductDetail } from '@/data/data'
+import { grindGroup } from '@/lib/grind'
 import ButtonPrimary from '@/shared/Button/ButtonPrimary'
 import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
@@ -54,11 +55,15 @@ export default function ProductBuyBox({ product }: { product: TProductDetail }) 
     variants.find(
       (v) =>
         (!roast || v.roastLevel === roast) &&
-        (!grind || v.grindType === grind) &&
+        (!grind || grindGroup(v.grindType) === grind) &&
         (selectedWeight == null || Number(v.weight) === selectedWeight),
     ) ||
+    // Tam kombinasyon yoksa aynı gramaj — ama öğütme seçimi korunur (Çekirdek
+    // seçen müşteriye öğütülmüş varyant gitmesin)
     (selectedWeight != null
-      ? variants.find((v) => Number(v.weight) === selectedWeight)
+      ? variants.find(
+          (v) => Number(v.weight) === selectedWeight && (!grind || grindGroup(v.grindType) === grind),
+        )
       : undefined) ||
     null
   const variantPrice = activeVariant ? parseFloat(activeVariant.price) : 0

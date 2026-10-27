@@ -10,6 +10,7 @@ import productImage5 from '@/images/products/p5.jpg'
 import productImage6 from '@/images/products/p6.jpg'
 import productImage7 from '@/images/products/p7.jpg'
 import productImage8 from '@/images/products/p8.jpg'
+import { GRIND_GROUP_LABELS, GrindGroup, grindGroup } from './grind'
 
 // Backend base URL for images (strips /api from NEXT_PUBLIC_API_URL)
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
@@ -109,16 +110,14 @@ export function adaptProduct(product: any, index: number = 0) {
     })
   })()
 
-  // Öğütme (grind) seçenekleri — varyantlarda birden fazla farklı grindType varsa göster.
-  const GRIND_LABELS: Record<string, string> = {
-    WHOLE_BEAN: 'Çekirdek', FRENCH_PRESS: 'French Press', V60: 'V60',
-    FILTER: 'Filtre', ESPRESSO: 'Espresso', TURKISH: 'Türk Kahvesi',
-  }
+  // Öğütme seçenekleri — yalnızca Çekirdek / Öğütülmüş (eski Filtre, Espresso vb.
+  // varyantlar "Öğütülmüş" sayılır). Varyantlarda öğütme tanımlıysa seçici çıkar.
   const grindOptions = (() => {
     const variants = (product.variants as any[]) || []
-    const grinds = [...new Set(variants.map((v) => v.grindType).filter(Boolean))] as string[]
-    if (grinds.length < 2) return [] // 0 veya 1 öğütme → seçime gerek yok
-    return grinds.map((g) => ({ name: GRIND_LABELS[g] || g, value: g, swatch: null }))
+    const groups = new Set(variants.map((v) => grindGroup(v.grindType)).filter(Boolean))
+    return (['WHOLE_BEAN', 'GROUND'] as GrindGroup[])
+      .filter((g) => groups.has(g))
+      .map((g) => ({ name: GRIND_GROUP_LABELS[g], value: g, swatch: null }))
   })()
 
   // Kavurma seçenekleri — varyantlarda birden fazla farklı roastLevel varsa
