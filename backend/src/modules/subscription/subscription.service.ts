@@ -155,37 +155,66 @@ export class SubscriptionService implements OnModuleInit {
     grindPreference: GrindType | undefined,
     paymentMethod: PaymentMethod,
   ) {
+    // İlk ödeme kartla (PayTR) alınır; QR_CODE / BANK_TRANSFER akışları hiç
+    // tamamlanmıyor ve yenileme için kart token'ı gerekiyor.
+    if (paymentMethod !== PaymentMethod.CREDIT_CARD && paymentMethod !== PaymentMethod.DEBIT_CARD) {
+      throw new BadRequestException('Abonelik yalnızca kredi veya banka kartı ile başlatılabilir.');
+    }
+
     const plan = await this.getPlanById(planId);
 
-    // Aktif abonelik kontrolü
+    // Aktif / bekleyen abonelik kontrolü
     const existing = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: { in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.PAUSED] },
+        status: {
+          in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.PAUSED, SubscriptionStatus.PAST_DUE],
+        },
       },
+      include: { _count: { select: { cycles: true } } },
+      orderBy: { createdAt: 'desc' },
     });
-    if (existing) {
+    // İlk ödemesi hiç alınmamış (yarım kalmış) abonelik yeniden kullanılır —
+    // her denemede yeni abonelik kaydı birikmesin.
+    const pendingFirstPayment =
+      existing?.status === SubscriptionStatus.PAST_DUE && existing._count.cycles === 0
+        ? existing
+        : null;
+    if (existing && !pendingFirstPayment) {
       throw new BadRequestException(
-        'Zaten aktif bir aboneliğiniz var. Önce iptal edin veya plan değiştirin.',
+        existing.status === SubscriptionStatus.PAST_DUE
+          ? 'Aboneliğinizin ödemesi alınamadı. Lütfen ödeme yönteminizi güncelleyin.'
+          : 'Zaten aktif bir aboneliğiniz var. Önce iptal edin veya plan değiştirin.',
       );
     }
 
-    // Abonelik kaydı oluştur (PENDING olarak — ödeme gelince ACTIVE olacak)
+    // Abonelik kaydı (PAST_DUE — ilk ödeme bekliyor, webhook gelince ACTIVE olacak)
     const nextBillingDate = new Date();
     nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
 
-    const subscription = await this.prisma.subscription.create({
-      data: {
-        userId,
-        planId,
-        grindPreference,
-        status: SubscriptionStatus.PAST_DUE, // İlk ödeme bekliyor
-        nextBillingDate,
-      },
-    });
+    const subscription = pendingFirstPayment
+      ? await this.prisma.subscription.update({
+          where: { id: pendingFirstPayment.id },
+          data: { planId, grindPreference, nextBillingDate },
+        })
+      : await this.prisma.subscription.create({
+          data: {
+            userId,
+            planId,
+            grindPreference,
+            status: SubscriptionStatus.PAST_DUE, // İlk ödeme bekliyor
+            nextBillingDate,
+          },
+        });
 
-    // İlk ödeme için sipariş oluştur
-    const order = await this.createSubscriptionOrder(userId, plan, grindPreference, subscription.id);
+    // İlk ödeme için sipariş — ödeme onaylanana kadar PENDING (webhook PAID yapar)
+    const order = await this.createSubscriptionOrder(
+      userId,
+      plan,
+      grindPreference,
+      subscription.id,
+      'PENDING',
+    );
 
     // Payment checkout session başlat
     const checkout = await this.paymentService.createCheckoutSession(order.id, paymentMethod);
@@ -419,12 +448,13 @@ export class SubscriptionService implements OnModuleInit {
           data: updateData,
         });
 
-        // Otomatik sipariş oluştur
+        // Otomatik sipariş oluştur (ödeme bu noktada alınmış durumda)
         await this.createSubscriptionOrder(
           subscription.userId,
           activePlan,
           subscription.grindPreference,
           subscription.id,
+          'CONFIRMED',
         );
       });
 
@@ -1175,18 +1205,8 @@ export class SubscriptionService implements OnModuleInit {
     plan: any,
     grindPreference: GrindType | null | undefined,
     subscriptionId: string,
+    status: 'PENDING' | 'CONFIRMED',
   ) {
-    // Plan'a uygun ürünü bul (veya varsayılan kahve ürünü)
-    const product = await this.prisma.product.findFirst({
-      where: { isActive: true },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    if (!product) {
-      this.logger.warn('No product found for subscription order');
-      throw new Error('Ürün bulunamadı');
-    }
-
     // Kullanıcının varsayılan adresini bul
     const address = await this.prisma.address.findFirst({
       where: { userId, isDefault: true },
@@ -1211,15 +1231,17 @@ export class SubscriptionService implements OnModuleInit {
         orderNumber,
         userId,
         addressId,
-        status: 'CONFIRMED',
+        status,
         total: plan.priceMonthly,
         subtotal: plan.priceMonthly,
         tax: 0,
         shippingCost: 0, // Aboneliklerde kargo bedava
         note: `Abonelik siparişi — ${plan.name} (${plan.monthlyWeight}g)${grindPreference ? ` — ${grindPreference}` : ''}`,
         items: {
+          // productId bilerek boş: abonelik kalemi stoktan düşülmüyor. Rastgele bir
+          // ürüne bağlanırsa iptal / ödeme hatası / bayat sipariş iptalinde o ürünün
+          // stoğu hiç düşülmeden "iade" edilip şişiyordu. Ad snapshot'ı yeterli.
           create: {
-            productId: product.id,
             productName: `${plan.name} — ${plan.monthlyWeight}g Kahve`,
             quantity: 1,
             unitPrice: plan.priceMonthly,
