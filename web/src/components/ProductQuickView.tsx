@@ -1,212 +1,68 @@
 'use client'
 
 import AccordionInfo from '@/components/AccordionInfo'
-import IconDiscount from '@/components/IconDiscount'
 import LikeButton from '@/components/LikeButton'
-import NcInputNumber from '@/components/NcInputNumber'
-import Prices from '@/components/Prices'
+import ProductBuyBox from '@/components/ProductForm/ProductBuyBox'
 import { useTranslation } from '@/contexts/LanguageContext'
-import { TProductDetail, getProductDetailByHandle } from '@/data/data'
-import ButtonPrimary from '@/shared/Button/ButtonPrimary'
+import { adaptProduct } from '@/lib/adapters'
+import { getApiProductBySlug } from '@/lib/api'
 import { Link } from '@/shared/link'
-import { ClockIcon, NoSymbolIcon, SparklesIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
-import { ShoppingBag03Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import Image from 'next/image'
 import { FC, useEffect, useState } from 'react'
 import { Divider } from './Divider'
-import ProductColorOptions from './ProductForm/ProductColorOptions'
-import ProductForm from './ProductForm/ProductForm'
-import ProductSizeOptions from './ProductForm/ProductSizeOptions'
 import { useAside } from './aside'
 
 interface ProductQuickViewProps {
   className?: string
 }
 
+// Hızlı bakış gerçek ürünü backend'den çeker. Önceden template'in demo verisinden
+// (data.ts) okunuyordu: her üründe "Ethiopia Yirgacheffe ₺85" görünüyor, sepete de
+// sahte id'li demo ürün ekleniyordu.
 const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
   const { productQuickViewHandle: handle } = useAside()
   const { t } = useTranslation()
 
-  const [product, setProduct] = useState<TProductDetail>()
+  const [product, setProduct] = useState<any>()
+  const [loadedHandle, setLoadedHandle] = useState<string>()
 
-  // Fetch product details by handle when the component mounts or when the handle changes
   useEffect(() => {
     if (!handle) {
       return
     }
-
-    const fetchProduct = async () => {
-      const response = await getProductDetailByHandle(handle)
-      if (!response) {
-        return
-      }
-      setProduct(response)
+    let cancelled = false
+    getApiProductBySlug(handle)
+      .then((res: any) => {
+        if (cancelled) return
+        setProduct(res?.data?.id ? adaptProduct(res.data) : undefined)
+        setLoadedHandle(handle)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setProduct(undefined)
+        setLoadedHandle(handle)
+      })
+    return () => {
+      cancelled = true
     }
-    fetchProduct()
   }, [handle])
 
+  // Başka ürüne geçerken önceki ürün bir an bile görünmesin
+  if (!handle || loadedHandle !== handle) {
+    return null
+  }
+
   if (!product) {
-    return null
-  }
-
-  const { title, status, featuredImage, rating, reviewNumber, options, price, selectedOptions, images } = product
-  const sizeSelected = selectedOptions?.find((option) => option.name === 'Gramaj')?.value || ''
-  const colorSelected = selectedOptions?.find((option) => option.name === 'Kavurma')?.value || ''
-
-  const renderStatus = () => {
-    if (!status) {
-      return null
-    }
-    const CLASSES =
-      'absolute top-3 start-3 px-2.5 py-1.5 text-xs bg-white dark:bg-neutral-900 nc-shadow-lg rounded-full flex items-center justify-center text-neutral-700 text-neutral-900 dark:text-neutral-300'
-    if (status === 'New in') {
-      return (
-        <div className={CLASSES}>
-          <SparklesIcon className="h-3.5 w-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
-        </div>
-      )
-    }
-    if (status === '50% Discount') {
-      return (
-        <div className={CLASSES}>
-          <IconDiscount className="h-3.5 w-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
-        </div>
-      )
-    }
-    if (status === 'Sold Out') {
-      return (
-        <div className={CLASSES}>
-          <NoSymbolIcon className="h-3.5 w-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
-        </div>
-      )
-    }
-    if (status === 'limited edition') {
-      return (
-        <div className={CLASSES}>
-          <ClockIcon className="h-3.5 w-3.5" />
-          <span className="ms-1 leading-none">{status}</span>
-        </div>
-      )
-    }
-    return null
-  }
-
-  const renderSectionContent = () => {
     return (
-      <div className="space-y-8">
-        {/* ---------- 1 HEADING ----------  */}
-        <div>
-          <h2 className="text-3xl font-semibold">
-            <Link href={`/products/${handle}`}>{title}</Link>
-          </h2>
-
-          <div className="mt-5 flex flex-wrap items-center justify-start gap-x-4 gap-y-1.5 sm:gap-x-5 rtl:justify-end">
-            <Prices contentClass="text-xl" price={price || 1} />
-            <div className="h-6 border-s border-neutral-300 dark:border-neutral-700"></div>
-            <div className="flex items-center">
-              <Link href={'/products/' + handle} className="flex items-center text-sm font-medium">
-                <StarIcon className="h-5 w-5 pb-px text-yellow-400" />
-                <div className="ms-1.5 flex">
-                  <span>{rating}</span>
-                  <span className="mx-2 block">·</span>
-                  <span className="text-neutral-600 underline dark:text-neutral-400">{t('product.reviews_count', '{count} değerlendirme', { count: reviewNumber ?? 0 })}</span>
-                </div>
-              </Link>
-              <span className="mx-2.5 hidden sm:block">·</span>
-              <div className="hidden items-center text-sm sm:flex">
-                <SparklesIcon className="h-3.5 w-3.5" />
-                <span className="ms-1 leading-none">{status}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
-        <ProductForm product={product}>
-          <fieldset className="flex flex-col gap-y-10">
-            {/* ---------- 3 VARIANTS AND SIZE LIST ----------  */}
-            <div className="flex flex-col gap-y-8">
-              <ProductColorOptions options={options} defaultColor={colorSelected} />
-              <ProductSizeOptions options={options} defaultSize={sizeSelected} />
-            </div>
-
-            {/*  ---------- 4  QTY AND ADD TO CART BUTTON */}
-            <div className="flex gap-x-3.5">
-              <div className="flex items-center justify-center rounded-full bg-neutral-100/70 px-2 py-3 sm:p-3.5 dark:bg-neutral-800/70">
-                <NcInputNumber name="quantity" defaultValue={1} />
-              </div>
-
-              <ButtonPrimary className="flex-1" type="submit">
-                <HugeiconsIcon
-                  icon={ShoppingBag03Icon}
-                  size={20}
-                  color="currentColor"
-                  className="hidden sm:block"
-                  strokeWidth={1.5}
-                />
-                <span className="text-base/6 font-normal sm:ml-2.5">{t('common.add_to_cart', 'Sepete Ekle')}</span>
-              </ButtonPrimary>
-            </div>
-          </fieldset>
-        </ProductForm>
-
-        <Divider />
-
-        {/* ---------- 5 ----------  */}
-        <AccordionInfo
-          data={[
-            {
-              name: t('product.section_description', 'Açıklama'),
-              content: t(
-                'product.description_body',
-                'Özenle seçilmiş tek menşeili kahve çekirdeklerinden, taze kavrulmuş specialty kahve. Her paketin arkasında bir hikaye, her yudumda benzersiz bir lezzet deneyimi.'
-              ),
-            },
-            {
-              name: t('product.section_features', 'Özellikler'),
-              content: t(
-                'product.features_body',
-                `<ul class="list-disc list-inside leading-7">
-                  <li>Taze kavrulmuş, sipariş üzerine hazırlanır</li>
-                  <li>Tek menşeili specialty sınıf çekirdekler</li>
-                  <li>SCA standartlarında kalite kontrolü</li>
-                  <li>Hava geçirmez ambalaj ile tazelik koruması</li>
-                </ul>`
-              ),
-            },
-            {
-              name: t('product.section_shipping_returns', 'Kargo & İade'),
-              content: t(
-                'product.shipping_returns_body',
-                '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.'
-              ),
-            },
-            {
-              name: t('product.section_storage', 'Saklama Koşulları'),
-              content: t(
-                'product.storage_body',
-                'Serin, kuru ve doğrudan güneş ışığı almayan bir yerde saklayın. Açıldıktan sonra hava geçirmez kapta muhafaza edin. Raf ömrü: 12 ay (açılmamış), 1 ay (açılmış).'
-              ),
-            },
-          ]}
-        />
-
-        <div className="mt-6 flex text-sm text-neutral-500">
-          <p className="text-xs">
-            {t('common.or', 'veya')}{' '}
-            <Link href={'/products/' + handle} className="text-xs font-medium text-neutral-900 uppercase">
-              {t('product.go_to_detail', 'Ürün detay sayfasına git')} <span aria-hidden="true"> →</span>
-            </Link>
-          </p>
-        </div>
-      </div>
+      <p className="py-10 text-center text-sm text-neutral-500">
+        {t('product.not_found', 'Ürün bulunamadı.')}
+      </p>
     )
   }
+
+  const { title, rating, reviewNumber, images, shortDescription, description } = product
+  const summary = shortDescription || description
 
   return (
     <div className={className}>
@@ -224,16 +80,12 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                 />
               )}
             </div>
-
-            {renderStatus()}
-            <LikeButton className="absolute end-3 top-3" />
+            <LikeButton productId={product.id} className="absolute end-3 top-3" />
           </div>
-          <div className="mt-3 hidden grid-cols-2 gap-3 sm:mt-6 sm:gap-6 lg:grid xl:mt-5 xl:gap-5">
-            {[images?.[1], images?.[2]].map((image, index) => {
-              if (!image?.src) {
-                return null
-              }
-              return (
+          {/* Yüklenen ek fotoğraflar (varsa) — tekrar eden yer tutucu yok */}
+          {images?.length > 1 && (
+            <div className="mt-3 hidden grid-cols-2 gap-3 sm:mt-6 sm:gap-6 lg:grid xl:mt-5 xl:gap-5">
+              {images.slice(1, 3).map((image: any, index: number) => (
                 <div key={index} className="aspect-w-3 aspect-h-4">
                   <Image
                     fill
@@ -243,13 +95,61 @@ const ProductQuickView: FC<ProductQuickViewProps> = ({ className }) => {
                     alt={image.alt}
                   />
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* SIDEBAR */}
-        <div className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">{renderSectionContent()}</div>
+        <div className="w-full pt-6 lg:w-[50%] lg:ps-7 lg:pt-0 xl:ps-8">
+          <div className="space-y-8">
+            <div>
+              <h2 className="text-3xl font-semibold">
+                <Link href={`/products/${handle}`}>{title}</Link>
+              </h2>
+              {reviewNumber > 0 && (
+                <Link href={'/products/' + handle} className="mt-4 flex items-center text-sm font-medium">
+                  <StarIcon className="h-5 w-5 pb-px text-yellow-400" />
+                  <div className="ms-1.5 flex">
+                    <span>{rating}</span>
+                    <span className="mx-2 block">·</span>
+                    <span className="text-neutral-600 underline dark:text-neutral-400">
+                      {t('product.reviews_count', '{count} değerlendirme', { count: reviewNumber })}
+                    </span>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* Fiyat (indirim), kavurma / öğütme / gramaj seçimi ve sepete ekleme —
+                ürün sayfasıyla aynı bileşen: siparişe gerçek varyant id'si gider */}
+            <ProductBuyBox product={product} />
+
+            <Divider />
+
+            <AccordionInfo
+              data={[
+                ...(summary ? [{ name: t('product.section_description', 'Açıklama'), content: summary }] : []),
+                {
+                  name: t('product.section_shipping_returns', 'Kargo & İade'),
+                  content: t(
+                    'product.shipping_returns_body',
+                    '₺300 üzeri siparişlerde ücretsiz kargo. Ürünlerimiz açılmamış ambalajında 14 gün içinde iade edilebilir.'
+                  ),
+                },
+              ]}
+            />
+
+            <div className="mt-6 flex text-sm text-neutral-500">
+              <p className="text-xs">
+                {t('common.or', 'veya')}{' '}
+                <Link href={'/products/' + handle} className="text-xs font-medium text-neutral-900 uppercase">
+                  {t('product.go_to_detail', 'Ürün detay sayfasına git')} <span aria-hidden="true"> →</span>
+                </Link>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
