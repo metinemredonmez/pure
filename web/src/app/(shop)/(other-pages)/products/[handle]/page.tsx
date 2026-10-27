@@ -284,7 +284,11 @@ export default async function Page({ params }: { params: Promise<{ handle: strin
   }
 
   const renderLeftSide = () => {
-    const galleryImages = [featuredImage, ...(images || [])].map((item) => item?.src).filter(Boolean) as string[]
+    // featuredImage zaten images[0] — başa tekrar eklenmez; aynı görsel iki kez görünmesin
+    const gallerySources = ((images?.length ? images : [featuredImage]) as any[])
+      .map((item) => item?.src)
+      .filter(Boolean) as string[]
+    const galleryImages = [...new Set(gallerySources)]
 
     return (
       <div className="w-full lg:w-[55%]">

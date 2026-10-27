@@ -61,15 +61,10 @@ export function adaptProduct(product: any, index: number = 0) {
       }))
   }
 
-  // If no images, use fallback
+  // Görsel yoksa tek bir yer tutucu. Galeri 4'e tamamlanmaz: admin kaç fotoğraf
+  // yüklediyse o kadar görünür (önceden 1 fotoğraf 4 kez tekrarlanıyordu).
   if (!productImages.length) {
-    const fallback = getFallbackImage(index)
-    productImages = [fallback, fallback, fallback, fallback]
-  }
-
-  // Ensure we have at least 4 images for the gallery
-  while (productImages.length < 4) {
-    productImages.push(productImages[0])
+    productImages = [getFallbackImage(index)]
   }
 
   // Roast level — only show kavurma options if product actually has roastLevel set

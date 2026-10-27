@@ -366,36 +366,41 @@ const HeaderGalleryGrid5 = ({
   handleOpenDialog: (index?: number) => void
 }) => {
   const { t } = useTranslation()
+  const [active, setActive] = useState(0)
   if (!images.length) return null
 
-  // En fazla 5 thumbnail göster (ilk büyük resim hariç)
-  const thumbs = images.slice(1, 6).filter(Boolean)
+  const activeIndex = active < images.length ? active : 0
 
   return (
     <div className="mx-auto w-full max-w-[340px] sm:max-w-[400px]">
       {/* Ana resim — sabit kare, en fazla 400px */}
       <div
         className="relative aspect-square cursor-pointer overflow-hidden rounded-2xl"
-        onClick={() => handleOpenDialog(0)}
+        onClick={() => handleOpenDialog(activeIndex)}
       >
         <Image
           fill
           sizes="(max-width: 640px) 340px, 400px"
-          src={images[0]}
+          src={images[activeIndex]}
           className="object-cover transition-[filter] hover:brightness-95"
           alt=""
           priority
         />
       </div>
-      {thumbs.length > 0 && (
+      {/* Küçük görseller: yüklenen her fotoğraf bir kez — tek fotoğrafta şerit çıkmaz */}
+      {images.length > 1 && (
         <div className="mt-2 grid grid-cols-5 gap-1.5 sm:mt-3 sm:gap-2">
-          {thumbs.map((image, index) => (
+          {images.map((image, index) => (
             <button
               type="button"
-              key={index}
-              aria-label={t('gallery.image_n', 'Görsel {n}', { n: index + 2 })}
-              className="relative aspect-square overflow-hidden rounded-lg"
-              onClick={() => handleOpenDialog(index + 1)}
+              key={image}
+              aria-label={t('gallery.image_n', 'Görsel {n}', { n: index + 1 })}
+              aria-current={index === activeIndex}
+              className={clsx(
+                'relative aspect-square overflow-hidden rounded-lg ring-2 transition',
+                index === activeIndex ? 'ring-neutral-900 dark:ring-white' : 'ring-transparent'
+              )}
+              onClick={() => setActive(index)}
             >
               <Image
                 sizes="80px"
