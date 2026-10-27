@@ -73,9 +73,16 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'X-API-Key', 'X-CSRF-Token', 'X-Session-Id', 'x-session-id'],
   });
 
-  // Request size limits
-  app.use(require('express').json({ limit: '10mb' }));
-  app.use(require('express').urlencoded({ extended: true, limit: '10mb' }));
+  // Request size limits. Ham gövde req.rawBody'de saklanır: webhook HMAC imzası
+  // (Kargonomi) parse edilmemiş gövde üzerinden doğrulanır. Nest'in kendi body
+  // parser'ı bunlardan sonra kaydolduğu için `rawBody: true` seçeneği burada işlemez.
+  const keepRawBody = (req: Request, _res: Response, buf: Buffer) => {
+    (req as Request & { rawBody?: Buffer }).rawBody = buf;
+  };
+  app.use(require('express').json({ limit: '10mb', verify: keepRawBody }));
+  app.use(
+    require('express').urlencoded({ extended: true, limit: '10mb', verify: keepRawBody }),
+  );
 
   // Cookie parser (JWT HttpOnly cookies + CSRF)
   const cookieSecret = process.env.COOKIE_SECRET;

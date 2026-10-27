@@ -15,6 +15,7 @@ import {
   HttpCode,
   HttpStatus,
   BadRequestException,
+  ServiceUnavailableException,
   Logger,
 } from '@nestjs/common';
 import {
@@ -24,6 +25,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiResponse,
+  ApiBody,
 } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { JwtAuthGuard } from '../identity/guards/jwt-auth.guard';
@@ -199,18 +201,30 @@ export class KargonomiWebhookController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Kargonomi webhook receiver' })
   @ApiResponse({ status: 200, description: 'Webhook processed' })
+  @ApiBody({ type: KargonomiWebhookDto })
   async handleWebhook(
     @Req() req: any,
     @Headers('x-webhook-signature') signature: string,
-    @Body() body: KargonomiWebhookDto,
   ) {
-    // Verify HMAC-SHA256 signature.
-    // Secret henüz tanımlı değilse (Kargonomi ekibinden bekleniyor) webhook'u
-    // uyarı loglayarak kabul et — kargo durum akışı secret beklerken durmasın.
-    // Secret girildiği anda imza doğrulaması zorunlu hale gelir.
-    const rawBody = (req as any).rawBody as Buffer;
+    // Kimlik doğrulama HMAC-SHA256 imzasıyla yapılır (ham gövde üzerinden, bkz.
+    // main.ts rawBody). Gövde bilerek DTO/Sanitize pipe'larından geçirilmez:
+    // Kargonomi'nin gerçek payload'ı (meta + shipment) DTO'ya uymadığı için
+    // forbidNonWhitelisted 400 döndürüyordu; işleyici gövdeyi savunmacı okur.
+    const rawBody = req.rawBody as Buffer | undefined;
+    const body = req.body;
     const secret = await this.kargonomiService.getWebhookSecret();
-    if (secret) {
+    if (!secret) {
+      // Fail-closed: secret'sız kabul edilen webhook sahte "teslim edildi / iptal"
+      // durumu yazıp müşteriye mail attırabiliyordu. Sadece geliştirmede serbest.
+      if (process.env.NODE_ENV === 'production') {
+        this.logger.error(
+          'Kargonomi webhook secret tanımlı değil — istek REDDEDİLDİ. ' +
+            'Admin → Entegrasyonlar → Kargo → Webhook Secret alanını doldurun.',
+        );
+        throw new ServiceUnavailableException('Webhook secret not configured');
+      }
+      this.logger.warn('Kargonomi webhook secret tanımlı değil — geliştirme ortamı, imzasız kabul edildi');
+    } else {
       if (!signature || !rawBody) {
         throw new BadRequestException('Missing webhook signature');
       }
@@ -219,14 +233,9 @@ export class KargonomiWebhookController {
         this.logger.warn('Invalid Kargonomi webhook signature received');
         throw new BadRequestException('Invalid webhook signature');
       }
-    } else {
-      this.logger.warn(
-        'Kargonomi webhook secret tanımlı değil — imza DOĞRULANMADAN kabul edildi. ' +
-          'Admin → Entegrasyonlar → Kargo → Webhook Secret alanını doldurun.',
-      );
     }
 
-    this.logger.log(`Kargonomi webhook received: ${(body as any)?.meta?.webhook?.event_type || body.event}`);
+    this.logger.log(`Kargonomi webhook received: ${body?.meta?.webhook?.event_type || body?.event}`);
 
     // shipment.updated → siparişi güncelle (durum/takip no + teslim maili)
     try {
