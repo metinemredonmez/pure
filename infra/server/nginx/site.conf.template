@@ -1,0 +1,126 @@
+# Pure Olentia — nginx. 40-nginx.sh bu şablonu envsubst ile üretir.
+# Değişkenler: ${DOMAIN} ${ADMIN_DOMAIN} ${API_DOMAIN} ${APP_DIR}
+#
+# KURAL: HTML sayfalarına nginx'ten Cache-Control EKLEME. Next.js önbellek başlıklarını kendisi
+# doğru veriyor. Eski sunucudaki `location /products { ...immutable }` bloğu, ürün güncellemelerinin
+# müşteriye bir yıl boyunca ulaşmamasına yol açıyordu.
+
+upstream pure_web   { server 127.0.0.1:3001; keepalive 16; }
+upstream pure_admin { server 127.0.0.1:3000; keepalive 16; }
+upstream pure_api   { server 127.0.0.1:4000; keepalive 16; }
+
+# Tanımsız alan adı / doğrudan IP ile gelenleri düşür
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    listen 443 ssl http2 default_server;
+    listen [::]:443 ssl http2 default_server;
+    server_name _;
+    ssl_reject_handshake on;
+    return 444;
+}
+
+# HTTP → HTTPS (sertifika doğrulaması hariç)
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ${DOMAIN} www.${DOMAIN} ${ADMIN_DOMAIN} ${API_DOMAIN};
+
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+# www → ana alan adı
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name www.${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include snippets/pure-tls.conf;
+
+    return 301 https://${DOMAIN}$request_uri;
+}
+
+# Site (mağaza)
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include snippets/pure-tls.conf;
+
+    client_max_body_size 2m;
+
+    location / {
+        include snippets/pure-proxy.conf;
+        proxy_pass http://pure_web;
+    }
+}
+
+# Admin paneli
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${ADMIN_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include snippets/pure-tls.conf;
+    add_header X-Robots-Tag "noindex, nofollow" always;
+
+    # İsteğe bağlı sıkılaştırma: yalnızca bilinen IP'lerden erişim. Açmak için aşağıyı düzenle.
+    # allow 203.0.113.10;
+    # deny all;
+
+    client_max_body_size 2m;
+
+    location / {
+        include snippets/pure-proxy.conf;
+        proxy_pass http://pure_admin;
+    }
+}
+
+# API
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name ${API_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
+    include snippets/pure-tls.conf;
+
+    client_max_body_size 15m;
+
+    # Yüklenen görseller doğrudan diskten (Node'a uğramadan), 30 gün önbellek.
+    # SVG içindeki betik çalışmasın diye kısıtlayıcı CSP; MIME tahmini kapalı.
+    location ^~ /uploads/ {
+        alias ${APP_DIR}/backend/uploads/;
+        autoindex off;
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=2592000" always;
+        add_header X-Content-Type-Options "nosniff" always;
+        add_header Content-Security-Policy "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; sandbox" always;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    }
+
+    # Giriş / kayıt / şifre sıfırlama: IP başına hız sınırı
+    location ~ ^/api/auth/(login|register|forgot-password|reset-password)$ {
+        limit_req zone=pure_auth burst=10 nodelay;
+        include snippets/pure-proxy.conf;
+        proxy_pass http://pure_api;
+    }
+
+    location / {
+        include snippets/pure-proxy.conf;
+        proxy_pass http://pure_api;
+    }
+}
