@@ -11,13 +11,17 @@
 
 ## KRİTİK KURALLAR (bozma!)
 1. **Build:** admin + web `package.json`'da `next build --webpack` SABİT. Turbopack, route-group manifestlerini üretmiyor → sayfalar `InvariantError` ile açılmıyor. Deploy'da her zaman `rm -rf .next` ile temiz build.
-2. **Deploy şablonu:**
+2. **Deploy şablonu** (tek zincir: bir adım hata verirse sonrakiler çalışmaz; sonda `DEPLOY OK` yoksa durup çıktıya bak):
    ```
-   cd /var/www/pureolentia && git pull
-   cd backend && npm install && npx prisma migrate deploy && npm run build && pm2 reload pureolentia-api
-   cd ../admin && rm -rf .next && npm run build && pm2 restart pureolentia-admin
-   cd ../web && rm -rf .next && npm run build && pm2 restart pureolentia-web
+   cd /var/www/pureolentia && git checkout -- admin/yarn.lock backend/package-lock.json && git pull --ff-only \
+     && cd backend && npm install && npx prisma migrate deploy && npm run build && pm2 reload pureolentia-api \
+     && cd ../admin && rm -rf .next && npm run build && pm2 restart pureolentia-admin \
+     && cd ../web && rm -rf .next && npm run build && pm2 restart pureolentia-web \
+     && echo "DEPLOY OK"
    ```
+   - `admin/yarn.lock` (next build yamalar) ve `backend/package-lock.json` (npm install) sunucuda her deploy'da kirlenir; geri alınmazsa `git pull` reddedilir ve eski kodla build alınır (27 Eki 2026'da oldu: sunucu 20 commit geride kaldı).
+   - Doğrulama: `git log -1 --oneline` GitHub'daki `main` ile aynı olmalı; `curl -s https://api.pureolentia.com/api/public/google-reviews` yeni kodda `"source":"none"` (veya `live`/`cache`) döner, `mock` dönmez.
+   - Build yarıda kalırsa `.next` silinmiş olduğu için o uygulama 500 verir: aynı satırı (`rm -rf .next && npm run build && pm2 restart ...`) tekrar çalıştır.
 3. **KDV:** Fiyatlar KDV DAHİL (%1). KDV toplama EKLENMEZ — `order.service.ts` + web cart/checkout böyle yazıldı. `taxRate` admin ayarında `1` = %1.
 4. **Silme = SOFT delete:** Kullanıcı ve ürün varyantı silme soft'tur (FK Restrict; hard delete 500 verir).
 5. **Varyant sistemi:** `ProductVariant` = kavurma × öğütme × gramaj × fiyat × stok. Admin ürün formunda editör var; site `ProductBuyBox` seçime göre fiyat gösterir; sipariş kalemine `variantName` snapshot düşer.
